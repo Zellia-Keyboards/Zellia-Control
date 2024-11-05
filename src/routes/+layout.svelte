@@ -6,7 +6,7 @@
 
 <script>
   import "../app.css"
-  import DeviceSelection from './components/CustomizationOptions.svelte';
+  import DeviceSelection from './components/DeviceSelection.svelte';
   import ProfileSelection from './components/ProfileSelection.svelte';
   import CustomizationOptions from './components/CustomizationOptions.svelte';
   import InfoOptions from './components/InfoOptions.svelte';
