@@ -1,8 +1,8 @@
 {
   "$schema": "https://schema.tauri.app/config/2.0.0",
-  "productName": "arius-control",
+  "productName": "zellia-control",
   "version": "0.1.0",
-  "identifier": "com.arius-control.app",
+  "identifier": "com.zellia-control.app",
   "build": {
     "beforeDevCommand": "yarn dev",
     "devUrl": "http://localhost:1420",
@@ -12,7 +12,7 @@
   "app": {
     "windows": [
       {
-        "title": "arius-control",
+        "title": "zellia-control",
         "width": 800,
         "height": 600
         
