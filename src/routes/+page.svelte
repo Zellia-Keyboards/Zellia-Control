@@ -32,6 +32,8 @@
     <button type="submit">Greet</button>
   </form>
 
+  <div class="text-red-500">Test tailwind</div>
+
   <p>{greetMsg}</p>
 </div>
 
