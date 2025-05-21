@@ -10,7 +10,6 @@
     interface Props {
         values: any[][];
         onClick: (x: number, y: number, event: MouseEvent) => void;
-
     }
     const { values, onClick }: Props = $props();
 </script>
@@ -18,13 +17,13 @@
 <div>
     {#each KEYBOARD_LAYOUT as row, y}
         <div
-            class="flex first:*:[&:nth-child(4n+2)]:ml-2 *:nth-15:ml-2 nth-[5]:*:nth-13:ml-10 nth-[6]:*:nth-8:ml-2 nth-[2]:mt-2"
+            class="flex first:*:[&:nth-child(4n+2)]:ml-3 *:nth-15:ml-3 nth-[5]:*:nth-13:ml-14 nth-[6]:*:nth-8:ml-2 nth-[2]:mt-2"
         >
             {#each row as width, x}
                 <button
-                    class="h-8 bg-gray-500 border-2 border-gray-300 rounded-lg items-center justify-center hover:bg-gray-300 hover:cursor-pointer"
-                    style:width="{width * 2}rem"
-                    onclick={_ => onClick(x, y, _)}
+                    class="h-12 bg-gray-400 border-2 border-gray-300 rounded-lg items-center justify-center hover:bg-gray-300 hover:cursor-pointer"
+                    style:width="{width * 3}rem"
+                    onclick={(_) => onClick(x, y, _)}
                 >
                     {values.at(y)?.at(x)?.toString() ?? "null"}
                 </button>
