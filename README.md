@@ -1,4 +1,4 @@
-# Tauri + SvelteKit
+# Zellia Control
 
 This template should help get you started developing with Tauri and SvelteKit in Vite.
 
