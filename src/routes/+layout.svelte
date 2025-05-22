@@ -20,22 +20,24 @@
 	{/each}
 </div>
 <div class="flex flex-col">
-	<!-- Global keyboard layout -->
-	<Zellia80HE
-		onClick={(x, y) => {
-			console.log(`Clicked on ${x}, ${y}`);
-			$CurrentSelected = [x, y];
-		}}
-		values={$KeyboardDisplayValues}
-	/>
-	<div class="flex">
-		<button
-			class="bg-gray-300 p-2 px-4 rounded-4xl font-bold hover:bg-gray-500"
-			>Sync</button
-		>
-	</div>
-	<!-- Component for adjust part -->
-	{@render children()}
+    <!-- Global keyboard layout -->
+    <div class="flex justify-center">
+        <Zellia80HE
+            onClick={(x, y) => {
+                console.log(`Clicked on ${x}, ${y}`);
+                $CurrentSelected = [x, y];
+            }}
+            values={$KeyboardDisplayValues}
+        />
+    </div>
+    <div class="flex">
+        <button
+            class="bg-gray-300 p-2 px-4 rounded-4xl font-bold hover:bg-gray-500"
+            >Sync</button
+        >
+    </div>
+    <!-- Component for adjust part -->
+    {@render children()}
 </div>
 
 <style lang="postcss">
