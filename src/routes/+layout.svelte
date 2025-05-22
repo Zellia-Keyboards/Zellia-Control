@@ -13,31 +13,41 @@
 	let { children } = $props();
 </script>
 
-<div class="flex items-center">
-	<p class="font-bold p-2 px-4 text-2xl">Zellia</p>
-	{#each NAVIGATE as [href, name]}
-		<a {href} class="p-2 px-4 rounded-4xl font-bold">{name}</a>
-	{/each}
-</div>
-<div class="flex flex-col">
-    <!-- Global keyboard layout -->
-    <div class="flex justify-center">
-        <Zellia80HE
-            onClick={(x, y) => {
-                console.log(`Clicked on ${x}, ${y}`);
-                $CurrentSelected = [x, y];
-            }}
-            values={$KeyboardDisplayValues}
-        />
-    </div>
-    <div class="flex">
-        <button
-            class="bg-gray-300 p-2 px-4 rounded-4xl font-bold hover:bg-gray-500"
-            >Sync</button
-        >
-    </div>
-    <!-- Component for adjust part -->
-    {@render children()}
+<div class="flex h-screen">
+	<!-- Sidebar -->
+	<div class="flex flex-col w-48 bg-white shadow h-full">
+		<p class="font-bold p-4 text-2xl text-black text-align:center">Zellia Control</p>
+		<div class="flex flex-col gap-2 px-2">
+            <button
+				class="ml-2 bg-indigo-200 p-2 px-4 rounded-4xl font-bold hover:bg-indigo-400 hover:text-white transition-colors duration-200 shadow"
+				>Sync</button
+			>
+			{#each NAVIGATE as [href, name]}
+				<a {href} class="p-2 rounded-2xl font-bold transition-colors duration-200 hover:bg-indigo-100 hover:text-indigo-700 focus:bg-indigo-200 focus:outline-none">{name}</a>
+			{/each}
+		</div>
+		<div class="flex-1"></div>
+	</div>
+	<!-- Main Content -->
+	<div class="flex-1 flex flex-col gap-4 px-4">
+		<div class="flex items-center bg-white shadow mb-4">
+			
+		</div>
+		<!-- Global keyboard layout -->
+		<div class="flex justify-center my-4">
+			<Zellia80HE
+				onClick={(x, y) => {
+					console.log(`Clicked on ${x}, ${y}`);
+					$CurrentSelected = [x, y];
+				}}
+				values={$KeyboardDisplayValues}
+			/>
+		</div>
+		<!-- Component for adjust part -->
+		<div class="bg-white rounded-2xl shadow p-4 mt-2">
+			{@render children()}
+		</div>
+	</div>
 </div>
 
 <style lang="postcss">
