@@ -7,6 +7,8 @@
 		["/debug", "Debug"],
 		["/test", "Test"],
 		["/remap", "Remap"],
+		["/settings", "Settings"],
+		["/performance", "Performance"],
 		["/about", "About"],
 	];
 
