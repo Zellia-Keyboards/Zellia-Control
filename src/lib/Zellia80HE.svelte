@@ -21,7 +21,7 @@
         >
             {#each row as width, x}
                 <button
-                    class="h-12 bg-gray-400 border-2 border-gray-300 rounded-lg items-center justify-center hover:bg-gray-300 hover:cursor-pointer"
+                    class="h-12 bg-gray-400 border border-gray-300 rounded-lg items-center justify-center hover:bg-gray-300 hover:cursor-pointer"
                     style:width="{width * 3}rem"
                     onclick={(_) => onClick(x, y, _)}
                 >
