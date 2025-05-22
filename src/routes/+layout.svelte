@@ -11,6 +11,7 @@
 	];
 
 	let { children } = $props();
+	let selectedLayer = $state(1);
 </script>
 
 <div class="flex h-screen">
@@ -30,8 +31,18 @@
 	</div>
 	<!-- Main Content -->
 	<div class="flex-1 flex flex-col gap-4 px-4">
-		<div class="flex items-center bg-white shadow mb-4">
-			
+		<div class="flex items-center  mb-4">
+			<div class="flex items-center gap-2 px-4 py-2">
+				<span class="font-semibold text-gray-700 mr-2">Layer:</span>
+				{#each [1,2,3,4] as layer}
+					<button
+						class="w-8 h-8 flex items-center justify-center rounded-lg border-2 font-bold text-lg transition-colors duration-200 focus:outline-none {selectedLayer === layer ? 'bg-indigo-500 text-white border-indigo-700' : 'bg-white text-indigo-700 border-indigo-300 hover:bg-indigo-100'}"
+						onclick={() => selectedLayer = layer}
+					>
+						{layer}
+					</button>
+				{/each}
+			</div>
 		</div>
 		<!-- Global keyboard layout -->
 		<div class="flex justify-center my-4">
