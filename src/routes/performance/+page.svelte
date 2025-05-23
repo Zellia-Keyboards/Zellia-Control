@@ -42,41 +42,11 @@
     <div class="bg-white rounded-md shadow p-4">
       <div class="mb-6">
         <div class="flex items-center justify-between mb-4">
-          <h3 class="text-lg font-medium">Rapid Trigger Sensitivity</h3>
+          <h3 class="text-lg font-medium">Actuation point</h3>
         </div>
         <div class="flex items-center mb-4">
-          <span class="text-sm text-gray-600 mr-2">sensitivity text</span>
+          <span class="text-sm text-gray-600 mr-2">actuation point text</span>
         </div>
-        
-        <div class="mb-2">
-          <h4 class="text-sm text-gray-500 mb-2">SENSITIVITY</h4>
-          <div class="relative">
-            <input 
-              type="range" 
-              min="0" 
-              max="2" 
-              step="0.01" 
-              bind:value={sensitivityValue}
-              class="w-full h-2 rounded-full bg-gray-300 appearance-none slider-thumb" 
-            />
-            <div class="flex justify-between mt-2 text-sm text-gray-600">
-              <span>HIGH</span>
-              <span>LOW</span>
-            </div>
-            <div class="text-right text-sm text-gray-500 mt-1">
-              {(sensitivityValue * 1).toFixed(2)} mm
-            </div>
-          </div>
-        </div>
-      </div>
-      
-      <!-- Actuation Point -->
-      <div class="pt-4 border-t border-gray-200">
-        <h3 class="text-lg font-medium mb-4">Actuation Point</h3>
-        
-        <p class="text-sm text-gray-600 mb-4">
-          actuation point text
-        </p>
         
         <div class="mb-2">
           <h4 class="text-sm text-gray-500 mb-2">ACTUATION POINT</h4>
@@ -86,9 +56,39 @@
               min="0" 
               max="4" 
               step="0.01" 
+              bind:value={sensitivityValue}
+              class="w-full h-2 rounded-full bg-gray-300 appearance-none slider-thumb" 
+            />
+            <div class="text-right text-sm text-gray-500 mt-1">
+              {(sensitivityValue * 1).toFixed(2)} mm
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Actuation Point -->
+      <div class="pt-4 border-t border-gray-200">
+        <h3 class="text-lg font-medium mb-4">Rapid Trigger Sensitivity</h3>
+        
+        <p class="text-sm text-gray-600 mb-4">
+          sensitivity text
+        </p>
+        
+        <div class="mb-2">
+          <h4 class="text-sm text-gray-500 mb-2">SENSITIVITY</h4>
+          <div class="relative">
+            <input 
+              type="range" 
+              min="0" 
+              max="2" 
+              step="0.01" 
               bind:value={deadzoneValue}
               class="w-full h-2 rounded-full bg-gray-300 appearance-none slider-thumb" 
             />
+            <div class="flex justify-between mt-2 text-sm text-gray-600">
+              <span>HIGH</span>
+              <span>LOW</span>
+            </div>
             <div class="text-right text-sm text-gray-500 mt-1">
               {(deadzoneValue * 1).toFixed(2)} mm
             </div>
