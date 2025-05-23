@@ -64,7 +64,7 @@
               <span>LOW</span>
             </div>
             <div class="text-right text-sm text-gray-500 mt-1">
-              {(sensitivityValue * 2).toFixed(2)} mm
+              {(sensitivityValue * 1).toFixed(2)} mm
             </div>
           </div>
         </div>
@@ -94,7 +94,7 @@
               <span>HIGH</span>
             </div>
             <div class="text-right text-sm text-gray-500 mt-1">
-              {(deadzoneValue * 2).toFixed(2)} mm
+              {(deadzoneValue * 1).toFixed(2)} mm
             </div>
           </div>
         </div>
