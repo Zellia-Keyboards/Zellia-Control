@@ -57,7 +57,7 @@
 
 	<!-- Main Content -->
 	<div class="flex-1 flex flex-col gap-4 px-4 overflow-y-auto">
-		<div class="flex items-center mb-4">
+		<div class="flex items-center -mb-3">
 			<div class="flex items-center gap-2 px-4 py-2">
 				<span class="font-semibold text-gray-700 mr-2">Layer:</span>
 				{#each [1, 2, 3, 4] as layer}
