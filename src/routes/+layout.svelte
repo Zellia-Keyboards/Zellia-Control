@@ -6,7 +6,7 @@
 	const NAVIGATE = [
 		["/test", "Test"],
 		["/performance", "Performance"],
-		["/remap", "keymap"],
+		["/remap", "Remap"],
 		["/lighting", "Lighting"],
 		["/advancedkey", "Advanced Keys"],
 		["/calibration", "Calibration"],
