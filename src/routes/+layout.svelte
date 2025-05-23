@@ -81,7 +81,7 @@
 			/>
 		</div>
 		<!-- Component for adjust part -->
-		<div class="bg-white rounded-2xl shadow p-4 mt-2">
+		<div class="bg-white rounded-2xl shadow p-4 mt-2 mb-4 grow">
 			{@render children()}
 		</div>
 	</div>

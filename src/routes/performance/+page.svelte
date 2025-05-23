@@ -9,7 +9,7 @@
   let keysSelected = 0;
 </script>
 
-<div class="p-4 h-full flex flex-col min-h-125">
+<div class="p-4 h-full flex flex-col">
   <div class="flex items-center justify-between -mt-4 mb-2">
     <h2 class="text-2xl font-bold">Performance</h2>
     <div>
