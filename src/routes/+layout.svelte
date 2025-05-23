@@ -4,11 +4,12 @@
 	import { KeyboardDisplayValues, CurrentSelected } from "$lib/KeyboardState.svelte";
 
 	const NAVIGATE = [
-		["/debug", "Debug"],
 		["/test", "Test"],
-		["/remap", "Remap"],
-		["/settings", "Settings"],
 		["/performance", "Performance"],
+		["/remap", "keymap"],
+		["/advancedkey", "Advanced Keys"],
+		["/debug", "Debug"],
+		["/settings", "Settings"],
 		["/about", "About"],
 	];
 
