@@ -23,8 +23,11 @@
       <h3 class="text-lg font-medium mb-4">Actuation Point</h3>
       <p class="text-sm text-gray-600 mb-4">Set the actuation point for your keys.</p>
       <div class="mb-2 flex-1">
-        <h4 class="text-sm text-gray-500 mb-2">ACTUATION POINT</h4>
         <div class="relative">
+          <div class="flex justify-between text-sm text-gray-500 mb-1">
+            <div>ACTUATION POINT</div>
+            <div>{actuationPoint.toFixed(2)} mm</div>
+          </div>
           <input 
             type="range" 
             min="0" 
@@ -33,8 +36,9 @@
             bind:value={actuationPoint}
             class="w-full h-2 rounded-full bg-gray-300 appearance-none slider-thumb" 
           />
-          <div class="text-right text-sm text-gray-500 mt-1">
-            {actuationPoint.toFixed(2)} mm
+          <div class="flex justify-between text-sm text-gray-500 mb-1">
+            <div>HIGH</div>
+            <div>LOW</div>
           </div>
         </div>
         <!-- Keys selected indicator -->
