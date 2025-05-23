@@ -89,10 +89,6 @@
               bind:value={deadzoneValue}
               class="w-full h-2 rounded-full bg-gray-300 appearance-none slider-thumb" 
             />
-            <div class="flex justify-between mt-2 text-sm text-gray-600">
-              <span>LOW</span>
-              <span>HIGH</span>
-            </div>
             <div class="text-right text-sm text-gray-500 mt-1">
               {(deadzoneValue * 1).toFixed(2)} mm
             </div>
