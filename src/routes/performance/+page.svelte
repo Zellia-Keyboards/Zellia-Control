@@ -54,7 +54,7 @@
             <input 
               type="range" 
               min="0" 
-              max="1" 
+              max="2" 
               step="0.01" 
               bind:value={sensitivityValue}
               class="w-full h-2 rounded-full bg-gray-300 appearance-none slider-thumb" 
@@ -84,7 +84,7 @@
             <input 
               type="range" 
               min="0" 
-              max="1" 
+              max="4" 
               step="0.01" 
               bind:value={deadzoneValue}
               class="w-full h-2 rounded-full bg-gray-300 appearance-none slider-thumb" 
