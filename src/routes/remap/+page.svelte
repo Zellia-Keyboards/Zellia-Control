@@ -54,9 +54,9 @@
     }
 </style>
 
-<div class=" h-screen flex flex-col">
+<div class="p-4 h-screen flex flex-col">
     <!-- Section Tabs - Large and full width -->
-    <div class="flex border-b border-gray-200 mb-5 h-15 flex-shrink-0">
+    <div class="flex border-b border-gray-200">
         {#each sections as section}
             <button
                 class="px-8 py-4 font-semibold text-xl transition-colors duration-200 border-b-2 flex-1 h-full {selectedSection === section.id ? 'border-blue-600 text-blue-600 bg-blue-50' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}"
@@ -68,11 +68,10 @@
     </div>
 
     <!-- Content based on selected section -->
-    <div class="bg-white rounded-xl shadow p-6 flex-1 flex flex-col min-h-0 overflow-hidden">
+    <div class="bg-white rounded-xl shadow p-6 flex-1 flex flex-col">
         {#if selectedSection === 'basic'}
-            <h3 class="text-lg font-medium mb-4 flex-shrink-0">Basic Keys</h3>
             <!-- Scrollable container -->
-            <div class="flex-1 overflow-y-auto">
+            <div class="flex-1 flex flex-col overflow-y-auto">
                 {#each keyGroups as group}
                     <div class="mb-4">
                         <!-- Collapsible Panel Header -->
