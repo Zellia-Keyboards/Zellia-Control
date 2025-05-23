@@ -7,6 +7,7 @@
 		["/test", "Test"],
 		["/performance", "Performance"],
 		["/remap", "keymap"],
+		["/lighting", "Lighting"],
 		["/advancedkey", "Advanced Keys"],
 		["/debug", "Debug"],
 		["/settings", "Settings"],
