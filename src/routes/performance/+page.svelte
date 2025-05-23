@@ -1,5 +1,6 @@
 <script lang="ts">
   let rapidTriggerEnabled = false;
+  let continuousRapidTriggerEnabled = false;
   let sensitivityValue = 0.5;
   let deadzoneValue = 0.2;
   let keysSelected = 0;
@@ -20,7 +21,8 @@
     <div class="bg-white rounded-md shadow p-4">
       <div class="flex items-center justify-between mb-4">
         <h3 class="text-lg font-medium">Enable Rapid Trigger</h3>
-        <button class="relative inline-flex items-center h-6 rounded-full w-11 transition-colors focus:outline-none" aria-label="Rapid Trigger Toggle"
+        <button class="relative inline-flex items-center h-6 rounded-full w-11 transition-colors focus:outline-none"
+          aria-label="Rapid Trigger Toggle"
           class:bg-blue-600={rapidTriggerEnabled} 
           class:bg-gray-300={!rapidTriggerEnabled}
           on:click={() => rapidTriggerEnabled = !rapidTriggerEnabled}>
@@ -34,8 +36,29 @@
       </p>
       
       <div class="mt-4">
+        <div class="text-blue-600 font-medium py-2">{keysSelected} keys selected</div>
+      </div>
+      {#if rapidTriggerEnabled}      
+        <div class="flex items-center justify-between mb-4 border-t border-gray-200 py-2">
+        <h3 class="text-lg font-medium">Enable Continuous Rapid Trigger</h3>
+        <button class="relative inline-flex items-center h-6 rounded-full w-11 transition-colors focus:outline-none"
+          aria-label="Rapid Trigger Toggle"
+          class:bg-blue-600={continuousRapidTriggerEnabled} 
+          class:bg-gray-300={!continuousRapidTriggerEnabled}
+          on:click={() => continuousRapidTriggerEnabled = !continuousRapidTriggerEnabled}>
+          <span class="inline-block w-4 h-4 transform rounded-full bg-white transition-transform shadow"
+            class:translate-x-6={continuousRapidTriggerEnabled}
+            class:translate-x-1={!continuousRapidTriggerEnabled}></span>
+        </button>
+      </div>
+      <p class="text-sm text-gray-600 mb-4">
+        continuos rapid trigger text
+      </p>
+      
+      <div class="mt-4">
         <div class="text-blue-600 font-medium">{keysSelected} keys selected</div>
       </div>
+      {/if}
     </div>
     
     <!-- Rapid Trigger Sensitivity and Actuation Point -->
@@ -66,7 +89,7 @@
         </div>
       </div>
       
-      <!-- Actuation Point -->
+      <!-- Rapid Trigger Sensitivity -->
       <div class="pt-4 border-t border-gray-200">
         <h3 class="text-lg font-medium mb-4">Rapid Trigger Sensitivity</h3>
         
