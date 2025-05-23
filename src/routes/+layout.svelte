@@ -21,7 +21,7 @@
 
 <div class="flex h-screen">
 	<!-- Sidebar -->
-	<div class="flex flex-col w-48 bg-white shadow h-full relative">
+	<div class="flex flex-col w-48 bg-white shadow h-full overflow-y-auto">
 		<p class="font-bold p-4 text-2xl text-black text-center">Zellia Control</p>
 		<!-- Large Centered Sync Button -->
 		<div class="flex justify-center mb-4 mt-2">
@@ -52,14 +52,15 @@
 				</div>
 			</div>
 		</div>
-		<div class="flex-1"></div>
+		<div class="flex-grow"></div>
 	</div>
+
 	<!-- Main Content -->
-	<div class="flex-1 flex flex-col gap-4 px-4">
-		<div class="flex items-center  mb-4">
+	<div class="flex-1 flex flex-col gap-4 px-4 overflow-y-auto">
+		<div class="flex items-center mb-4">
 			<div class="flex items-center gap-2 px-4 py-2">
 				<span class="font-semibold text-gray-700 mr-2">Layer:</span>
-				{#each [1,2,3,4] as layer}
+				{#each [1, 2, 3, 4] as layer}
 					<button
 						class="w-8 h-8 flex items-center justify-center rounded-lg border-2 font-bold text-lg transition-colors duration-200 focus:outline-none {selectedLayer === layer ? 'bg-indigo-500 text-white border-indigo-700' : 'bg-white text-indigo-700 border-indigo-300 hover:bg-indigo-100'}"
 						onclick={() => selectedLayer = layer}
@@ -70,7 +71,7 @@
 			</div>
 		</div>
 		<!-- Global keyboard layout -->
-		<div class="flex justify-center my-4">
+		<div class="flex justify-center">
 			<Zellia80HE
 				onClick={(x, y) => {
 					console.log(`Clicked on ${x}, ${y}`);
