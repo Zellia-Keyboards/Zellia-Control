@@ -1,15 +1,144 @@
 <script lang="ts">
     const NORMAL_KEY = [...Array(94).keys()].map(_ => _ + 33).map(_ => [String.fromCharCode(_), _]);
 
-    console.log(NORMAL_KEY);
+    let selectedSection = 'basic';
+    let expandedGroups: string[] = ['alphabet'];
+
+    const sections = [
+        { id: 'basic', label: 'Basic Keys' },
+        { id: 'function', label: 'Function Keys' },
+        { id: 'media', label: 'Media Keys' },
+        { id: 'mouse', label: 'Mouse' }
+    ];
+
+    const keyGroups = [
+        { id: 'alphabet', label: 'Alphabet' },
+        { id: 'numbers', label: 'Numbers' },
+        { id: 'special', label: 'Special Characters' }
+    ];
+
+    // Group basic keys
+    const alphabetKeys = NORMAL_KEY.filter(([name]) => /^[A-Z]$/.test(String(name)));
+    const numberKeys = NORMAL_KEY.filter(([name]) => /^[0-9]$/.test(String(name)));
+    const specialKeys = NORMAL_KEY.filter(([name]) => !/^[A-Za-z0-9]$/.test(String(name)));
+
+    function getKeysForGroup(group: string) {
+        switch(group) {
+            case 'alphabet': return alphabetKeys;
+            case 'numbers': return numberKeys;
+            case 'special': return specialKeys;
+            default: return [];
+        }
+    }
+
+    function toggleGroup(groupId: string) {
+        if (expandedGroups.includes(groupId)) {
+            expandedGroups = expandedGroups.filter(id => id !== groupId);
+        } else {
+            expandedGroups = [...expandedGroups, groupId];
+        }
+    }
 </script>
 
-<h2>Key List</h2>
-<div class="flex flex-wrap">
-    {#each NORMAL_KEY as [name, code]}
-        <button
-            
-            class="p-2 px-4 rounded-4xl font-bold"
-        >{name}</button>
-    {/each}
+<style>
+    .key-square {
+        aspect-ratio: 1 / 1;
+        width: 4rem;
+        min-width: 4rem;
+        max-width: 4rem;
+        min-height: 4rem;
+        max-height: 4rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+</style>
+
+<div class=" h-screen flex flex-col">
+    <!-- Section Tabs - Large and full width -->
+    <div class="flex border-b border-gray-200 mb-5 h-15 flex-shrink-0">
+        {#each sections as section}
+            <button
+                class="px-8 py-4 font-semibold text-xl transition-colors duration-200 border-b-2 flex-1 h-full {selectedSection === section.id ? 'border-blue-600 text-blue-600 bg-blue-50' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}"
+                on:click={() => selectedSection = section.id}
+            >
+                {section.label}
+            </button>
+        {/each}
+    </div>
+
+    <!-- Content based on selected section -->
+    <div class="bg-white rounded-xl shadow p-6 flex-1 flex flex-col min-h-0 overflow-hidden">
+        {#if selectedSection === 'basic'}
+            <h3 class="text-lg font-medium mb-4 flex-shrink-0">Basic Keys</h3>
+            <!-- Scrollable container -->
+            <div class="flex-1 overflow-y-auto">
+                {#each keyGroups as group}
+                    <div class="mb-4">
+                        <!-- Collapsible Panel Header -->
+                        <button
+                            class="w-full flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                            on:click={() => toggleGroup(group.id)}
+                        >
+                            <span class="text-base font-semibold">{group.label}</span>
+                            <svg 
+                                class="w-5 h-5 transition-transform duration-200 {expandedGroups.includes(group.id) ? 'rotate-180' : ''}"
+                                fill="none" 
+                                stroke="currentColor" 
+                                viewBox="0 0 24 24"
+                            >
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                            </svg>
+                        </button>
+                        
+                        <!-- Collapsible Panel Content -->
+                        {#if expandedGroups.includes(group.id)}
+                            <div class="mt-3 p-3 border border-gray-200 rounded-lg">
+                                <div class="flex flex-wrap gap-3">
+                                    {#each getKeysForGroup(group.id) as [name, code]}
+                                        <button
+                                            class="key-square rounded-lg font-bold border border-gray-300 hover:bg-gray-100 transition-colors text-base"
+                                        >{name}</button>
+                                    {/each}
+                                </div>
+                            </div>
+                        {/if}
+                    </div>
+                {/each}
+            </div>
+        {:else if selectedSection === 'function'}
+            <h3 class="text-lg font-medium mb-4 flex-shrink-0">Function Keys</h3>
+            <div class="flex-1 overflow-y-auto">
+                <div class="flex flex-wrap gap-3">
+                    {#each ['F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8', 'F9', 'F10', 'F11', 'F12'] as key}
+                        <button
+                            class="key-square rounded-lg font-bold border border-gray-300 hover:bg-gray-100 transition-colors text-base"
+                        >{key}</button>
+                    {/each}
+                </div>
+            </div>
+        {:else if selectedSection === 'media'}
+            <h3 class="text-lg font-medium mb-4 flex-shrink-0">Media Keys</h3>
+            <div class="flex-1 overflow-y-auto">
+                <div class="flex flex-wrap gap-3">
+                    {#each ['Play/Pause', 'Stop', 'Previous', 'Next', 'Volume Up', 'Volume Down', 'Mute'] as key}
+                        <button
+                            class="key-square rounded-lg font-bold border border-gray-300 hover:bg-gray-100 transition-colors text-base"
+                        >{key}</button>
+                    {/each}
+                </div>
+            </div>
+        {:else if selectedSection === 'mouse'}
+            <h3 class="text-lg font-medium mb-4 flex-shrink-0">Mouse Functions</h3>
+            <div class="flex-1 overflow-y-auto">
+                <div class="flex flex-wrap gap-3">
+                    {#each ['Left Click', 'Right Click', 'Middle Click', 'Mouse Up', 'Mouse Down', 'Mouse Left', 'Mouse Right'] as key}
+                        <button
+                            class="key-square rounded-lg font-bold border border-gray-300 hover:bg-gray-100 transition-colors text-base"
+                        >{key}</button>
+                    {/each}
+                </div>
+            </div>
+        {/if}
+    </div>
 </div>
