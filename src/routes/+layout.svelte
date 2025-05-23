@@ -9,6 +9,7 @@
 		["/remap", "keymap"],
 		["/lighting", "Lighting"],
 		["/advancedkey", "Advanced Keys"],
+		["/calibration", "Calibration"],
 		["/debug", "Debug"],
 		["/settings", "Settings"],
 		["/about", "About"],
