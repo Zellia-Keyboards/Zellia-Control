@@ -51,7 +51,7 @@
             class:translate-x-1={!continuousRapidTriggerEnabled}></span>
         </button>
       </div>
-      <p class="text-sm text-gray-600 mb-4">
+      <p class="text-sm text-gray-600 mb-4">  
         continuos rapid trigger text
       </p>
       
