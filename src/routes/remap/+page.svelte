@@ -59,8 +59,8 @@
     <div class="flex border-b border-gray-200">
         {#each sections as section}
             <button
-                class="px-8 py-4 font-semibold text-xl transition-colors duration-200 border-b-2 flex-1 h-full {selectedSection === section.id ? 'border-blue-600 text-blue-600 bg-blue-50' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}"
-                on:click={() => selectedSection = section.id}
+            class="px-8 py-4 font-semibold rounded-4xl text-xl transition-colors duration-200 flex-1 h-full {selectedSection === section.id ? 'border-blue-600 text-blue-600 bg-blue-50 rounded-4xl' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}"
+            on:click={() => selectedSection = section.id}
             >
                 {section.label}
             </button>
