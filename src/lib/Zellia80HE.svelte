@@ -14,7 +14,7 @@
     const { values, onClick }: Props = $props();
 </script>
 
-<div class="p-6 bg-white rounded-xl shadow-md inline-block">
+<div class="p-4 bg-white rounded-xl shadow-md inline-block">
     {#each KEYBOARD_LAYOUT as row, y}
         <div
             class="flex first:*:[&:nth-child(4n+2)]:ml-3 *:nth-15:ml-3 nth-[5]:*:nth-13:ml-14 nth-[6]:*:nth-8:ml-2 nth-[2]:mt-2"
