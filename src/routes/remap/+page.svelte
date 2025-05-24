@@ -54,7 +54,7 @@
     }
 </style>
 
-<div class="p-4 h-screen flex flex-col">
+<div class="p-4 h-full flex flex-col">
     <!-- Section Tabs - Large and full width -->
     <div class="flex border-b border-gray-200">
         {#each sections as section}
