@@ -40,7 +40,7 @@ A modern desktop application for controlling and configuring Zellia keyboards. B
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/yourusername/zellia-control.git
+   git clone https://github.com/Zellia-Keyboards/zellia-control.git
    cd zellia-control
    ```
 
