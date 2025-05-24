@@ -26,6 +26,8 @@ A modern desktop application for controlling and configuring Zellia keyboards. B
   - Lighting control
   - Calibration tools
   - Debug mode
+- **Switch Detection System (Planned)**: Automatic identification of switch types based on travel distance and ADC values after calibration
+
 - **Cross-platform**: Windows, macOS, and Linux support
 
 ## 🔧 Installation
