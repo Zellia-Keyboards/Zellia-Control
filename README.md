@@ -90,16 +90,7 @@ yarn tauri [command]
 
 The development server runs on `http://localhost:1420` with hot module replacement enabled.
 
-## 📖 Usage
-
-### Basic Operation
-
-1. **Select Keys**: Click on keys in the keyboard layout to select them
-2. **Adjust Settings**: Use the sidebar navigation to access different configuration pages
-3. **Layer Management**: Switch between 4 different layers using the layer selector
-4. **Profile Sync**: Use the sync button to apply changes to your keyboard
-
-### Key Features
+## 📖 Key Features
 
 #### Performance Page
 - **Actuation Point**: Adjust how far keys must be pressed to register (0-4mm)
