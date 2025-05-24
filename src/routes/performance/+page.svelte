@@ -71,7 +71,7 @@
       <div class="flex-1">
         {#if rapidTriggerEnabled}
           <div class="flex items-center justify-between mb-4 border-t border-gray-200 pt-4">
-            <h4 class="text-sm text-gray-700">Enable Continuous Rapid Trigger</h4>
+            <h4 class="text-lg font-medium">Enable Continuous Rapid Trigger</h4>
             <button class="relative inline-flex items-center h-6 rounded-full w-11 transition-colors focus:outline-none"
               aria-label="Continuous Rapid Trigger Toggle"
               class:bg-blue-600={continuousRapidTriggerEnabled} 
