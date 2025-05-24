@@ -39,7 +39,7 @@
   </div>
     
   <!-- Factory Reset -->
-  <div class="mb-12">
+  <div class="mb-auto">
     <h4 class="font-bold">Factory Reset</h4>
     <p class="text-gray-600 mb-3">factory reset text</p>
     <button 
