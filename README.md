@@ -28,16 +28,6 @@ A modern desktop application for controlling and configuring Zellia keyboards. B
   - Debug mode
 - **Cross-platform**: Windows, macOS, and Linux support
 
-## 📋 Table of Contents
-
-- [Installation](#installation)
-- [Development Setup](#development-setup)
-- [Usage](#usage)
-- [Project Structure](#project-structure)
-- [Building](#building)
-- [Contributing](#contributing)
-- [License](#license)
-
 ## 🔧 Installation
 
 ### Prerequisites
