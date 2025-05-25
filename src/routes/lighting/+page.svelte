@@ -119,7 +119,6 @@
     <div class="bg-white rounded-xl shadow p-6 flex flex-col lg:flex-row gap-6 flex-1">
         <!-- Effects Panel -->
         <div class="flex-1 min-w-[300px]">
-            <h3 class="text-lg font-medium mb-4">Lighting Effects</h3>
             <div class="grid grid-cols-2 gap-3 mb-6">
                 {#each effects as effect}
                     <button
