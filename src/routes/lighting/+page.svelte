@@ -2,7 +2,7 @@
     import { CurrentSelected, KeyboardDisplayValues } from "$lib/KeyboardState.svelte";
     
     let selectedEffect = $state('static');
-    let brightness = $state(100);
+    let brightness = $state(100); // Frontend display value (0-100)
     let speed = $state(50);
     let direction = $state('left-to-right');
     let staticColor = $state('#ff0000');
@@ -11,6 +11,16 @@
     let perKeyMode = $state(false);
     let selectedKeys = $state(new Set());
     let keyColor = $state('#ffffff');
+    
+    // Convert frontend brightness (0-100) to hardware brightness (0-70)
+    function getHardwareBrightness(frontendBrightness: number): number {
+        return Math.round((frontendBrightness / 100) * 70);
+    }
+    
+    // Convert hardware brightness (0-70) to frontend brightness (0-100)
+    function getFrontendBrightness(hardwareBrightness: number): number {
+        return Math.round((hardwareBrightness / 70) * 100);
+    }
     
     const effects = [
         { id: 'static', name: 'Static', description: 'Single solid color' },
@@ -72,9 +82,12 @@
     }
     
     function applySettings() {
+        const hardwareBrightness = getHardwareBrightness(brightness);
+        
         console.log('Applying lighting settings:', {
             effect: selectedEffect,
-            brightness,
+            brightness: hardwareBrightness, // Send hardware value (0-70)
+            frontendBrightness: brightness, // For reference (0-100)
             speed,
             direction,
             staticColor,
@@ -125,7 +138,7 @@
                 <div>
                     <div class="flex justify-between text-sm text-gray-600 mb-2">
                         <span>Brightness</span>
-                        <span>{brightness}%</span>
+                        <span>{brightness}% <span class="text-xs text-gray-400"></span>
                     </div>
                     <input 
                         type="range" 
