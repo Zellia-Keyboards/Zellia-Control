@@ -1,3 +1,4 @@
+<!--
 # Zellia Control
 
 A modern desktop application for controlling and configuring Zellia keyboards. Built with Tauri, SvelteKit, and Rust for optimal performance and cross-platform compatibility.
@@ -203,8 +204,9 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 🙏 Acknowledgments
 
 - [Tauri](https://tauri.app/) - For the amazing desktop app framework
+
 - [SvelteKit](https://kit.svelte.dev/) - For the powerful web framework
 - [Tailwind CSS](https://tailwindcss.com/) - For the utility-first CSS framework
 ---
 
-**Made with ❤️ for the Hall Effect keyboard community**
+**Made with ❤️ for the Hall Effect keyboard community**-->
