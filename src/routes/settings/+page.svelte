@@ -12,8 +12,7 @@
   }
 </script>
 
-<div class="p-4 bg-white rounded-lg shadow">
-  
+
   <!-- Restart Device -->
   <div class="mb-12">
     <h4 class="font-bold">Restart Device</h4>
@@ -49,7 +48,7 @@
       Factory Reset
     </button>
   </div>
-</div>
+
 
 <style>
   .action-button {
