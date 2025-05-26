@@ -1,54 +1,63 @@
 <script lang="ts">
   function handleRestart() {
-    console.log("Restart Device clicked");
   }
   
   function handleBootloader() {
-    console.log("Enter Bootloader clicked");
   }
   
   function handleFactoryReset() {
-    console.log("Factory Reset clicked");
   }
 </script>
 
-
-  <!-- Restart Device -->
-  <div class="mb-12">
-    <h4 class="font-bold">Restart Device</h4>
-    <p class="text-gray-600 mb-3">restart device text</p>
-    <button 
-      type="button" 
-      class="action-button"
-      on:click={handleRestart}>
-      Restart Device
-    </button>
+<div class="p-4 h-full flex flex-col">
+  <div class="flex items-center justify-between -mt-4 mb-2">
+    <h2 class="text-2xl font-bold">Settings</h2>
   </div>
+  
+  <div class="bg-white rounded-xl shadow p-6 space-y-8 flex-1">
+    <!-- Restart Device -->
+    <div class="p-5 bg-white rounded-lg border border-gray-200">
+      <h3 class="text-lg font-medium mb-2">Restart Device</h3>
+      <p class="text-sm text-gray-600 mb-4">
+        restart device text
+      </p>
+      <button 
+        type="button" 
+        class="action-button"
+        on:click={handleRestart}>
+        Restart Device
+      </button>
+    </div>
     
-  <!-- Enter Bootloader -->
-  <div class="mb-12">
-    <h4 class="font-bold">Enter Bootloader</h4>
-    <p class="text-gray-600 mb-3">enter bootloader text</p>
-    <button 
-      type="button" 
-      class="action-button"
-      on:click={handleBootloader}>
-      Enter Bootloader
-    </button>
-  </div>
+    <!-- Enter Bootloader -->
+    <div class="p-5 bg-white rounded-lg border border-gray-200">
+      <h3 class="text-lg font-medium mb-2">Enter Bootloader</h3>
+      <p class="text-sm text-gray-600 mb-4">
+        enter bootloader text
+      </p>
+      <button 
+        type="button" 
+        class="action-button"
+        on:click={handleBootloader}>
+        Enter Bootloader
+      </button>
+    </div>
     
-  <!-- Factory Reset -->
-  <div class="mb-auto">
-    <h4 class="font-bold">Factory Reset</h4>
-    <p class="text-gray-600 mb-3">factory reset text</p>
-    <button 
-      type="button" 
-      class="action-button red"
-      on:click={handleFactoryReset}>
-      Factory Reset
-    </button>
+    <!-- Factory Reset -->
+    <div class="p-5 bg-white rounded-lg border border-gray-200">
+      <h3 class="text-lg font-medium mb-2">Factory Reset</h3>
+      <p class="text-sm text-gray-600 mb-4">
+        factory reset text
+      </p>
+      <button 
+        type="button" 
+        class="action-button red"
+        on:click={handleFactoryReset}>
+        Factory Reset
+      </button>
+    </div>
   </div>
-
+</div>
 
 <style>
   .action-button {
