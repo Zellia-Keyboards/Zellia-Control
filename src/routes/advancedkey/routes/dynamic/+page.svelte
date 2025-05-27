@@ -29,6 +29,215 @@
     let selectedBindingIndex = $state<number | null>(null);
     let activeTab = $state('bindings');
 
+    // UI state for each slider
+    let uiBitmaps = $state([...selectedBitmaps]);
+
+    // Slider constants
+    const NODE_SIZE = 32;
+    const NODE_SPACING = 40;
+    const SLIDER_GAP = 72;
+    const SLIDER_WIDTH = SLIDER_GAP * 3 + NODE_SIZE;
+    const SLIDER_HEIGHT = NODE_SIZE;
+    const NODE_TOP = SLIDER_HEIGHT / 2 - NODE_SIZE / 2;
+    const GRIP_WIDTH = 12;
+    const GRIP_HEIGHT = 16;
+    const GRIP_OFFSET = NODE_SIZE - 10;
+    const GRIP_TOP = SLIDER_HEIGHT / 2 - GRIP_HEIGHT / 2;
+
+    const nodeLeft = (i: number) => SLIDER_GAP * i;
+
+    function getIntervals(bitmap: DKSAction[]): [number, number][] {
+        const intervals: [number, number][] = [];
+        let start = -1;
+        
+        for (let i = 0; i < 4; i++) {
+            if (bitmap[i] === DKSAction.HOLD) {
+                continue;
+            }
+            if (start !== -1) {
+                intervals.push([start, i]);
+                start = -1;
+            }
+            if (bitmap[i] === DKSAction.PRESS) {
+                start = i;
+            } else if (bitmap[i] === DKSAction.TAP) {
+                intervals.push([i, i]);
+            }
+        }
+        
+        return intervals;
+    }
+
+    const intervalWidth = ([l, r]: [number, number]) =>
+        l === r ? 0 : SLIDER_GAP * (r - l) - NODE_SPACING;
+
+    function updateBitmap(bindingIndex: number, bitmap: DKSAction[]): void {
+        selectedBitmaps[bindingIndex] = bitmap;
+        selectedBitmaps = [...selectedBitmaps];
+        uiBitmaps[bindingIndex] = [...bitmap];
+        uiBitmaps = [...uiBitmaps];
+    }
+
+    function setUIBitmap(bindingIndex: number, bitmap: DKSAction[]): void {
+        uiBitmaps[bindingIndex] = bitmap;
+        uiBitmaps = [...uiBitmaps];
+    }
+
+    // Delete interval functionality
+    function deleteInterval(bindingIndex: number, intervalStart: number): void {
+        const bitmap = [...uiBitmaps[bindingIndex]];
+        const intervals = getIntervals(bitmap);
+        const interval = intervals.find(([l]) => l === intervalStart);
+        
+        if (interval) {
+            const [start, end] = interval;
+            for (let j = start + 1; j < end; j++) {
+                bitmap[j] = DKSAction.HOLD;
+            }
+            if (bitmap[end] === DKSAction.RELEASE) {
+                bitmap[end] = DKSAction.HOLD;
+            }
+            bitmap[start] = intervals.some(([l, r]) => l !== r && r === start) 
+                ? DKSAction.RELEASE 
+                : DKSAction.HOLD;
+        }
+        
+        updateBitmap(bindingIndex, bitmap);
+    }
+
+    // Drag functionality
+    function handleDrag(bindingIndex: number, nodeIndex: number, deltaX: number): void {
+        const bitmap = [...uiBitmaps[bindingIndex]];
+        const intervals = getIntervals(selectedBitmaps[bindingIndex]);
+        const interval = intervals.find(([l]) => l === nodeIndex) ?? [nodeIndex, -1];
+        const upperBound = intervals.find(([l]) => l > nodeIndex)?.[0] ?? 3;
+
+        const clampedX = Math.max(
+            0,
+            Math.min(
+                deltaX + (interval[1] === -1 ? 0 : intervalWidth(interval)),
+                intervalWidth([nodeIndex, upperBound])
+            )
+        );
+
+        let closest = nodeIndex;
+        let closestDistance = clampedX;
+        for (let j = nodeIndex + 1; j <= upperBound; j++) {
+            const distance = Math.abs(clampedX - intervalWidth([nodeIndex, j]));
+            if (distance < closestDistance) {
+                closest = j;
+                closestDistance = distance;
+            }
+        }
+
+        bitmap[nodeIndex] = nodeIndex === closest ? DKSAction.TAP : DKSAction.PRESS;
+        
+        for (let j = nodeIndex + 1; j < Math.max(interval[1], closest); j++) {
+            bitmap[j] = DKSAction.HOLD;
+        }
+        
+        if (interval[1] !== -1 && bitmap[interval[1]] === DKSAction.RELEASE) {
+            bitmap[interval[1]] = DKSAction.HOLD;
+        }
+        
+        if (bitmap[closest] === DKSAction.HOLD) {
+            bitmap[closest] = DKSAction.RELEASE;
+        }
+
+        setUIBitmap(bindingIndex, bitmap);
+    }
+
+    function commitDrag(bindingIndex: number): void {
+        updateBitmap(bindingIndex, uiBitmaps[bindingIndex]);
+    }
+
+    // Click to create interval
+    function handleNodeClick(bindingIndex: number, nodeIndex: number): void {
+        const bitmap = [...selectedBitmaps[bindingIndex]];
+        const uiBitmap = [...uiBitmaps[bindingIndex]];
+        const intervals = getIntervals(bitmap);
+        
+        // Check if this node is in the middle of an interval
+        if (intervals.some(([l, r]) => l < nodeIndex && nodeIndex < r)) {
+            return; // Can't click on nodes in the middle of intervals
+        }
+
+        if (bitmap[nodeIndex] === DKSAction.HOLD) {
+            // Create new interval
+            bitmap[nodeIndex] = DKSAction.TAP;
+            uiBitmap[nodeIndex] = DKSAction.TAP;
+        } else {
+            // Remove existing interval
+            const interval = intervals.find(([l, r]) => l <= nodeIndex && nodeIndex <= r);
+            if (interval) {
+                const [start, end] = interval;
+                for (let i = start; i <= end && i < 4; i++) {
+                    bitmap[i] = DKSAction.HOLD;
+                    uiBitmap[i] = DKSAction.HOLD;
+                }
+            }
+        }
+
+        updateBitmap(bindingIndex, bitmap);
+    }
+
+    // Mouse tracking for drag functionality
+    let dragState = $state<{
+        isDragging: boolean;
+        bindingIndex: number;
+        nodeIndex: number;
+        startX: number;
+        startMouseX: number;
+    } | null>(null);
+
+    function handleMouseDown(event: MouseEvent, bindingIndex: number, nodeIndex: number): void {
+        const intervals = getIntervals(selectedBitmaps[bindingIndex]);
+        const uiIntervals = getIntervals(uiBitmaps[bindingIndex]);
+        
+        // Don't start drag if node is in middle of interval
+        if (uiIntervals.some(([l, r]) => l < nodeIndex && nodeIndex < r)) {
+            return;
+        }
+
+        dragState = {
+            isDragging: true,
+            bindingIndex,
+            nodeIndex,
+            startX: 0,
+            startMouseX: event.clientX
+        };
+        
+        event.preventDefault();
+    }
+
+    function handleMouseMove(event: MouseEvent): void {
+        if (!dragState?.isDragging) return;
+        
+        const deltaX = event.clientX - dragState.startMouseX;
+        handleDrag(dragState.bindingIndex, dragState.nodeIndex, deltaX);
+    }
+
+    function handleMouseUp(): void {
+        if (dragState?.isDragging) {
+            commitDrag(dragState.bindingIndex);
+        }
+        dragState = null;
+    }
+
+    // Add global event listeners
+    $effect(() => {
+        const handleGlobalMouseMove = (e: MouseEvent) => handleMouseMove(e);
+        const handleGlobalMouseUp = () => handleMouseUp();
+        
+        document.addEventListener('mousemove', handleGlobalMouseMove);
+        document.addEventListener('mouseup', handleGlobalMouseUp);
+        
+        return () => {
+            document.removeEventListener('mousemove', handleGlobalMouseMove);
+            document.removeEventListener('mouseup', handleGlobalMouseUp);
+        };
+    });
+
     function goBack(): void {
         goto('/advancedkey');
     }
@@ -73,6 +282,7 @@
             [DKSAction.PRESS, DKSAction.PRESS, DKSAction.HOLD, DKSAction.RELEASE],
             [DKSAction.HOLD, DKSAction.HOLD, DKSAction.HOLD, DKSAction.HOLD]
         ];
+        uiBitmaps = [...selectedBitmaps];
         bottomOutPoint = 4.0;
     }
 
@@ -93,11 +303,6 @@
         });
     }
 
-    function updateBitmap(bindingIndex: number, phaseIndex: number, action: DKSAction): void {
-        selectedBitmaps[bindingIndex][phaseIndex] = action;
-        selectedBitmaps = [...selectedBitmaps];
-    }
-
     function selectKeycode(keycode: string): void {
         if (selectedBindingIndex !== null) {
             selectedKeycodes[selectedBindingIndex] = keycode;
@@ -110,6 +315,11 @@
     const currentKeyName = $derived($CurrentSelected ? 
         $KeyboardDisplayValues[$CurrentSelected[1]]?.[$CurrentSelected[0]] || 'Unknown' : 
         'No key selected');
+
+    // Sync UI bitmaps when selected bitmaps change
+    $effect(() => {
+        uiBitmaps = [...selectedBitmaps];
+    });
 
     // Load existing configuration when key selection changes
     $effect(() => {
@@ -161,22 +371,90 @@
         Object.entries($globalConfigurations).filter(([_, config]) => config.type === 'dynamic')
     );
 
-    // DKS Action colors and labels
-    const dksActionInfo = {
-        [DKSAction.HOLD]: { color: 'bg-gray-100 border-gray-300', label: 'Hold', icon: '⊡' },
-        [DKSAction.PRESS]: { color: 'bg-blue-100 border-blue-300 text-blue-700', label: 'Press', icon: '↓' },
-        [DKSAction.RELEASE]: { color: 'bg-green-100 border-green-300 text-green-700', label: 'Release', icon: '↑' },
-        [DKSAction.TAP]: { color: 'bg-purple-100 border-purple-300 text-purple-700', label: 'Tap', icon: '⚡' }
-    };
-
-    // Phase descriptions
+    // Phase descriptions with icons
     const phaseDescriptions = [
-        'Key pressed past actuation point',
-        'Key pressed past bottom-out point', 
-        'Key released past bottom-out point',
-        'Key released past actuation point'
+        { name: 'Key pressed past actuation point', icon: '↓' },
+        { name: 'Key pressed past bottom-out point', icon: '⬇' }, 
+        { name: 'Key released past bottom-out point', icon: '⬆' },
+        { name: 'Key released past actuation point', icon: '↑' }
     ];
 </script>
+
+<!-- DKS Slider Component -->
+{#snippet DKSSlider(bitmap, uiBitmap, bindingIndex)}
+    {@const intervals = getIntervals(bitmap)}
+    {@const uiIntervals = getIntervals(uiBitmap)}
+    
+    <div class="relative flex items-center" style="width: {SLIDER_WIDTH}px; height: {SLIDER_HEIGHT}px;">
+        <!-- Base nodes -->
+        {#each Array(4) as _, i}
+            <button
+                class="absolute inline-flex items-center justify-center rounded-full border-2 bg-white transition-all z-10 {intervals.some(([start, end]) => start <= i && i <= end) ? 'border-blue-500 bg-blue-50' : 'border-gray-300 hover:border-gray-400 hover:bg-gray-50'}"
+                style="width: {NODE_SIZE}px; height: {NODE_SIZE}px; top: {NODE_TOP}px; left: {nodeLeft(i)}px;"
+                on:click={() => handleNodeClick(bindingIndex, i)}
+                title="Click to toggle action at phase {i + 1}"
+            >
+                <svg class="w-4 h-4 {intervals.some(([start, end]) => start <= i && i <= end) ? 'text-blue-600' : 'text-gray-400'}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                </svg>
+            </button>
+        {/each}
+
+        <!-- Interval bars -->
+        {#each uiIntervals as interval}
+            {@const [start, end] = interval}
+            {#if start !== -1 && end > start}
+                <!-- Interval bar (clickable to delete) -->
+                <button
+                    class="absolute z-20 rounded-full bg-blue-500 hover:bg-blue-600 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300"
+                    style="width: {NODE_SIZE + intervalWidth(interval)}px; height: {NODE_SIZE}px; top: {NODE_TOP}px; left: {nodeLeft(start)}px;"
+                    on:click={() => deleteInterval(bindingIndex, start)}
+                    title="Click to delete interval"
+                >
+                    <span class="sr-only">Delete interval</span>
+                </button>
+
+                <!-- Grip handle for dragging -->
+                <div
+                    class="absolute z-30 flex items-center justify-center rounded-sm border bg-gray-600 cursor-ew-resize hover:bg-gray-700 transition-colors select-none"
+                    style="width: {GRIP_WIDTH}px; height: {GRIP_HEIGHT}px; top: {GRIP_TOP}px; left: {nodeLeft(start) + GRIP_OFFSET + intervalWidth(interval)}px;"
+                    on:mousedown={(e) => handleMouseDown(e, bindingIndex, start)}
+                    title="Drag to resize interval"
+                >
+                    <svg class="w-2.5 h-2.5 text-white pointer-events-none" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M6 10a2 2 0 11-4 0 2 2 0 014 0zM12 10a2 2 0 11-4 0 2 2 0 014 0zM16 12a2 2 0 100-4 2 2 0 000 4z" />
+                    </svg>
+                </div>
+            {:else if start === end}
+                <!-- TAP indicator (single point) -->
+                <div
+                    class="absolute z-20 rounded-full bg-purple-500"
+                    style="width: {NODE_SIZE}px; height: {NODE_SIZE}px; top: {NODE_TOP}px; left: {nodeLeft(start)}px;"
+                    title="TAP action at phase {start + 1}"
+                ></div>
+            {/if}
+        {/each}
+
+        <!-- Draggable areas for creating intervals -->
+        {#each Array(4) as _, i}
+            {#if !uiIntervals.some(([l, r]) => l < i && i < r)}
+                <div
+                    class="absolute z-40 cursor-pointer rounded-full"
+                    style="width: {NODE_SIZE}px; height: {NODE_SIZE}px; top: {NODE_TOP}px; left: {nodeLeft(i)}px;"
+                    on:mousedown={(e) => {
+                        const interval = intervals.find(([l]) => l === i);
+                        if (interval && interval[1] !== interval[0]) {
+                            handleMouseDown(e, bindingIndex, i);
+                        }
+                    }}
+                    title="Drag to create/modify interval"
+                >
+                    <span class="sr-only">Draggable area</span>
+                </div>
+            {/if}
+        {/each}
+    </div>
+{/snippet}
 
 <div class="h-full flex flex-col bg-gray-50">
     <!-- Header -->
@@ -251,22 +529,27 @@
                         <div class="bg-white rounded-lg border border-gray-200 p-6">
                             <h3 class="text-lg font-medium text-gray-900 mb-2">Configure DKS Bindings</h3>
                             <p class="text-sm text-gray-600 mb-4">
-                                Assign a keycode to each binding. Configure the actions for 4 parts of the keystroke.
+                                Assign a keycode to each binding. Click nodes to create intervals, drag grips to resize, click bars to delete.
                             </p>
                             
                             <!-- Phase Headers -->
                             <div class="flex items-center gap-4 mb-3">
                                 <div class="w-16 text-center text-sm font-semibold">Bindings</div>
-                                <div class="flex gap-6">
-                                    {#each phaseDescriptions as description, i}
-                                        <div class="w-8 h-4 flex items-center justify-center" title={description}>
-                                            <span class="text-xs font-medium">{i + 1}</span>
+                                <!-- Header with phase indicators -->
+                                <div class="relative h-4" style="width: {SLIDER_WIDTH}px;">
+                                    {#each phaseDescriptions as phase, i}
+                                        <div
+                                            class="absolute top-0 flex flex-col items-center gap-2"
+                                            style="width: 16px; left: {SLIDER_GAP * i + NODE_SIZE / 2 - 8}px;"
+                                            title={phase.name}
+                                        >
+                                            <span class="text-sm">{phase.icon}</span>
                                         </div>
                                     {/each}
                                 </div>
                             </div>
 
-                            <!-- Bindings List -->
+                            <!-- Bindings List with DKS Sliders -->
                             <div class="space-y-2">
                                 {#each selectedKeycodes as keycode, bindingIndex}
                                     <div class="flex items-center gap-4">
@@ -280,23 +563,8 @@
                                             </div>
                                         </button>
 
-                                        <!-- DKS Phases -->
-                                        <div class="flex gap-2">
-                                            {#each selectedBitmaps[bindingIndex] as action, phaseIndex}
-                                                <button
-                                                    class="w-8 h-8 rounded border text-xs font-medium transition-all {dksActionInfo[action].color}"
-                                                    on:click={() => {
-                                                        const nextAction = action === DKSAction.HOLD ? DKSAction.PRESS : 
-                                                                          action === DKSAction.PRESS ? DKSAction.RELEASE :
-                                                                          action === DKSAction.RELEASE ? DKSAction.TAP : DKSAction.HOLD;
-                                                        updateBitmap(bindingIndex, phaseIndex, nextAction);
-                                                    }}
-                                                    title={`Phase ${phaseIndex + 1}: ${dksActionInfo[action].label}`}
-                                                >
-                                                    {dksActionInfo[action].icon}
-                                                </button>
-                                            {/each}
-                                        </div>
+                                        <!-- DKS Slider -->
+                                        {@render DKSSlider(selectedBitmaps[bindingIndex], uiBitmaps[bindingIndex], bindingIndex)}
                                     </div>
                                 {/each}
                             </div>
