@@ -62,32 +62,30 @@
     }
 </script>
 
-<div class="p-4 h-full flex flex-col">
-    <div class="flex items-center justify-between -mt-4 mb-8">
+<div class="flex-1 w-full">
+    <div class="flex items-center justify-between mb-6">
         <div>
             <h2 class="text-3xl font-bold text-gray-900">Advanced Keys</h2>
             <p class="text-gray-600 mt-2">Configure advanced keyboard behaviors for enhanced productivity</p>
         </div>
     </div>
-
-    <div class="flex-1 max-w-7xl mx-auto w-full">
-        <div class="grid grid-cols-1 md:grid-cols-3 xl:grid-cols-4 gap-6">
-            {#each keyModes as mode}
-                <div class="group relative">
-                    <button
-                        class="w-full h-65 p-6 bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border-2 border-transparent hover:border-blue-200 text-left group-hover:scale-105"
-                        onclick={() => navigateToMode(mode.path)}
-                    >
-                        <!-- Mode Header -->
-                        <div class="flex items-start gap-4 mb-4">
-                            <div class="text-3xl">{mode.icon}</div>
-                            <div class="flex-1">
-                                <h3 class="text-xl font-bold text-gray-900 group-hover:text-blue-600 transition-colors">
-                                    {mode.name}
-                                </h3>
-                                <p class="text-sm text-gray-600 mt-1">{mode.description}</p>
-                            </div>
+    <div class="grid grid-cols-4 gap-6">
+        {#each keyModes as mode}
+            <div class="group relative w-full">
+                <button
+                    class="w-full h-full p-6 bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border-2 border-transparent hover:border-blue-200 text-left group-hover:scale-105 flex flex-col"
+                    onclick={() => navigateToMode(mode.path)}
+                >
+                    <!-- Mode Header -->
+                    <div class="flex items-center gap-4 mb-4">
+                        <div class="flex items-center justify-center w-10 h-10 text-3xl">{mode.icon}</div>
+                        <div class="flex-1">
+                            <h3 class="text-xl font-bold text-gray-900 group-hover:text-blue-600 transition-colors">
+                                {mode.name}
+                            </h3>
+                            <p class="text-sm text-gray-600 mt-1">{mode.description}</p>
                         </div>
+                    </div>
 
                         <!-- Features List -->
                         <div class="space-y-2 flex-1">
@@ -111,7 +109,7 @@
         </div>
 
         <!-- Getting Started Section -->
-        <div class="mt-12 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6">
+        <div class="mt-6 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6">
             <h3 class="text-lg font-semibold text-gray-900 mb-3">Getting Started</h3>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                 <div class="flex items-start gap-3">
@@ -146,4 +144,3 @@
             </p>
         </div>
     </div>
-</div>
