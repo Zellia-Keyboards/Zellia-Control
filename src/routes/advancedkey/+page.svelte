@@ -47,7 +47,7 @@
             name: 'Null Bind',
             description: 'Rapid trigger with SOCD cleaning',
             icon: '🎯',
-            path: '/advancedkey/routes/socd',
+            path: '/advancedkey/routes/nullbind',
             features: [
                 'Rapid trigger technology',
                 'SOCD (Simultaneous Opposing Cardinal Directions)',
@@ -70,8 +70,8 @@
         </div>
     </div>
 
-    <div class="flex-1 max-w-6xl mx-auto w-full">
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div class="flex-1 max-w-7xl mx-auto w-full">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {#each keyModes as mode}
                 <div class="group relative">
                     <button
