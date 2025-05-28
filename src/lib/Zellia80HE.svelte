@@ -1,4 +1,6 @@
 <script lang="ts">
+    import { darkMode } from '$lib/DarkModeStore.svelte';
+    
     const KEYBOARD_LAYOUT = [
         [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
         [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1],
@@ -30,7 +32,7 @@
     }
 </script>
 
-<div class="p-4 bg-white rounded-xl shadow-md inline-block">
+<div class="p-4 {$darkMode ? 'bg-black border border-white' : 'bg-white'} rounded-xl shadow-md inline-block">
     {#each KEYBOARD_LAYOUT as row, y}
         <div
             class="flex first:*:[&:nth-child(4n+2)]:ml-3.5 *:nth-15:ml-4 nth-[5]:*:nth-13:ml-18 nth-[6]:*:nth-8:ml-4 nth-[2]:mt-4"
@@ -39,12 +41,12 @@
                 {@const keyText = values.at(y)?.at(x)?.toString() ?? "null"}
                 {@const formatted = formatKeyText(keyText)}
                 <button
-                    class="h-14 bg-gray-400 border border-gray-300 rounded-lg flex flex-col items-center justify-center hover:bg-gray-300 hover:cursor-pointer gap-1"
+                    class="h-14 {$darkMode ? 'bg-gray-800 border-white hover:bg-gray-700' : 'bg-gray-400 border-gray-300 hover:bg-gray-300'} border rounded-lg flex flex-col items-center justify-center hover:cursor-pointer gap-1"
                     style:width="{width * 3.5}rem"
                     onclick={(_) => onClick(x, y, _)}
                 >
-                    <div class="key-bottom text-xs text-gray-800">{formatted.bottom}</div>
-                    <div class="key-top text-sm font-bold text-black">{formatted.top}</div>
+                    <div class="key-bottom text-xs {$darkMode ? 'text-gray-300' : 'text-gray-800'}">{formatted.bottom}</div>
+                    <div class="key-top text-sm font-bold {$darkMode ? 'text-white' : 'text-black'}">{formatted.top}</div>
                 </button>
             {/each}
         </div>
