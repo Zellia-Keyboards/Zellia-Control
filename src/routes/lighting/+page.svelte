@@ -1,5 +1,6 @@
 <script lang="ts">
     import { CurrentSelected, KeyboardDisplayValues } from "$lib/KeyboardState.svelte";
+    import { darkMode } from '$lib/DarkModeStore.svelte';
     
     let selectedEffect = $state('static');
     let brightness = $state(100); // Frontend display value (0-100)
@@ -99,16 +100,16 @@
 
 <div class="p-4 h-full flex flex-col">
     <div class="flex items-center justify-between -mt-4 mb-4">
-        <h2 class="text-2xl font-bold">Lighting</h2>
+        <h2 class="text-2xl font-bold {$darkMode ? 'text-white' : 'text-gray-900'}">Lighting</h2>
         <div class="flex gap-2">
             <button 
-                class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors"
+                class="{$darkMode ? 'bg-white hover:bg-gray-200 text-black' : 'bg-blue-600 hover:bg-blue-700 text-white'} px-4 py-2 rounded transition-colors"
                 on:click={applySettings}
             >
                 Apply Settings
             </button>
             <button 
-                class="bg-gray-200 text-gray-600 px-4 py-2 rounded hover:bg-gray-300 transition-colors"
+                class="{$darkMode ? 'bg-gray-800 hover:bg-gray-700 text-white border border-white' : 'bg-gray-200 hover:bg-gray-300 text-gray-600'} px-4 py-2 rounded transition-colors"
                 on:click={() => perKeyMode = !perKeyMode}
             >
                 {perKeyMode ? 'Exit Per-Key Mode' : 'Per-Key Mode'}
@@ -116,17 +117,17 @@
         </div>
     </div>
     
-    <div class="bg-white rounded-xl shadow p-6 flex flex-col lg:flex-row gap-6 flex-1">
+    <div class="{$darkMode ? 'bg-black border border-white' : 'bg-white'} rounded-xl shadow p-6 flex flex-col lg:flex-row gap-6 flex-1">
         <!-- Effects Panel -->
         <div class="flex-1 min-w-[300px]">
             <div class="grid grid-cols-2 gap-3 mb-6">
                 {#each effects as effect}
                     <button
-                        class="p-3 rounded-lg border-2 text-left transition-all duration-200 {selectedEffect === effect.id ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300'}"
+                        class="p-3 rounded-lg border-2 text-left transition-all duration-200 {selectedEffect === effect.id ? ($darkMode ? 'border-white bg-gray-800' : 'border-blue-500 bg-blue-50') : ($darkMode ? 'border-gray-600 hover:border-gray-400' : 'border-gray-200 hover:border-gray-300')}"
                         on:click={() => selectedEffect = effect.id}
                     >
-                        <div class="font-medium">{effect.name}</div>
-                        <div class="text-sm text-gray-600">{effect.description}</div>
+                        <div class="font-medium {$darkMode ? 'text-white' : 'text-gray-900'}">{effect.name}</div>
+                        <div class="text-sm {$darkMode ? 'text-gray-300' : 'text-gray-600'}">{effect.description}</div>
                     </button>
                 {/each}
             </div>
@@ -135,23 +136,23 @@
             <div class="space-y-4">
                 <!-- Brightness -->
                 <div>
-                    <div class="flex justify-between text-sm text-gray-600 mb-2">
+                    <div class="flex justify-between text-sm {$darkMode ? 'text-gray-300' : 'text-gray-600'} mb-2">
                         <span>Brightness</span>
-                        <span>{brightness}% <span class="text-xs text-gray-400"></span>
+                        <span>{brightness}% <span class="text-xs {$darkMode ? 'text-gray-400' : 'text-gray-400'}"></span>
                     </div>
                     <input 
                         type="range" 
                         min="0" 
                         max="100" 
                         bind:value={brightness}
-                        class="w-full h-2 rounded-full bg-gray-300 appearance-none slider-thumb"
+                        class="w-full h-2 rounded-full {$darkMode ? 'bg-gray-700' : 'bg-gray-300'} appearance-none slider-thumb"
                     />
                 </div>
                 
                 <!-- Speed (for animated effects) -->
                 {#if ['breathing', 'wave', 'rainbow', 'spectrum'].includes(selectedEffect)}
                     <div>
-                        <div class="flex justify-between text-sm text-gray-600 mb-2">
+                        <div class="flex justify-between text-sm {$darkMode ? 'text-gray-300' : 'text-gray-600'} mb-2">
                             <span>Speed</span>
                             <span>{speed}%</span>
                         </div>
@@ -160,7 +161,7 @@
                             min="1" 
                             max="100" 
                             bind:value={speed}
-                            class="w-full h-2 rounded-full bg-gray-300 appearance-none slider-thumb"
+                            class="w-full h-2 rounded-full {$darkMode ? 'bg-gray-700' : 'bg-gray-300'} appearance-none slider-thumb"
                         />
                     </div>
                 {/if}
@@ -168,10 +169,10 @@
                 <!-- Direction (for directional effects) -->
                 {#if ['wave', 'gradient', 'spectrum'].includes(selectedEffect)}
                     <div>
-                        <label class="block text-sm text-gray-600 mb-2">Direction</label>
+                        <label class="block text-sm {$darkMode ? 'text-gray-300' : 'text-gray-600'} mb-2">Direction</label>
                         <select 
                             bind:value={direction}
-                            class="w-full p-2 border border-gray-300 rounded-lg"
+                            class="w-full p-2 border {$darkMode ? 'border-white bg-black text-white' : 'border-gray-300 bg-white text-gray-900'} rounded-lg"
                         >
                             {#each directions as dir}
                                 <option value={dir.id}>{dir.name}</option>
@@ -183,32 +184,31 @@
         </div>
         
         <!-- Divider -->
-        <div class="hidden lg:block w-px bg-gray-200"></div>
+        <div class="hidden lg:block w-px {$darkMode ? 'bg-white' : 'bg-gray-200'}"></div>
         
         <!-- Color Controls Panel -->
         <div class="flex-1 min-w-[300px]">
-            <h3 class="text-lg font-medium mb-4">Color Settings</h3>
-            
-            {#if perKeyMode}
+            <h3 class="text-lg font-medium mb-4 {$darkMode ? 'text-white' : 'text-gray-900'}">Color Settings</h3>
+              {#if perKeyMode}
                 <!-- Per-Key Color Mode -->
                 <div class="space-y-4">
-                    <div class="p-3 bg-blue-50 rounded-lg border border-blue-200">
-                        <div class="font-medium text-blue-800">Per-Key Mode Active</div>
-                        <div class="text-sm text-blue-600">Click keys on the keyboard to select them</div>
+                    <div class="p-3 {$darkMode ? 'bg-gray-800 border-white' : 'bg-blue-50 border-blue-200'} rounded-lg border">
+                        <div class="font-medium {$darkMode ? 'text-white' : 'text-blue-800'}">Per-Key Mode Active</div>
+                        <div class="text-sm {$darkMode ? 'text-gray-300' : 'text-blue-600'}">Click keys on the keyboard to select them</div>
                     </div>
                     
                     <div>
-                        <label class="block text-sm text-gray-600 mb-2">Key Color</label>
+                        <label class="block text-sm {$darkMode ? 'text-gray-300' : 'text-gray-600'} mb-2">Key Color</label>
                         <div class="flex gap-2">
                             <input 
                                 type="color" 
                                 bind:value={keyColor}
-                                class="w-12 h-10 rounded border border-gray-300"
+                                class="w-12 h-10 rounded border {$darkMode ? 'border-white' : 'border-gray-300'}"
                             />
                             <input 
                                 type="text" 
                                 bind:value={keyColor}
-                                class="flex-1 p-2 border border-gray-300 rounded-lg font-mono"
+                                class="flex-1 p-2 border {$darkMode ? 'border-white bg-black text-white' : 'border-gray-300 bg-white text-gray-900'} rounded-lg font-mono"
                                 placeholder="#ffffff"
                             />
                         </div>
@@ -216,14 +216,14 @@
                     
                     <div class="flex gap-2">
                         <button 
-                            class="flex-1 bg-green-600 text-white px-3 py-2 rounded hover:bg-green-700 transition-colors"
+                            class="flex-1 {$darkMode ? 'bg-white hover:bg-gray-200 text-black' : 'bg-green-600 hover:bg-green-700 text-white'} px-3 py-2 rounded transition-colors"
                             on:click={toggleKeySelection}
                             disabled={!$CurrentSelected}
                         >
                             {$CurrentSelected && selectedKeys.has(`${$CurrentSelected[0]},${$CurrentSelected[1]}`) ? 'Deselect Key' : 'Select Key'}
                         </button>
                         <button 
-                            class="bg-gray-600 text-white px-3 py-2 rounded hover:bg-gray-700 transition-colors"
+                            class="{$darkMode ? 'bg-gray-800 hover:bg-gray-700 text-white border border-white' : 'bg-gray-600 hover:bg-gray-700 text-white'} px-3 py-2 rounded transition-colors"
                             on:click={clearKeySelection}
                         >
                             Clear ({selectedKeys.size})
@@ -231,7 +231,7 @@
                     </div>
                     
                     <button 
-                        class="w-full bg-blue-600 text-white px-3 py-2 rounded hover:bg-blue-700 transition-colors"
+                        class="w-full {$darkMode ? 'bg-white hover:bg-gray-200 text-black' : 'bg-blue-600 hover:bg-blue-700 text-white'} px-3 py-2 rounded transition-colors"
                         on:click={applyToSelectedKeys}
                         disabled={selectedKeys.size === 0}
                     >
@@ -242,24 +242,24 @@
                 <!-- Effect-based Color Controls -->
                 {#if selectedEffect === 'static' || selectedEffect === 'breathing' || selectedEffect === 'reactive'}
                     <div>
-                        <label class="block text-sm text-gray-600 mb-2">Color</label>
+                        <label class="block text-sm {$darkMode ? 'text-gray-300' : 'text-gray-600'} mb-2">Color</label>
                         <div class="flex gap-2">
                             <input 
                                 type="color" 
                                 bind:value={staticColor}
-                                class="w-12 h-10 rounded border border-gray-300"
+                                class="w-12 h-10 rounded border {$darkMode ? 'border-white' : 'border-gray-300'}"
                             />
                             <input 
                                 type="text" 
                                 bind:value={staticColor}
-                                class="flex-1 p-2 border border-gray-300 rounded-lg font-mono"
+                                class="flex-1 p-2 border {$darkMode ? 'border-white bg-black text-white' : 'border-gray-300 bg-white text-gray-900'} rounded-lg font-mono"
                                 placeholder="#ff0000"
                             />
                         </div>
                         {#if hexToRgb(staticColor)}
                             {@const rgb = hexToRgb(staticColor)}
                             {#if rgb}
-                                <div class="text-xs text-gray-600">
+                                <div class="text-xs {$darkMode ? 'text-gray-400' : 'text-gray-600'}">
                                     RGB: {rgb.r}, {rgb.g}, {rgb.b}
                                 </div>
                             {/if}
@@ -267,19 +267,19 @@
                     </div>
                 {:else if selectedEffect === 'gradient'}
                     <div>
-                        <label class="block text-sm text-gray-600 mb-2">Gradient Colors</label>
+                        <label class="block text-sm {$darkMode ? 'text-gray-300' : 'text-gray-600'} mb-2">Gradient Colors</label>
                         <div class="space-y-2">
                             {#each gradientColors as color, index}
                                 <div class="flex gap-2 items-center">
                                     <input 
                                         type="color" 
                                         bind:value={gradientColors[index]}
-                                        class="w-10 h-8 rounded border border-gray-300"
+                                        class="w-10 h-8 rounded border {$darkMode ? 'border-white' : 'border-gray-300'}"
                                     />
                                     <input 
                                         type="text" 
                                         bind:value={gradientColors[index]}
-                                        class="flex-1 p-1 border border-gray-300 rounded text-sm font-mono"
+                                        class="flex-1 p-1 border {$darkMode ? 'border-white bg-black text-white' : 'border-gray-300 bg-white text-gray-900'} rounded text-sm font-mono"
                                     />
                                     {#if gradientColors.length > 2}
                                         <button 
@@ -291,15 +291,15 @@
                             {/each}
                         </div>
                         <button 
-                            class="mt-2 w-full bg-gray-200 text-gray-700 px-3 py-2 rounded hover:bg-gray-300 transition-colors"
+                            class="mt-2 w-full {$darkMode ? 'bg-gray-800 hover:bg-gray-700 text-white border border-white' : 'bg-gray-200 hover:bg-gray-300 text-gray-700'} px-3 py-2 rounded transition-colors"
                             on:click={addGradientColor}
                         >
                             Add Color
                         </button>
                     </div>
                 {:else}
-                    <div class="p-4 bg-gray-50 rounded-lg text-center">
-                        <div class="text-gray-600">
+                    <div class="p-4 {$darkMode ? 'bg-gray-800' : 'bg-gray-50'} rounded-lg text-center">
+                        <div class="{$darkMode ? 'text-gray-300' : 'text-gray-600'}">
                             {selectedEffect === 'rainbow' || selectedEffect === 'spectrum' ? 'This effect uses automatic colors' : 'No color settings needed for this effect'}
                         </div>
                     </div>
@@ -308,13 +308,13 @@
             
             <!-- Preview -->
             <div class="mt-6">
-                <label class="block text-sm text-gray-600 mb-2">Preview</label>
-                <div class="h-16 rounded-lg border border-gray-300 flex items-center justify-center" 
-                     style:background={selectedEffect === 'static' ? staticColor : selectedEffect === 'gradient' ? `linear-gradient(90deg, ${gradientColors.join(', ')})` : '#f3f4f6'}>
+                <label class="block text-sm {$darkMode ? 'text-gray-300' : 'text-gray-600'} mb-2">Preview</label>
+                <div class="h-16 rounded-lg border {$darkMode ? 'border-white' : 'border-gray-300'} flex items-center justify-center" 
+                     style:background={selectedEffect === 'static' ? staticColor : selectedEffect === 'gradient' ? `linear-gradient(90deg, ${gradientColors.join(', ')})` : $darkMode ? '#374151' : '#f3f4f6'}>
                     {#if selectedEffect === 'rainbow' || selectedEffect === 'spectrum'}
-                        <div class="text-sm text-gray-600">Animated Effect</div>
+                        <div class="text-sm {$darkMode ? 'text-gray-300' : 'text-gray-600'}">Animated Effect</div>
                     {:else if selectedEffect === 'reactive' || selectedEffect === 'ripple'}
-                        <div class="text-sm text-gray-600">Reactive Effect</div>
+                        <div class="text-sm {$darkMode ? 'text-gray-300' : 'text-gray-600'}">Reactive Effect</div>
                     {/if}
                 </div>
             </div>
