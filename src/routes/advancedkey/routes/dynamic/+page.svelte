@@ -1,6 +1,7 @@
 <script lang="ts">
     import { goto } from '$app/navigation';
     import { CurrentSelected, KeyboardDisplayValues } from "$lib/KeyboardState.svelte";
+    import { darkMode } from '$lib/DarkModeStore.svelte';
     import { 
         globalConfigurations,
         updateGlobalConfiguration, 
@@ -385,16 +386,21 @@
     {@const intervals = getIntervals(bitmap)}
     {@const uiIntervals = getIntervals(uiBitmap)}
     
-    <div class="relative flex items-center" style="width: {SLIDER_WIDTH}px; height: {SLIDER_HEIGHT}px;">
-        <!-- Base nodes -->
+    <div class="relative flex items-center" style="width: {SLIDER_WIDTH}px; height: {SLIDER_HEIGHT}px;">        <!-- Base nodes -->
         {#each Array(4) as _, i}
             <button
-                class="absolute inline-flex items-center justify-center rounded-full border-2 bg-white transition-all z-10 {intervals.some(([start, end]) => start <= i && i <= end) ? 'border-blue-500 bg-blue-50' : 'border-gray-300 hover:border-gray-400 hover:bg-gray-50'}"
+                class="absolute inline-flex items-center justify-center rounded-full border-2 {$darkMode ? 'bg-black' : 'bg-white'} transition-all z-10 {intervals.some(([start, end]) => start <= i && i <= end) ? 
+                    ($darkMode ? 'border-white bg-gray-800' : 'border-blue-500 bg-blue-50') : 
+                    ($darkMode ? 'border-gray-600 hover:border-gray-400 hover:bg-gray-800' : 'border-gray-300 hover:border-gray-400 hover:bg-gray-50')
+                }"
                 style="width: {NODE_SIZE}px; height: {NODE_SIZE}px; top: {NODE_TOP}px; left: {nodeLeft(i)}px;"
                 on:click={() => handleNodeClick(bindingIndex, i)}
                 title="Click to toggle action at phase {i + 1}"
             >
-                <svg class="w-4 h-4 {intervals.some(([start, end]) => start <= i && i <= end) ? 'text-blue-600' : 'text-gray-400'}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="w-4 h-4 {intervals.some(([start, end]) => start <= i && i <= end) ? 
+                    ($darkMode ? 'text-white' : 'text-blue-600') : 
+                    ($darkMode ? 'text-gray-400' : 'text-gray-400')
+                }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                 </svg>
             </button>
@@ -403,10 +409,9 @@
         <!-- Interval bars -->
         {#each uiIntervals as interval}
             {@const [start, end] = interval}
-            {#if start !== -1 && end > start}
-                <!-- Interval bar (clickable to delete) -->
+            {#if start !== -1 && end > start}                <!-- Interval bar (clickable to delete) -->
                 <button
-                    class="absolute z-20 rounded-full bg-blue-500 hover:bg-blue-600 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300"
+                    class="absolute z-20 rounded-full {$darkMode ? 'bg-gray-600 hover:bg-gray-500' : 'bg-blue-500 hover:bg-blue-600'} transition-colors focus-visible:outline-none focus-visible:ring-2 {$darkMode ? 'focus-visible:ring-gray-400' : 'focus-visible:ring-blue-300'}"
                     style="width: {NODE_SIZE + intervalWidth(interval)}px; height: {NODE_SIZE}px; top: {NODE_TOP}px; left: {nodeLeft(start)}px;"
                     on:click={() => deleteInterval(bindingIndex, start)}
                     title="Click to delete interval"
@@ -416,7 +421,7 @@
 
                 <!-- Grip handle for dragging -->
                 <div
-                    class="absolute z-30 flex items-center justify-center rounded-sm border bg-gray-600 cursor-ew-resize hover:bg-gray-700 transition-colors select-none"
+                    class="absolute z-30 flex items-center justify-center rounded-sm border {$darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-600 hover:bg-gray-700'} cursor-ew-resize transition-colors select-none"
                     style="width: {GRIP_WIDTH}px; height: {GRIP_HEIGHT}px; top: {GRIP_TOP}px; left: {nodeLeft(start) + GRIP_OFFSET + intervalWidth(interval)}px;"
                     on:mousedown={(e) => handleMouseDown(e, bindingIndex, start)}
                     title="Drag to resize interval"
@@ -428,7 +433,7 @@
             {:else if start === end}
                 <!-- TAP indicator (single point) -->
                 <div
-                    class="absolute z-20 rounded-full bg-purple-500"
+                    class="absolute z-20 rounded-full {$darkMode ? 'bg-gray-500' : 'bg-purple-500'}"
                     style="width: {NODE_SIZE}px; height: {NODE_SIZE}px; top: {NODE_TOP}px; left: {nodeLeft(start)}px;"
                     title="TAP action at phase {start + 1}"
                 ></div>
@@ -456,13 +461,13 @@
     </div>
 {/snippet}
 
-<div class="h-full flex flex-col bg-gray-50">
+<div class="h-full flex flex-col {$darkMode ? 'bg-black' : 'bg-gray-50'}">
     <!-- Header -->
-    <div class="bg-white border-b border-gray-200 px-6 py-4">
+    <div class="{$darkMode ? 'bg-black border-white' : 'bg-white border-gray-200'} border-b px-6 py-4">
         <div class="flex items-center justify-between">
             <div class="flex items-center gap-4">
                 <button 
-                    class="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
+                    class="flex items-center gap-2 {$darkMode ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900'} transition-colors"
                     on:click={goBack}
                 >
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -471,20 +476,20 @@
                     Back
                 </button>
                 <div>
-                    <h1 class="text-xl font-semibold text-gray-900">Dynamic Keystroke Configuration</h1>
-                    <p class="text-sm text-gray-500">Configure 4-phase keystroke control with analog input response</p>
+                    <h1 class="text-xl font-semibold {$darkMode ? 'text-white' : 'text-gray-900'}">Dynamic Keystroke Configuration</h1>
+                    <p class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-500'}">Configure 4-phase keystroke control with analog input response</p>
                 </div>
             </div>
             <div class="flex gap-3">
                 <button 
-                    class="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors text-sm font-medium"
+                    class="px-4 py-2 {$darkMode ? 'text-white bg-gray-800 hover:bg-gray-700 border border-white' : 'text-gray-700 bg-gray-100 hover:bg-gray-200'} rounded-md transition-colors text-sm font-medium"
                     on:click={resetConfiguration}
                     disabled={!$CurrentSelected}
                 >
                     Reset
                 </button>
                 <button 
-                    class="px-4 py-2 bg-blue-600 text-white hover:bg-blue-700 rounded-md transition-colors text-sm font-medium"
+                    class="px-4 py-2 {$darkMode ? 'bg-white text-black hover:bg-gray-200' : 'bg-blue-600 text-white hover:bg-blue-700'} rounded-md transition-colors text-sm font-medium"
                     on:click={applyConfiguration}
                     disabled={!$CurrentSelected}
                 >
@@ -497,24 +502,23 @@
     <!-- Main Content -->
     <div class="flex-1 p-6">
         {#if $CurrentSelected}
-            <div class="max-w-7xl mx-auto">
-                <!-- Selected Key Info -->
-                <div class="bg-white rounded-lg border border-gray-200 p-6 mb-6">
+            <div class="max-w-7xl mx-auto">                <!-- Selected Key Info -->
+                <div class="{$darkMode ? 'bg-black border-white' : 'bg-white border-gray-200'} rounded-lg border p-6 mb-6">
                     <div class="flex items-center justify-between">
                         <div class="flex items-center gap-4">
                             <div class="flex items-center gap-3">
-                                <div class="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center border-2 border-blue-300">
-                                    <span class="font-mono font-bold text-gray-900">{currentKeyName}</span>
+                                <div class="w-12 h-12 {$darkMode ? 'bg-gray-800 border-white' : 'bg-gray-100 border-blue-300'} rounded-lg flex items-center justify-center border-2">
+                                    <span class="font-mono font-bold {$darkMode ? 'text-white' : 'text-gray-900'}">{currentKeyName}</span>
                                 </div>
                                 <div>
-                                    <h3 class="font-medium text-gray-900">Selected Key</h3>
-                                    <p class="text-sm text-gray-500">Position: {$CurrentSelected[0]}, {$CurrentSelected[1]}</p>
+                                    <h3 class="font-medium {$darkMode ? 'text-white' : 'text-gray-900'}">Selected Key</h3>
+                                    <p class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-500'}">Position: {$CurrentSelected[0]}, {$CurrentSelected[1]}</p>
                                 </div>
                             </div>
                         </div>
                         <div class="flex items-center gap-3">
-                            <span class="text-sm text-gray-600">Mode:</span>
-                            <span class="px-3 py-1 bg-indigo-100 text-indigo-700 rounded-full text-sm font-medium">
+                            <span class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'}">Mode:</span>
+                            <span class="px-3 py-1 {$darkMode ? 'bg-gray-800 text-white border border-white' : 'bg-indigo-100 text-indigo-700'} rounded-full text-sm font-medium">
                                 Dynamic Keystroke
                             </span>
                         </div>
@@ -524,17 +528,16 @@
                 <!-- Main Layout -->
                 <div class="flex gap-8">
                     <!-- Left Panel: Configuration -->
-                    <div class="w-96 flex flex-col gap-4">
-                        <!-- DKS Bindings Configuration -->
-                        <div class="bg-white rounded-lg border border-gray-200 p-6">
-                            <h3 class="text-lg font-medium text-gray-900 mb-2">Configure DKS Bindings</h3>
-                            <p class="text-sm text-gray-600 mb-4">
+                    <div class="w-96 flex flex-col gap-4">                        <!-- DKS Bindings Configuration -->
+                        <div class="{$darkMode ? 'bg-black border-white' : 'bg-white border-gray-200'} rounded-lg border p-6">
+                            <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'} mb-2">Configure DKS Bindings</h3>
+                            <p class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'} mb-4">
                                 Assign a keycode to each binding. Click nodes to create intervals, drag grips to resize, click bars to delete.
                             </p>
                             
                             <!-- Phase Headers -->
                             <div class="flex items-center gap-4 mb-3">
-                                <div class="w-16 text-center text-sm font-semibold">Bindings</div>
+                                <div class="w-16 text-center text-sm font-semibold {$darkMode ? 'text-white' : 'text-gray-900'}">Bindings</div>
                                 <!-- Header with phase indicators -->
                                 <div class="relative h-4" style="width: {SLIDER_WIDTH}px;">
                                     {#each phaseDescriptions as phase, i}
@@ -543,7 +546,7 @@
                                             style="width: 16px; left: {SLIDER_GAP * i + NODE_SIZE / 2 - 8}px;"
                                             title={phase.name}
                                         >
-                                            <span class="text-sm">{phase.icon}</span>
+                                            <span class="text-sm {$darkMode ? 'text-gray-300' : 'text-gray-700'}">{phase.icon}</span>
                                         </div>
                                     {/each}
                                 </div>
@@ -555,10 +558,13 @@
                                     <div class="flex items-center gap-4">
                                         <!-- Keycode Button -->
                                         <button
-                                            class="w-16 h-16 p-0.5 rounded-lg border-2 text-xs transition-all {selectedBindingIndex === bindingIndex ? 'border-blue-300 bg-blue-50' : 'border-gray-200 bg-white hover:bg-gray-50'}"
+                                            class="w-16 h-16 p-0.5 rounded-lg border-2 text-xs transition-all {selectedBindingIndex === bindingIndex ? 
+                                                ($darkMode ? 'border-white bg-gray-800' : 'border-blue-300 bg-blue-50') : 
+                                                ($darkMode ? 'border-gray-600 bg-black hover:bg-gray-800' : 'border-gray-200 bg-white hover:bg-gray-50')
+                                            }"
                                             on:click={() => selectedBindingIndex = selectedBindingIndex === bindingIndex ? null : bindingIndex}
                                         >
-                                            <div class="w-full h-full rounded flex items-center justify-center font-medium">
+                                            <div class="w-full h-full rounded flex items-center justify-center font-medium {$darkMode ? 'text-white' : 'text-gray-900'}">
                                                 {keyActions.find(k => k.id === keycode)?.name || keycode}
                                             </div>
                                         </button>
@@ -568,17 +574,15 @@
                                     </div>
                                 {/each}
                             </div>
-                        </div>
-
-                        <!-- Bottom Out Point -->
-                        <div class="bg-white rounded-lg border border-gray-200 p-6">
-                            <h3 class="text-lg font-medium text-gray-900 mb-4">Bottom Out Point</h3>
-                            <p class="text-sm text-gray-600 mb-4">Set the distance at which the key is bottomed out.</p>
+                        </div>                        <!-- Bottom Out Point -->
+                        <div class="{$darkMode ? 'bg-black border-white' : 'bg-white border-gray-200'} rounded-lg border p-6">
+                            <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'} mb-4">Bottom Out Point</h3>
+                            <p class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'} mb-4">Set the distance at which the key is bottomed out.</p>
                             
                             <div>
                                 <div class="flex justify-between items-center mb-2">
-                                    <label class="text-sm font-medium text-gray-700">Distance</label>
-                                    <span class="text-sm text-gray-500">{bottomOutPoint.toFixed(1)}mm</span>
+                                    <label class="text-sm font-medium {$darkMode ? 'text-gray-300' : 'text-gray-700'}">Distance</label>
+                                    <span class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-500'}">{bottomOutPoint.toFixed(1)}mm</span>
                                 </div>
                                 <input 
                                     type="range" 
@@ -586,9 +590,10 @@
                                     max="4.0" 
                                     step="0.1" 
                                     bind:value={bottomOutPoint}
-                                    class="w-full h-2 rounded-full bg-gray-300 appearance-none slider-thumb"
+                                    class="w-full h-2 rounded-full {$darkMode ? 'bg-gray-700' : 'bg-gray-300'} appearance-none slider-thumb"
+                                    style="--thumb-color: {$darkMode ? '#ffffff' : '#2563eb'}"
                                 />
-                                <div class="flex justify-between text-xs text-gray-500 mt-1">
+                                <div class="flex justify-between text-xs {$darkMode ? 'text-gray-400' : 'text-gray-500'} mt-1">
                                     <span>2.0mm</span>
                                     <span>4.0mm</span>
                                 </div>
@@ -597,12 +602,14 @@
                     </div>
 
                     <!-- Right Panel: Tabs -->
-                    <div class="flex-1 flex flex-col">
-                        <!-- Tab Navigation -->
-                        <div class="flex border-b border-gray-200 mb-6">
+                    <div class="flex-1 flex flex-col">                        <!-- Tab Navigation -->
+                        <div class="flex {$darkMode ? 'border-gray-600' : 'border-gray-200'} border-b mb-6">
                             {#each [['bindings', 'Bindings'], ['performance', 'Performance'], ['key-tester', 'Key Tester']] as [value, label]}
                                 <button
-                                    class="px-4 py-2 text-sm font-medium border-b-2 transition-colors {activeTab === value ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}"
+                                    class="px-4 py-2 text-sm font-medium border-b-2 transition-colors {activeTab === value ? 
+                                        ($darkMode ? 'border-white text-white' : 'border-blue-500 text-blue-600') : 
+                                        ($darkMode ? 'border-transparent text-gray-400 hover:text-gray-200' : 'border-transparent text-gray-500 hover:text-gray-700')
+                                    }"
                                     on:click={() => activeTab = value}
                                 >
                                     {label}
@@ -610,16 +617,15 @@
                             {/each}
                         </div>
 
-                        <!-- Tab Content -->
-                        {#if activeTab === 'bindings'}
-                            <div class="bg-white rounded-lg border border-gray-200 p-6">
-                                <h3 class="text-lg font-medium text-gray-900 mb-4">Keycode Selection</h3>
+                        <!-- Tab Content -->                        {#if activeTab === 'bindings'}
+                            <div class="{$darkMode ? 'bg-black border-white' : 'bg-white border-gray-200'} rounded-lg border p-6">
+                                <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'} mb-4">Keycode Selection</h3>
                                 {#if selectedBindingIndex !== null}
-                                    <p class="text-sm text-gray-600 mb-4">
+                                    <p class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'} mb-4">
                                         Select a keycode for binding {selectedBindingIndex + 1}
                                     </p>
                                 {:else}
-                                    <p class="text-sm text-gray-600 mb-4">
+                                    <p class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'} mb-4">
                                         Click on a binding button to select a keycode
                                     </p>
                                 {/if}
@@ -627,11 +633,14 @@
                                 <div class="space-y-4">
                                     {#each actionCategories as category}
                                         <div>
-                                            <h4 class="text-sm font-medium text-gray-700 mb-2">{category.name}</h4>
+                                            <h4 class="text-sm font-medium {$darkMode ? 'text-gray-300' : 'text-gray-700'} mb-2">{category.name}</h4>
                                             <div class="grid grid-cols-10 gap-2">
                                                 {#each category.actions as action}
                                                     <button
-                                                        class="aspect-square w-15 h-15 text-xs rounded-md border transition-all {selectedBindingIndex !== null ? 'bg-white border-gray-200 hover:bg-blue-50 hover:border-blue-300 text-gray-700' : 'bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed'}"
+                                                        class="aspect-square w-15 h-15 text-xs rounded-md border transition-all {selectedBindingIndex !== null ? 
+                                                            ($darkMode ? 'bg-gray-900 border-gray-600 hover:bg-gray-800 hover:border-white text-gray-300' : 'bg-white border-gray-200 hover:bg-blue-50 hover:border-blue-300 text-gray-700') : 
+                                                            ($darkMode ? 'bg-gray-800 border-gray-700 text-gray-500 cursor-not-allowed' : 'bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed')
+                                                        }"
                                                         on:click={() => selectKeycode(action.id)}
                                                         disabled={selectedBindingIndex === null}
                                                         title={action.name}
@@ -643,16 +652,15 @@
                                         </div>
                                     {/each}
                                 </div>
-                            </div>
-                        {:else if activeTab === 'performance'}
-                            <div class="bg-white rounded-lg border border-gray-200 p-6">
-                                <h3 class="text-lg font-medium text-gray-900 mb-4">Performance Settings</h3>
+                            </div>                        {:else if activeTab === 'performance'}
+                            <div class="{$darkMode ? 'bg-black border-white' : 'bg-white border-gray-200'} rounded-lg border p-6">
+                                <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'} mb-4">Performance Settings</h3>
                                 
                                 <!-- Actuation Point Slider -->
                                 <div class="mb-6">
                                     <div class="flex justify-between items-center mb-2">
-                                        <label class="text-sm font-medium text-gray-700">Actuation Point</label>
-                                        <span class="text-sm text-gray-500">2.0mm</span>
+                                        <label class="text-sm font-medium {$darkMode ? 'text-gray-300' : 'text-gray-700'}">Actuation Point</label>
+                                        <span class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-500'}">2.0mm</span>
                                     </div>
                                     <input 
                                         type="range" 
@@ -661,51 +669,49 @@
                                         step="0.1" 
                                         value="2.0"
                                         disabled
-                                        class="w-full h-2 rounded-full bg-gray-300 appearance-none slider-thumb opacity-50"
+                                        class="w-full h-2 rounded-full {$darkMode ? 'bg-gray-700' : 'bg-gray-300'} appearance-none slider-thumb opacity-50"
                                     />
-                                    <p class="text-xs text-gray-500 mt-1">Set the distance at which the key press is registered</p>
+                                    <p class="text-xs {$darkMode ? 'text-gray-400' : 'text-gray-500'} mt-1">Set the distance at which the key press is registered</p>
                                 </div>
 
                                 <!-- Info -->
-                                <div class="flex items-start gap-3 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                                    <svg class="w-5 h-5 text-blue-500 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <div class="flex items-start gap-3 p-4 {$darkMode ? 'bg-gray-900 border-gray-600' : 'bg-blue-50 border-blue-200'} border rounded-lg">
+                                    <svg class="w-5 h-5 {$darkMode ? 'text-gray-400' : 'text-blue-500'} mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                     </svg>
                                     <div>
-                                        <p class="text-sm font-medium text-blue-900">Rapid Trigger Disabled</p>
-                                        <p class="text-sm text-blue-700">Rapid Trigger is automatically disabled when the key is bound to a DKS.</p>
+                                        <p class="text-sm font-medium {$darkMode ? 'text-white' : 'text-blue-900'}">Rapid Trigger Disabled</p>
+                                        <p class="text-sm {$darkMode ? 'text-gray-300' : 'text-blue-700'}">Rapid Trigger is automatically disabled when the key is bound to a DKS.</p>
                                     </div>
                                 </div>
-                            </div>
-                        {:else if activeTab === 'key-tester'}
-                            <div class="bg-white rounded-lg border border-gray-200 p-6">
-                                <h3 class="text-lg font-medium text-gray-900 mb-4">Key Tester</h3>
-                                <p class="text-sm text-gray-600 mb-6">Test your dynamic keystroke configuration</p>
+                            </div>                        {:else if activeTab === 'key-tester'}
+                            <div class="{$darkMode ? 'bg-black border-white' : 'bg-white border-gray-200'} rounded-lg border p-6">
+                                <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'} mb-4">Key Tester</h3>
+                                <p class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'} mb-6">Test your dynamic keystroke configuration</p>
                                 
                                 <!-- Key Visualization -->
-                                <div class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
-                                    <div class="w-20 h-20 bg-gray-100 rounded-lg flex items-center justify-center mx-auto mb-4">
-                                        <span class="font-mono font-bold text-gray-900">{currentKeyName}</span>
+                                <div class="border-2 {$darkMode ? 'border-gray-600' : 'border-gray-300'} border-dashed rounded-lg p-8 text-center">
+                                    <div class="w-20 h-20 {$darkMode ? 'bg-gray-800' : 'bg-gray-100'} rounded-lg flex items-center justify-center mx-auto mb-4">
+                                        <span class="font-mono font-bold {$darkMode ? 'text-white' : 'text-gray-900'}">{currentKeyName}</span>
                                     </div>
-                                    <p class="text-sm text-gray-500">Press the key to test dynamic keystroke behavior</p>
+                                    <p class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-500'}">Press the key to test dynamic keystroke behavior</p>
                                 </div>
                             </div>
                         {/if}
                     </div>
                 </div>
             </div>
-        {:else}
-            <!-- No Key Selected State -->
+        {:else}            <!-- No Key Selected State -->
             <div class="flex-1 flex items-center justify-center">
                 <div class="text-center max-w-md mx-auto">
-                    <div class="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div class="w-24 h-24 {$darkMode ? 'bg-gray-800' : 'bg-gray-100'} rounded-full flex items-center justify-center mx-auto mb-4">
+                        <svg class="w-12 h-12 {$darkMode ? 'text-gray-400' : 'text-gray-400'}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l4-4 4 4m0 6l-4 4-4-4" />
                         </svg>
                     </div>
-                    <h3 class="text-lg font-medium text-gray-900 mb-2">No Key Selected</h3>
-                    <p class="text-gray-600 mb-4">Select a key from the keyboard layout to configure its dynamic keystroke behavior</p>
-                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 text-sm text-blue-700">
+                    <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'} mb-2">No Key Selected</h3>
+                    <p class="{$darkMode ? 'text-gray-400' : 'text-gray-600'} mb-4">Select a key from the keyboard layout to configure its dynamic keystroke behavior</p>
+                    <div class="{$darkMode ? 'bg-gray-900 border-gray-600 text-gray-300' : 'bg-blue-50 border-blue-200 text-blue-700'} border rounded-lg p-4 text-sm">
                         <strong>Tip:</strong> Dynamic keystrokes allow 4-phase control with analog input response for advanced customization
                     </div>
                 </div>
@@ -714,29 +720,28 @@
 
         <!-- Configured Keys Summary -->
         {#if configuredDynamicKeys.length > 0}
-            <div class="max-w-7xl mx-auto mt-6">
-                <div class="bg-white rounded-lg border border-gray-200 p-6">
+            <div class="max-w-7xl mx-auto mt-6">                <div class="{$darkMode ? 'bg-black border-white' : 'bg-white border-gray-200'} rounded-lg border p-6">
                     <div class="flex items-center justify-between mb-4">
-                        <h3 class="text-lg font-medium text-gray-900">Configured Dynamic Keys</h3>
-                        <span class="text-sm text-gray-500">{configuredDynamicKeys.length} key{configuredDynamicKeys.length !== 1 ? 's' : ''}</span>
+                        <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'}">Configured Dynamic Keys</h3>
+                        <span class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-500'}">{configuredDynamicKeys.length} key{configuredDynamicKeys.length !== 1 ? 's' : ''}</span>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         {#each configuredDynamicKeys as [keyId, config]}
                             {@const [x, y] = keyId.split(',').map(Number)}
                             {@const keyName = $KeyboardDisplayValues[y]?.[x] || 'Unknown'}
                             {@const dynamicConfig = config as DynamicKeystrokeConfiguration}
-                            <div class="p-4 bg-gray-50 rounded-lg border">
+                            <div class="p-4 {$darkMode ? 'bg-gray-900 border-gray-600' : 'bg-gray-50'} rounded-lg border">
                                 <div class="flex items-center justify-between mb-2">
-                                    <span class="font-mono font-bold text-gray-900">{keyName}</span>
+                                    <span class="font-mono font-bold {$darkMode ? 'text-white' : 'text-gray-900'}">{keyName}</span>
                                 </div>
                                 <div class="text-sm space-y-1">
                                     <div class="flex justify-between">
-                                        <span class="text-gray-600">Bindings:</span>
-                                        <span class="text-gray-700">{dynamicConfig.keycodes.length}</span>
+                                        <span class="{$darkMode ? 'text-gray-400' : 'text-gray-600'}">Bindings:</span>
+                                        <span class="{$darkMode ? 'text-gray-300' : 'text-gray-700'}">{dynamicConfig.keycodes.length}</span>
                                     </div>
                                     <div class="flex justify-between">
-                                        <span class="text-gray-600">Bottom Out:</span>
-                                        <span class="text-gray-700">{dynamicConfig.bottomOutPoint.toFixed(1)}mm</span>
+                                        <span class="{$darkMode ? 'text-gray-400' : 'text-gray-600'}">Bottom Out:</span>
+                                        <span class="{$darkMode ? 'text-gray-300' : 'text-gray-700'}">{dynamicConfig.bottomOutPoint.toFixed(1)}mm</span>
                                     </div>
                                 </div>
                             </div>
@@ -757,7 +762,7 @@
         width: 16px;
         height: 16px;
         border-radius: 50%;
-        background: #2563eb;
+        background: var(--thumb-color, #2563eb);
         cursor: pointer;
         box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
     }
@@ -765,7 +770,7 @@
         width: 16px;
         height: 16px;
         border-radius: 50%;
-        background: #2563eb;
+        background: var(--thumb-color, #2563eb);
         cursor: pointer;
         border: none;
         box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
