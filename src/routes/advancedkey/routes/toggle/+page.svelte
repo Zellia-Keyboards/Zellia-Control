@@ -1,6 +1,7 @@
 <script lang="ts">
     import { goto } from '$app/navigation';
     import { CurrentSelected, KeyboardDisplayValues } from "$lib/KeyboardState.svelte";
+    import { darkMode } from '$lib/DarkModeStore.svelte';
     import { 
         globalConfigurations,
         updateGlobalConfiguration, 
@@ -116,13 +117,13 @@
     );
 </script>
 
-<div class="h-full flex flex-col bg-gray-50">
+<div class="h-full flex flex-col {$darkMode ? 'bg-black' : 'bg-gray-50'}">
     <!-- Header -->
-    <div class="bg-white border-b border-gray-200 px-6 py-4">
+    <div class="{$darkMode ? 'bg-black border-white' : 'bg-white border-gray-200'} border-b px-6 py-4">
         <div class="flex items-center justify-between">
             <div class="flex items-center gap-4">
                 <button 
-                    class="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
+                    class="flex items-center gap-2 {$darkMode ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900'} transition-colors"
                     on:click={goBack}
                 >
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -131,20 +132,20 @@
                     Back
                 </button>
                 <div>
-                    <h1 class="text-xl font-semibold text-gray-900">Toggle Key Configuration</h1>
-                    <p class="text-sm text-gray-500">Configure keys to toggle between states</p>
+                    <h1 class="text-xl font-semibold {$darkMode ? 'text-white' : 'text-gray-900'}">Toggle Key Configuration</h1>
+                    <p class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-500'}">Configure keys to toggle between states</p>
                 </div>
             </div>
             <div class="flex gap-3">
                 <button 
-                    class="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors text-sm font-medium"
+                    class="px-4 py-2 {$darkMode ? 'text-white bg-gray-800 hover:bg-gray-700 border border-white' : 'text-gray-700 bg-gray-100 hover:bg-gray-200'} rounded-md transition-colors text-sm font-medium"
                     on:click={resetConfiguration}
                     disabled={!$CurrentSelected}
                 >
                     Reset
                 </button>
                 <button 
-                    class="px-4 py-2 bg-blue-600 text-white hover:bg-blue-700 rounded-md transition-colors text-sm font-medium"
+                    class="px-4 py-2 {$darkMode ? 'bg-white text-black hover:bg-gray-200' : 'bg-blue-600 text-white hover:bg-blue-700'} rounded-md transition-colors text-sm font-medium"
                     on:click={applyConfiguration}
                     disabled={!$CurrentSelected}
                 >
@@ -157,26 +158,25 @@
     <!-- Main Content -->
     <div class="flex-1 p-6">
         {#if $CurrentSelected}
-            <div class="max-w-6xl mx-auto">
-                <!-- Selected Key Info -->
-                <div class="bg-white rounded-lg border border-gray-200 p-6 mb-6">
+            <div class="max-w-6xl mx-auto">                <!-- Selected Key Info -->
+                <div class="{$darkMode ? 'bg-black border-white' : 'bg-white border-gray-200'} rounded-lg border p-6 mb-6">
                     <div class="flex items-center justify-between">
                         <div class="flex items-center gap-4">
                             <div class="flex items-center gap-3">
-                                <div class="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center border-2 border-blue-300">
-                                    <span class="font-mono font-bold text-gray-900">{currentKeyName}</span>
+                                <div class="w-12 h-12 {$darkMode ? 'bg-gray-800 border-white' : 'bg-gray-100 border-blue-300'} rounded-lg flex items-center justify-center border-2">
+                                    <span class="font-mono font-bold {$darkMode ? 'text-white' : 'text-gray-900'}">{currentKeyName}</span>
                                 </div>
                                 <div>
-                                    <h3 class="font-medium text-gray-900">Selected Key</h3>
-                                    <p class="text-sm text-gray-500">Position: {$CurrentSelected[0]}, {$CurrentSelected[1]}</p>
+                                    <h3 class="font-medium {$darkMode ? 'text-white' : 'text-gray-900'}">Selected Key</h3>
+                                    <p class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-500'}">Position: {$CurrentSelected[0]}, {$CurrentSelected[1]}</p>
                                 </div>
                             </div>
                         </div>
                         <div class="flex items-center gap-3">
-                            <span class="text-sm text-gray-600">Current State:</span>
+                            <span class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'}">Current State:</span>
                             <div class="flex items-center gap-2">
                                 <div class="w-2 h-2 rounded-full {toggleState ? 'bg-green-500' : 'bg-gray-400'}"></div>
-                                <span class="text-sm font-medium {toggleState ? 'text-green-700' : 'text-gray-600'}">
+                                <span class="text-sm font-medium {toggleState ? 'text-green-700' : ($darkMode ? 'text-gray-400' : 'text-gray-600')}">
                                     {toggleState ? 'Active' : 'Inactive'}
                                 </span>
                             </div>
@@ -186,19 +186,18 @@
 
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <!-- Configuration Panel -->
-                    <div class="lg:col-span-2 space-y-6">
-                        <!-- Toggle Action Selection -->
-                        <div class="bg-white rounded-lg border border-gray-200 p-6">
-                            <h3 class="text-lg font-medium text-gray-900 mb-4">Toggle Action</h3>
+                    <div class="lg:col-span-2 space-y-6">                        <!-- Toggle Action Selection -->
+                        <div class="{$darkMode ? 'bg-black border-white' : 'bg-white border-gray-200'} rounded-lg border p-6">
+                            <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'} mb-4">Toggle Action</h3>
                             
                             <div class="space-y-4">
                                 {#each toggleCategories as category}
                                     <div>
-                                        <h4 class="text-sm font-medium text-gray-700 ">{category.name}</h4>
+                                        <h4 class="text-sm font-medium {$darkMode ? 'text-white' : 'text-gray-700'} ">{category.name}</h4>
                                         <div class="grid grid-cols-10 gap-2">
                                             {#each category.actions as action}
                                                 <button
-                                                    class="aspect-square w-15 h-15  text-xs rounded-md border transition-all {selectedToggleAction === action.id ? 'bg-blue-50 border-blue-300 text-blue-700' : 'bg-white border-gray-200 hover:bg-gray-50 text-gray-700'}"
+                                                    class="aspect-square w-15 h-15  text-xs rounded-md border transition-all {selectedToggleAction === action.id ? ($darkMode ? 'bg-gray-800 border-white text-white' : 'bg-blue-50 border-blue-300 text-blue-700') : ($darkMode ? 'bg-black border-white hover:bg-gray-800 text-white' : 'bg-white border-gray-200 hover:bg-gray-50 text-gray-700')}"
                                                     on:click={() => selectedToggleAction = action.id}
                                                     title={action.name}
                                                 >
@@ -209,86 +208,81 @@
                                     </div>
                                 {/each}
                             </div>
-                        </div>
-
-                        <!-- Toggle Mode -->
-                        <div class="bg-white rounded-lg border border-gray-200 p-6">
-                            <h3 class="text-lg font-medium text-gray-900 mb-4">Trigger Mode</h3>
+                        </div>                        <!-- Toggle Mode -->
+                        <div class="{$darkMode ? 'bg-black border-white' : 'bg-white border-gray-200'} rounded-lg border p-6">
+                            <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'} mb-4">Trigger Mode</h3>
                             
                             <div class="grid grid-cols-2 gap-4">
                                 <button
-                                    class="p-4 rounded-lg border-2 text-left transition-all {toggleMode === 'press' ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300'}"
+                                    class="p-4 rounded-lg border-2 text-left transition-all {toggleMode === 'press' ? ($darkMode ? 'border-white bg-gray-800' : 'border-blue-500 bg-blue-50') : ($darkMode ? 'border-gray-600 hover:border-gray-400' : 'border-gray-200 hover:border-gray-300')}"
                                     on:click={() => toggleMode = 'press'}
                                 >
                                     <div class="flex items-center gap-3 mb-2">
-                                        <div class="w-4 h-4 rounded-full border-2 {toggleMode === 'press' ? 'border-blue-500 bg-blue-500' : 'border-gray-300'}">
+                                        <div class="w-4 h-4 rounded-full border-2 {toggleMode === 'press' ? ($darkMode ? 'border-white bg-white' : 'border-blue-500 bg-blue-500') : ($darkMode ? 'border-gray-400' : 'border-gray-300')}">
                                             {#if toggleMode === 'press'}
-                                                <div class="w-2 h-2 bg-white rounded-full m-0.5"></div>
+                                                <div class="w-2 h-2 {$darkMode ? 'bg-black' : 'bg-white'} rounded-full m-0.5"></div>
                                             {/if}
                                         </div>
-                                        <span class="font-medium text-gray-900">On Press</span>
+                                        <span class="font-medium {$darkMode ? 'text-white' : 'text-gray-900'}">On Press</span>
                                     </div>
-                                    <p class="text-sm text-gray-600">Toggle when key is pressed down</p>
+                                    <p class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'}">Toggle when key is pressed down</p>
                                 </button>
                                 
                                 <button
-                                    class="p-4 rounded-lg border-2 text-left transition-all {toggleMode === 'release' ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300'}"
+                                    class="p-4 rounded-lg border-2 text-left transition-all {toggleMode === 'release' ? ($darkMode ? 'border-white bg-gray-800' : 'border-blue-500 bg-blue-50') : ($darkMode ? 'border-gray-600 hover:border-gray-400' : 'border-gray-200 hover:border-gray-300')}"
                                     on:click={() => toggleMode = 'release'}
                                 >
                                     <div class="flex items-center gap-3 mb-2">
-                                        <div class="w-4 h-4 rounded-full border-2 {toggleMode === 'release' ? 'border-blue-500 bg-blue-500' : 'border-gray-300'}">
+                                        <div class="w-4 h-4 rounded-full border-2 {toggleMode === 'release' ? ($darkMode ? 'border-white bg-white' : 'border-blue-500 bg-blue-500') : ($darkMode ? 'border-gray-400' : 'border-gray-300')}">
                                             {#if toggleMode === 'release'}
-                                                <div class="w-2 h-2 bg-white rounded-full m-0.5"></div>
+                                                <div class="w-2 h-2 {$darkMode ? 'bg-black' : 'bg-white'} rounded-full m-0.5"></div>
                                             {/if}
                                         </div>
-                                        <span class="font-medium text-gray-900">On Release</span>
+                                        <span class="font-medium {$darkMode ? 'text-white' : 'text-gray-900'}">On Release</span>
                                     </div>
-                                    <p class="text-sm text-gray-600">Toggle when key is released</p>
+                                    <p class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'}">Toggle when key is released</p>
                                 </button>
                             </div>
-                        </div>
-
-                        <!-- State Control -->
-                        <div class="bg-white rounded-lg border border-gray-200 p-6">
-                            <h3 class="text-lg font-medium text-gray-900 mb-4">Initial State</h3>
+                        </div>                        <!-- State Control -->
+                        <div class="{$darkMode ? 'bg-black border-white' : 'bg-white border-gray-200'} rounded-lg border p-6">
+                            <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'} mb-4">Initial State</h3>
                             
-                            <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                            <div class="flex items-center justify-between p-4 {$darkMode ? 'bg-gray-800' : 'bg-gray-50'} rounded-lg">
                                 <div>
-                                    <div class="font-medium text-gray-900">Toggle State</div>
-                                    <div class="text-sm text-gray-600">Set the initial state for this toggle key</div>
+                                    <div class="font-medium {$darkMode ? 'text-white' : 'text-gray-900'}">Toggle State</div>
+                                    <div class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'}">Set the initial state for this toggle key</div>
                                 </div>
                                 <button
-                                    class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 {toggleState ? 'bg-blue-600' : 'bg-gray-300'}"
+                                    class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 {$darkMode ? 'focus:ring-white' : 'focus:ring-blue-500'} focus:ring-offset-2 {toggleState ? ($darkMode ? 'bg-white' : 'bg-blue-600') : ($darkMode ? 'bg-gray-600' : 'bg-gray-300')}"
                                     on:click={() => toggleState = !toggleState}
                                 >
-                                    <span class="inline-block h-4 w-4 transform rounded-full bg-white transition-transform shadow-sm {toggleState ? 'translate-x-6' : 'translate-x-1'}"></span>
+                                    <span class="inline-block h-4 w-4 transform rounded-full {toggleState ? ($darkMode ? 'bg-black' : 'bg-white') : 'bg-white'} transition-transform shadow-sm {toggleState ? 'translate-x-6' : 'translate-x-1'}"></span>
                                 </button>
                             </div>
                         </div>
                     </div>
 
                     <!-- Preview Panel -->
-                    <div class="space-y-6">
-                        <!-- Live Preview -->
-                        <div class="bg-white rounded-lg border border-gray-200 p-6">
-                            <h3 class="text-lg font-medium text-gray-900 mb-4">Preview</h3>
+                    <div class="space-y-6">                        <!-- Live Preview -->
+                        <div class="{$darkMode ? 'bg-black border-white' : 'bg-white border-gray-200'} rounded-lg border p-6">
+                            <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'} mb-4">Preview</h3>
                             
                             <div class="space-y-3">
-                                <div class="flex justify-between items-center py-2 border-b border-gray-100">
-                                    <span class="text-sm text-gray-600">Key</span>
-                                    <span class="font-mono font-medium">{currentKeyName}</span>
+                                <div class="flex justify-between items-center py-2 border-b {$darkMode ? 'border-gray-600' : 'border-gray-100'}">
+                                    <span class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'}">Key</span>
+                                    <span class="font-mono font-medium {$darkMode ? 'text-white' : 'text-gray-900'}">{currentKeyName}</span>
                                 </div>
-                                <div class="flex justify-between items-center py-2 border-b border-gray-100">
-                                    <span class="text-sm text-gray-600">Action</span>
-                                    <span class="font-medium">{keyActions.find(k => k.id === selectedToggleAction)?.name || selectedToggleAction}</span>
+                                <div class="flex justify-between items-center py-2 border-b {$darkMode ? 'border-gray-600' : 'border-gray-100'}">
+                                    <span class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'}">Action</span>
+                                    <span class="font-medium {$darkMode ? 'text-white' : 'text-gray-900'}">{keyActions.find(k => k.id === selectedToggleAction)?.name || selectedToggleAction}</span>
                                 </div>
-                                <div class="flex justify-between items-center py-2 border-b border-gray-100">
-                                    <span class="text-sm text-gray-600">Trigger</span>
-                                    <span class="font-medium">{toggleMode === 'press' ? 'On Press' : 'On Release'}</span>
+                                <div class="flex justify-between items-center py-2 border-b {$darkMode ? 'border-gray-600' : 'border-gray-100'}">
+                                    <span class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'}">Trigger</span>
+                                    <span class="font-medium {$darkMode ? 'text-white' : 'text-gray-900'}">{toggleMode === 'press' ? 'On Press' : 'On Release'}</span>
                                 </div>
                                 <div class="flex justify-between items-center py-2">
-                                    <span class="text-sm text-gray-600">State</span>
-                                    <span class="font-medium {toggleState ? 'text-green-600' : 'text-gray-600'}">
+                                    <span class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'}">State</span>
+                                    <span class="font-medium {toggleState ? 'text-green-600' : ($darkMode ? 'text-gray-400' : 'text-gray-600')}">
                                         {toggleState ? 'Active' : 'Inactive'}
                                     </span>
                                 </div>
@@ -296,9 +290,9 @@
                         </div>
 
                         <!-- Info Panel -->
-                        <div class="bg-amber-50 border border-amber-200 rounded-lg p-6">
-                            <h3 class="text-lg font-medium text-amber-900 mb-2">How it works</h3>
-                            <p class="text-sm text-amber-800">
+                        <div class="{$darkMode ? 'bg-gray-800 border-white' : 'bg-amber-50 border-amber-200'} border rounded-lg p-6">
+                            <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-amber-900'} mb-2">How it works</h3>
+                            <p class="text-sm {$darkMode ? 'text-gray-400' : 'text-amber-800'}">
                                 This key will toggle <strong>{keyActions.find(k => k.id === selectedToggleAction)?.name || selectedToggleAction}</strong> 
                                 {toggleMode === 'press' ? 'when pressed' : 'when released'}. Each trigger will switch between active and inactive states.
                             </p>
@@ -307,7 +301,7 @@
                         <!-- Actions -->
                         <div class="space-y-3">
                             <button 
-                                class="w-full px-4 py-2 bg-red-600 text-white hover:bg-red-700 rounded-md transition-colors text-sm font-medium"
+                                class="w-full px-4 py-2 {$darkMode ? 'bg-red-700 hover:bg-red-600' : 'bg-red-600 hover:bg-red-700'} text-white rounded-md transition-colors text-sm font-medium"
                                 on:click={resetAllToggleKeys}
                             >
                                 Reset All Toggle Keys
@@ -316,45 +310,42 @@
                     </div>
                 </div>
             </div>
-        {:else}
-            <!-- No Key Selected State -->
+        {:else}            <!-- No Key Selected State -->
             <div class="flex-1 flex items-center justify-center">
                 <div class="text-center max-w-md mx-auto">
-                    <div class="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div class="w-24 h-24 {$darkMode ? 'bg-gray-800' : 'bg-gray-100'} rounded-full flex items-center justify-center mx-auto mb-4">
+                        <svg class="w-12 h-12 {$darkMode ? 'text-gray-400' : 'text-gray-400'}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l4-4 4 4m0 6l-4 4-4-4" />
                         </svg>
                     </div>
-                    <h3 class="text-lg font-medium text-gray-900 mb-2">No Key Selected</h3>
-                    <p class="text-gray-600 mb-4">Select a key from the keyboard layout to configure its toggle behavior</p>
-                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 text-sm text-blue-700">
+                    <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'} mb-2">No Key Selected</h3>
+                    <p class="{$darkMode ? 'text-gray-400' : 'text-gray-600'} mb-4">Select a key from the keyboard layout to configure its toggle behavior</p>
+                    <div class="{$darkMode ? 'bg-gray-800 border-white text-white' : 'bg-blue-50 border-blue-200 text-blue-700'} border rounded-lg p-4 text-sm">
                         <strong>Tip:</strong> Toggle keys are perfect for Caps Lock, Num Lock, or creating custom modifier states
                     </div>
                 </div>
             </div>
-        {/if}
-
-        <!-- Configured Keys Summary -->
+        {/if}        <!-- Configured Keys Summary -->
         {#if configuredToggleKeys.length > 0}
             <div class="max-w-6xl mx-auto mt-6">
-                <div class="bg-white rounded-lg border border-gray-200 p-6">
+                <div class="{$darkMode ? 'bg-black border-white' : 'bg-white border-gray-200'} rounded-lg border p-6">
                     <div class="flex items-center justify-between mb-4">
-                        <h3 class="text-lg font-medium text-gray-900">Configured Toggle Keys</h3>
-                        <span class="text-sm text-gray-500">{configuredToggleKeys.length} key{configuredToggleKeys.length !== 1 ? 's' : ''}</span>
+                        <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'}">Configured Toggle Keys</h3>
+                        <span class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-500'}">{configuredToggleKeys.length} key{configuredToggleKeys.length !== 1 ? 's' : ''}</span>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         {#each configuredToggleKeys as [keyId, config]}
                             {@const [x, y] = keyId.split(',').map(Number)}
                             {@const keyName = $KeyboardDisplayValues[y]?.[x] || 'Unknown'}
-                            <div class="p-4 bg-gray-50 rounded-lg border">
+                            <div class="p-4 {$darkMode ? 'bg-gray-800 border-white' : 'bg-gray-50 border-gray-200'} rounded-lg border">
                                 <div class="flex items-center justify-between mb-2">
-                                    <span class="font-mono font-bold text-gray-900">{keyName}</span>
+                                    <span class="font-mono font-bold {$darkMode ? 'text-white' : 'text-gray-900'}">{keyName}</span>
                                     <div class="w-2 h-2 rounded-full {config.toggleState ? 'bg-green-500' : 'bg-gray-400'}"></div>
                                 </div>
-                                <div class="text-sm text-gray-700 font-medium">
+                                <div class="text-sm {$darkMode ? 'text-white' : 'text-gray-700'} font-medium">
                                     {keyActions.find(k => k.id === config.toggleAction)?.name || config.toggleAction}
                                 </div>
-                                <div class="text-xs text-gray-500 capitalize">
+                                <div class="text-xs {$darkMode ? 'text-gray-400' : 'text-gray-500'} capitalize">
                                     {config.toggleMode} trigger
                                 </div>
                             </div>
