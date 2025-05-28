@@ -30,7 +30,7 @@
 
 <div class="flex items-center gap-4">
     <button
-        class="w-16 h-16 p-0.5 rounded-lg border-2 text-xs transition-all {selectedBindingIndex ===
+        class="w-16 h-16 p-0.5 rounded-lg border-2 text-xs transition-all font-medium {selectedBindingIndex ===
         bindingIndex
             ? $darkMode
                 ? 'border-white bg-gray-800'
@@ -40,14 +40,13 @@
               : 'border-gray-200 bg-white hover:bg-gray-50'}"
         onclick={() => onSelectBinding(bindingIndex)}
     >
-        <div
-            class="w-full h-full rounded flex items-center justify-center font-medium {$darkMode
-                ? 'text-white'
-                : 'text-gray-900'}"
-        >
-            {currentKeyAction?.name || keycode}
-        </div>
+        {currentKeyAction?.name || keycode}
     </button>
-
-    {@render DKSSliderSnippet(selectedBitmap, uiBitmap, bindingIndex)}
+    <div class="flex justify-between grow relative">
+        {@render DKSSliderSnippet(
+            selectedBitmap,
+            uiBitmap,
+            bindingIndex
+        )}
+    </div>
 </div>
