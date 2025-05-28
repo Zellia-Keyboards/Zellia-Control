@@ -25,6 +25,6 @@
             alert("No key selected");
             return;
         }
-        $KeyboardDisplayValues[$CurrentSelected[1]][$CurrentSelected[0]] = data;
+        $KeyboardDisplayValues[$CurrentSelected[1]][$CurrentSelected[0]] = String(data);
     }}>Submit</button
 >

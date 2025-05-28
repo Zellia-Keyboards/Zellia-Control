@@ -31,7 +31,7 @@
 <div class="xl:hidden fixed inset-0 flex items-center justify-center z-50 {$darkMode ? 'bg-black' : 'bg-gray-50'}">
     <div class="max-w-2xl mx-4">
         <!-- Main Warning Card -->
-        <div class="{$darkMode ? 'bg-black border-white text-white' : 'bg-white border-gray-200'} rounded-xl shadow-lg border p-8 text-center">
+        <div class="{$darkMode ? 'bg-black border-gray-600 text-white' : 'bg-white border-gray-200'} rounded-xl shadow-lg border p-8 text-center">
             <!-- Icon and Title -->
             <div class="flex items-center justify-center mb-6">
                 <div class="w-16 h-16 {$darkMode ? 'bg-white' : 'bg-indigo-100'} rounded-xl flex items-center justify-center">
@@ -48,7 +48,7 @@
             </p>
             
             <!-- Requirements Info -->
-            <div class="{$darkMode ? 'bg-white border-white' : 'bg-blue-50 border-blue-200'} border rounded-lg p-4 mb-6">
+            <div class="{$darkMode ? 'bg-white border-gray-400' : 'bg-blue-50 border-blue-200'} border rounded-lg p-4 mb-6">
                 <div class="flex items-center gap-3 {$darkMode ? 'text-black' : 'text-blue-800'}">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -98,9 +98,9 @@
 <!-- Main Application (hidden on small screens) -->
 <div class="hidden xl:flex h-screen {$darkMode ? 'bg-black' : 'bg-gray-50'}">
     <!-- Sidebar -->
-    <div class="flex flex-col w-52 {$darkMode ? 'bg-black border-white' : 'bg-white border-gray-200'} shadow-lg h-full overflow-y-auto border-r">
+    <div class="flex flex-col w-52 {$darkMode ? 'bg-black border-gray-600' : 'bg-white border-gray-200'} shadow-lg h-full overflow-y-auto border-r">
         <!-- Header -->
-        <div class="p-4 border-b {$darkMode ? 'border-white' : 'border-gray-100'}">
+        <div class="p-4 border-b {$darkMode ? 'border-gray-600' : 'border-gray-100'}">
             <h1 class="font-bold text-xl {$darkMode ? 'text-white' : 'text-gray-900'} text-center">Zellia Control</h1>
         </div>
         
@@ -110,11 +110,11 @@
         </div>
         
         <!-- Profile Section -->
-        <div class="px-3 pb-3 border-b {$darkMode ? 'border-white' : 'border-gray-100'}">
+        <div class="px-3 pb-3 border-b {$darkMode ? 'border-gray-600' : 'border-gray-100'}">
             <!-- Profile Dropdown -->
             <div class="relative mb-2">
                 <button 
-                    class="flex items-center justify-between w-full px-3 py-2 text-sm font-medium {$darkMode ? 'text-white bg-black border-white hover:bg-gray-900' : 'text-gray-700 bg-gray-50 border-gray-200 hover:bg-gray-100'} border rounded-lg transition-colors duration-200" 
+                    class="flex items-center justify-between w-full px-3 py-2 text-sm font-medium {$darkMode ? 'text-white bg-black border-gray-600 hover:bg-gray-900' : 'text-gray-700 bg-gray-50 border-gray-200 hover:bg-gray-100'} border rounded-lg transition-colors duration-200" 
                     onclick={() => showDropdown = !showDropdown}
                 >
                     <span>Profiles</span>
@@ -124,7 +124,7 @@
                 </button>
                 
                 {#if showDropdown}
-                    <div class="absolute top-full left-0 right-0 mt-1 {$darkMode ? 'bg-black border-white' : 'bg-white border-gray-200'} border rounded-lg shadow-lg z-10">
+                    <div class="absolute top-full left-0 right-0 mt-1 {$darkMode ? 'bg-black border-gray-600' : 'bg-white border-gray-200'} border rounded-lg shadow-lg z-10">
                         <div class="p-3 text-sm {$darkMode ? 'text-gray-300' : 'text-gray-600'}">No profiles available</div>
                     </div>
                 {/if}
@@ -132,10 +132,10 @@
             
             <!-- Import/Export Buttons -->
             <div class="grid grid-cols-2 gap-2">
-                <button class="px-3 py-2 text-xs font-medium {$darkMode ? 'text-white bg-black border-white hover:bg-gray-900' : 'text-gray-600 bg-gray-50 border-gray-200 hover:bg-gray-100'} border rounded-md transition-colors duration-200">
+                <button class="px-3 py-2 text-xs font-medium {$darkMode ? 'text-white bg-black border-gray-600 hover:bg-gray-900' : 'text-gray-600 bg-gray-50 border-gray-200 hover:bg-gray-100'} border rounded-md transition-colors duration-200">
                     Import
                 </button>
-                <button class="px-3 py-2 text-xs font-medium {$darkMode ? 'text-white bg-black border-white hover:bg-gray-900' : 'text-gray-600 bg-gray-50 border-gray-200 hover:bg-gray-100'} border rounded-md transition-colors duration-200">
+                <button class="px-3 py-2 text-xs font-medium {$darkMode ? 'text-white bg-black border-gray-600 hover:bg-gray-900' : 'text-gray-600 bg-gray-50 border-gray-200 hover:bg-gray-100'} border rounded-md transition-colors duration-200">
                     Export
                 </button>
             </div>
@@ -158,7 +158,7 @@
         </div>
         
         <!-- Dark Mode Toggle at Bottom -->
-        <div class="p-3 border-t {$darkMode ? 'border-white' : 'border-gray-200'}">
+        <div class="p-3 border-t {$darkMode ? 'border-gray-600' : 'border-gray-200'}">
             <button 
                 class="flex items-center gap-3 w-full px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 {$darkMode ? 'text-white hover:bg-gray-900' : 'text-gray-700 hover:bg-gray-100'}"
                 onclick={() => darkMode.toggle()}
@@ -179,7 +179,7 @@
                 <span class="font-semibold {$darkMode ? 'text-white' : 'text-gray-700'} mr-2">Layer:</span>
                 {#each [1, 2, 3, 4] as layer}
                     <button
-                        class="w-8 h-8 flex items-center justify-center rounded-lg border-2 font-bold text-lg transition-colors duration-200 focus:outline-none {selectedLayer === layer ? ($darkMode ? 'bg-white text-black border-white' : 'bg-indigo-500 text-white border-indigo-700') : ($darkMode ? 'bg-black text-white border-white hover:bg-gray-900' : 'bg-white text-indigo-700 border-indigo-300 hover:bg-indigo-100')}"
+                        class="w-8 h-8 flex items-center justify-center rounded-lg border font-bold text-lg transition-colors duration-200 focus:outline-none {selectedLayer === layer ? ($darkMode ? 'bg-white text-black border-white' : 'bg-indigo-500 text-white border-indigo-700') : ($darkMode ? 'bg-black text-white border-gray-600 hover:bg-gray-900' : 'bg-white text-indigo-700 border-indigo-300 hover:bg-indigo-100')}"
                         onclick={() => selectedLayer = layer}
                     >
                         {layer}
@@ -198,7 +198,7 @@
             />
         </div>
         <!-- Component for adjust part -->
-        <div class="{$darkMode ? 'bg-black border-white text-white' : 'bg-white'} rounded-2xl shadow p-4 mt-2 mb-4 grow {$darkMode ? 'border' : ''}">
+        <div class="{$darkMode ? 'bg-black border-gray-600 text-white' : 'bg-white'} rounded-2xl shadow p-4 mt-2 mb-4 grow {$darkMode ? 'border' : ''}">>
             {@render children()}
         </div>
     </div>
