@@ -192,19 +192,22 @@
 			return;
 		}
 
-		if (bitmap[nodeIndex] === DKSAction.HOLD) {
-			uiBitmapCopy[nodeIndex] = DKSAction.TAP;
-		} else {
-			const interval = intervals.find(
-				([l, r]) => l <= nodeIndex && nodeIndex <= r,
-			);
-			if (interval) {
-				const [start, end] = interval;
-				for (let i = start; i <= end && i < 4; i++) {
-					uiBitmapCopy[i] = DKSAction.HOLD;
-				}
-			}
-		}
+		uiBitmapCopy[nodeIndex] = DKSAction.TAP;
+
+		// ???? why
+		// if (bitmap[nodeIndex] === DKSAction.HOLD) {
+		// 	uiBitmapCopy[nodeIndex] = DKSAction.TAP;
+		// } else {
+		// 	// const interval = intervals.find(
+		// 	// 	([l, r]) => l <= nodeIndex && nodeIndex <= r,
+		// 	// );
+		// 	// if (interval) {
+		// 	// 	const [start, end] = interval;
+		// 	// 	for (let i = start; i <= end && i < 4; i++) {
+		// 	// 		uiBitmapCopy[i] = DKSAction.HOLD;
+		// 	// 	}
+		// 	// }
+		// }
 		updateBitmap(bindingIndex, uiBitmapCopy);
 	}
 
@@ -504,7 +507,8 @@
 			</button>
 		{:else if start === end}
 			<!-- TAP indicator (single point) -->
-			<div
+			<!-- svelte-ignore a11y_consider_explicit_label -->
+			<button
 				class="absolute z-20 rounded-full {$darkMode
 					? 'bg-gray-500'
 					: 'bg-purple-500'}"
@@ -512,7 +516,8 @@
 					start,
 				)}px;"
 				title="TAP action at phase {start + 1}"
-			></div>
+				onclick={() => deleteInterval(bindingIndex, start)}
+			></button>
 		{/if}
 		<!-- Grip handle for dragging -->
 		<!-- svelte-ignore a11y_consider_explicit_label -->
@@ -529,11 +534,7 @@
 			onmousedown={(e) => handleMouseDown(e, bindingIndex, start)}
 			title="Drag to resize interval"
 		>
-			<svg
-				class=""
-				fill="currentColor"
-				viewBox="0 0 20 20"
-			>
+			<svg class="" fill="currentColor" viewBox="0 0 20 20">
 				<path
 					d="M6 10a2 2 0 11-4 0 2 2 0 014 0zM12 10a2 2 0 11-4 0 2 2 0 014 0zM16 12a2 2 0 100-4 2 2 0 000 4z"
 				/>
