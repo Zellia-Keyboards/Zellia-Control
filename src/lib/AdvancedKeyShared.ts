@@ -21,6 +21,24 @@ export type KeyConfiguration = {
     bottomOutPoint?: number;
 };
 
+// Dynamic Keystroke Configuration type
+export type DynamicKeystrokeConfiguration = {
+    type: 'dynamic';
+    keycodes: string[];
+    bitmap: DKSAction[][];
+    bottomOutPoint: number;
+};
+
+// Key Action type for individual key actions
+export type KeyAction = {
+    id: string;
+    name: string;
+    category: string;
+};
+
+// Global configurations type
+export type GlobalConfigurations = Record<string, KeyConfiguration>;
+
 // Global configuration store
 export const globalConfigurations = writable<Record<string, KeyConfiguration>>({});
 

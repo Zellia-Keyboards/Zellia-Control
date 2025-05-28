@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
     import { darkMode } from "$lib/DarkModeStore.svelte";
 </script>
 
@@ -15,10 +15,10 @@
         Performance Settings
     </h3>
 
-    <!-- Actuation Point Slider -->
     <div class="mb-6">
         <div class="flex justify-between items-center mb-2">
             <label
+                for="actuation-point-slider"
                 class="text-sm font-medium {$darkMode
                     ? 'text-gray-300'
                     : 'text-gray-700'}">Actuation Point</label
@@ -29,6 +29,7 @@
             >
         </div>
         <input
+            id="actuation-point-slider"
             type="range"
             min="0.5"
             max="3.5"
@@ -44,7 +45,6 @@
         </p>
     </div>
 
-    <!-- Info -->
     <div
         class="flex items-start gap-3 p-4 {$darkMode
             ? 'bg-gray-900 border-gray-600'

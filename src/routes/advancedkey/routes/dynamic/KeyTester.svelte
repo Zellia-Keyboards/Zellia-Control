@@ -24,7 +24,6 @@
         Test your dynamic keystroke configuration
     </p>
 
-    <!-- Key Visualization -->
     <div
         class="border-2 {$darkMode
             ? 'border-gray-600'
