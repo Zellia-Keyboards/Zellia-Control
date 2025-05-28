@@ -71,11 +71,11 @@
     </div>
 
     <div class="flex-1 max-w-7xl mx-auto w-full">
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div class="grid grid-cols-1 md:grid-cols-3 xl:grid-cols-4 gap-6">
             {#each keyModes as mode}
                 <div class="group relative">
                     <button
-                        class="w-full p-6 bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border-2 border-transparent hover:border-blue-200 text-left group-hover:scale-105"
+                        class="w-full h-65 p-6 bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border-2 border-transparent hover:border-blue-200 text-left group-hover:scale-105"
                         onclick={() => navigateToMode(mode.path)}
                     >
                         <!-- Mode Header -->
@@ -90,7 +90,7 @@
                         </div>
 
                         <!-- Features List -->
-                        <div class="space-y-2">
+                        <div class="space-y-2 flex-1">
                             {#each mode.features as feature}
                                 <div class="flex items-center gap-2 text-sm text-gray-700">
                                     <div class="w-1.5 h-1.5 rounded-full bg-blue-500"></div>
