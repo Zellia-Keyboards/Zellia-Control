@@ -19,7 +19,7 @@
       <button class="{$darkMode ? 'bg-gray-800 hover:bg-gray-700 text-white border border-white' : 'bg-gray-200 hover:bg-gray-300 text-gray-600'} px-4 py-2 rounded transition-colors duration-200">Discard selection</button>
     </div>
   </div>
-  <div class="{$darkMode ? 'bg-black border border-white' : 'bg-white'} rounded-xl shadow p-6 flex flex-col md:flex-row gap-6 flex-1">
+  <div class=" rounded-xl shadow p-6 flex flex-col md:flex-row gap-6 flex-1">
     <!-- 1st Box: Actuation Point -->
     <div class="flex-1 min-w-[260px] flex flex-col">
       <h3 class="text-lg font-medium mb-4 {$darkMode ? 'text-white' : 'text-gray-900'}">Actuation Point</h3>

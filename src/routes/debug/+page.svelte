@@ -17,7 +17,7 @@
     <h2 class="text-2xl font-bold {$darkMode ? 'text-white' : 'text-gray-900'}">Debug</h2>
   </div>
   
-  <div class="{$darkMode ? 'bg-black border-white' : 'bg-white'} rounded-xl shadow p-6 space-y-8 flex-1 {$darkMode ? 'border' : ''}">
+  <div class="rounded-xl shadow p-6 space-y-8 flex-1 {$darkMode ? 'border' : ''}">
     <!-- Key Press Reporting -->
     <div class="p-5 {$darkMode ? 'bg-black border-white' : 'bg-white border-gray-200'} rounded-lg border">
       <div class="flex items-center justify-between mb-2">

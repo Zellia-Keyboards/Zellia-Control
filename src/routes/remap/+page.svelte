@@ -70,7 +70,7 @@
     </div>
 
     <!-- Content based on selected section -->
-    <div class="{$darkMode ? 'bg-black border border-white' : 'bg-white'} rounded-xl shadow p-6 flex-1 flex flex-col">
+    <div class="rounded-xl shadow p-6 flex-1 flex flex-col">
         {#if selectedSection === 'basic'}
             <!-- Scrollable container -->
             <div class="flex-1 flex flex-col overflow-y-auto">

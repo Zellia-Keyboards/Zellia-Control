@@ -18,7 +18,7 @@
   
   <div class="{$darkMode ? 'bg-black border border-white' : 'bg-white'} rounded-xl shadow p-6 space-y-8 flex-1">
     <!-- Restart Device -->
-    <div class="p-5 {$darkMode ? 'bg-black border-white' : 'bg-white border-gray-200'} rounded-lg border">
+    <div class="p-5 rounded-lg">
       <h3 class="text-lg font-medium mb-2 {$darkMode ? 'text-white' : 'text-gray-900'}">Restart Device</h3>
       <p class="text-sm {$darkMode ? 'text-gray-300' : 'text-gray-600'} mb-4">
         restart device text
@@ -32,7 +32,7 @@
     </div>
     
     <!-- Enter Bootloader -->
-    <div class="p-5 {$darkMode ? 'bg-black border-white' : 'bg-white border-gray-200'} rounded-lg border">
+    <div class="p-5 rounded-lg">
       <h3 class="text-lg font-medium mb-2 {$darkMode ? 'text-white' : 'text-gray-900'}">Enter Bootloader</h3>
       <p class="text-sm {$darkMode ? 'text-gray-300' : 'text-gray-600'} mb-4">
         enter bootloader text
@@ -46,7 +46,7 @@
     </div>
     
     <!-- Factory Reset -->
-    <div class="p-5 {$darkMode ? 'bg-black border-white' : 'bg-white border-gray-200'} rounded-lg border">
+    <div class="p-5 rounded-lg">
       <h3 class="text-lg font-medium mb-2 {$darkMode ? 'text-white' : 'text-gray-900'}">Factory Reset</h3>
       <p class="text-sm {$darkMode ? 'text-gray-300' : 'text-gray-600'} mb-4">
         factory reset text

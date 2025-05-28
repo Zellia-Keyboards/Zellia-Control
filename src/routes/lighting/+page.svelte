@@ -117,7 +117,7 @@
         </div>
     </div>
     
-    <div class="{$darkMode ? 'bg-black border border-white' : 'bg-white'} rounded-xl shadow p-6 flex flex-col lg:flex-row gap-6 flex-1">
+    <div class="rounded-xl shadow p-6 flex flex-col lg:flex-row gap-6 flex-1">
         <!-- Effects Panel -->
         <div class="flex-1 min-w-[300px]">
             <div class="grid grid-cols-2 gap-3 mb-6">
