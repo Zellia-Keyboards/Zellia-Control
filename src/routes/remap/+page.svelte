@@ -1,4 +1,6 @@
 <script lang="ts">
+    import { darkMode } from '$lib/DarkModeStore.svelte';
+    
     const NORMAL_KEY = [...Array(94).keys()].map(_ => _ + 33).map(_ => [String.fromCharCode(_), _]);
 
     let selectedSection = 'basic';
@@ -56,10 +58,10 @@
 
 <div class="p-4 h-full flex flex-col">
     <!-- Section Tabs - Large and full width -->
-    <div class="flex border-b border-gray-200">
+    <div class="flex border-b {$darkMode ? 'border-white' : 'border-gray-200'}">
         {#each sections as section}
             <button
-            class="px-8 py-4 font-semibold rounded-4xl text-xl transition-colors duration-200 flex-1 h-full {selectedSection === section.id ? 'border-blue-600 text-blue-600 bg-blue-50 rounded-4xl' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}"
+            class="px-8 py-4 font-semibold rounded-4xl text-xl transition-colors duration-200 flex-1 h-full {selectedSection === section.id ? ($darkMode ? 'border-white text-white bg-gray-800 rounded-4xl' : 'border-blue-600 text-blue-600 bg-blue-50 rounded-4xl') : ($darkMode ? 'border-transparent text-gray-400 hover:text-white hover:border-gray-400' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300')}"
             on:click={() => selectedSection = section.id}
             >
                 {section.label}
@@ -68,7 +70,7 @@
     </div>
 
     <!-- Content based on selected section -->
-    <div class="bg-white rounded-xl shadow p-6 flex-1 flex flex-col">
+    <div class="{$darkMode ? 'bg-black border border-white' : 'bg-white'} rounded-xl shadow p-6 flex-1 flex flex-col">
         {#if selectedSection === 'basic'}
             <!-- Scrollable container -->
             <div class="flex-1 flex flex-col overflow-y-auto">
@@ -76,7 +78,7 @@
                     <div class="mb-4">
                         <!-- Collapsible Panel Header -->
                         <button
-                            class="w-full flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                            class="w-full flex items-center justify-between p-3 {$darkMode ? 'bg-gray-800 hover:bg-gray-700 text-white' : 'bg-gray-50 hover:bg-gray-100 text-gray-900'} rounded-lg transition-colors"
                             on:click={() => toggleGroup(group.id)}
                         >
                             <span class="text-base font-semibold">{group.label}</span>
@@ -92,11 +94,11 @@
                         
                         <!-- Collapsible Panel Content -->
                         {#if expandedGroups.includes(group.id)}
-                            <div class="mt-3 p-3 border border-gray-200 rounded-lg">
+                            <div class="mt-3 p-3 border {$darkMode ? 'border-white' : 'border-gray-200'} rounded-lg">
                                 <div class="flex flex-wrap gap-3">
                                     {#each getKeysForGroup(group.id) as [name, code]}
                                         <button
-                                            class="key-square rounded-lg font-bold border border-gray-300 hover:bg-gray-100 transition-colors text-base"
+                                            class="key-square rounded-lg font-bold border {$darkMode ? 'border-white bg-black text-white hover:bg-gray-800' : 'border-gray-300 bg-white text-gray-900 hover:bg-gray-100'} transition-colors text-base"
                                         >{name}</button>
                                     {/each}
                                 </div>
@@ -106,34 +108,34 @@
                 {/each}
             </div>
         {:else if selectedSection === 'function'}
-            <h3 class="text-lg font-medium mb-4 flex-shrink-0">Function Keys</h3>
+            <h3 class="text-lg font-medium mb-4 flex-shrink-0 {$darkMode ? 'text-white' : 'text-gray-900'}">Function Keys</h3>
             <div class="flex-1 overflow-y-auto">
                 <div class="flex flex-wrap gap-3">
                     {#each ['F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8', 'F9', 'F10', 'F11', 'F12'] as key}
                         <button
-                            class="key-square rounded-lg font-bold border border-gray-300 hover:bg-gray-100 transition-colors text-base"
+                            class="key-square rounded-lg font-bold border {$darkMode ? 'border-white bg-black text-white hover:bg-gray-800' : 'border-gray-300 bg-white text-gray-900 hover:bg-gray-100'} transition-colors text-base"
                         >{key}</button>
                     {/each}
                 </div>
             </div>
         {:else if selectedSection === 'media'}
-            <h3 class="text-lg font-medium mb-4 flex-shrink-0">Media Keys</h3>
+            <h3 class="text-lg font-medium mb-4 flex-shrink-0 {$darkMode ? 'text-white' : 'text-gray-900'}">Media Keys</h3>
             <div class="flex-1 overflow-y-auto">
                 <div class="flex flex-wrap gap-3">
                     {#each ['Play/Pause', 'Stop', 'Previous', 'Next', 'Volume Up', 'Volume Down', 'Mute'] as key}
                         <button
-                            class="key-square rounded-lg font-bold border border-gray-300 hover:bg-gray-100 transition-colors text-base"
+                            class="key-square rounded-lg font-bold border {$darkMode ? 'border-white bg-black text-white hover:bg-gray-800' : 'border-gray-300 bg-white text-gray-900 hover:bg-gray-100'} transition-colors text-base"
                         >{key}</button>
                     {/each}
                 </div>
             </div>
         {:else if selectedSection === 'mouse'}
-            <h3 class="text-lg font-medium mb-4 flex-shrink-0">Mouse Functions</h3>
+            <h3 class="text-lg font-medium mb-4 flex-shrink-0 {$darkMode ? 'text-white' : 'text-gray-900'}">Mouse Functions</h3>
             <div class="flex-1 overflow-y-auto">
                 <div class="flex flex-wrap gap-3">
                     {#each ['Left Click', 'Right Click', 'Middle Click', 'Mouse Up', 'Mouse Down', 'Mouse Left', 'Mouse Right'] as key}
                         <button
-                            class="key-square rounded-lg font-bold border border-gray-300 hover:bg-gray-100 transition-colors text-base"
+                            class="key-square rounded-lg font-bold border {$darkMode ? 'border-white bg-black text-white hover:bg-gray-800' : 'border-gray-300 bg-white text-gray-900 hover:bg-gray-100'} transition-colors text-base"
                         >{key}</button>
                     {/each}
                 </div>
