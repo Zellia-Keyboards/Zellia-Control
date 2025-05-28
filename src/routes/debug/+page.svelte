@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { darkMode } from '$lib/DarkModeStore.svelte';
+  
   let keyPressReporting = false;
   
   function handleReset() {
@@ -12,14 +14,14 @@
 
 <div class="p-4 h-full flex flex-col">
   <div class="flex items-center justify-between -mt-4 mb-2">
-    <h2 class="text-2xl font-bold">Debug</h2>
+    <h2 class="text-2xl font-bold {$darkMode ? 'text-white' : 'text-gray-900'}">Debug</h2>
   </div>
   
-  <div class="bg-white rounded-xl shadow p-6 space-y-8 flex-1">
+  <div class="{$darkMode ? 'bg-black border-white' : 'bg-white'} rounded-xl shadow p-6 space-y-8 flex-1 {$darkMode ? 'border' : ''}">
     <!-- Key Press Reporting -->
-    <div class="p-5 bg-white rounded-lg border border-gray-200">
+    <div class="p-5 {$darkMode ? 'bg-black border-white' : 'bg-white border-gray-200'} rounded-lg border">
       <div class="flex items-center justify-between mb-2">
-        <h3 class="text-lg font-medium">Reports whether key is pressed</h3>
+        <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'}">Reports whether key is pressed</h3>
         <button 
           class="relative inline-flex items-center h-6 rounded-full w-11 transition-colors focus:outline-none"
           aria-label="Key Press Reporting Toggle"
@@ -32,15 +34,15 @@
             class:translate-x-1={!keyPressReporting}></span>
         </button>
       </div>
-      <p class="text-sm text-gray-600">
+      <p class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'}">
         text
       </p>
     </div>
     
     <!-- Reset Configuration -->
-    <div class="p-5 bg-white rounded-lg border border-gray-200">
-      <h3 class="text-lg font-medium mb-2">Reset</h3>
-      <p class="text-sm text-gray-600 mb-4">
+    <div class="p-5 {$darkMode ? 'bg-black border-white' : 'bg-white border-gray-200'} rounded-lg border">
+      <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'} mb-2">Reset</h3>
+      <p class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'} mb-4">
         text
       </p>
       <button 
@@ -52,9 +54,9 @@
     </div>
     
     <!-- Recovery Mode -->
-    <div class="p-5 bg-white rounded-lg border border-gray-200">
-      <h3 class="text-lg font-medium mb-2">Reboot to Recovery Mode</h3>
-      <p class="text-sm text-gray-600 mb-4">
+    <div class="p-5 {$darkMode ? 'bg-black border-white' : 'bg-white border-gray-200'} rounded-lg border">
+      <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'} mb-2">Reboot to Recovery Mode</h3>
+      <p class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'} mb-4">
         text
       </p>
       <button 
