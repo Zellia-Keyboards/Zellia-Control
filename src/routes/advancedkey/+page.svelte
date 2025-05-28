@@ -41,6 +41,19 @@
                 'Multiple key bindings',
                 'Advanced customization'
             ]
+        },
+        {
+            id: 'null-bind',
+            name: 'Null Bind',
+            description: 'Rapid trigger with SOCD cleaning',
+            icon: '🎯',
+            path: '/advancedkey/routes/socd',
+            features: [
+                'Rapid trigger technology',
+                'SOCD (Simultaneous Opposing Cardinal Directions)',
+                'Perfect for gaming',
+                'Ultra-responsive input'
+            ]
         }
     ];
 
