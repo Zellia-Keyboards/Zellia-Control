@@ -139,7 +139,7 @@
 
 <div class="h-full flex flex-col {$darkMode ? 'bg-black' : 'bg-gray-50'}">
     <!-- Header -->
-    <div class="{$darkMode ? 'bg-black border-white' : 'bg-white border-gray-200'} border-b px-6 py-4">
+    <div class="{$darkMode ? 'bg-black border-gray-500' : 'bg-white border-gray-200'} border-b px-6 py-4">
         <div class="flex items-center justify-between">
             <div class="flex items-center gap-4">
                 <button 
@@ -158,7 +158,7 @@
             </div>
             <div class="flex gap-3">
                 <button 
-                    class="px-4 py-2 {$darkMode ? 'text-white bg-gray-800 hover:bg-gray-700 border border-white' : 'text-gray-700 bg-gray-100 hover:bg-gray-200'} rounded-md transition-colors text-sm font-medium"
+                    class="px-4 py-2 {$darkMode ? 'text-white bg-gray-800 hover:bg-gray-700 border-gray-500' : 'text-gray-700 bg-gray-100 hover:bg-gray-200'} border rounded-md transition-colors text-sm font-medium"
                     on:click={resetConfiguration}
                     disabled={!$CurrentSelected}
                 >
@@ -179,11 +179,11 @@
     <div class="flex-1 p-6">
         {#if $CurrentSelected}
             <div class="max-w-6xl mx-auto">                <!-- Selected Key Info -->
-                <div class="{$darkMode ? 'bg-black border-white' : 'bg-white border-gray-200'} rounded-lg border p-6 mb-6">
+                <div class="{$darkMode ? 'bg-black border-gray-500' : 'bg-white border-gray-200'} rounded-lg border p-6 mb-6">
                     <div class="flex items-center justify-between">
                         <div class="flex items-center gap-4">
                             <div class="flex items-center gap-3">
-                                <div class="w-12 h-12 {$darkMode ? 'bg-gray-800 border-white' : 'bg-gray-100 border-blue-300'} rounded-lg flex items-center justify-center border-2">
+                                <div class="w-12 h-12 {$darkMode ? 'bg-gray-800 border-gray-500' : 'bg-gray-100 border-blue-300'} rounded-lg flex items-center justify-center border-2">
                                     <span class="font-mono font-bold {$darkMode ? 'text-white' : 'text-gray-900'}">{currentKeyName}</span>
                                 </div>
                                 <div>
@@ -194,7 +194,7 @@
                         </div>
                         <div class="flex items-center gap-3">
                             <span class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'}">Mode:</span>
-                            <span class="px-3 py-1 {$darkMode ? 'bg-gray-800 text-white border border-white' : 'bg-purple-100 text-purple-700'} rounded-full text-sm font-medium">
+                            <span class="px-3 py-1 {$darkMode ? 'bg-gray-800 text-white border-gray-500' : 'bg-purple-100 text-purple-700'} border rounded-full text-sm font-medium">
                                 Tap Hold
                             </span>
                         </div>
@@ -204,7 +204,7 @@
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <!-- Configuration Panel -->
                     <div class="lg:col-span-2 space-y-6">                        <!-- Tap Action Selection -->
-                        <div class="{$darkMode ? 'bg-black border-white' : 'bg-white border-gray-200'} rounded-lg border p-6">
+                        <div class="{$darkMode ? 'bg-black border-gray-500' : 'bg-white border-gray-200'} rounded-lg border p-6">
                             <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'} mb-4">Tap Action</h3>
                             <p class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'} mb-4">Action to perform when key is quickly tapped</p>
                             
@@ -216,7 +216,7 @@
                                             {#each category.actions as action}
                                                 <button
                                                     class="aspect-square w-15 h-15 text-xs rounded-md border transition-all {tapAction === action.id ? 
-                                                        ($darkMode ? 'bg-gray-800 border-white text-white' : 'bg-blue-50 border-blue-300 text-blue-700') : 
+                                                        ($darkMode ? 'bg-gray-800 border-gray-500 text-white' : 'bg-blue-50 border-blue-300 text-blue-700') : 
                                                         ($darkMode ? 'bg-gray-900 border-gray-600 hover:bg-gray-800 text-gray-300' : 'bg-white border-gray-200 hover:bg-gray-50 text-gray-700')
                                                     }"
                                                     on:click={() => tapAction = action.id}
@@ -230,7 +230,7 @@
                                 {/each}
                             </div>
                         </div>                        <!-- Hold Action Selection -->
-                        <div class="{$darkMode ? 'bg-black border-white' : 'bg-white border-gray-200'} rounded-lg border p-6">
+                        <div class="{$darkMode ? 'bg-black border-gray-500' : 'bg-white border-gray-200'} rounded-lg border p-6">
                             <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'} mb-4">Hold Action</h3>
                             <p class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'} mb-4">Action to perform when key is held down</p>
                             
@@ -242,7 +242,7 @@
                                             {#each category.actions as action}
                                                 <button
                                                     class="aspect-square w-15 h-15 text-xs rounded-md border transition-all {holdAction === action.id ? 
-                                                        ($darkMode ? 'bg-gray-800 border-white text-white' : 'bg-green-50 border-green-300 text-green-700') : 
+                                                        ($darkMode ? 'bg-gray-800 border-gray-500 text-white' : 'bg-green-50 border-green-300 text-green-700') : 
                                                         ($darkMode ? 'bg-gray-900 border-gray-600 hover:bg-gray-800 text-gray-300' : 'bg-white border-gray-200 hover:bg-gray-50 text-gray-700')
                                                     }"
                                                     on:click={() => holdAction = action.id}
@@ -256,7 +256,7 @@
                                 {/each}
                             </div>
                         </div>                        <!-- Timing Configuration -->
-                        <div class="{$darkMode ? 'bg-black border-white' : 'bg-white border-gray-200'} rounded-lg border p-6">
+                        <div class="{$darkMode ? 'bg-black border-gray-500' : 'bg-white border-gray-200'} rounded-lg border p-6">
                             <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'} mb-4">Timing Settings</h3>
                             
                             <div class="space-y-6">
@@ -301,7 +301,7 @@
 
                     <!-- Preview Panel -->
                     <div class="space-y-6">                        <!-- Live Preview -->
-                        <div class="{$darkMode ? 'bg-black border-white' : 'bg-white border-gray-200'} rounded-lg border p-6">
+                        <div class="{$darkMode ? 'bg-black border-gray-500' : 'bg-white border-gray-200'} rounded-lg border p-6">
                             <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'} mb-4">Preview</h3>
                             
                             <div class="space-y-3">
@@ -331,7 +331,7 @@
                                 <p class="mt-3 text-xs">Perfect for modifier keys that can also function as regular keys when tapped quickly.</p>
                             </div>
                         </div>                        <!-- Actions -->
-                        <div class="{$darkMode ? 'bg-black border-white' : 'bg-white border-gray-200'} rounded-lg border p-6">
+                        <div class="{$darkMode ? 'bg-black border-gray-500' : 'bg-white border-gray-200'} rounded-lg border p-6">
                             <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'} mb-4">Actions</h3>
                             <div class="space-y-3">
                                 <button 
@@ -364,7 +364,7 @@
 
         <!-- Configured Keys Summary -->
         {#if configuredTapHoldKeys.length > 0}
-            <div class="max-w-6xl mx-auto mt-6">                <div class="{$darkMode ? 'bg-black border-white' : 'bg-white border-gray-200'} rounded-lg border p-6">
+            <div class="max-w-6xl mx-auto mt-6">                <div class="{$darkMode ? 'bg-black border-gray-500' : 'bg-white border-gray-200'} rounded-lg border p-6">
                     <div class="flex items-center justify-between mb-4">
                         <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'}">Configured Tap Hold Keys</h3>
                         <span class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-500'}">{configuredTapHoldKeys.length} key{configuredTapHoldKeys.length !== 1 ? 's' : ''}</span>

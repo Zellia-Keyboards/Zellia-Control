@@ -546,7 +546,7 @@
 <div class="h-full flex flex-col {$darkMode ? 'bg-black' : 'bg-gray-50'}">
 	<div
 		class="{$darkMode
-			? 'bg-black border-white'
+			? 'bg-black border-gray-600'
 			: 'bg-white border-gray-200'} border-b px-6 py-4"
 	>
 		<div class="flex items-center justify-between">
@@ -593,7 +593,7 @@
 			<div class="flex gap-3">
 				<button
 					class="px-4 py-2 {$darkMode
-						? 'text-white bg-gray-800 hover:bg-gray-700 border border-white'
+						? 'text-white bg-gray-800 hover:bg-gray-700 border border-gray-600'
 						: 'text-gray-700 bg-gray-100 hover:bg-gray-200'} rounded-md transition-colors text-sm font-medium"
 					onclick={resetConfiguration}
 					disabled={!$CurrentSelected}
@@ -625,7 +625,7 @@
 					<div class="w-96 flex flex-col gap-4">
 						<div
 							class="{$darkMode
-								? 'bg-black border-white'
+								? 'bg-black border-gray-600'
 								: 'bg-white border-gray-200'} rounded-lg border p-6"
 						>
 							<h3
@@ -710,7 +710,7 @@
 									class="px-4 py-2 text-sm font-medium border-b-2 transition-colors {activeTab ===
 									value
 										? $darkMode
-											? 'border-white text-white'
+											? 'border-gray-400 text-white'
 											: 'border-blue-500 text-blue-600'
 										: $darkMode
 											? 'border-transparent text-gray-400 hover:text-gray-200'

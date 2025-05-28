@@ -16,7 +16,7 @@
     <h2 class="text-2xl font-bold {$darkMode ? 'text-white' : 'text-gray-900'}">Performance</h2>
     <div>
       <button class="{$darkMode ? 'bg-white hover:bg-gray-200 text-black' : 'bg-blue-600 hover:bg-blue-700 text-white'} px-4 py-2 rounded mr-2 transition-colors duration-200">Select all keys</button>
-      <button class="{$darkMode ? 'bg-gray-800 hover:bg-gray-700 text-white border border-white' : 'bg-gray-200 hover:bg-gray-300 text-gray-600'} px-4 py-2 rounded transition-colors duration-200">Discard selection</button>
+      <button class="{$darkMode ? 'bg-gray-800 hover:bg-gray-700 text-white border-gray-500' : 'bg-gray-200 hover:bg-gray-300 text-gray-600'} px-4 py-2 rounded transition-colors duration-200">Discard selection</button>
     </div>
   </div>
   <div class=" rounded-xl shadow p-6 flex flex-col md:flex-row gap-6 flex-1">

@@ -109,7 +109,7 @@
                 Apply Settings
             </button>
             <button 
-                class="{$darkMode ? 'bg-gray-800 hover:bg-gray-700 text-white border border-white' : 'bg-gray-200 hover:bg-gray-300 text-gray-600'} px-4 py-2 rounded transition-colors"
+                class="{$darkMode ? 'bg-gray-800 hover:bg-gray-700 text-white border-gray-500' : 'bg-gray-200 hover:bg-gray-300 text-gray-600'} px-4 py-2 rounded transition-colors"
                 on:click={() => perKeyMode = !perKeyMode}
             >
                 {perKeyMode ? 'Exit Per-Key Mode' : 'Per-Key Mode'}
@@ -123,7 +123,7 @@
             <div class="grid grid-cols-2 gap-3 mb-6">
                 {#each effects as effect}
                     <button
-                        class="p-3 rounded-lg border-2 text-left transition-all duration-200 {selectedEffect === effect.id ? ($darkMode ? 'border-white bg-gray-800' : 'border-blue-500 bg-blue-50') : ($darkMode ? 'border-gray-600 hover:border-gray-400' : 'border-gray-200 hover:border-gray-300')}"
+                        class="p-3 rounded-lg border-2 text-left transition-all duration-200 {selectedEffect === effect.id ? ($darkMode ? 'border-white bg-gray-800' : 'border-blue-500 bg-blue-50') : ($darkMode ? 'border-gray-500 hover:border-gray-400' : 'border-gray-200 hover:border-gray-300')}"
                         on:click={() => selectedEffect = effect.id}
                     >
                         <div class="font-medium {$darkMode ? 'text-white' : 'text-gray-900'}">{effect.name}</div>
@@ -223,7 +223,7 @@
                             {$CurrentSelected && selectedKeys.has(`${$CurrentSelected[0]},${$CurrentSelected[1]}`) ? 'Deselect Key' : 'Select Key'}
                         </button>
                         <button 
-                            class="{$darkMode ? 'bg-gray-800 hover:bg-gray-700 text-white border border-white' : 'bg-gray-600 hover:bg-gray-700 text-white'} px-3 py-2 rounded transition-colors"
+                            class="{$darkMode ? 'bg-gray-800 hover:bg-gray-700 text-white border-gray-500' : 'bg-gray-600 hover:bg-gray-700 text-white'} px-3 py-2 rounded transition-colors"
                             on:click={clearKeySelection}
                         >
                             Clear ({selectedKeys.size})
@@ -291,7 +291,7 @@
                             {/each}
                         </div>
                         <button 
-                            class="mt-2 w-full {$darkMode ? 'bg-gray-800 hover:bg-gray-700 text-white border border-white' : 'bg-gray-200 hover:bg-gray-300 text-gray-700'} px-3 py-2 rounded transition-colors"
+                            class="mt-2 w-full {$darkMode ? 'bg-gray-800 hover:bg-gray-700 text-white border-gray-500' : 'bg-gray-200 hover:bg-gray-300 text-gray-700'} px-3 py-2 rounded transition-colors"
                             on:click={addGradientColor}
                         >
                             Add Color

@@ -138,7 +138,7 @@
             </div>
             <div class="flex gap-3">
                 <button 
-                    class="px-4 py-2 {$darkMode ? 'text-white bg-gray-800 hover:bg-gray-700 border border-white' : 'text-gray-700 bg-gray-100 hover:bg-gray-200'} rounded-md transition-colors text-sm font-medium"
+                    class="px-4 py-2 {$darkMode ? 'text-white bg-gray-800 hover:bg-gray-700 border-gray-500' : 'text-gray-700 bg-gray-100 hover:bg-gray-200'} rounded-md transition-colors text-sm font-medium"
                     on:click={resetConfiguration}
                     disabled={!$CurrentSelected}
                 >
@@ -214,7 +214,7 @@
                             
                             <div class="grid grid-cols-2 gap-4">
                                 <button
-                                    class="p-4 rounded-lg border-2 text-left transition-all {toggleMode === 'press' ? ($darkMode ? 'border-white bg-gray-800' : 'border-blue-500 bg-blue-50') : ($darkMode ? 'border-gray-600 hover:border-gray-400' : 'border-gray-200 hover:border-gray-300')}"
+                                    class="p-4 rounded-lg border-2 text-left transition-all {toggleMode === 'press' ? ($darkMode ? 'border-white bg-gray-800' : 'border-blue-500 bg-blue-50') : ($darkMode ? 'border-gray-500 hover:border-gray-400' : 'border-gray-200 hover:border-gray-300')}"
                                     on:click={() => toggleMode = 'press'}
                                 >
                                     <div class="flex items-center gap-3 mb-2">
@@ -229,7 +229,7 @@
                                 </button>
                                 
                                 <button
-                                    class="p-4 rounded-lg border-2 text-left transition-all {toggleMode === 'release' ? ($darkMode ? 'border-white bg-gray-800' : 'border-blue-500 bg-blue-50') : ($darkMode ? 'border-gray-600 hover:border-gray-400' : 'border-gray-200 hover:border-gray-300')}"
+                                    class="p-4 rounded-lg border-2 text-left transition-all {toggleMode === 'release' ? ($darkMode ? 'border-white bg-gray-800' : 'border-blue-500 bg-blue-50') : ($darkMode ? 'border-gray-500 hover:border-gray-400' : 'border-gray-200 hover:border-gray-300')}"
                                     on:click={() => toggleMode = 'release'}
                                 >
                                     <div class="flex items-center gap-3 mb-2">
@@ -268,15 +268,15 @@
                             <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'} mb-4">Preview</h3>
                             
                             <div class="space-y-3">
-                                <div class="flex justify-between items-center py-2 border-b {$darkMode ? 'border-gray-600' : 'border-gray-100'}">
+                                <div class="flex justify-between items-center py-2 border-b {$darkMode ? 'border-gray-500' : 'border-gray-100'}">
                                     <span class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'}">Key</span>
                                     <span class="font-mono font-medium {$darkMode ? 'text-white' : 'text-gray-900'}">{currentKeyName}</span>
                                 </div>
-                                <div class="flex justify-between items-center py-2 border-b {$darkMode ? 'border-gray-600' : 'border-gray-100'}">
+                                <div class="flex justify-between items-center py-2 border-b {$darkMode ? 'border-gray-500' : 'border-gray-100'}">
                                     <span class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'}">Action</span>
                                     <span class="font-medium {$darkMode ? 'text-white' : 'text-gray-900'}">{keyActions.find(k => k.id === selectedToggleAction)?.name || selectedToggleAction}</span>
                                 </div>
-                                <div class="flex justify-between items-center py-2 border-b {$darkMode ? 'border-gray-600' : 'border-gray-100'}">
+                                <div class="flex justify-between items-center py-2 border-b {$darkMode ? 'border-gray-500' : 'border-gray-100'}">
                                     <span class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'}">Trigger</span>
                                     <span class="font-medium {$darkMode ? 'text-white' : 'text-gray-900'}">{toggleMode === 'press' ? 'On Press' : 'On Release'}</span>
                                 </div>

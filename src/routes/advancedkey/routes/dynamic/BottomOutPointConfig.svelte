@@ -9,7 +9,7 @@
 
 <div
     class="{$darkMode
-        ? 'bg-black border-white'
+        ? 'bg-black border-gray-600'
         : 'bg-white border-gray-200'} rounded-lg border p-6"
 >
     <h3

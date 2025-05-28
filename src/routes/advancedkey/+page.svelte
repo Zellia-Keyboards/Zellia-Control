@@ -109,7 +109,7 @@
             {/each}        </div>
 
         <!-- Getting Started Section -->
-        <div class="mt-6 {$darkMode ? 'bg-gray-900 border border-white' : 'bg-gradient-to-r from-blue-50 to-indigo-50'} rounded-xl p-6">
+        <div class="mt-6 {$darkMode ? 'bg-gray-900 border-gray-500' : 'bg-gradient-to-r from-blue-50 to-indigo-50'} rounded-xl p-6">
             <h3 class="text-lg font-semibold {$darkMode ? 'text-white' : 'text-gray-900'} mb-3">Getting Started</h3>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                 <div class="flex items-start gap-3">

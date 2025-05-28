@@ -16,7 +16,7 @@
     <h2 class="text-2xl font-bold {$darkMode ? 'text-white' : 'text-gray-900'}">Settings</h2>
   </div>
   
-  <div class="{$darkMode ? 'bg-black border border-white' : 'bg-white'} rounded-xl shadow p-6 space-y-8 flex-1">
+  <div class="{$darkMode ? 'bg-black border-gray-500' : 'bg-white'} rounded-xl shadow p-6 space-y-8 flex-1">
     <!-- Restart Device -->
     <div class="p-5 rounded-lg">
       <h3 class="text-lg font-medium mb-2 {$darkMode ? 'text-white' : 'text-gray-900'}">Restart Device</h3>

@@ -188,7 +188,7 @@
 
 <div class="h-full flex flex-col {$darkMode ? 'bg-black' : 'bg-gray-50'}">
     <!-- Header -->
-    <div class="{$darkMode ? 'bg-black border-white' : 'bg-white border-gray-200'} border-b px-6 py-4">
+    <div class="{$darkMode ? 'bg-black border-gray-500' : 'bg-white border-gray-200'} border-b px-6 py-4">
         <div class="flex items-center justify-between">
             <div class="flex items-center gap-4">
                 <button 
@@ -217,7 +217,7 @@
         </div>
     </div>    <!-- Key Selection Section -->
     {#if !canConfigure}
-        <div class="p-6 {$darkMode ? 'bg-black border-white' : 'bg-white border-gray-200'} border-b">
+        <div class="p-6 {$darkMode ? 'bg-black border-gray-500' : 'bg-white border-gray-200'} border-b">
             <div class="max-w-4xl mx-auto">
                 <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'} mb-3">Select Two Keys</h3>
                 <p class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'} mb-4">
@@ -226,7 +226,7 @@
                 
                 <!-- Selected Keys Display -->
                 <div class="grid grid-cols-2 gap-4 mb-4">
-                    <div class="p-4 border-2 border-dashed {selectedKeys.length >= 1 ? 'border-green-300 bg-green-50' : ($darkMode ? 'border-white bg-gray-800' : 'border-blue-300 bg-blue-50')} rounded-lg">
+                    <div class="p-4 border-2 border-dashed {selectedKeys.length >= 1 ? 'border-green-300 bg-green-50' : ($darkMode ? 'border-gray-500 bg-gray-800' : 'border-blue-300 bg-blue-50')} rounded-lg">
                         <div class="text-center">
                             {#if selectedKeys.length >= 1}
                                 <div class="w-12 h-12 bg-green-500 text-white rounded-lg flex items-center justify-center mx-auto mb-2">
@@ -298,7 +298,7 @@
                 <div class="flex w-full gap-8">
                     <!-- Left Panel - Configuration -->
                     <div class="flex w-72 flex-col gap-4">                        <!-- Selected Keys Info -->
-                        <div class="p-4 {$darkMode ? 'bg-gray-800 border-white' : 'bg-blue-50 border-blue-200'} border rounded-lg">
+                        <div class="p-4 {$darkMode ? 'bg-gray-800 border-gray-500' : 'bg-blue-50 border-blue-200'} border rounded-lg">
                             <div class="text-sm font-medium {$darkMode ? 'text-white' : 'text-blue-900'} mb-2">Selected Keys</div>
                             <div class="flex items-center gap-2 text-sm {$darkMode ? 'text-white' : 'text-blue-700'}">
                                 <span class="font-mono font-bold">{selectedKeys[0]}</span>
@@ -319,7 +319,7 @@
                             <div class="mt-3 grid gap-1">
                                 {#each NULL_BIND_BEHAVIOR_METADATA as behaviorMetadata}
                                     <button
-                                        class="relative flex items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none transition-colors {$darkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-100'} {behavior === behaviorMetadata.behavior ? ($darkMode ? 'bg-gray-800 text-white border border-white' : 'bg-blue-50 text-blue-900') : ($darkMode ? 'text-white' : 'text-gray-700')}"
+                                        class="relative flex items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none transition-colors {$darkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-100'} {behavior === behaviorMetadata.behavior ? ($darkMode ? 'bg-gray-800 text-white border-gray-500' : 'bg-blue-50 text-blue-900') : ($darkMode ? 'text-white' : 'text-gray-700')} border"
                                         on:click={() => behavior = behaviorMetadata.behavior}
                                     >
                                         <span class="absolute left-2 flex size-3.5 items-center justify-center">
@@ -335,7 +335,7 @@
                                                 <svg class="size-4 text-current" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                                 </svg>
-                                                <div class="absolute bottom-full right-0 mb-2 w-56 p-2 {$darkMode ? 'bg-black text-white border border-white' : 'bg-gray-900 text-white'} text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+                                                <div class="absolute bottom-full right-0 mb-2 w-56 p-2 {$darkMode ? 'bg-black text-white border-gray-500' : 'bg-gray-900 text-white'} border text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
                                                     {behaviorMetadata.description}
                                                 </div>
                                             </div>
@@ -387,16 +387,16 @@
                     </div>                    <!-- Right Panel - Tabs -->
                     <div class="flex flex-1 flex-col">
                         <!-- Tab Navigation -->
-                        <div class="{$darkMode ? 'border-white' : 'border-gray-200'} border-b">
+                        <div class="{$darkMode ? 'border-gray-500' : 'border-gray-200'} border-b">
                             <nav class="-mb-px flex space-x-8">
                                 <button
-                                    class="py-2 px-1 border-b-2 font-medium text-sm {activeTab === 'performance' ? ($darkMode ? 'border-white text-white' : 'border-blue-500 text-blue-600') : ($darkMode ? 'border-transparent text-gray-400 hover:text-white hover:border-gray-400' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300')}"
+                                    class="py-2 px-1 border-b-2 font-medium text-sm {activeTab === 'performance' ? ($darkMode ? 'border-gray-500 text-white' : 'border-blue-500 text-blue-600') : ($darkMode ? 'border-transparent text-gray-400 hover:text-white hover:border-gray-400' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300')}"
                                     on:click={() => activeTab = 'performance'}
                                 >
                                     Performance
                                 </button>
                                 <button
-                                    class="py-2 px-1 border-b-2 font-medium text-sm {activeTab === 'key-tester' ? ($darkMode ? 'border-white text-white' : 'border-blue-500 text-blue-600') : ($darkMode ? 'border-transparent text-gray-400 hover:text-white hover:border-gray-400' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300')}"
+                                    class="py-2 px-1 border-b-2 font-medium text-sm {activeTab === 'key-tester' ? ($darkMode ? 'border-gray-500 text-white' : 'border-blue-500 text-blue-600') : ($darkMode ? 'border-transparent text-gray-400 hover:text-white hover:border-gray-400' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300')}"
                                     on:click={() => activeTab = 'key-tester'}
                                 >
                                     Key Tester
@@ -407,7 +407,7 @@
                         <!-- Tab Content -->
                         <div class="flex-1 mt-6">
                             {#if activeTab === 'performance'}
-                                <div class="flex flex-col gap-4 rounded-md border {$darkMode ? 'border-white bg-black' : 'border-gray-200 bg-white'} p-4 shadow-sm">
+                                <div class="flex flex-col gap-4 rounded-md border {$darkMode ? 'border-gray-500 bg-black' : 'border-gray-200 bg-white'} p-4 shadow-sm">
                                     <!-- Rapid Trigger Toggle -->
                                     <div class="flex items-center justify-between">
                                         <div class="flex-1">
@@ -469,20 +469,20 @@
                                         </div>
                                     {/if}
                                 </div>                            {:else if activeTab === 'key-tester'}
-                                <div class="flex flex-col gap-4 rounded-md border {$darkMode ? 'border-white bg-black' : 'border-gray-200 bg-white'} p-4 shadow-sm">
+                                <div class="flex flex-col gap-4 rounded-md border {$darkMode ? 'border-gray-500 bg-black' : 'border-gray-200 bg-white'} p-4 shadow-sm">
                                     <div class="text-center">
                                         <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'} mb-2">Key Tester</h3>
                                         <p class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'} mb-4">Press the configured keys to test the null bind behavior</p>
                                         
                                         <div class="grid grid-cols-2 gap-4 max-w-md mx-auto">
-                                            <div class="p-6 border-2 {$darkMode ? 'border-white' : 'border-gray-300'} rounded-lg">
+                                            <div class="p-6 border-2 {$darkMode ? 'border-gray-500' : 'border-gray-300'} rounded-lg">
                                                 <div class="text-2xl font-mono font-bold {$darkMode ? 'text-white' : 'text-gray-900'} mb-2">{selectedKeys[0]}</div>
                                                 <div class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'}">Key 1</div>
                                                 {#if behavior === 1}
                                                     <div class="text-xs text-green-600 mt-1 font-medium">Priority Key</div>
                                                 {/if}
                                             </div>
-                                            <div class="p-6 border-2 {$darkMode ? 'border-white' : 'border-gray-300'} rounded-lg">
+                                            <div class="p-6 border-2 {$darkMode ? 'border-gray-500' : 'border-gray-300'} rounded-lg">
                                                 <div class="text-2xl font-mono font-bold {$darkMode ? 'text-white' : 'text-gray-900'} mb-2">{selectedKeys[1]}</div>
                                                 <div class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'}">Key 2</div>
                                                 {#if behavior === 2}
@@ -512,7 +512,7 @@
         </div>
     {/if}    <!-- Configured Keys Summary -->
     {#if configuredNullBindKeys.length > 0}
-        <div class="{$darkMode ? 'bg-black border-white' : 'bg-white border-gray-200'} border-t p-6">
+        <div class="{$darkMode ? 'bg-black border-gray-500' : 'bg-white border-gray-200'} border-t p-6">
             <div class="max-w-7xl mx-auto">
                 <div class="flex items-center justify-between mb-4">
                     <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'}">Configured Null Bind Keys</h3>
@@ -523,7 +523,7 @@
                         {@const [x, y] = keyId.split(',').map(Number)}
                         {@const keyName = $KeyboardDisplayValues[y]?.[x] || 'Unknown'}
                         {@const nullBindConfig = config as NullBindConfiguration}
-                        <div class="p-4 {$darkMode ? 'bg-gray-800 border-white' : 'bg-gray-50 border-gray-200'} rounded-lg border">
+                        <div class="p-4 {$darkMode ? 'bg-gray-800 border-gray-500' : 'bg-gray-50 border-gray-200'} rounded-lg border">
                             <div class="flex items-center justify-between mb-2">
                                 <span class="font-mono font-bold {$darkMode ? 'text-white' : 'text-gray-900'}">{keyName}</span>
                             </div>
