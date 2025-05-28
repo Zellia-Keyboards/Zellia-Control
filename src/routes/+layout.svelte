@@ -5,15 +5,15 @@
     import { page } from '$app/stores';
 
     const NAVIGATE = [
-        ["/test", "Test"],
-        ["/performance", "Performance"],
-        ["/remap", "Remap"],
-        ["/lighting", "Lighting"],
-        ["/advancedkey", "Advanced Keys"],
-        ["/calibration", "Calibration"],
-        ["/debug", "Debug"],
-        ["/settings", "Settings"],
-        ["/about", "About"],
+        //["/test", "Test", "🧪"],
+        ["/performance", "Performance", "⚡"],
+        ["/remap", "Remap", "⌨️"],
+        ["/lighting", "Lighting", "💡"],
+        ["/advancedkey", "Advanced Keys", "🔧"],
+        ["/calibration", "Calibration", "⚖️"],
+        ["/debug", "Debug", "🐛"],
+        ["/settings", "Settings", "⚙️"],
+        ["/about", "About", "ℹ️"],
     ];
 
     let { children } = $props();
@@ -22,50 +22,140 @@
 
     // Function to check if a navigation item is active
     function isActive(href: string): boolean {
-        // Check if current path starts with the href (for nested routes like /advancedkey/routes/...)
         return $page.url.pathname === href || $page.url.pathname.startsWith(href + '/');
     }
 </script>
 
-<div class="flex h-screen">
+<!-- Small Screen Warning (follows codebase theme) -->
+<div class="xl:hidden fixed inset-0 bg-gray-50 flex items-center justify-center z-50">
+    <div class="max-w-2xl mx-4">
+        <!-- Main Warning Card -->
+        <div class="bg-white rounded-xl shadow-lg border border-gray-200 p-8 text-center">
+            <!-- Icon and Title -->
+            <div class="flex items-center justify-center mb-6">
+                <div class="w-16 h-16 bg-indigo-100 rounded-xl flex items-center justify-center">
+                    <svg class="w-8 h-8 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    </svg>
+                </div>
+            </div>
+            
+            <h2 class="text-2xl font-bold text-gray-900 mb-4">Display Too Small</h2>
+            <p class="text-gray-600 mb-6 leading-relaxed">
+                Zellia Control requires a larger display for the optimal keyboard configuration experience. 
+                Please use a desktop or laptop computer, or expand your browser window.
+            </p>
+            
+            <!-- Requirements Info -->
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                <div class="flex items-center gap-3 text-blue-800">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <div class="text-sm font-medium">
+                        Minimum recommended width: 1280px
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Features that require larger screen -->
+            <div class="text-left space-y-3 mb-6">
+                <h3 class="text-lg font-medium text-gray-900 text-center mb-4">Features requiring larger display:</h3>
+                <div class="grid grid-cols-1 gap-3">
+                    <div class="flex items-center gap-3 text-sm text-gray-700">
+                        <div class="w-1.5 h-1.5 rounded-full bg-indigo-500"></div>
+                        <span>Keyboard layout visualization</span>
+                    </div>
+                    <div class="flex items-center gap-3 text-sm text-gray-700">
+                        <div class="w-1.5 h-1.5 rounded-full bg-indigo-500"></div>
+                        <span>Advanced key configuration panels</span>
+                    </div>
+                    <div class="flex items-center gap-3 text-sm text-gray-700">
+                        <div class="w-1.5 h-1.5 rounded-full bg-indigo-500"></div>
+                        <span>Performance tuning controls</span>
+                    </div>
+                    <div class="flex items-center gap-3 text-sm text-gray-700">
+                        <div class="w-1.5 h-1.5 rounded-full bg-indigo-500"></div>
+                        <span>Lighting configuration interface</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Action Button -->
+            <div class="flex justify-center">
+                <button 
+                    class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-6 py-3 rounded-lg transition-colors duration-200 shadow-sm"
+                    onclick={() => window.location.reload()}
+                >
+                    Retry After Resizing
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main Application (hidden on small screens) -->
+<div class="hidden xl:flex h-screen bg-gray-50">
     <!-- Sidebar -->
-    <div class="flex flex-col w-48 bg-white shadow h-full overflow-y-auto">
-        <p class="font-bold p-4 text-2xl text-black text-center">Zellia Control</p>
-        <!-- Large Centered Sync Button -->
+    <div class="flex flex-col w-52 bg-white shadow-lg h-full overflow-y-auto border-r border-gray-200">
+        <!-- Header -->
+        <div class="p-4 border-b border-gray-100">
+            <h1 class="font-bold text-xl text-gray-900 text-center">Zellia Control</h1>
+        </div>
+        
+        <!-- Sync Button -->
         <div class="flex justify-center mb-4 mt-2">
             <button class="bg-indigo-200 px-18 py-2 rounded-4xl font-bold hover:bg-indigo-400 hover:text-white transition-colors duration-200 shadow w-auto">Sync</button>
         </div>
-        <!-- Profile Dropdown and Import/Export Buttons -->
-        <div class="flex flex-col gap-2 px-2 mb-2">
-            <div class="flex flex-col items-stretch mb-2">
-                <!-- Profile Dropdown (repurposed for keyboard profiles) -->
-                <div class="relative">
-                    <button class="flex items-center px-3 py-1 text-sm font-semibold border border-gray-300 rounded-lg bg-white hover:bg-gray-100 focus:outline-none w-full justify-between transition-all duration-200" onclick={() => showDropdown = !showDropdown} aria-haspopup="true" aria-expanded={showDropdown}>
-                        <span>Profiles</span>
-                        <svg class="w-4 h-4 ml-2 transition-transform duration-200" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style:transform={showDropdown ? 'rotate(180deg)' : 'rotate(0deg)'}><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
-                    </button>
-                </div>
-                <!-- Import/Export Buttons -->
-                <div class="flex gap-1 mt-2 transition-all duration-300" style:marginTop={showDropdown ? '0.5rem' : '0'}>
-                    <button class="px-2 py-1 text-xs border border-gray-300 rounded-md bg-white hover:bg-gray-100 w-full">Import</button>
-                    <button class="px-2 py-1 text-xs border border-gray-300 rounded-md bg-white hover:bg-gray-100 w-full">Export</button>
-                </div>
+        
+        <!-- Profile Section -->
+        <div class="px-3 pb-3 border-b border-gray-100">
+            <!-- Profile Dropdown -->
+            <div class="relative mb-2">
+                <button 
+                    class="flex items-center justify-between w-full px-3 py-2 text-sm font-medium text-gray-700 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 transition-colors duration-200" 
+                    onclick={() => showDropdown = !showDropdown}
+                >
+                    <span>Profiles</span>
+                    <svg class="w-4 h-4 transition-transform duration-200" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style:transform={showDropdown ? 'rotate(180deg)' : 'rotate(0deg)'}>
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+                    </svg>
+                </button>
+                
+                {#if showDropdown}
+                    <div class="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
+                        <div class="p-3 text-sm text-gray-600">No profiles available</div>
+                    </div>
+                {/if}
             </div>
-            <!-- Animate the rest of the sidebar content down when dropdown is open -->
-            <div class="transition-all duration-300" style:marginTop={showDropdown ? '2.5rem' : '0'}>
-                <div class="flex flex-col gap-1 mt-4">
-                    {#each NAVIGATE as [href, name]}
-                        <a 
-                            {href} 
-                            class="p-2 rounded-2xl font-bold transition-colors duration-200 focus:outline-none {isActive(href) ? 'bg-indigo-500 text-white' : 'hover:bg-indigo-100 hover:text-indigo-700 focus:bg-indigo-200'}"
-                        >
-                            {name}
-                        </a>
-                    {/each}
-                </div>
+            
+            <!-- Import/Export Buttons -->
+            <div class="grid grid-cols-2 gap-2">
+                <button class="px-3 py-2 text-xs font-medium text-gray-600 bg-gray-50 border border-gray-200 rounded-md hover:bg-gray-100 transition-colors duration-200">
+                    Import
+                </button>
+                <button class="px-3 py-2 text-xs font-medium text-gray-600 bg-gray-50 border border-gray-200 rounded-md hover:bg-gray-100 transition-colors duration-200">
+                    Export
+                </button>
             </div>
         </div>
-        <div class="flex-grow"></div>
+        
+        <!-- Navigation -->
+        <div class="flex-1 p-3">
+            <nav class="space-y-1">
+                {#each NAVIGATE as [href, name, icon]}
+                    <a 
+                        {href} 
+                        class="flex items-center gap-3 w-full px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 {isActive(href) 
+                            ? 'bg-indigo-600 text-white shadow-sm' 
+                            : 'text-gray-700 hover:bg-indigo-50 hover:text-indigo-700'}"
+                    >
+                        <span class="text-base">{icon}</span>
+                        <span>{name}</span>
+                    </a>
+                {/each}
+            </nav>
+        </div>
     </div>
 
     <!-- Main Content -->
@@ -103,6 +193,6 @@
 <style lang="postcss">
     @reference "tailwindcss";
     :global(html) {
-        background-color: theme(--color-gray-100);
+        background-color: theme(--color-gray-50);
     }
 </style>
