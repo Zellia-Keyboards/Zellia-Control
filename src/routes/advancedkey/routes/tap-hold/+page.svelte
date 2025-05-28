@@ -7,7 +7,7 @@
         updateGlobalConfiguration, 
         resetGlobalConfiguration,
         keyActions
-    } from "../../../../lib/AdvancedKeyShared";
+    } from "$lib/AdvancedKeyShared";
 
     // Define the tap-hold specific configuration type
     type TapHoldConfiguration = {

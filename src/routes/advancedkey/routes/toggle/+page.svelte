@@ -8,7 +8,7 @@
         resetGlobalConfiguration,
         keyActions,
         type KeyConfiguration 
-    } from "../../../../lib/AdvancedKeyShared";
+    } from "$lib/AdvancedKeyShared";
 
     let selectedToggleAction = $state('caps');
     let toggleMode = $state('press');

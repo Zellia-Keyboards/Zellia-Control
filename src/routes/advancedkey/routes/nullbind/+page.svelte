@@ -7,7 +7,7 @@
         updateGlobalConfiguration, 
         resetGlobalConfiguration,
         keyActions
-    } from "../../../../lib/AdvancedKeyShared";
+    } from "$lib/AdvancedKeyShared";
 
     // Define the null bind specific configuration type
     type NullBindConfiguration = {

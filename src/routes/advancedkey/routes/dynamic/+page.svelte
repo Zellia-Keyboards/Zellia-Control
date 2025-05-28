@@ -9,7 +9,7 @@
         keyActions,
         DKSAction,
         type KeyConfiguration 
-    } from "../../../../lib/AdvancedKeyShared";
+    } from "$lib/AdvancedKeyShared";
 
     // Define the dynamic keystroke specific configuration type
     type DynamicKeystrokeConfiguration = {
