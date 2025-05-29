@@ -429,17 +429,42 @@
                                             </div>
                                             <span class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-500'}">{uiActuationPoint.toFixed(1)}mm</span>
                                         </div>
+                                        
+                                        <!-- Warning box for values below 0.3 -->
+                                        {#if uiActuationPoint < 0.3}
+                                            <div class="mb-2 p-2 {$darkMode ? 'bg-yellow-900 border-yellow-600 text-yellow-200' : 'bg-yellow-50 border-yellow-300 text-yellow-700'} border rounded-md text-xs">
+                                                ⚠️ The key might be too sensitive, so be careful
+                                            </div>
+                                        {/if}
+                                        
+                                        <!-- Dual input: Slider -->
                                         <input 
                                             type="range" 
-                                            min="0.1"
+                                            min="0.01"
                                             max={bottomOutPoint > 0 ? bottomOutPoint - 0.1 : SWITCH_DISTANCE}
-                                            step="0.1" 
+                                            step="0.01" 
                                             bind:value={uiActuationPoint}
                                             on:change={commitActuationPoint}
-                                            class="w-full h-2 rounded-full {$darkMode ? 'bg-gray-600' : 'bg-gray-300'} appearance-none slider-thumb"
+                                            class="w-full h-2 rounded-full {$darkMode ? 'bg-gray-600' : 'bg-gray-300'} appearance-none slider-thumb mb-2"
                                         />
+                                        
+                                        <!-- Dual input: Text input -->
+                                        <div class="flex items-center gap-2 mb-2">
+                                            <span class="text-xs {$darkMode ? 'text-gray-400' : 'text-gray-500'}">Direct input:</span>
+                                            <input 
+                                                type="number" 
+                                                min="0.01" 
+                                                max={bottomOutPoint > 0 ? bottomOutPoint - 0.1 : SWITCH_DISTANCE}
+                                                step="0.01" 
+                                                bind:value={uiActuationPoint}
+                                                on:change={commitActuationPoint}
+                                                class="w-20 px-2 py-1 text-xs border rounded {$darkMode ? 'bg-gray-800 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'}"
+                                            />
+                                            <span class="text-xs {$darkMode ? 'text-gray-400' : 'text-gray-500'}">mm</span>
+                                        </div>
+                                        
                                         <div class="flex justify-between text-xs {$darkMode ? 'text-gray-400' : 'text-gray-500'} mt-1">
-                                            <span>0.1mm</span>
+                                            <span>0.01mm</span>
                                             <span>{(bottomOutPoint > 0 ? bottomOutPoint - 0.1 : SWITCH_DISTANCE).toFixed(1)}mm</span>
                                         </div>
                                     </div>

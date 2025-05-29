@@ -23,21 +23,44 @@
     <!-- 1st Box: Actuation Point -->
     <div class="flex-1 min-w-[260px] flex flex-col">
       <h3 class="text-lg font-medium mb-4 {$darkMode ? 'text-white' : 'text-gray-900'}">Actuation Point</h3>
-      <p class="text-sm {$darkMode ? 'text-gray-300' : 'text-gray-600'} mb-4">Set the actuation point for your keys.</p>
-      <div class="mb-2 flex-1">
+      <p class="text-sm {$darkMode ? 'text-gray-300' : 'text-gray-600'} mb-4">Set the actuation point for your keys.</p>      <div class="mb-2 flex-1">
         <div class="relative">
           <div class="flex justify-between text-sm {$darkMode ? 'text-gray-400' : 'text-gray-500'} mb-1">
             <div>ACTUATION POINT</div>
             <div>{actuationPoint.toFixed(2)} mm</div>
           </div>
+          
+          <!-- Warning box for values below 0.3 -->
+          {#if actuationPoint < 0.3}
+            <div class="mb-2 p-2 {$darkMode ? 'bg-yellow-900 border-yellow-600 text-yellow-200' : 'bg-yellow-50 border-yellow-300 text-yellow-700'} border rounded-md text-xs">
+              ⚠️ The key might be too sensitive, so be careful
+            </div>
+          {/if}
+          
+          <!-- Dual input: Slider -->
           <input 
             type="range" 
-            min="0" 
+            min="0.01" 
             max="4" 
             step="0.01" 
             bind:value={actuationPoint}
-            class="w-full h-2 rounded-full {$darkMode ? 'bg-gray-700' : 'bg-gray-300'} appearance-none slider-thumb" 
+            class="w-full h-2 rounded-full {$darkMode ? 'bg-gray-700' : 'bg-gray-300'} appearance-none slider-thumb mb-2" 
           />
+          
+          <!-- Dual input: Text input -->
+          <div class="flex items-center gap-2 mb-2">
+            <span class="text-xs {$darkMode ? 'text-gray-400' : 'text-gray-500'}">Direct input:</span>
+            <input 
+              type="number" 
+              min="0.01" 
+              max="4" 
+              step="0.01" 
+              bind:value={actuationPoint}
+              class="w-20 px-2 py-1 text-xs border rounded {$darkMode ? 'bg-gray-800 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'}"
+            />
+            <span class="text-xs {$darkMode ? 'text-gray-400' : 'text-gray-500'}">mm</span>
+          </div>
+          
           <div class="flex justify-between text-sm {$darkMode ? 'text-gray-400' : 'text-gray-500'} mb-1">
             <div>HIGH</div>
             <div>LOW</div>
