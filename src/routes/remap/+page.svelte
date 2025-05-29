@@ -58,10 +58,10 @@
 
 <div class="p-4 h-full flex flex-col">
     <!-- Section Tabs - Large and full width -->
-    <div class="flex border-b {$darkMode ? 'border-white' : 'border-gray-200'}">
+    <div class="flex flex-col}">
         {#each sections as section}
             <button
-            class="px-8 py-4 font-semibold rounded-4xl text-xl transition-colors duration-200 flex-1 h-full {selectedSection === section.id ? ($darkMode ? 'border-white text-white bg-gray-800 rounded-4xl' : 'border-blue-600 text-blue-600 bg-blue-50 rounded-4xl') : ($darkMode ? 'border-transparent text-gray-400 hover:text-white hover:border-gray-400' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300')}"
+            class="px-8 py-4 font-semibold rounded-4xl text-xl transition-colors duration-500 flex-1 h-full {selectedSection === section.id ? ($darkMode ? 'border-white text-white bg-gray-800 rounded-4xl' : 'border-blue-600 text-blue-600 bg-blue-50 rounded-4xl') : ($darkMode ? 'border-transparent text-gray-400 hover:text-white hover:border-gray-400' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300')}"
             on:click={() => selectedSection = section.id}
             >
                 {section.label}
