@@ -94,11 +94,11 @@
                         
                         <!-- Collapsible Panel Content -->
                         {#if expandedGroups.includes(group.id)}
-                            <div class="mt-3 p-3 border {$darkMode ? 'border-white' : 'border-gray-200'} rounded-lg">
+                            <div class="mt-3 p-3 border {$darkMode ? 'border-gray-600' : 'border-gray-200'} rounded-lg">
                                 <div class="flex flex-wrap gap-3">
                                     {#each getKeysForGroup(group.id) as [name, code]}
                                         <button
-                                            class="key-square rounded-lg font-bold border {$darkMode ? 'border-white bg-black text-white hover:bg-gray-800' : 'border-gray-300 bg-white text-gray-900 hover:bg-gray-100'} transition-colors text-base"
+                                            class="key-square rounded-lg font-bold border {$darkMode ? 'border-gray-600 bg-black text-white hover:bg-gray-800' : 'border-gray-300 bg-white text-gray-900 hover:bg-gray-100'} transition-colors text-base"
                                         >{name}</button>
                                     {/each}
                                 </div>
@@ -113,7 +113,7 @@
                 <div class="flex flex-wrap gap-3">
                     {#each ['F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8', 'F9', 'F10', 'F11', 'F12'] as key}
                         <button
-                            class="key-square rounded-lg font-bold border {$darkMode ? 'border-white bg-black text-white hover:bg-gray-800' : 'border-gray-300 bg-white text-gray-900 hover:bg-gray-100'} transition-colors text-base"
+                            class="key-square rounded-lg font-bold border {$darkMode ? 'border-gray-600 bg-black text-white hover:bg-gray-800' : 'border-gray-300 bg-white text-gray-900 hover:bg-gray-100'} transition-colors text-base"
                         >{key}</button>
                     {/each}
                 </div>
@@ -124,7 +124,7 @@
                 <div class="flex flex-wrap gap-3">
                     {#each ['Play/Pause', 'Stop', 'Previous', 'Next', 'Volume Up', 'Volume Down', 'Mute'] as key}
                         <button
-                            class="key-square rounded-lg font-bold border {$darkMode ? 'border-white bg-black text-white hover:bg-gray-800' : 'border-gray-300 bg-white text-gray-900 hover:bg-gray-100'} transition-colors text-base"
+                            class="key-square rounded-lg font-bold border {$darkMode ? 'border-gray-600 bg-black text-white hover:bg-gray-800' : 'border-gray-300 bg-white text-gray-900 hover:bg-gray-100'} transition-colors text-base"
                         >{key}</button>
                     {/each}
                 </div>
@@ -135,7 +135,7 @@
                 <div class="flex flex-wrap gap-3">
                     {#each ['Left Click', 'Right Click', 'Middle Click', 'Mouse Up', 'Mouse Down', 'Mouse Left', 'Mouse Right'] as key}
                         <button
-                            class="key-square rounded-lg font-bold border {$darkMode ? 'border-white bg-black text-white hover:bg-gray-800' : 'border-gray-300 bg-white text-gray-900 hover:bg-gray-100'} transition-colors text-base"
+                            class="key-square rounded-lg font-bold border {$darkMode ? 'border-gray-600 bg-black text-white hover:bg-gray-800' : 'border-gray-300 bg-white text-gray-900 hover:bg-gray-100'} transition-colors text-base"
                         >{key}</button>
                     {/each}
                 </div>
