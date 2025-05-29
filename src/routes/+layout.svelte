@@ -198,7 +198,7 @@
             />
         </div>
         <!-- Component for adjust part -->
-        <div class="{$darkMode ? 'bg-black border-gray-600 text-white' : 'bg-white'} rounded-2xl shadow p-4 mt-2 mb-4 grow {$darkMode ? 'border' : ''}">>
+        <div class="{$darkMode ? 'bg-black border-gray-600 text-white' : 'bg-white'} rounded-2xl shadow p-4 mt-2 mb-4 grow {$darkMode ? 'border' : ''}">
             {@render children()}
         </div>
     </div>
