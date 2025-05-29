@@ -100,7 +100,7 @@
     <!-- Sidebar -->
     <div class="flex flex-col w-52 {$darkMode ? 'bg-black border-gray-600' : 'bg-white border-gray-200'} shadow-lg h-full overflow-y-auto border-r">
         <!-- Header -->
-        <div class="p-4  {$darkMode ? ' ' : ' '}">
+        <div class="p-4">
             <h1 class="font-bold text-xl {$darkMode ? 'text-white' : 'text-gray-900'} text-center">Zellia Control</h1>
         </div>
         
