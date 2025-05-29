@@ -17,9 +17,9 @@
     <h2 class="text-2xl font-bold {$darkMode ? 'text-white' : 'text-gray-900'}">Debug</h2>
   </div>
   
-  <div class="rounded-xl shadow p-6 space-y-8 flex-1 {$darkMode ? 'border' : ''}">
+  <div class="rounded-xl shadow p-6 space-y-8 flex-1 {$darkMode ? 'border-gray-600' : ''}">
     <!-- Key Press Reporting -->
-    <div class="p-5 {$darkMode ? 'bg-black border-white' : 'bg-white border-gray-200'} rounded-lg border">
+    <div class="p-5 {$darkMode ? 'bg-black border-gray-600' : 'bg-white border-gray-200'} rounded-lg border">
       <div class="flex items-center justify-between mb-2">
         <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'}">Reports whether key is pressed</h3>
         <button 
@@ -40,7 +40,7 @@
     </div>
     
     <!-- Reset Configuration -->
-    <div class="p-5 {$darkMode ? 'bg-black border-white' : 'bg-white border-gray-200'} rounded-lg border">
+    <div class="p-5 {$darkMode ? 'bg-black border-gray-600' : 'bg-white border-gray-200'} rounded-lg border">
       <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'} mb-2">Reset</h3>
       <p class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'} mb-4">
         text
@@ -54,7 +54,7 @@
     </div>
     
     <!-- Recovery Mode -->
-    <div class="p-5 {$darkMode ? 'bg-black border-white' : 'bg-white border-gray-200'} rounded-lg border">
+    <div class="p-5 {$darkMode ? 'bg-black border-gray-600' : 'bg-white border-gray-200'} rounded-lg border">
       <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'} mb-2">Reboot to Recovery Mode</h3>
       <p class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'} mb-4">
         text
