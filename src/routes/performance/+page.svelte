@@ -33,7 +33,7 @@
           <!-- Warning box for values below 0.3 -->
           {#if actuationPoint < 0.3}
             <div class="mb-2 p-2 {$darkMode ? 'bg-yellow-900 border-yellow-600 text-yellow-200' : 'bg-yellow-50 border-yellow-300 text-yellow-700'} border rounded-md text-xs">
-              ⚠️ The key might be too sensitive, so be careful
+              ⚠️ the key may be too sensitive, causing instability, please be careful
             </div>
           {/if}
           
@@ -150,7 +150,7 @@
             </div>
             <input 
               type="range" 
-              min="0" 
+              min="0.01" 
               max="2" 
               step="0.01" 
               bind:value={pressSensitivity}
@@ -168,7 +168,7 @@
             </div>
             <input 
               type="range" 
-              min="0" 
+              min="0.01" 
               max="2" 
               step="0.01" 
               bind:value={releaseSensitivity}
@@ -187,7 +187,7 @@
             </div>
             <input 
               type="range" 
-              min="0" 
+              min="0.01" 
               max="2" 
               step="0.01" 
               bind:value={sensitivityValue}
