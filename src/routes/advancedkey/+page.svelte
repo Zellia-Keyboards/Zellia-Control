@@ -74,7 +74,7 @@
         {#each keyModes as mode}
             <div class="group relative w-full">
                 <button
-                    class="w-full h-full p-6 {$darkMode ? 'bg-black border-white hover:border-gray-300' : 'bg-white hover:border-blue-200'} rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border-2 border-transparent text-left group-hover:scale-105 flex flex-col"
+                    class="w-full h-full p-6 {$darkMode ? 'bg-black border-gray-600 hover:border-gray-300' : 'bg-white hover:border-blue-200'} rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border-2 border-transparent text-left group-hover:scale-105 flex flex-col"
                     onclick={() => navigateToMode(mode.path)}
                 >
                     <!-- Mode Header -->
