@@ -19,9 +19,9 @@
 </script>
 
 <div
-	class="{$darkMode
-		? 'bg-black border-white'
-		: 'bg-white border-gray-200'} rounded-lg border p-6"
+	class="rounded-lg border p-6"
+	style="background-color: color-mix(in srgb, var(--theme-color-primary) 5%, ${$darkMode ? 'black' : 'white'});
+		   border-color: {$darkMode ? 'color-mix(in srgb, var(--theme-color-primary) 20%, #374151)' : 'color-mix(in srgb, var(--theme-color-primary) 15%, #e5e7eb)'};"
 >
 	<h3
 		class="text-lg font-medium {$darkMode
@@ -50,17 +50,31 @@
 				>
 					{category.name}
 				</h4>
-				<div class="grid grid-cols-10 gap-2">
-					{#each category.actions as action}
+				<div class="grid grid-cols-10 gap-2">					{#each category.actions as action}
 						<button
-							class="aspect-square w-15 h-15 text-xs rounded-md border transition-all {selectedBindingIndex !==
-							null
-								? $darkMode
-									? 'bg-gray-900 border-gray-600 hover:bg-gray-800 hover:border-white text-gray-300'
-									: 'bg-white border-gray-200 hover:bg-blue-50 hover:border-blue-300 text-gray-700'
-								: $darkMode
-									? 'bg-gray-800 border-gray-700 text-gray-500 cursor-not-allowed'
-									: 'bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed'}"
+							class="aspect-square w-15 h-15 text-xs rounded-md border transition-all"							style="{selectedBindingIndex !== null
+								? `background-color: ${$darkMode ? '#111827' : 'white'}; 
+								   border-color: ${$darkMode ? 'color-mix(in srgb, var(--theme-color-primary) 15%, #4b5563)' : 'color-mix(in srgb, var(--theme-color-primary) 10%, #e5e5e5)'}; 
+								   color: ${$darkMode ? '#d1d5db' : '#374151'};`
+								: `background-color: color-mix(in srgb, var(--theme-color-primary) 3%, ${$darkMode ? 'black' : '#f3f4f6'}); 
+								   border-color: color-mix(in srgb, var(--theme-color-primary) 8%, ${$darkMode ? '#374151' : '#e5e5e5'}); 
+								   color: color-mix(in srgb, var(--theme-color-primary) 15%, ${$darkMode ? '#6b7280' : '#9ca3af'});
+								   cursor: not-allowed;`
+							}"
+							onmouseover={(e) => {
+								if (selectedBindingIndex !== null) {
+									(e.currentTarget as HTMLElement).style.backgroundColor = `color-mix(in srgb, var(--theme-color-primary) 15%, ${$darkMode ? 'black' : 'white'})`;
+									(e.currentTarget as HTMLElement).style.borderColor = 'var(--theme-color-primary)';
+									(e.currentTarget as HTMLElement).style.color = 'var(--theme-color-primary)';
+								}
+							}}
+							onmouseout={(e) => {
+								if (selectedBindingIndex !== null) {
+									(e.currentTarget as HTMLElement).style.backgroundColor = $darkMode ? '#111827' : 'white';
+									(e.currentTarget as HTMLElement).style.borderColor = $darkMode ? 'color-mix(in srgb, var(--theme-color-primary) 15%, #4b5563)' : 'color-mix(in srgb, var(--theme-color-primary) 10%, #e5e5e5)';
+									(e.currentTarget as HTMLElement).style.color = $darkMode ? '#d1d5db' : '#374151';
+								}
+							}}
 							onclick={() => selectKeycode(action.id)}
 							disabled={selectedBindingIndex === null}
 							title={action.name}
