@@ -8,9 +8,9 @@
 </script>
 
 <div
-    class="{$darkMode
-        ? 'bg-black border-white'
-        : 'bg-white border-gray-200'} rounded-lg border p-6"
+    class="rounded-lg border p-6"
+    style="background-color: color-mix(in srgb, var(--theme-color-primary) 5%, ${$darkMode ? 'black' : 'white'});
+           border-color: {$darkMode ? 'color-mix(in srgb, var(--theme-color-primary) 20%, #374151)' : 'color-mix(in srgb, var(--theme-color-primary) 15%, #e5e7eb)'};"
 >
     <h3
         class="text-lg font-medium {$darkMode
@@ -35,18 +35,16 @@
                 class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-500'}"
                 >{bottomOutPointValue.toFixed(1)}mm</span
             >
-        </div>
-        <input
+        </div>        <input
             id="bottom-out-slider"
             type="range"
             min="2.0"
             max="4.0"
             step="0.1"
             bind:value={bottomOutPointValue}
-            class="w-full h-2 rounded-full {$darkMode
-                ? 'bg-gray-700'
-                : 'bg-gray-300'} appearance-none slider-thumb"
-            style="--thumb-color: {$darkMode ? '#ffffff' : '#2563eb'}"
+            class="w-full h-2 rounded-full appearance-none slider-thumb"
+            style="background-color: {$darkMode ? '#374151' : '#d1d5db'};
+                   --thumb-color: var(--theme-color-primary);"
         />
         <div
             class="flex justify-between text-xs {$darkMode
