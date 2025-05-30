@@ -100,17 +100,19 @@
 
 <div class="p-4 h-full flex flex-col">
     <div class="flex items-center justify-between -mt-4 mb-4">
-        <h2 class="text-2xl font-bold {$darkMode ? 'text-white' : 'text-gray-900'}">Lighting</h2>
-        <div class="flex gap-2">
+        <h2 class="text-2xl font-bold {$darkMode ? 'text-white' : 'text-gray-900'}">Lighting</h2>        <div class="flex gap-2">
             <button 
-                class="{$darkMode ? 'bg-white hover:bg-gray-200 text-black' : 'bg-blue-600 hover:bg-blue-700 text-white'} px-4 py-2 rounded transition-colors"
-                on:click={applySettings}
+                class="px-4 py-2 rounded transition-colors text-white"
+                style="background-color: var(--theme-color-primary);"
+                onmouseover={(e) => (e.currentTarget as HTMLElement).style.backgroundColor = 'color-mix(in srgb, var(--theme-color-primary) 85%, black)'}
+                onmouseout={(e) => (e.currentTarget as HTMLElement).style.backgroundColor = 'var(--theme-color-primary)'}
+                onclick={applySettings}
             >
                 Apply Settings
             </button>
             <button 
                 class="{$darkMode ? 'bg-gray-800 hover:bg-gray-700 text-white border border-white' : 'bg-gray-200 hover:bg-gray-300 text-gray-600'} px-4 py-2 rounded transition-colors"
-                on:click={() => perKeyMode = !perKeyMode}
+                onclick={() => perKeyMode = !perKeyMode}
             >
                 {perKeyMode ? 'Exit Per-Key Mode' : 'Per-Key Mode'}
             </button>
@@ -121,10 +123,15 @@
         <!-- Effects Panel -->
         <div class="flex-1 min-w-[300px]">
             <div class="grid grid-cols-2 gap-3 mb-6">
-                {#each effects as effect}
-                    <button
-                        class="p-3 rounded-lg border-2 text-left transition-all duration-200 {selectedEffect === effect.id ? ($darkMode ? 'border-white bg-gray-800' : 'border-blue-500 bg-blue-50') : ($darkMode ? 'border-gray-600 hover:border-gray-400' : 'border-gray-200 hover:border-gray-300')}"
-                        on:click={() => selectedEffect = effect.id}
+                {#each effects as effect}                    <button
+                        class="p-3 rounded-lg border-2 text-left transition-all duration-200"
+                        style="{selectedEffect === effect.id 
+                            ? `border-color: var(--theme-color-primary); background-color: color-mix(in srgb, var(--theme-color-primary) 15%, ${$darkMode ? 'black' : 'white'});`
+                            : `border-color: ${$darkMode ? '#4b5563' : '#e5e5e5'}; background-color: transparent;`
+                        }"
+                        onmouseover={(e) => (e.currentTarget as HTMLElement).style.borderColor = 'var(--theme-color-primary)'}
+                        onmouseout={(e) => (e.currentTarget as HTMLElement).style.borderColor = selectedEffect === effect.id ? 'var(--theme-color-primary)' : ($darkMode ? '#4b5563' : '#e5e5e5')}
+                        onclick={() => selectedEffect = effect.id}
                     >
                         <div class="font-medium {$darkMode ? 'text-white' : 'text-gray-900'}">{effect.name}</div>
                         <div class="text-sm {$darkMode ? 'text-gray-300' : 'text-gray-600'}">{effect.description}</div>
@@ -191,10 +198,11 @@
             <h3 class="text-lg font-medium mb-4 {$darkMode ? 'text-white' : 'text-gray-900'}">Color Settings</h3>
               {#if perKeyMode}
                 <!-- Per-Key Color Mode -->
-                <div class="space-y-4">
-                    <div class="p-3 {$darkMode ? 'bg-gray-800 border-white' : 'bg-blue-50 border-blue-200'} rounded-lg border">
-                        <div class="font-medium {$darkMode ? 'text-white' : 'text-blue-800'}">Per-Key Mode Active</div>
-                        <div class="text-sm {$darkMode ? 'text-gray-300' : 'text-blue-600'}">Click keys on the keyboard to select them</div>
+                <div class="space-y-4">                    <div class="p-3 rounded-lg border"
+                         style="background-color: color-mix(in srgb, var(--theme-color-primary) 12%, {$darkMode ? 'black' : 'white'});
+                                border-color: color-mix(in srgb, var(--theme-color-primary) 30%, {$darkMode ? 'white' : '#e5e5e5'});">
+                        <div class="font-medium {$darkMode ? 'text-white' : 'text-gray-900'}">Per-Key Mode Active</div>
+                        <div class="text-sm" style="color: var(--theme-color-primary);">Click keys on the keyboard to select them</div>
                     </div>
                     
                     <div>
@@ -214,25 +222,29 @@
                         </div>
                     </div>
                     
-                    <div class="flex gap-2">
-                        <button 
-                            class="flex-1 {$darkMode ? 'bg-white hover:bg-gray-200 text-black' : 'bg-green-600 hover:bg-green-700 text-white'} px-3 py-2 rounded transition-colors"
-                            on:click={toggleKeySelection}
+                    <div class="flex gap-2">                        <button 
+                            class="flex-1 px-3 py-2 rounded transition-colors text-white"
+                            style="background-color: var(--theme-color-primary);"
+                            onmouseover={(e) => (e.currentTarget as HTMLElement).style.backgroundColor = 'color-mix(in srgb, var(--theme-color-primary) 85%, black)'}
+                            onmouseout={(e) => (e.currentTarget as HTMLElement).style.backgroundColor = 'var(--theme-color-primary)'}
+                            onclick={toggleKeySelection}
                             disabled={!$CurrentSelected}
                         >
                             {$CurrentSelected && selectedKeys.has(`${$CurrentSelected[0]},${$CurrentSelected[1]}`) ? 'Deselect Key' : 'Select Key'}
                         </button>
                         <button 
                             class="{$darkMode ? 'bg-gray-800 hover:bg-gray-700 text-white border border-white' : 'bg-gray-600 hover:bg-gray-700 text-white'} px-3 py-2 rounded transition-colors"
-                            on:click={clearKeySelection}
+                            onclick={clearKeySelection}
                         >
                             Clear ({selectedKeys.size})
                         </button>
                     </div>
-                    
-                    <button 
-                        class="w-full {$darkMode ? 'bg-white hover:bg-gray-200 text-black' : 'bg-blue-600 hover:bg-blue-700 text-white'} px-3 py-2 rounded transition-colors"
-                        on:click={applyToSelectedKeys}
+                      <button 
+                        class="w-full px-3 py-2 rounded transition-colors text-white"
+                        style="background-color: var(--theme-color-primary);"
+                        onmouseover={(e) => (e.currentTarget as HTMLElement).style.backgroundColor = 'color-mix(in srgb, var(--theme-color-primary) 85%, black)'}
+                        onmouseout={(e) => (e.currentTarget as HTMLElement).style.backgroundColor = 'var(--theme-color-primary)'}
+                        onclick={applyToSelectedKeys}
                         disabled={selectedKeys.size === 0}
                     >
                         Apply to Selected Keys
@@ -284,7 +296,7 @@
                                     {#if gradientColors.length > 2}
                                         <button 
                                             class="w-8 h-8 bg-red-500 text-white rounded hover:bg-red-600 transition-colors text-sm"
-                                            on:click={() => removeGradientColor(index)}
+                                            onclick={() => removeGradientColor(index)}
                                         >×</button>
                                     {/if}
                                 </div>
@@ -292,7 +304,7 @@
                         </div>
                         <button 
                             class="mt-2 w-full {$darkMode ? 'bg-gray-800 hover:bg-gray-700 text-white border border-white' : 'bg-gray-200 hover:bg-gray-300 text-gray-700'} px-3 py-2 rounded transition-colors"
-                            on:click={addGradientColor}
+                            onclick={addGradientColor}
                         >
                             Add Color
                         </button>
@@ -325,13 +337,12 @@
 <style>
     .slider-thumb {
         appearance: none;
-    }
-    .slider-thumb::-webkit-slider-thumb {
+    }    .slider-thumb::-webkit-slider-thumb {
         appearance: none;
         width: 16px;
         height: 16px;
         border-radius: 50%;
-        background: #2563eb;
+        background: var(--theme-color-primary);
         cursor: pointer;
         box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
     }
@@ -339,7 +350,7 @@
         width: 16px;
         height: 16px;
         border-radius: 50%;
-        background: #2563eb;
+        background: var(--theme-color-primary);
         cursor: pointer;
         border: none;
         box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
