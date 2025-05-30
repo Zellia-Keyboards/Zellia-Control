@@ -15,12 +15,10 @@
 	const KDisplayValues = $state.snapshot($KeyboardDisplayValues); // Get static snapshot for display
 </script>
 
-{#if configuredDynamicKeys.length > 0}
-	<div class="max-w-7xl mx-auto mt-6">
+{#if configuredDynamicKeys.length > 0}	<div class="max-w-7xl mx-auto mt-6">
 		<div
-			class="{$darkMode
-				? 'bg-black border-white'
-				: 'bg-white border-gray-200'} rounded-lg border p-6"
+			class="rounded-lg border p-6"
+			style="background-color: color-mix(in srgb, var(--theme-color-primary) 5%, ${$darkMode ? 'black' : 'white'}); border-color: ${$darkMode ? 'color-mix(in srgb, var(--theme-color-primary) 20%, #374151)' : 'color-mix(in srgb, var(--theme-color-primary) 15%, #e5e7eb)'};"
 		>
 			<div class="flex items-center justify-between mb-4">
 				<h3
@@ -42,17 +40,14 @@
 			<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
 				{#each configuredDynamicKeys as [keyId, config]}
 					{@const [x, y] = keyId.split(',').map(Number)}
-					{@const keyName = KDisplayValues[y]?.[x] || 'Unknown'}
-					<div
-						class="p-4 {$darkMode
-							? 'bg-gray-900 border-gray-600'
-							: 'bg-gray-50'} rounded-lg border"
+					{@const keyName = KDisplayValues[y]?.[x] || 'Unknown'}					<div
+						class="p-4 rounded-lg border"
+						style="background-color: {$darkMode ? 'color-mix(in srgb, var(--theme-color-primary) 5%, #111827)' : 'color-mix(in srgb, var(--theme-color-primary) 3%, #f9fafb)'};
+							   border-color: {$darkMode ? 'color-mix(in srgb, var(--theme-color-primary) 15%, #4b5563)' : 'color-mix(in srgb, var(--theme-color-primary) 10%, #e5e7eb)'};"
 					>
-						<div class="flex items-center justify-between mb-2">
-							<span
-								class="font-mono font-bold {$darkMode
-									? 'text-white'
-									: 'text-gray-900'}"
+						<div class="flex items-center justify-between mb-2">							<span
+								class="font-mono font-bold"
+								style="color: var(--theme-color-primary);"
 								>{keyName}</span
 							>
 						</div>
