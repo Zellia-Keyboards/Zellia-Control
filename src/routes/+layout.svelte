@@ -7,14 +7,14 @@
 
     const NAVIGATE = [
         //["/test", "Test", "🧪"],
-        ["/performance", "Performance", "⚡"],
+        ["/performance", "Performance"],
         ["/remap", "Remap", "⌨️"],
-        ["/lighting", "Lighting", "💡"],
-        ["/advancedkey", "Advanced Keys", "🔧"],
-        ["/calibration", "Calibration", "⚖️"],
-        ["/debug", "Debug", "🐛"],
-        ["/settings", "Settings", "⚙️"],
-        ["/about", "About", "ℹ️"],
+        ["/lighting", "Lighting"],
+        ["/advancedkey", "Advanced Keys"],
+        ["/calibration", "Calibration"],
+        ["/debug", "Debug"],
+        ["/settings", "Settings"],
+        ["/about", "About"],
     ];    let { children } = $props();
     let selectedLayer = $state(1);
     let showDropdown = $state(false);
@@ -163,7 +163,9 @@
         </div>
           <!-- Navigation -->
         <div class="flex-1 p-3">
-            <nav class="space-y-1">                {#each NAVIGATE as [href, name, icon]}                    <a 
+            <nav class="space-y-1">                
+                {#each NAVIGATE as [href, name]}                    
+                <a 
                         {href} 
                         class="flex items-center gap-3 w-full px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 {isActive(href) 
                             ? 'text-white shadow-sm'
@@ -186,7 +188,6 @@
                             }
                         }}
                     >
-                        <span class="text-base">{icon}</span>
                         <span>{name}</span>
                     </a>
                 {/each}
