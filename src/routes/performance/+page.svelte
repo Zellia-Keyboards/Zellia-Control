@@ -11,11 +11,13 @@
   let keysSelected = 0;
 </script>
 
-<div class="p-4 h-full flex flex-col">
-  <div class="flex items-center justify-between -mt-4 mb-2">
+<div class="p-4 h-full flex flex-col">  <div class="flex items-center justify-between -mt-4 mb-2">
     <h2 class="text-2xl font-bold {$darkMode ? 'text-white' : 'text-gray-900'}">Performance</h2>
     <div>
-      <button class="{$darkMode ? 'bg-white hover:bg-gray-200 text-black' : 'bg-blue-600 hover:bg-blue-700 text-white'} px-4 py-2 rounded mr-2 transition-colors duration-200">Select all keys</button>
+      <button class="px-4 py-2 rounded mr-2 transition-colors duration-200 text-white"
+              style="background-color: var(--theme-color-primary);"
+              onmouseover={(e) => (e.currentTarget as HTMLElement).style.backgroundColor = 'color-mix(in srgb, var(--theme-color-primary) 85%, black)'}
+              onmouseout={(e) => (e.currentTarget as HTMLElement).style.backgroundColor = 'var(--theme-color-primary)'}>Select all keys</button>
       <button class="{$darkMode ? 'bg-gray-800 hover:bg-gray-700 text-white border border-white' : 'bg-gray-200 hover:bg-gray-300 text-gray-600'} px-4 py-2 rounded transition-colors duration-200">Discard selection</button>
     </div>
   </div>
@@ -65,9 +67,8 @@
             <div>HIGH</div>
             <div>LOW</div>
           </div>
-        </div>
-        <!-- Keys selected indicator -->
-        <div class="mt-4 {$darkMode ? 'text-white' : 'text-blue-600'} font-medium">
+        </div>        <!-- Keys selected indicator -->
+        <div class="mt-4 {$darkMode ? 'text-white' : 'text-gray-900'} font-medium">
           {keysSelected} keys selected
         </div>
       </div>
@@ -79,13 +80,10 @@
     <!-- 2nd Box: Rapid Trigger Toggles (moved from 3rd position) -->
     <div class="flex-1 min-w-[260px] flex flex-col">
       <div class="flex items-center justify-between mb-4">
-        <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'}">Enable Rapid Trigger</h3>
-        <button class="relative inline-flex items-center h-6 rounded-full w-11 transition-colors focus:outline-none"
+        <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'}">Enable Rapid Trigger</h3>        <button class="relative inline-flex items-center h-6 rounded-full w-11 transition-colors focus:outline-none"
           aria-label="Rapid Trigger Toggle"
-          class:bg-blue-600={rapidTriggerEnabled} 
-          class:bg-gray-300={!rapidTriggerEnabled && !$darkMode}
-          class:bg-gray-700={!rapidTriggerEnabled && $darkMode}
-          on:click={() => rapidTriggerEnabled = !rapidTriggerEnabled}>
+          style="background-color: {rapidTriggerEnabled ? 'var(--theme-color-primary)' : ($darkMode ? '#4b5563' : '#d1d5db')};"
+          onclick={() => rapidTriggerEnabled = !rapidTriggerEnabled}>
           <span class="inline-block w-4 h-4 transform rounded-full bg-white transition-transform shadow"
             class:translate-x-6={rapidTriggerEnabled}
             class:translate-x-1={!rapidTriggerEnabled}></span>
@@ -97,13 +95,10 @@
       <div class="flex-1">
         {#if rapidTriggerEnabled}
           <div class="flex items-center justify-between mb-4 border-t {$darkMode ? 'border-white' : 'border-gray-200'} pt-4">
-            <h4 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'}">Enable Continuous Rapid Trigger</h4>
-            <button class="relative inline-flex items-center h-6 rounded-full w-11 transition-colors focus:outline-none"
+            <h4 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'}">Enable Continuous Rapid Trigger</h4>            <button class="relative inline-flex items-center h-6 rounded-full w-11 transition-colors focus:outline-none"
               aria-label="Continuous Rapid Trigger Toggle"
-              class:bg-blue-600={continuousRapidTriggerEnabled} 
-              class:bg-gray-300={!continuousRapidTriggerEnabled && !$darkMode}
-              class:bg-gray-700={!continuousRapidTriggerEnabled && $darkMode}
-              on:click={() => continuousRapidTriggerEnabled = !continuousRapidTriggerEnabled}>
+              style="background-color: {continuousRapidTriggerEnabled ? 'var(--theme-color-primary)' : ($darkMode ? '#4b5563' : '#d1d5db')};"
+              onclick={() => continuousRapidTriggerEnabled = !continuousRapidTriggerEnabled}>
               <span class="inline-block w-4 h-4 transform rounded-full bg-white transition-transform shadow"
                 class:translate-x-6={continuousRapidTriggerEnabled}
                 class:translate-x-1={!continuousRapidTriggerEnabled}></span>
@@ -123,14 +118,11 @@
     <div class="flex-1 min-w-[260px] flex flex-col">
       <div class="flex items-center justify-between mb-4">
         <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'}">Rapid Trigger Sensitivity</h3>
-        <div class="flex items-center gap-2">          <span class="text-xs {$darkMode ? 'text-gray-400' : 'text-gray-500'}">Separate Press/Release</span>
-          <button
+        <div class="flex items-center gap-2">          <span class="text-xs {$darkMode ? 'text-gray-400' : 'text-gray-500'}">Separate Press/Release</span>          <button
             class="relative inline-flex items-center h-5 rounded-full w-10 transition-colors focus:outline-none"
             aria-label="Separate Sensitivity Toggle"
-            class:bg-blue-600={separateSensitivity}
-            class:bg-gray-300={!separateSensitivity && !$darkMode}
-            class:bg-gray-700={!separateSensitivity && $darkMode}
-            on:click={() => separateSensitivity = !separateSensitivity}
+            style="background-color: {separateSensitivity ? 'var(--theme-color-primary)' : ($darkMode ? '#4b5563' : '#d1d5db')};"
+            onclick={() => separateSensitivity = !separateSensitivity}
           >
             <span class="inline-block w-4 h-4 transform rounded-full bg-white transition-transform shadow"
               class:translate-x-5={separateSensitivity}
@@ -207,13 +199,12 @@
 <style>
   .slider-thumb {
     appearance: none;
-  }
-  .slider-thumb::-webkit-slider-thumb {
+  }  .slider-thumb::-webkit-slider-thumb {
     appearance: none;
     width: 16px;
     height: 16px;
     border-radius: 50%;
-    background: #2253be;
+    background: var(--theme-color-primary);
     cursor: pointer;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
   }
@@ -221,7 +212,7 @@
     width: 16px;
     height: 16px;
     border-radius: 50%;
-    background: #2253be;
+    background: var(--theme-color-primary);
     cursor: pointer;
     border: none;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
