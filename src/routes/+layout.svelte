@@ -1,21 +1,20 @@
 <script lang="ts">
     import "../app.css";
-    import Zellia80HE from "../lib/Zellia80HE.svelte";
+    import Zellia80HE from "../lib/Zellia80HE.svelte";    
     import { KeyboardDisplayValues, CurrentSelected } from "$lib/KeyboardState.svelte";
     import { page } from '$app/stores';
     import { darkMode, selectedThemeColor, themeColors, type ThemeColorName } from '$lib/DarkModeStore.svelte';
-
-    const NAVIGATE = [
-        //["/test", "Test", "🧪"],
+    import { Keyboard, Palette, Sun, Moon, TestTube } from 'lucide-svelte';    const NAVIGATE = [
+        //["/test", "Test", TestTube],
         ["/performance", "Performance"],
-        ["/remap", "Remap", "⌨️"],
+        ["/remap", "Remap"],
         ["/lighting", "Lighting"],
         ["/advancedkey", "Advanced Keys"],
         ["/calibration", "Calibration"],
         ["/debug", "Debug"],
         ["/settings", "Settings"],
         ["/about", "About"],
-    ];    let { children } = $props();
+    ];let { children } = $props();
     let selectedLayer = $state(1);
     let showDropdown = $state(false);
     let showThemeSelector = $state(false);
@@ -198,10 +197,9 @@
             <!-- Theme Button -->
             <button 
                 class="flex items-center justify-between w-full px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 {$darkMode ? 'text-white hover:bg-gray-900' : 'text-gray-700 hover:bg-gray-100'}"
-                onclick={() => showThemeSelector = !showThemeSelector}
-            >
+                onclick={() => showThemeSelector = !showThemeSelector}            >
                 <div class="flex items-center gap-3">
-                    <span class="text-base">🎨</span>
+                    <Palette class="w-4 h-4" />
                     <span>Theme Colors</span>
                 </div>
                 <svg class="w-4 h-4 transition-transform duration-200" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style:transform={showThemeSelector ? 'rotate(180deg)' : 'rotate(0deg)'}>
@@ -225,16 +223,15 @@
             {/if}
         </div>        
         <!-- Dark Mode Toggle at Bottom -->
-        <div class="p-3 border-t border-transparent">
-            <button
+        <div class="p-3 border-t border-transparent">            <button
                 class="flex items-center gap-3 w-full px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 {$darkMode ? 'text-white hover:bg-gray-900' : 'text-gray-700 hover:bg-gray-100'}"
                 onclick={() => darkMode.toggle()}
             >
                 {#if $darkMode}
-                    <span class="text-base">☀️</span>
+                    <Sun class="w-4 h-4" />
                     <span>Light Mode</span>
                 {:else}
-                    <span class="text-base">🌙</span>
+                    <Moon class="w-4 h-4" />
                     <span>Dark Mode</span>
                 {/if}
             </button>

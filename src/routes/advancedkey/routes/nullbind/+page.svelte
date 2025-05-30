@@ -2,6 +2,7 @@
     import { goto } from '$app/navigation';
     import { CurrentSelected, KeyboardDisplayValues } from "$lib/KeyboardState.svelte";
     import { darkMode } from '$lib/DarkModeStore.svelte';
+    import { AlertTriangle } from 'lucide-svelte';
     import { 
         globalConfigurations,
         updateGlobalConfiguration, 
@@ -488,11 +489,11 @@
                                             </div>
                                             <span class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-500'}">{uiActuationPoint.toFixed(1)}mm</span>
                                         </div>
-                                        
-                                        <!-- Warning box for values below 0.3 -->
+                                          <!-- Warning box for values below 0.3 -->
                                         {#if uiActuationPoint < 0.3}
-                                            <div class="mb-2 p-2 {$darkMode ? 'bg-yellow-900 border-yellow-600 text-yellow-200' : 'bg-yellow-50 border-yellow-300 text-yellow-700'} border rounded-md text-xs">
-                                                ⚠️ the key may be too sensitive, causing instability, please be careful
+                                            <div class="mb-2 p-2 {$darkMode ? 'bg-yellow-900 border-yellow-600 text-yellow-200' : 'bg-yellow-50 border-yellow-300 text-yellow-700'} border rounded-md text-xs flex items-center gap-2">
+                                                <AlertTriangle class="w-4 h-4 flex-shrink-0" />
+                                                <span>the key may be too sensitive, causing instability, please be careful</span>
                                             </div>
                                         {/if}
                                         

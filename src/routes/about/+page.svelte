@@ -1,5 +1,6 @@
 <script lang="ts">
     import { darkMode } from '$lib/DarkModeStore.svelte';
+    import { Keyboard, Heart } from 'lucide-svelte';
 </script>
 
 <div class="flex-1 w-full p-6">
@@ -18,11 +19,10 @@
             <div class="rounded-xl p-6 border"
                  style="background-color: color-mix(in srgb, var(--theme-color-primary) 5%, {$darkMode ? 'black' : 'white'});
                         border-color: color-mix(in srgb, var(--theme-color-primary) 25%, {$darkMode ? 'white' : '#e5e5e5'});">
-                <div class="flex items-start gap-6">
-                    <div class="flex-shrink-0">
-                        <div class="w-16 h-16 rounded-lg flex items-center justify-center text-3xl"
+                <div class="flex items-start gap-6">                    <div class="flex-shrink-0">
+                        <div class="w-16 h-16 rounded-lg flex items-center justify-center"
                              style="background-color: color-mix(in srgb, var(--theme-color-primary) 15%, {$darkMode ? 'black' : 'white'});">
-                            ⌨️
+                            <Keyboard class="w-8 h-8" style="color: var(--theme-color-primary);" />
                         </div>
                     </div>
                     <div class="flex-1">
@@ -219,7 +219,9 @@
             <div class="rounded-xl p-6 border text-center"
                  style="background-color: color-mix(in srgb, var(--theme-color-primary) 5%, {$darkMode ? 'black' : 'white'});
                         border-color: color-mix(in srgb, var(--theme-color-primary) 25%, {$darkMode ? 'white' : '#e5e5e5'});">
-                <h3 class="text-xl font-bold {$darkMode ? 'text-white' : 'text-gray-900'} mb-4">Made with ❤️ for the Hall Effect keyboard community</h3>
+                <h3 class="text-xl font-bold {$darkMode ? 'text-white' : 'text-gray-900'} mb-4 flex items-center justify-center gap-2">
+                    Made with <Heart class="w-5 h-5 text-red-500" /> for the Hall Effect keyboard community
+                </h3>
                 <p class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-500'}">
                     © 2025 Zellia Control. Licensed under MIT License.
                 </p>

@@ -1,14 +1,13 @@
 <script lang="ts">
     import { goto } from '$app/navigation';
     import { darkMode } from '$lib/DarkModeStore.svelte';
-
-    // Available advanced key modes
+    import { Zap, RotateCcw, Settings, Target } from 'lucide-svelte';    // Available advanced key modes
     const keyModes = [
         {
             id: 'tap-hold',
             name: 'Tap Hold',
             description: 'Different actions for tap vs hold',
-            icon: '⚡',
+            icon: Zap,
             path: '/advancedkey/routes/tap-hold',
             features: [
                 'Quick tap action',
@@ -21,7 +20,7 @@
             id: 'toggle',
             name: 'Toggle',
             description: 'Toggle between two states',
-            icon: '🔄',
+            icon: RotateCcw,
             path: '/advancedkey/routes/toggle',
             features: [
                 'Toggle on press or release',
@@ -34,7 +33,7 @@
             id: 'dynamic',
             name: 'Dynamic Key Stroke',
             description: 'Interactive keystroke configuration',
-            icon: '🎛️',
+            icon: Settings,
             path: '/advancedkey/routes/dynamic',
             features: [
                 '4-phase keystroke control',
@@ -47,7 +46,7 @@
             id: 'null-bind',
             name: 'Null Bind',
             description: 'Rapid trigger with SOCD cleaning',
-            icon: '🎯',
+            icon: Target,
             path: '/advancedkey/routes/nullbind',
             features: [
                 'Rapid trigger technology',
@@ -112,10 +111,11 @@
                     onmouseover={(e) => (e.currentTarget as HTMLElement).style.borderColor = 'var(--theme-color-primary)'}
                     onmouseout={(e) => (e.currentTarget as HTMLElement).style.borderColor = $darkMode ? 'color-mix(in srgb, var(--theme-color-primary) 20%, #374151)' : 'color-mix(in srgb, var(--theme-color-primary) 15%, #e5e7eb)'}
                     onclick={() => navigateToMode(mode.path)}
-                >
-                    <!-- Mode Header -->
+                >                    <!-- Mode Header -->
                     <div class="flex items-center gap-4 mb-4">
-                        <div class="flex items-center justify-center w-10 h-10 text-3xl">{mode.icon}</div>                        <div class="flex-1">
+                        <div class="flex items-center justify-center w-10 h-10">
+                            <svelte:component this={mode.icon} class="w-8 h-8" style="color: var(--theme-color-primary);" />
+                        </div><div class="flex-1">
                             <h3 class="text-xl font-bold transition-colors"
                                 style="color: {$darkMode ? 'white' : '#111827'};"
                                 onmouseover={(e) => (e.currentTarget as HTMLElement).style.color = 'var(--theme-color-primary)'}

@@ -1,5 +1,6 @@
 <script lang="ts">
     import { darkMode } from "$lib/DarkModeStore.svelte";
+    import { AlertTriangle } from 'lucide-svelte';
     
     // Add actuation point state
     let actuationPoint = $state(1.5);
@@ -29,13 +30,13 @@
                 >{actuationPoint.toFixed(2)}mm</span
             >
         </div>
-          <!-- Warning box for values below 0.3 -->
-        {#if actuationPoint < 0.3}
-            <div class="mb-2 p-2 border rounded-md text-xs"
+          <!-- Warning box for values below 0.3 -->        {#if actuationPoint < 0.3}
+            <div class="mb-2 p-2 border rounded-md text-xs flex items-center gap-2"
                  style="background-color: {$darkMode ? 'color-mix(in srgb, #f59e0b 15%, #451a03)' : 'color-mix(in srgb, #f59e0b 10%, #fefce8)'};
                         border-color: {$darkMode ? 'color-mix(in srgb, #f59e0b 30%, #78716c)' : 'color-mix(in srgb, #f59e0b 25%, #e7e5e4)'};
                         color: {$darkMode ? '#fbbf24' : '#a16207'};">
-                ⚠️ the key may be too sensitive, causing instability, please be careful
+                <AlertTriangle class="w-4 h-4 flex-shrink-0" />
+                <span>the key may be too sensitive, causing instability, please be careful</span>
             </div>
         {/if}
           <!-- Dual input: Slider -->
