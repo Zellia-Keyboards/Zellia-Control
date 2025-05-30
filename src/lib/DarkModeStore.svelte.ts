@@ -2,16 +2,16 @@
 import { writable } from 'svelte/store';
 import { browser } from '$app/environment';
 
-// Define theme colors
+// Define theme colors with enhanced visibility for dark mode
 export const themeColors = {
-    indigo: '#6366F1', // Default
-    red: '#EF4444',
-    orange: '#F97316',
-    amber: '#F59E0B',
-    lime: '#84CC16',
-    green: '#22C55E',
-    teal: '#14B8A6',
-    blue: '#3B82F6',
+    indigo: '#8B5CF6', // Enhanced indigo for better dark mode visibility
+    red: '#F87171',    // Lighter red for dark mode
+    orange: '#FB923C', // Lighter orange
+    amber: '#FCD34D',  // Lighter amber
+    lime: '#A3E635',   // Brighter lime
+    green: '#4ADE80',  // Lighter green
+    teal: '#2DD4BF',   // Lighter teal
+    blue: '#60A5FA',   // Lighter blue
 };
 
 export type ThemeColorName = keyof typeof themeColors;
@@ -68,18 +68,17 @@ const createThemeColorStore = () => {
     const { subscribe, set } = writable<ThemeColorName>(initial);
 
     return {
-        subscribe,
-        set: (colorName: ThemeColorName) => {
+        subscribe,        set: (colorName: ThemeColorName) => {
             if (browser) {
                 localStorage.setItem('themeColor', colorName);
                 // Apply theme color CSS variables to the document root
-                Object.entries(themeColors).forEach(([name, value]) => {
-                    if (name === colorName) {
-                        document.documentElement.style.setProperty('--theme-color-primary', value);
-                        // Generate lighter/darker shades if needed, or use Tailwind's opacity utilities
-                        // For simplicity, we'll set a primary color and rely on Tailwind for shades or use direct values in components
-                    }
-                });
+                const selectedColor = themeColors[colorName];
+                document.documentElement.style.setProperty('--theme-color-primary', selectedColor);
+                
+                // Create additional theme color variants for better contrast
+                document.documentElement.style.setProperty('--theme-color-hover', `color-mix(in srgb, ${selectedColor} 80%, black)`);
+                document.documentElement.style.setProperty('--theme-color-light', `color-mix(in srgb, ${selectedColor} 10%, white)`);
+                document.documentElement.style.setProperty('--theme-color-dark', `color-mix(in srgb, ${selectedColor} 15%, black)`);
             }
             set(colorName);
         }
@@ -94,11 +93,13 @@ if (browser) {
     const isDark = storedDarkMode !== null ? storedDarkMode === 'true' : true; // Default to dark
     if (isDark) {
         document.documentElement.classList.add('dark');
-    }
-
-    const storedTheme = localStorage.getItem('themeColor') as ThemeColorName;
+    }    const storedTheme = localStorage.getItem('themeColor') as ThemeColorName;
     const currentThemeName = storedTheme && themeColors[storedTheme] ? storedTheme : 'indigo';
     if (themeColors[currentThemeName]) {
-        document.documentElement.style.setProperty('--theme-color-primary', themeColors[currentThemeName]);
+        const selectedColor = themeColors[currentThemeName];
+        document.documentElement.style.setProperty('--theme-color-primary', selectedColor);
+        document.documentElement.style.setProperty('--theme-color-hover', `color-mix(in srgb, ${selectedColor} 80%, black)`);
+        document.documentElement.style.setProperty('--theme-color-light', `color-mix(in srgb, ${selectedColor} 10%, white)`);
+        document.documentElement.style.setProperty('--theme-color-dark', `color-mix(in srgb, ${selectedColor} 15%, black)`);
     }
 }
