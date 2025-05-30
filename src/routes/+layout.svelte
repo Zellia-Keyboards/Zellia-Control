@@ -3,7 +3,7 @@
     import Zellia80HE from "../lib/Zellia80HE.svelte";
     import { KeyboardDisplayValues, CurrentSelected } from "$lib/KeyboardState.svelte";
     import { page } from '$app/stores';
-    import { darkMode } from '$lib/DarkModeStore.svelte';
+    import { darkMode, selectedThemeColor, themeColors, type ThemeColorName } from '$lib/DarkModeStore.svelte';
 
     const NAVIGATE = [
         //["/test", "Test", "🧪"],
@@ -15,11 +15,19 @@
         ["/debug", "Debug", "🐛"],
         ["/settings", "Settings", "⚙️"],
         ["/about", "About", "ℹ️"],
-    ];
-
-    let { children } = $props();
+    ];    let { children } = $props();
     let selectedLayer = $state(1);
     let showDropdown = $state(false);
+    let showThemeSelector = $state(false);
+    let currentTheme = $state<ThemeColorName>('indigo');
+
+    selectedThemeColor.subscribe(value => {
+        currentTheme = value;
+    });
+
+    function setTheme(colorName: ThemeColorName) {
+        selectedThemeColor.set(colorName);
+    }
 
     // Function to check if a navigation item is active
     function isActive(href: string): boolean {
@@ -103,10 +111,14 @@
         <div class="p-4">
             <h1 class="font-bold text-xl {$darkMode ? 'text-white' : 'text-gray-900'} text-center">Zellia Control</h1>
         </div>
-        
-        <!-- Sync Button -->
+          <!-- Sync Button -->
         <div class="flex justify-center mb-4 mt-2">
-            <button class="{$darkMode ? 'bg-white hover:bg-gray-200 text-black' : 'bg-indigo-200 hover:bg-indigo-400 hover:text-white'} px-18 py-2 rounded-4xl font-bold transition-colors duration-200 shadow w-auto">Sync</button>
+            <button 
+                class="px-18 py-2 rounded-4xl font-bold transition-colors duration-200 shadow w-auto"
+                style="background-color: var(--theme-color-primary); color: white;"
+                onmouseover={(e) => (e.currentTarget as HTMLElement).style.backgroundColor = `color-mix(in srgb, var(--theme-color-primary) 80%, black)`}
+                onmouseout={(e) => (e.currentTarget as HTMLElement).style.backgroundColor = `var(--theme-color-primary)`}
+            >Sync</button>
         </div>
         
         <!-- Profile Section -->
@@ -129,26 +141,50 @@
                     </div>
                 {/if}
             </div>
-            
-            <!-- Import/Export Buttons -->
+              <!-- Import/Export Buttons -->
             <div class="grid grid-cols-2 gap-2">
-                <button class="px-3 py-2 text-xs font-medium {$darkMode ? 'text-white bg-black border-gray-600 hover:bg-gray-900' : 'text-gray-600 bg-gray-50 border-gray-200 hover:bg-gray-100'} border rounded-md transition-colors duration-200">
+                <button 
+                    class="px-3 py-2 text-xs font-medium border rounded-md transition-colors duration-200 text-white border-transparent"
+                    style="background-color: var(--theme-color-primary);"
+                    onmouseover={(e) => (e.currentTarget as HTMLElement).style.backgroundColor = `color-mix(in srgb, var(--theme-color-primary) 80%, black)`}
+                    onmouseout={(e) => (e.currentTarget as HTMLElement).style.backgroundColor = `var(--theme-color-primary)`}
+                >
                     Import
                 </button>
-                <button class="px-3 py-2 text-xs font-medium {$darkMode ? 'text-white bg-black border-gray-600 hover:bg-gray-900' : 'text-gray-600 bg-gray-50 border-gray-200 hover:bg-gray-100'} border rounded-md transition-colors duration-200">
+                <button 
+                    class="px-3 py-2 text-xs font-medium border rounded-md transition-colors duration-200 text-white border-transparent"
+                    style="background-color: var(--theme-color-primary);"
+                    onmouseover={(e) => (e.currentTarget as HTMLElement).style.backgroundColor = `color-mix(in srgb, var(--theme-color-primary) 80%, black)`}
+                    onmouseout={(e) => (e.currentTarget as HTMLElement).style.backgroundColor = `var(--theme-color-primary)`}
+                >
                     Export
                 </button>
             </div>
         </div>
-        
-        <!-- Navigation -->
+          <!-- Navigation -->
         <div class="flex-1 p-3">
-            <nav class="space-y-1">
-                {#each NAVIGATE as [href, name, icon]}                    <a 
+            <nav class="space-y-1">                {#each NAVIGATE as [href, name, icon]}                    <a 
                         {href} 
                         class="flex items-center gap-3 w-full px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 {isActive(href) 
-                            ? ($darkMode ? 'bg-white text-black shadow-sm' : 'bg-indigo-600 text-white shadow-sm')
-                            : ($darkMode ? 'text-white hover:bg-gray-900 hover:text-white' : 'text-gray-700 hover:bg-indigo-50 hover:text-indigo-700')}"
+                            ? 'text-white shadow-sm'
+                            : ($darkMode ? 'text-white hover:bg-gray-900 hover:text-white' : 'text-gray-700')}"
+                        style={isActive(href) ? `background-color: var(--theme-color-primary);` : ''}
+                        onmouseover={(e) => {
+                            if (!isActive(href)) {
+                                (e.currentTarget as HTMLElement).style.backgroundColor = $darkMode ? '#374151' : `color-mix(in srgb, var(--theme-color-primary) 10%, white)`;
+                                if (!$darkMode) {
+                                    (e.currentTarget as HTMLElement).style.color = `var(--theme-color-primary)`;
+                                }
+                            }
+                        }}
+                        onmouseout={(e) => {
+                            if (!isActive(href)) {
+                                (e.currentTarget as HTMLElement).style.backgroundColor = '';
+                                if (!$darkMode) {
+                                    (e.currentTarget as HTMLElement).style.color = '';
+                                }
+                            }
+                        }}
                     >
                         <span class="text-base">{icon}</span>
                         <span>{name}</span>
@@ -156,7 +192,38 @@
                 {/each}
             </nav>
         </div>
-        
+          <!-- Theme Selector -->
+        <div class="p-3 border-t {$darkMode ? 'border-gray-600' : 'border-gray-200'}">
+            <!-- Theme Button -->
+            <button 
+                class="flex items-center justify-between w-full px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 {$darkMode ? 'text-white hover:bg-gray-900' : 'text-gray-700 hover:bg-gray-100'}"
+                onclick={() => showThemeSelector = !showThemeSelector}
+            >
+                <div class="flex items-center gap-3">
+                    <span class="text-base">🎨</span>
+                    <span>Theme Colors</span>
+                </div>
+                <svg class="w-4 h-4 transition-transform duration-200" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style:transform={showThemeSelector ? 'rotate(180deg)' : 'rotate(0deg)'}>
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+                </svg>
+            </button>
+            
+            <!-- Color Squares (collapsible) -->
+            {#if showThemeSelector}
+                <div class="grid grid-cols-4 gap-2 mt-2">
+                    {#each Object.entries(themeColors) as [name, color] (name)}
+                        <button 
+                            title={name.charAt(0).toUpperCase() + name.slice(1)}
+                            class="w-full h-7 rounded border transition-all duration-150 
+                                   {currentTheme === name ? ($darkMode ? 'border-white ring-1 ring-white' : 'border-black ring-1 ring-gray-400') : ($darkMode ? 'border-gray-600 hover:border-gray-400' : 'border-gray-300 hover:border-gray-500')}"
+                            style="background-color: {color};"
+                            onclick={() => setTheme(name as ThemeColorName)}
+                        ></button>
+                    {/each}
+                </div>
+            {/if}
+        </div>
+
         <!-- Dark Mode Toggle at Bottom -->
         <div class="p-3 border-t {$darkMode ? 'border-gray-600' : 'border-gray-200'}">
             <button 
@@ -172,14 +239,25 @@
                 {/if}
             </button>
         </div>
-    </div><!-- Main Content -->
-    <div class="flex-1 flex flex-col gap-4 px-4 overflow-y-auto">
-        <div class="flex items-center -mb-3">
+    </div><!-- Main Content -->    <div 
+        class="flex-1 flex flex-col gap-4 px-4 overflow-y-auto"
+        style="background-color: {$darkMode ? `color-mix(in srgb, var(--theme-color-primary) 3%, #030712)` : `color-mix(in srgb, var(--theme-color-primary) 5%, white)`};"
+    ><div class="flex items-center -mb-3">
             <div class="flex items-center gap-2 px-4 py-2">
-                <span class="font-semibold {$darkMode ? 'text-white' : 'text-gray-700'} mr-2">Layer:</span>
-                {#each [1, 2, 3, 4] as layer}
+                <span class="font-semibold {$darkMode ? 'text-white' : 'text-gray-700'} mr-2">Layer:</span>                {#each [1, 2, 3, 4] as layer}
                     <button
-                        class="w-8 h-8 flex items-center justify-center rounded-lg border font-bold text-lg transition-colors duration-200 focus:outline-none {selectedLayer === layer ? ($darkMode ? 'bg-white text-black border-white' : 'bg-indigo-500 text-white border-indigo-700') : ($darkMode ? 'bg-black text-white border-gray-600 hover:bg-gray-900' : 'bg-white text-indigo-700 border-indigo-300 hover:bg-indigo-100')}"
+                        class="w-8 h-8 flex items-center justify-center rounded-lg border font-bold text-lg transition-colors duration-200 focus:outline-none {selectedLayer === layer ? 'text-white' : ($darkMode ? 'bg-black text-white border-gray-600 hover:bg-gray-900' : '')}"
+                        style={selectedLayer === layer ? `background-color: var(--theme-color-primary); border-color: color-mix(in srgb, var(--theme-color-primary) 70%, black);` : (selectedLayer !== layer ? `background-color: ${$darkMode ? 'black' : 'white'}; border-color: color-mix(in srgb, var(--theme-color-primary) 30%, ${$darkMode ? 'black' : 'white'}); color: var(--theme-color-primary);` : '')}
+                        onmouseover={(e) => {
+                            if (selectedLayer !== layer) {
+                                (e.currentTarget as HTMLElement).style.backgroundColor = $darkMode ? '#374151' : `color-mix(in srgb, var(--theme-color-primary) 15%, white)`;
+                            }
+                        }}
+                        onmouseout={(e) => {
+                            if (selectedLayer !== layer) {
+                                (e.currentTarget as HTMLElement).style.backgroundColor = $darkMode ? 'black' : 'white';
+                            }
+                        }}
                         onclick={() => selectedLayer = layer}
                     >
                         {layer}
@@ -197,8 +275,10 @@
                 values={$KeyboardDisplayValues}
             />
         </div>
-        <!-- Component for adjust part -->
-        <div class="{$darkMode ? 'bg-black border-gray-600 text-white' : 'bg-white'} rounded-2xl shadow p-4 mt-2 mb-4 grow {$darkMode ? 'border' : ''}">
+        <!-- Component for adjust part -->        <div 
+            class="rounded-2xl shadow p-4 mt-2 mb-4 grow {$darkMode ? 'border border-gray-600 text-white' : 'text-black'}"
+            style="background-color: {$darkMode ? `color-mix(in srgb, var(--theme-color-primary) 5%, black)` : `color-mix(in srgb, var(--theme-color-primary) 10%, white)`};"
+        >
             {@render children()}
         </div>
     </div>
@@ -208,8 +288,9 @@
     @reference "tailwindcss";
     :global(html) {
         background-color: theme(--color-gray-50);
+        --theme-color-primary: #6366F1; /* Default Indigo, will be overridden */
     }
     :global(html.dark) {
-        background-color: #000000;
+        background-color: #000000; /* Ensure body background for dark mode is pure black if needed */
     }
 </style>
