@@ -9,17 +9,17 @@
 </script>
 
 <div
-	class="{$darkMode
-		? 'bg-black border-white'
-		: 'bg-white border-gray-200'} rounded-lg border p-6 mb-6"
+	class="rounded-lg border p-6 mb-6"
+	style="background-color: color-mix(in srgb, var(--theme-color-primary) 8%, {$darkMode ? 'black' : 'white'});
+	       border-color: color-mix(in srgb, var(--theme-color-primary) 30%, {$darkMode ? 'white' : '#e5e5e5'});"
 >
 	<div class="flex items-center justify-between">
 		<div class="flex items-center gap-4">
 			<div class="flex items-center gap-3">
 				<div
-					class="w-12 h-12 {$darkMode
-						? 'bg-gray-800 border-white'
-						: 'bg-gray-100 border-blue-300'} rounded-lg flex items-center justify-center border-2"
+					class="w-12 h-12 rounded-lg flex items-center justify-center border-2"
+					style="background-color: color-mix(in srgb, var(--theme-color-primary) 15%, {$darkMode ? 'black' : 'white'});
+					       border-color: var(--theme-color-primary);"
 				>
 					<span
 						class="font-mono font-bold {$darkMode
@@ -53,11 +53,11 @@
 				class="text-sm {$darkMode
 					? 'text-gray-400'
 					: 'text-gray-600'}">Mode:</span
-			>
-			<span
-				class="px-3 py-1 {$darkMode
-					? 'bg-gray-800 text-white border border-white'
-					: 'bg-indigo-100 text-indigo-700'} rounded-full text-sm font-medium"
+			>			<span
+				class="px-3 py-1 rounded-full text-sm font-medium border"
+				style="background-color: color-mix(in srgb, var(--theme-color-primary) 20%, {$darkMode ? 'black' : 'white'});
+				       color: {$darkMode ? 'white' : 'var(--theme-color-primary)'};
+				       border-color: color-mix(in srgb, var(--theme-color-primary) 40%, {$darkMode ? 'white' : '#e5e5e5'});"
 			>
 				Dynamic Keystroke
 			</span>
