@@ -1,212 +1,264 @@
-<!--
 # Zellia Control
 
-A modern desktop application for controlling and configuring Zellia keyboards. Built with Tauri, SvelteKit, and Rust for optimal performance and cross-platform compatibility.
+<div align="center">
+<p>
+    Zellia Control is a powerful, cross-platform desktop application designed for configuring Zellia Hall Effect keyboards. 
+    Built with Tauri, SvelteKit, TypeScript, and Rust, it offers a seamless and intuitive user experience for customizing every aspect of your keyboard.
+  </p>
 
-> [!TIP]  
-> **Looking for Support your keyboard with our firmware and software?** – **[Speak with Our Sales Team Today!](mailto:support@zellia.cn)**
->
-> Get **enhanced capabilities**, **Long-Term Support (LTS)**, and **more!** by just contacting us.
+  <!-- Badges -->
+  <p>
+    <img src="https://img.shields.io/badge/Tauri-v2.x-blueviolet?style=for-the-badge&logo=tauri" alt="Tauri">
+    <img src="https://img.shields.io/badge/SvelteKit-v5.x-orange?style=for-the-badge&logo=svelte" alt="SvelteKit">
+    <img src="https://img.shields.io/badge/TypeScript-v5.x-blue?style=for-the-badge&logo=typescript" alt="TypeScript">
+    <img src="https://img.shields.io/badge/Rust-Stable-red?style=for-the-badge&logo=rust" alt="Rust">
+    <br>
+    <img src="https://img.shields.io/github/license/Zellia-Keyboards/Zellia-Control?style=for-the-badge" alt="License">
+    <img src="https://img.shields.io/github/stars/Zellia-Keyboards/Zellia-Control?style=for-the-badge&logo=github" alt="GitHub Stars">
+    <img src="https://img.shields.io/github/forks/Zellia-Keyboards/Zellia-Control?style=for-the-badge&logo=github" alt="GitHub Forks">
+  </p>
 
-## 🚀 Features
+</div>
 
-- **Real-time Keyboard Control**: Interactive keyboard layout with visual feedback
-- **Performance Tuning**: 
-  - Adjustable actuation points (0-4mm)
-  - Rapid Trigger technology with customizable sensitivity
-  - Continuous Rapid Trigger mode
-- **Key Remapping**: Comprehensive key remapping with multiple categories
-  - Basic keys (alphabet, numbers, special characters)
-  - Function keys (F1-F13)
-  - Media controls
-  - Mouse functions
-  - Special keys incoming
-- **Profile Management**: Import/export keyboard profiles
-- **Advanced Features**: 
-  - Layer system (4 layers)
-  - Lighting control
-  - Calibration tools
-  - Debug mode
-- **Switch Detection System (Planned)**: Automatic identification of switch types based on travel distance and ADC values after calibration
+> [!TIP]
+> **Looking for commercial support or custom firmware/software solutions for your Zellia keyboard?**
+> <br>
+> Contact our team at **[support@zellia.cn](mailto:support@zellia.cn)** for enhanced capabilities, Long-Term Support (LTS), and more!
 
-- **Cross-platform**: Windows, macOS, and Linux support
 
-## 🔧 Installation
+## 📋 Table of Contents
+
+- [✨ Key Features](#key-features)
+- [🛠️ Tech Stack](#tech-stack)
+- [🚀 Getting Started](#getting-started)
+  - [Prerequisites](#prerequisites)
+  - [Installation](#installation)
+- [💻 Usage](#usage)
+- [⚙️ Development](#development)
+  - [Available Scripts](#available-scripts)
+  - [Project Structure](#project-structure)
+- [📦 Building for Production](#building-for-production)
+- [🤝 Contributing](#contributing)
+- [📜 License](#license)
+- [🙏 Acknowledgments](#acknowledgments)
+- [📞 Contact](#contact)
+
+---
+
+## ✨ Key Features
+
+Zellia Control offers a rich set of features to unlock the full potential of your Hall Effect keyboard:
+
+- **⚡ Performance Tuning:**
+  - **Adjustable Actuation Points:** Fine-tune key actuation from 0.1mm to 4.0mm.
+  - **Rapid Trigger:** Dynamic actuation and deactuation for ultra-responsive gameplay.
+  - **Continuous Rapid Trigger:** Enhanced rapid trigger mode for maximum speed.
+  - **Real-time Pressure Monitoring:** Visualize key press depth and pressure.
+- **⌨️ Advanced Key Remapping:**
+  - **Intuitive Interface:** Easily remap any key on the visual keyboard.
+  - **Multiple Key Categories:** Basic, Function, Media, Mouse, System, and Special HE keys.
+  - **4 Configurable Layers:** Create distinct profiles for different applications or games.
+- **💡 RGB Lighting Control:**
+  - **Multiple Effects:** Choose from a variety of dynamic lighting patterns.
+  - **Color Customization:** Per-key or zone-based color settings.
+  - **Brightness & Speed Control:** Adjust lighting intensity and effect speed.
+- **🔧 Hardware & System Tools:**
+  - **Hardware Calibration:** Calibrate switches for optimal performance.
+  - **Debug Mode:** Access real-time key tracking and diagnostic tools.
+  - **Profile Management:** Import and export keyboard configurations.
+  - **Settings Page:** Configure application preferences and device settings.
+- **🌐 Cross-Platform:**
+  - Native support for Windows, macOS, and Linux.
+- **🎨 Modern UI/UX:**
+  - **Dark/Light Mode:** Automatic theme switching based on system preference.
+  - **Customizable Theme Colors:** Personalize the app's appearance.
+  - **Responsive Design:** Adapts to various screen sizes.
+
+---
+
+## 🛠️ Tech Stack
+
+Zellia Control is built with a modern and robust technology stack:
+
+- **[Tauri](https://tauri.app/):** Backend framework for building lightweight, secure, and cross-platform desktop applications with Rust.
+- **[SvelteKit](https://kit.svelte.dev/):** Frontend framework for building fast and efficient web applications.
+- **[TypeScript](https://www.typescriptlang.org/):** Superset of JavaScript adding static typing for improved code quality and maintainability.
+- **[Rust](https://www.rust-lang.org/):** High-performance systems programming language used for the Tauri backend.
+- **[Tailwind CSS](https://tailwindcss.com/):** Utility-first CSS framework for rapid UI development.
+- **[Vite](https://vitejs.dev/):** Next-generation frontend tooling for fast development and optimized builds.
+
+---
+
+## 🚀 Getting Started
+
+Follow these steps to get Zellia Control up and running on your local machine.
 
 ### Prerequisites
 
-- [Node.js](https://nodejs.org/) (v18 or higher)
-- [Rust](https://rustup.rs/) (latest stable)
-- [Yarn](https://yarnpkg.com/) package manager
+Ensure you have the following installed:
 
-### Quick Start
+- [Node.js](https://nodejs.org/) (v18.x or higher recommended)
+- [Yarn](https://yarnpkg.com/) (v1.x) or npm (v8.x or higher)
+- [Rust](https://www.rust-lang.org/tools/install) (latest stable version)
+- System dependencies for Tauri (see [Tauri prerequisites](https://tauri.app/v1/guides/getting-started/prerequisites/))
 
-1. **Clone the repository**
+### Installation
+
+1. **Clone the repository:**
+
    ```bash
-   git clone https://github.com/Zellia-Keyboards/zellia-control.git
-   cd zellia-control
+   git clone https://github.com/Zellia-Keyboards/Zellia-Control.git
+   cd Zellia-Control
    ```
 
-2. **Install dependencies**
+2. **Install frontend dependencies:**
+
    ```bash
    yarn install
+   # or
+   # npm install
    ```
 
-3. **Run in development mode**
+3. **Run in development mode:**
+
+   This command will start the SvelteKit frontend and the Tauri backend with hot-reloading.
+
    ```bash
    yarn tauri dev
+   # or
+   # npm run tauri dev
    ```
 
-## 🛠️ Development Setup
+   The application will typically open automatically. If not, look for the development server URL in your terminal.
 
-### Recommended IDE Setup
+---
 
-- [VS Code](https://code.visualstudio.com/)
-- Extensions:
-  - [Svelte for VS Code](https://marketplace.visualstudio.com/items?itemName=svelte.svelte-vscode)
-  - [Tauri](https://marketplace.visualstudio.com/items?itemName=tauri-apps.tauri-vscode)
-  - [rust-analyzer](https://marketplace.visualstudio.com/items?itemName=rust-lang.rust-analyzer)
+## 💻 Usage
+
+Once the application is running:
+
+1. **Connect your Zellia Hall Effect Keyboard.** The application should automatically detect it.
+2. **Navigate through the sections** using the sidebar:
+    - **Performance:** Adjust actuation points, rapid trigger settings.
+    - **Remap:** Customize key assignments across different layers.
+    - **Lighting:** Control RGB effects and colors.
+    - **Calibration:** Perform hardware calibration for your switches.
+    - **Debug:** View real-time key data and logs.
+    - **Settings:** Manage application preferences and keyboard profiles.
+    - **About:** View application information and acknowledgments.
+3. **Changes are applied in real-time** to your connected keyboard where applicable.
+4. **Use the Profile Management** features in Settings to save and load your configurations.
+
+---
+
+## ⚙️ Development
 
 ### Available Scripts
 
-```bash
-# Start development server
-yarn dev
+In the `package.json`, you'll find several scripts for development:
 
-# Build the application
-yarn build
+- `yarn dev`: Starts the SvelteKit development server (frontend only).
+- `yarn build`: Builds the SvelteKit frontend for production.
+- `yarn preview`: Previews the production SvelteKit build locally.
+- `yarn check`: Runs Svelte type checking.
+- `yarn check:watch`: Runs Svelte type checking in watch mode.
+- `yarn tauri dev`: Starts the full application (frontend + Tauri backend) in development mode.
+- `yarn tauri build`: Builds the full application for production (creates installers/binaries).
 
-# Preview the built application
-yarn preview
+### Project Structure
 
-# Type checking
-yarn check
-
-# Type checking with watch mode
-yarn check:watch
-
-# Run Tauri commands
-yarn tauri [command]
-```
-
-### Development Server
-
-The development server runs on `http://localhost:1420` with hot module replacement enabled.
-
-## 📖 Key Features
-
-#### Performance Page
-- **Actuation Point**: Adjust how far keys must be pressed to register (0-4mm)
-- **Rapid Trigger**: Enable dynamic key actuation based on press intention
-- **Sensitivity**: Fine-tune rapid trigger sensitivity (0-2mm)
-
-#### Remap Page
-- **Basic Keys**: Remap alphabet, numbers, and special characters
-- **System Keys**: Configure F1-F13 functions, system keys, and more
-- **Layer Keys**: Assign layer switching functions
-- **Media Keys**: Set up media control functions
-- **Mouse Functions**: Assign mouse actions to keys
-- **Special Keys for HE**: Configure special keys for Hall Effect keyboards such as calibration, etc...
-
-#### Lighting Page
-- **Lighting Effects**: Choose from various lighting effects
-- **Color Customization**: Set colors for different layers and effects
-- **Brightness Control**: Adjust brightness levels for each effect
-- **Color Picker**: Use a color picker for precise color selection
-
-#### Debug Page
-- **Debug Mode**: Enable debug mode for advanced troubleshooting
-- **Log Viewer**: View logs and debug information in real-time
-- **Key Press Distance Tracking**: 
-  - Real-time visualization of key pressing distance
-  - Interactive charts for detailed observation and analysis
-  - Track actuation behavior for Hall Effect switches
-- **Pressure Monitoring**: Monitor keypress pressure values in real-time
-
-
-## 📁 Project Structure
-
-```
+```text
 zellia-control/
-├── src/                          # Frontend source code
-│   ├── lib/                      # Svelte components and utilities
-│   │   ├── KeyboardState.svelte.ts  # Global keyboard state management
-│   │   └── Zellia80HE.svelte        # Main keyboard layout component
-│   ├── routes/                   # SvelteKit pages
-│   │   ├── +layout.svelte        # Main application layout
-│   │   ├── test/                 # Test page
-│   │   ├── performance/          # Performance tuning page
-│   │   ├── remap/               # Key remapping page
-│   │   ├── lighting/            # Lighting control page
-│   │   ├── settings/            # Device settings page
-│   │   └── [other pages]/       # Additional feature pages
-│   ├── app.html                 # HTML template
-│   └── app.css                  # Global styles
-├── src-tauri/                   # Rust backend
-│   ├── src/
-│   │   ├── main.rs             # Application entry point
-│   │   └── lib.rs              # Core Tauri functionality
-│   ├── Cargo.toml             # Rust dependencies
-│   ├── tauri.conf.json        # Tauri configuration
-│   └── capabilities/          # Security capabilities
-├── static/                     # Static assets
-├── .svelte-kit/               # SvelteKit generated files
-└── Configuration files
-    ├── vite.config.js         # Vite configuration
-    ├── svelte.config.js       # Svelte configuration
-    ├── tailwind.config.js     # Tailwind CSS configuration
-    └── package.json           # Node.js dependencies
+├── .github/                # GitHub Actions and issue templates
+├── build/                  # Output directory for SvelteKit static build
+├── public/                 # Renamed to static/ in your project
+│   └── static/             # Static assets (favicon, logos)
+├── src/                    # SvelteKit frontend source code
+│   ├── app.css             # Global CSS styles
+│   ├── app.html            # Main HTML shell
+│   ├── lib/                # Shared Svelte components, stores, and utilities
+│   │   ├── AdvancedKeyShared.ts
+│   │   ├── DarkModeStore.svelte.ts
+│   │   ├── KeyboardState.svelte.ts
+│   │   └── Zellia80HE.svelte   # Interactive keyboard component
+│   └── routes/             # SvelteKit page routes and layouts
+│       ├── +layout.svelte    # Main application layout
+│       ├── +page.svelte      # Home/Dashboard page
+│       ├── about/
+│       ├── advancedkey/
+│       ├── calibration/
+│       ├── debug/
+│       ├── lighting/
+│       ├── performance/
+│       ├── remap/
+│       └── settings/
+├── src-tauri/              # Tauri (Rust) backend source code
+│   ├── build.rs
+│   ├── Cargo.toml          # Rust dependencies and project metadata
+│   ├── capabilities/       # Tauri security capabilities
+│   ├── icons/              # Application icons for different platforms
+│   ├── src/                # Rust source files
+│   │   ├── lib.rs
+│   │   └── main.rs         # Main Rust application entry point
+│   └── tauri.conf.json     # Tauri application configuration
+├── jsconfig.json           # JavaScript/TypeScript configuration
+├── package.json            # Node.js project metadata and dependencies
+├── postcss.config.js       # PostCSS configuration
+├── README.md               # This file
+├── svelte.config.js        # SvelteKit configuration
+├── tailwind.config.js      # Tailwind CSS configuration
+└── vite.config.js          # Vite configuration
 ```
 
-## 🏗️ Building
+---
 
-### Development Build
-```bash
-yarn tauri dev
-```
+## 📦 Building for Production
 
-### Production Build
+To build the application for production, which will generate native installers or executables for your platform:
+
 ```bash
 yarn tauri build
+
+npm run tauri build
 ```
 
-### Build Artifacts
-- **Windows**: `src-tauri/target/release/bundle/msi/`
-- **macOS**: `src-tauri/target/release/bundle/dmg/`
-- **Linux**: `src-tauri/target/release/bundle/deb/` or `src-tauri/target/release/bundle/rpm/`
+Build artifacts will be located in `src-tauri/target/release/bundle/`. The specific subdirectory and file type will depend on your operating system (e.g., `.msi` for Windows, `.dmg` or `.app` for macOS, `.deb` or `.AppImage` for Linux).
 
-## 🔧 Configuration
-
-### Frontend Configuration
-- **Vite**: [`vite.config.js`](vite.config.js) - Build tool configuration
-- **SvelteKit**: [`svelte.config.js`](svelte.config.js) - Framework configuration
-- **Tailwind**: [`tailwind.config.js`](tailwind.config.js) - Styling configuration
-
-## 🎨 Styling
-
-This project uses:
-- **Tailwind CSS**: Utility-first CSS framework
-- **PostCSS**: CSS processing
-- **Custom Components**: Responsive design with hover states
+---
 
 ## 🤝 Contributing
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+Contributions are what make the open-source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
 
-## 📝 License
+If you have a suggestion that would make this better, please fork the repo and create a pull request. You can also simply open an issue with the tag "enhancement".
+Don't forget to give the project a star! Thanks again!
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+1. **Fork the Project**
+2. **Create your Feature Branch** (`git checkout -b feature/AmazingFeature`)
+3. **Commit your Changes** (`git commit -m 'Add some AmazingFeature'`)
+4. **Push to the Branch** (`git push origin feature/AmazingFeature`)
+5. **Open a Pull Request**
+
+Please ensure your code adheres to the existing style and that all tests pass.
+
+---
+
+## 📜 License
+
+Distributed under the MIT License. See `LICENSE` file for more information.
+(Note: You'll need to create a `LICENSE` file in your repository, typically containing the MIT License text if that's your chosen license.)
+
+---
 
 ## 🙏 Acknowledgments
 
-- [Tauri](https://tauri.app/) - For the amazing desktop app framework
+- The [Tauri Team](https://tauri.app/) for creating an amazing framework.
+- The [Svelte Team](https://svelte.dev/) for Svelte and SvelteKit.
+- All contributors and users of this project.
 
-- [SvelteKit](https://kit.svelte.dev/) - For the powerful web framework
-- [Tailwind CSS](https://tailwindcss.com/) - For the utility-first CSS framework
 ---
 
-**Made with ❤️ for the Hall Effect keyboard community**-->
+<div align="center">
+  <p>Made with ❤️ by the Zellia Team and Community for Hall Effect Keyboard Enthusiasts</p>
+</div>
+
