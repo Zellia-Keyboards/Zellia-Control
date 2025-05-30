@@ -543,12 +543,9 @@
 	{/each}
 {/snippet}
 
-<div class="h-full flex flex-col {$darkMode ? 'bg-black' : 'bg-gray-50'}">
-	<div
-		class="{$darkMode
-			? 'bg-black border-white'
-			: 'bg-white border-gray-200'} border-b px-6 py-4"
-	>
+<div class="h-full flex flex-col" style="background-color: color-mix(in srgb, var(--theme-color-primary) 2%, ${$darkMode ? 'black' : '#f9fafb'});">
+    <!-- Header -->
+    <div class="border-b px-6 py-4" style="background-color: color-mix(in srgb, var(--theme-color-primary) 3%, ${$darkMode ? 'black' : 'white'}); border-color: color-mix(in srgb, var(--theme-color-primary) 20%, ${$darkMode ? 'white' : '#e5e5e5'});">
 		<div class="flex items-center justify-between">
 			<div class="flex items-center gap-4">
 				<a
@@ -590,20 +587,20 @@
 					</p>
 				</div>
 			</div>
-			<div class="flex gap-3">
-				<button
-					class="px-4 py-2 {$darkMode
-						? 'text-white bg-gray-800 hover:bg-gray-700 border border-white'
-						: 'text-gray-700 bg-gray-100 hover:bg-gray-200'} rounded-md transition-colors text-sm font-medium"
+			<div class="flex gap-3">				<button
+					class="px-4 py-2 rounded-md transition-colors text-sm font-medium"
+					style="background-color: color-mix(in srgb, var(--theme-color-primary) 10%, {$darkMode ? 'black' : 'white'}); 
+					       border: 1px solid color-mix(in srgb, var(--theme-color-primary) 30%, {$darkMode ? 'white' : '#e5e5e5'}); 
+					       color: {$darkMode ? 'white' : '#374151'};"
 					onclick={resetConfiguration}
 					disabled={!$CurrentSelected}
 				>
 					Reset
 				</button>
 				<button
-					class="px-4 py-2 {$darkMode
-						? 'bg-white text-black hover:bg-gray-200'
-						: 'bg-blue-600 text-white hover:bg-blue-700'} rounded-md transition-colors text-sm font-medium"
+					class="px-4 py-2 rounded-md transition-colors text-sm font-medium text-white"
+					style="background-color: var(--theme-color-primary); 
+					       border: 1px solid var(--theme-color-primary);"
 					onclick={applyConfiguration}
 					disabled={!$CurrentSelected}
 				>
@@ -621,12 +618,10 @@
 					currentSelectedCoords={$CurrentSelected}
 				/>
 
-				<div class="flex gap-8">
-					<div class="w-96 flex flex-col gap-4">
+				<div class="flex gap-8">					<div class="w-96 flex flex-col gap-4">
 						<div
-							class="{$darkMode
-								? 'bg-black border-white'
-								: 'bg-white border-gray-200'} rounded-lg border p-6"
+							class="rounded-lg border p-6"
+							style="background-color: color-mix(in srgb, var(--theme-color-primary) 5%, {$darkMode ? 'black' : 'white'}); border-color: color-mix(in srgb, var(--theme-color-primary) 25%, {$darkMode ? 'white' : '#e5e5e5'});"
 						>
 							<h3
 								class="text-lg font-medium {$darkMode
@@ -699,22 +694,16 @@
 						/>
 					</div>
 
-					<div class="flex-1 flex flex-col">
-						<div
-							class="flex {$darkMode
-								? 'border-gray-600'
-								: 'border-gray-200'} border-b mb-6"
+					<div class="flex-1 flex flex-col">						<div
+							class="flex border-b mb-6"
+							style="border-color: color-mix(in srgb, var(--theme-color-primary) 25%, {$darkMode ? 'white' : '#e5e5e5'});"
 						>
-							{#each [["bindings", "Bindings"], ["performance", "Performance"], ["key-tester", "Key Tester"]] as [value, label]}
-								<button
-									class="px-4 py-2 text-sm font-medium border-b-2 transition-colors {activeTab ===
-									value
-										? $darkMode
-											? 'border-white text-white'
-											: 'border-blue-500 text-blue-600'
-										: $darkMode
-											? 'border-transparent text-gray-400 hover:text-gray-200'
-											: 'border-transparent text-gray-500 hover:text-gray-700'}"
+							{#each [["bindings", "Bindings"], ["performance", "Performance"], ["key-tester", "Key Tester"]] as [value, label]}								<button
+									class="px-4 py-2 text-sm font-medium border-b-2 transition-colors"
+									style="{activeTab === value
+										? `border-color: var(--theme-color-primary); color: var(--theme-color-primary);`
+										: `border-color: transparent; color: ${$darkMode ? '#9ca3af' : '#6b7280'};`
+									}"
 									onclick={() => (activeTab = value)}
 								>
 									{label}
