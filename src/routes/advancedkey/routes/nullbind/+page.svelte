@@ -186,14 +186,14 @@
     });
 </script>
 
-<div class="h-full flex flex-col {$darkMode ? 'bg-black' : 'bg-gray-50'}">
+<div class="h-full flex flex-col" style="background-color: color-mix(in srgb, var(--theme-color-primary) 2%, ${$darkMode ? 'black' : '#f9fafb'});">
     <!-- Header -->
-    <div class="{$darkMode ? 'bg-black border-white' : 'bg-white border-gray-200'} border-b px-6 py-4">
+    <div class="border-b px-6 py-4" style="background-color: color-mix(in srgb, var(--theme-color-primary) 3%, ${$darkMode ? 'black' : 'white'}); border-color: color-mix(in srgb, var(--theme-color-primary) 20%, ${$darkMode ? 'white' : '#e5e5e5'});">
         <div class="flex items-center justify-between">
             <div class="flex items-center gap-4">
                 <button 
                     class="flex items-center gap-2 {$darkMode ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900'} transition-colors"
-                    on:click={goBack}
+                    onclick={goBack}
                 >
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
@@ -204,29 +204,33 @@
                     <h1 class="text-xl font-semibold {$darkMode ? 'text-white' : 'text-gray-900'}">Null Bind Configuration</h1>
                     <p class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-500'}">Configure rapid trigger with SOCD cleaning for competitive gaming</p>
                 </div>
-            </div>
-            <div class="flex gap-3">
+            </div>            <div class="flex gap-3">
                 <button 
-                    class="px-4 py-2 {$darkMode ? 'bg-white text-black hover:bg-gray-200' : 'bg-blue-600 text-white hover:bg-blue-700'} rounded-md transition-colors text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-                    on:click={applyConfiguration}
+                    class="px-4 py-2 text-white rounded-md transition-colors text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                    style="background-color: var(--theme-color-primary); 
+                           {!canConfigure ? '' : 'hover:background-color: color-mix(in srgb, var(--theme-color-primary) 85%, black);'}"
+                    onclick={applyConfiguration}
                     disabled={!canConfigure}
                 >
                     Apply
                 </button>
             </div>
         </div>
-    </div>    <!-- Key Selection Section -->
-    {#if !canConfigure}
-        <div class="p-6 {$darkMode ? 'bg-black border-white' : 'bg-white border-gray-200'} border-b">
+    </div>    <!-- Key Selection Section -->    {#if !canConfigure}
+        <div class="p-6" style="background-color: color-mix(in srgb, var(--theme-color-primary) 5%, {$darkMode ? 'black' : 'white'}); border-color: color-mix(in srgb, var(--theme-color-primary) 25%, {$darkMode ? 'white' : '#e5e5e5'});" >
             <div class="max-w-4xl mx-auto">
-                <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'} mb-3">Select Two Keys</h3>
+                <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'}  mb-3">Select Two Keys</h3>
                 <p class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'} mb-4">
                     Click on two opposing keys in the keyboard layout to configure null bind behavior. Keys will be added automatically.
                 </p>
-                
-                <!-- Selected Keys Display -->
+                  <!-- Selected Keys Display -->
                 <div class="grid grid-cols-2 gap-4 mb-4">
-                    <div class="p-4 border-2 border-dashed {selectedKeys.length >= 1 ? 'border-green-300 bg-green-50' : ($darkMode ? 'border-white bg-gray-800' : 'border-blue-300 bg-blue-50')} rounded-lg">
+                    <div class="p-4 border-2 border-dashed rounded-lg"
+                         style="{selectedKeys.length >= 1 
+                             ? 'border-color: #10b981; background-color: #ecfdf5;' 
+                             : `border-color: color-mix(in srgb, var(--theme-color-primary) 60%, ${$darkMode ? 'white' : '#e5e5e5'}); 
+                                background-color: color-mix(in srgb, var(--theme-color-primary) 15%, ${$darkMode ? 'black' : 'white'});`
+                         }">
                         <div class="text-center">
                             {#if selectedKeys.length >= 1}
                                 <div class="w-12 h-12 bg-green-500 text-white rounded-lg flex items-center justify-center mx-auto mb-2">
@@ -235,20 +239,28 @@
                                 <div class="text-sm font-medium text-green-700">First Key</div>
                                 <button 
                                     class="mt-2 text-xs text-red-600 hover:text-red-700"
-                                    on:click={() => removeKey(0)}
+                                    onclick={() => removeKey(0)}
                                 >
                                     Remove
                                 </button>
                             {:else}
-                                <div class="w-12 h-12 {$darkMode ? 'bg-gray-600' : 'bg-blue-300'} rounded-lg flex items-center justify-center mx-auto mb-2 animate-pulse">
-                                    <span class="{$darkMode ? 'text-white' : 'text-blue-700'}">?</span>
+                                <div class="w-12 h-12 rounded-lg flex items-center justify-center mx-auto mb-2 animate-pulse"
+                                     style="background-color: color-mix(in srgb, var(--theme-color-primary) 40%, {$darkMode ? 'black' : 'white'});">
+                                    <span style="color: var(--theme-color-primary);">?</span>
                                 </div>
-                                <div class="text-sm {$darkMode ? 'text-white' : 'text-blue-700'}">Click a key to select</div>
+                                <div class="text-sm" style="color: var(--theme-color-primary);">Click a key to select</div>
                             {/if}
                         </div>
                     </div>
                     
-                    <div class="p-4 border-2 border-dashed {selectedKeys.length >= 2 ? 'border-green-300 bg-green-50' : selectedKeys.length === 1 ? 'border-orange-300 bg-orange-50' : ($darkMode ? 'border-gray-600 bg-gray-800' : 'border-gray-300 bg-gray-50')} rounded-lg">
+                    <div class="p-4 border-2 border-dashed rounded-lg"
+                         style="{selectedKeys.length >= 2 
+                             ? 'border-color: #10b981; background-color: #ecfdf5;' 
+                             : selectedKeys.length === 1 
+                             ? 'border-color: #f59e0b; background-color: #fffbeb;' 
+                             : `border-color: ${$darkMode ? '#4b5563' : '#d1d5db'}; 
+                                background-color: ${$darkMode ? '#1f2937' : '#f9fafb'};`
+                         }">
                         <div class="text-center">
                             {#if selectedKeys.length >= 2}
                                 <div class="w-12 h-12 bg-green-500 text-white rounded-lg flex items-center justify-center mx-auto mb-2">
@@ -257,7 +269,7 @@
                                 <div class="text-sm font-medium text-green-700">Second Key</div>
                                 <button 
                                     class="mt-2 text-xs text-red-600 hover:text-red-700"
-                                    on:click={() => removeKey(1)}
+                                    onclick={() => removeKey(1)}
                                 >
                                     Remove
                                 </button>
@@ -267,7 +279,8 @@
                                 </div>
                                 <div class="text-sm text-orange-700">Click opposing key</div>
                             {:else}
-                                <div class="w-12 h-12 {$darkMode ? 'bg-gray-600' : 'bg-gray-300'} rounded-lg flex items-center justify-center mx-auto mb-2">
+                                <div class="w-12 h-12 rounded-lg flex items-center justify-center mx-auto mb-2"
+                                     style="background-color: {$darkMode ? '#4b5563' : '#d1d5db'};">
                                     <span class="{$darkMode ? 'text-gray-400' : 'text-gray-500'}">?</span>
                                 </div>
                                 <div class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-500'}">Second Key</div>
@@ -281,7 +294,7 @@
                     {#if selectedKeys.length > 0}
                         <button 
                             class="px-4 py-2 {$darkMode ? 'text-white bg-gray-800 hover:bg-gray-700 border border-white' : 'text-gray-700 bg-gray-100 hover:bg-gray-200'} rounded-md transition-colors text-sm font-medium"
-                            on:click={resetSelection}
+                            onclick={resetSelection}
                         >
                             Reset Selection
                         </button>
@@ -298,9 +311,11 @@
                 <div class="flex w-full gap-8">
                     <!-- Left Panel - Configuration -->
                     <div class="flex w-72 flex-col gap-4">                        <!-- Selected Keys Info -->
-                        <div class="p-4 {$darkMode ? 'bg-gray-800 border-white' : 'bg-blue-50 border-blue-200'} border rounded-lg">
-                            <div class="text-sm font-medium {$darkMode ? 'text-white' : 'text-blue-900'} mb-2">Selected Keys</div>
-                            <div class="flex items-center gap-2 text-sm {$darkMode ? 'text-white' : 'text-blue-700'}">
+                        <div class="p-4 border rounded-lg"
+                             style="background-color: color-mix(in srgb, var(--theme-color-primary) 15%, {$darkMode ? 'black' : 'white'});
+                                    border-color: color-mix(in srgb, var(--theme-color-primary) 40%, {$darkMode ? 'white' : '#e5e5e5'});">
+                            <div class="text-sm font-medium {$darkMode ? 'text-white' : 'text-gray-900'} mb-2">Selected Keys</div>
+                            <div class="flex items-center gap-2 text-sm" style="color: var(--theme-color-primary);">
                                 <span class="font-mono font-bold">{selectedKeys[0]}</span>
                                 <span>↔</span>
                                 <span class="font-mono font-bold">{selectedKeys[1]}</span>
@@ -316,11 +331,25 @@
                                 Select how to resolve the key events when both keys are pressed.
                             </p>
                             
-                            <div class="mt-3 grid gap-1">
-                                {#each NULL_BIND_BEHAVIOR_METADATA as behaviorMetadata}
+                            <div class="mt-3 grid gap-1">                                {#each NULL_BIND_BEHAVIOR_METADATA as behaviorMetadata}
                                     <button
-                                        class="relative flex items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none transition-colors {$darkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-100'} {behavior === behaviorMetadata.behavior ? ($darkMode ? 'bg-gray-800 text-white border border-white' : 'bg-blue-50 text-blue-900') : ($darkMode ? 'text-white' : 'text-gray-700')}"
-                                        on:click={() => behavior = behaviorMetadata.behavior}
+                                        class="relative flex items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none transition-colors"
+                                        style="{behavior === behaviorMetadata.behavior
+                                            ? `background-color: color-mix(in srgb, var(--theme-color-primary) 15%, ${$darkMode ? 'black' : 'white'}); 
+                                               color: var(--theme-color-primary); 
+                                               border: 1px solid color-mix(in srgb, var(--theme-color-primary) 40%, ${$darkMode ? 'white' : '#e5e5e5'});`
+                                            : `color: ${$darkMode ? 'white' : '#374151'};`
+                                        }"                                        onmouseover={(e) => {
+                                            if (behavior !== behaviorMetadata.behavior) {
+                                                (e.currentTarget as HTMLElement).style.backgroundColor = $darkMode ? '#1f2937' : '#f3f4f6';
+                                            }
+                                        }}
+                                        onmouseleave={(e) => {
+                                            if (behavior !== behaviorMetadata.behavior) {
+                                                (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent';
+                                            }
+                                        }}
+                                        onclick={() => behavior = behaviorMetadata.behavior}
                                     >
                                         <span class="absolute left-2 flex size-3.5 items-center justify-center">
                                             <div class="size-3 rounded-full border-2 border-current flex items-center justify-center">
@@ -349,10 +378,11 @@
                                 <div class="flex-1">
                                     <div class="text-sm font-medium {$darkMode ? 'text-white' : 'text-gray-900'}">Alternative Bottom Out Behavior</div>
                                     <div class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'}">When both keys are bottomed out, register key press for both keys.</div>
-                                </div>
-                                <button
-                                    class="relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none focus:ring-2 {$darkMode ? 'focus:ring-white' : 'focus:ring-blue-500'} focus:ring-offset-2 {bottomOutPoint > 0 ? ($darkMode ? 'bg-white' : 'bg-blue-600') : ($darkMode ? 'bg-gray-600' : 'bg-gray-300')}"
-                                    on:click={() => updateBottomOut(bottomOutPoint === 0)}
+                                </div>                                <button
+                                    class="relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2"
+                                    style="background-color: {bottomOutPoint > 0 ? 'var(--theme-color-primary)' : ($darkMode ? '#4b5563' : '#d1d5db')}; 
+                                           focus:ring-color: var(--theme-color-primary);"
+                                    onclick={() => updateBottomOut(bottomOutPoint === 0)}
                                 >
                                     <span class="inline-block h-3 w-3 transform rounded-full {bottomOutPoint > 0 ? ($darkMode ? 'bg-black' : 'bg-white') : 'bg-white'} transition-transform shadow-sm {bottomOutPoint > 0 ? 'translate-x-5' : 'translate-x-1'}"></span>
                                 </button>
@@ -375,7 +405,7 @@
                                     max={SWITCH_DISTANCE}
                                     step="0.1" 
                                     bind:value={uiBottomOutPoint}
-                                    on:change={commitBottomOutPoint}
+                                    onchange={commitBottomOutPoint}
                                     class="w-full h-2 rounded-full {$darkMode ? 'bg-gray-600' : 'bg-gray-300'} appearance-none slider-thumb"
                                 />
                                 <div class="flex justify-between text-xs {$darkMode ? 'text-gray-400' : 'text-gray-500'} mt-1">
@@ -387,17 +417,45 @@
                     </div>                    <!-- Right Panel - Tabs -->
                     <div class="flex flex-1 flex-col">
                         <!-- Tab Navigation -->
-                        <div class="{$darkMode ? 'border-white' : 'border-gray-200'} border-b">
-                            <nav class="-mb-px flex space-x-8">
-                                <button
-                                    class="py-2 px-1 border-b-2 font-medium text-sm {activeTab === 'performance' ? ($darkMode ? 'border-white text-white' : 'border-blue-500 text-blue-600') : ($darkMode ? 'border-transparent text-gray-400 hover:text-white hover:border-gray-400' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300')}"
-                                    on:click={() => activeTab = 'performance'}
+                        <div class="{$darkMode ? 'border-white' : 'border-gray-200'} border-b">                            <nav class="-mb-px flex space-x-8">                                <button
+                                    class="py-2 px-1 border-b-2 font-medium text-sm transition-colors"
+                                    style="{activeTab === 'performance'
+                                        ? `border-color: var(--theme-color-primary); color: var(--theme-color-primary);`
+                                        : `border-color: transparent; color: ${$darkMode ? '#9ca3af' : '#6b7280'};`
+                                    }"
+                                    onmouseover={(e) => {
+                                        if (activeTab !== 'performance') {
+                                            (e.currentTarget as HTMLElement).style.color = $darkMode ? '#e5e7eb' : '#374151';
+                                            (e.currentTarget as HTMLElement).style.borderColor = $darkMode ? '#6b7280' : '#d1d5db';
+                                        }
+                                    }}
+                                    onmouseleave={(e) => {
+                                        if (activeTab !== 'performance') {
+                                            (e.currentTarget as HTMLElement).style.color = $darkMode ? '#9ca3af' : '#6b7280';
+                                            (e.currentTarget as HTMLElement).style.borderColor = 'transparent';
+                                        }
+                                    }}
+                                    onclick={() => activeTab = 'performance'}
                                 >
                                     Performance
-                                </button>
-                                <button
-                                    class="py-2 px-1 border-b-2 font-medium text-sm {activeTab === 'key-tester' ? ($darkMode ? 'border-white text-white' : 'border-blue-500 text-blue-600') : ($darkMode ? 'border-transparent text-gray-400 hover:text-white hover:border-gray-400' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300')}"
-                                    on:click={() => activeTab = 'key-tester'}
+                                </button>                                <button
+                                    class="py-2 px-1 border-b-2 font-medium text-sm transition-colors"
+                                    style="{activeTab === 'key-tester'
+                                        ? `border-color: var(--theme-color-primary); color: var(--theme-color-primary);`
+                                        : `border-color: transparent; color: ${$darkMode ? '#9ca3af' : '#6b7280'};`
+                                    }"
+                                    onmouseover={(e) => {
+                                        if (activeTab !== 'key-tester') {
+                                            (e.currentTarget as HTMLElement).style.color = $darkMode ? '#e5e7eb' : '#374151';
+                                            (e.currentTarget as HTMLElement).style.borderColor = $darkMode ? '#6b7280' : '#d1d5db';
+                                        }
+                                    }}                                    
+                                    onmouseleave={(e) => {
+                                        if (activeTab !== 'key-tester') {
+                                            (e.currentTarget as HTMLElement).style.color = $darkMode ? '#9ca3af' : '#6b7280';
+                                            (e.currentTarget as HTMLElement).style.borderColor = 'transparent';
+                                        }
+                                    }}                                    onclick={() => activeTab = 'key-tester'}
                                 >
                                     Key Tester
                                 </button>
@@ -413,10 +471,11 @@
                                         <div class="flex-1">
                                             <div class="text-sm font-medium {$darkMode ? 'text-white' : 'text-gray-900'}">Rapid Trigger</div>
                                             <div class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'}">Enable Rapid Trigger to resolve key events only when Rapid Trigger registers the key press. Adjust the sensitivity below.</div>
-                                        </div>
-                                        <button
-                                            class="relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none focus:ring-2 {$darkMode ? 'focus:ring-white' : 'focus:ring-blue-500'} focus:ring-offset-2 {rtDown > 0 ? ($darkMode ? 'bg-white' : 'bg-blue-600') : ($darkMode ? 'bg-gray-600' : 'bg-gray-300')}"
-                                            on:click={() => updateRapidTrigger(rtDown === 0)}
+                                        </div>                                        <button
+                                            class="relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2"
+                                            style="background-color: {rtDown > 0 ? 'var(--theme-color-primary)' : ($darkMode ? '#4b5563' : '#d1d5db')}; 
+                                                   focus:ring-color: var(--theme-color-primary);"
+                                            onclick={() => updateRapidTrigger(rtDown === 0)}
                                         >
                                             <span class="inline-block h-3 w-3 transform rounded-full {rtDown > 0 ? ($darkMode ? 'bg-black' : 'bg-white') : 'bg-white'} transition-transform shadow-sm {rtDown > 0 ? 'translate-x-5' : 'translate-x-1'}"></span>
                                         </button>
@@ -444,7 +503,7 @@
                                             max={bottomOutPoint > 0 ? bottomOutPoint - 0.1 : SWITCH_DISTANCE}
                                             step="0.01" 
                                             bind:value={uiActuationPoint}
-                                            on:change={commitActuationPoint}
+                                            onchange={commitActuationPoint}
                                             class="w-full h-2 rounded-full {$darkMode ? 'bg-gray-600' : 'bg-gray-300'} appearance-none slider-thumb mb-2"
                                         />
                                         
@@ -457,7 +516,7 @@
                                                 max={bottomOutPoint > 0 ? bottomOutPoint - 0.1 : SWITCH_DISTANCE}
                                                 step="0.01" 
                                                 bind:value={uiActuationPoint}
-                                                on:change={commitActuationPoint}
+                                                onchange={commitActuationPoint}
                                                 class="w-20 px-2 py-1 text-xs border rounded {$darkMode ? 'bg-gray-800 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'}"
                                             />
                                             <span class="text-xs {$darkMode ? 'text-gray-400' : 'text-gray-500'}">mm</span>
@@ -551,25 +610,24 @@
                         <div class="p-4 {$darkMode ? 'bg-gray-800 border-white' : 'bg-gray-50 border-gray-200'} rounded-lg border">
                             <div class="flex items-center justify-between mb-2">
                                 <span class="font-mono font-bold {$darkMode ? 'text-white' : 'text-gray-900'}">{keyName}</span>
-                            </div>
-                            <div class="text-sm space-y-1">
-                                <div class="flex justify-between">
-                                    <span class="{$darkMode ? 'text-gray-400' : 'text-gray-600'}">Paired With:</span>
-                                    <span class="{$darkMode ? 'text-white' : 'text-gray-700'} font-mono text-xs">{nullBindConfig.pairedKeys.join(' ↔ ')}</span>
-                                </div>
-                                <div class="flex justify-between">
-                                    <span class="{$darkMode ? 'text-gray-400' : 'text-gray-600'}">Behavior:</span>
-                                    <span class="text-purple-600 font-medium">{getBehaviorName(nullBindConfig.behavior)}</span>
-                                </div>
-                                <div class="flex justify-between">
-                                    <span class="{$darkMode ? 'text-gray-400' : 'text-gray-600'}">Bottom Out:</span>
-                                    <span class="text-green-600 font-medium">{nullBindConfig.bottomOutPoint > 0 ? 'On' : 'Off'}</span>
-                                </div>
-                                <div class="flex justify-between">
-                                    <span class="{$darkMode ? 'text-gray-400' : 'text-gray-600'}">Rapid Trigger:</span>
-                                    <span class="text-green-600 font-medium">{nullBindConfig.rtDown > 0 ? 'On' : 'Off'}</span>
-                                </div>
-                            </div>
+                            </div>                                            <div class="text-sm space-y-1">
+                                                <div class="flex justify-between">
+                                                    <span class="{$darkMode ? 'text-gray-400' : 'text-gray-600'}">Paired With:</span>
+                                                    <span class="{$darkMode ? 'text-white' : 'text-gray-700'} font-mono text-xs">{nullBindConfig.pairedKeys.join(' ↔ ')}</span>
+                                                </div>
+                                                <div class="flex justify-between">
+                                                    <span class="{$darkMode ? 'text-gray-400' : 'text-gray-600'}">Behavior:</span>
+                                                    <span class="font-medium" style="color: var(--theme-color-primary);">{getBehaviorName(nullBindConfig.behavior)}</span>
+                                                </div>
+                                                <div class="flex justify-between">
+                                                    <span class="{$darkMode ? 'text-gray-400' : 'text-gray-600'}">Bottom Out:</span>
+                                                    <span class="text-green-600 font-medium">{nullBindConfig.bottomOutPoint > 0 ? 'On' : 'Off'}</span>
+                                                </div>
+                                                <div class="flex justify-between">
+                                                    <span class="{$darkMode ? 'text-gray-400' : 'text-gray-600'}">Rapid Trigger:</span>
+                                                    <span class="text-green-600 font-medium">{nullBindConfig.rtDown > 0 ? 'On' : 'Off'}</span>
+                                                </div>
+                                            </div>
                         </div>
                     {/each}
                 </div>
