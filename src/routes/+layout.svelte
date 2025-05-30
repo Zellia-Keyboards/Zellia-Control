@@ -4,8 +4,9 @@
     import { KeyboardDisplayValues, CurrentSelected } from "$lib/KeyboardState.svelte";
     import { page } from '$app/stores';
     import { darkMode, selectedThemeColor, themeColors, type ThemeColorName } from '$lib/DarkModeStore.svelte';
-    import { Keyboard, Palette, Sun, Moon, TestTube } from 'lucide-svelte';    const NAVIGATE = [
-        //["/test", "Test", TestTube],
+    import {Palette, Sun, Moon} from 'lucide-svelte';   
+     
+    const NAVIGATE = [
         ["/performance", "Performance"],
         ["/remap", "Remap"],
         ["/lighting", "Lighting"],
