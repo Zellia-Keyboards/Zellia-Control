@@ -241,8 +241,9 @@
         </div>
     </div><!-- Main Content -->    <div 
         class="flex-1 flex flex-col gap-4 px-4 overflow-y-auto"
-        style="background-color: {$darkMode ? `color-mix(in srgb, var(--theme-color-primary) 3%, #030712)` : `color-mix(in srgb, var(--theme-color-primary) 5%, white)`};"
-    ><div class="flex items-center -mb-3">
+        style="background-color: {$darkMode ? `color-mix(in srgb, var(--theme-color-primary) 3%, #030712)` : `color-mix(in srgb, var(--theme-color-primary) 5%, white)`};"    ><!-- Layer selector (hidden on about page) -->
+        {#if $page.url.pathname !== '/about'}
+        <div class="flex items-center -mb-3">
             <div class="flex items-center gap-2 px-4 py-2">
                 <span class="font-semibold {$darkMode ? 'text-white' : 'text-gray-700'} mr-2">Layer:</span>                {#each [1, 2, 3, 4] as layer}
                     <button
@@ -263,9 +264,10 @@
                         {layer}
                     </button>
                 {/each}
-            </div>
-        </div>
-        <!-- Global keyboard layout -->
+            </div>        </div>
+        {/if}
+        <!-- Global keyboard layout (hidden on about page) -->
+        {#if $page.url.pathname !== '/about'}
         <div class="flex justify-center">
             <Zellia80HE
                 onClick={(x, y) => {
@@ -275,7 +277,8 @@
                 values={$KeyboardDisplayValues}
             />
         </div>
-        <!-- Component for adjust part -->        <div 
+        {/if}
+        <!-- Component for adjust part --><div 
             class="rounded-2xl shadow p-4 mt-2 mb-4 grow {$darkMode ? 'border border-gray-600 text-white' : 'text-black'}"
             style="background-color: {$darkMode ? `color-mix(in srgb, var(--theme-color-primary) 5%, black)` : `color-mix(in srgb, var(--theme-color-primary) 10%, white)`};"
         >
