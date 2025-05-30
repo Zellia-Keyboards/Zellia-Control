@@ -223,7 +223,8 @@
                     {/each}
                 </div>
             {/if}
-        </div>        <!-- Dark Mode Toggle at Bottom -->
+        </div>        
+        <!-- Dark Mode Toggle at Bottom -->
         <div class="p-3 border-t border-transparent">
             <button
                 class="flex items-center gap-3 w-full px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 {$darkMode ? 'text-white hover:bg-gray-900' : 'text-gray-700 hover:bg-gray-100'}"
