@@ -70,6 +70,38 @@
             <p class="{$darkMode ? 'text-gray-300' : 'text-gray-600'} mt-2">Configure advanced keyboard behaviors for enhanced productivity</p>
         </div>
     </div>
+    <!-- Getting Started Section -->        
+        <div class="mt-6 rounded-xl p-6 border mb-4"
+             style="background: {$darkMode ? 'color-mix(in srgb, var(--theme-color-primary) 8%, #111827)' : 'color-mix(in srgb, var(--theme-color-primary) 5%, #f9fafb)'};
+                    border-color: {$darkMode ? 'color-mix(in srgb, var(--theme-color-primary) 15%, #374151)' : 'color-mix(in srgb, var(--theme-color-primary) 10%, #e5e7eb)'};">
+            <h3 class="text-lg font-semibold {$darkMode ? 'text-white' : 'text-gray-900'} mb-3">Getting Started</h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                <div class="flex items-start gap-3">
+                    <div class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white"
+                         style="background-color: var(--theme-color-primary);">1</div>
+                    <div>
+                        <div class="font-medium {$darkMode ? 'text-white' : 'text-gray-900'}">Select a Mode</div>
+                        <div class="{$darkMode ? 'text-gray-300' : 'text-gray-600'}">Choose the advanced key behavior you want to configure</div>
+                    </div>
+                </div>
+                <div class="flex items-start gap-3">
+                    <div class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white"
+                         style="background-color: var(--theme-color-primary);">2</div>
+                    <div>
+                        <div class="font-medium {$darkMode ? 'text-white' : 'text-gray-900'}">Select Keys</div>
+                        <div class="{$darkMode ? 'text-gray-300' : 'text-gray-600'}">Click on keys in the keyboard layout to configure them</div>
+                    </div>
+                </div>
+                <div class="flex items-start gap-3">
+                    <div class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white"
+                         style="background-color: var(--theme-color-primary);">3</div>
+                    <div>
+                        <div class="font-medium {$darkMode ? 'text-white' : 'text-gray-900'}">Apply Settings</div>
+                        <div class="{$darkMode ? 'text-gray-300' : 'text-gray-600'}">Save your configuration to the keyboard</div>
+                    </div>
+                </div>
+            </div>
+        </div>
     <div class="grid grid-cols-4 gap-6">
         {#each keyModes as mode}            <div class="group relative w-full">
                 <button
@@ -112,40 +144,9 @@
                 </div>
             {/each}        </div>
 
-        <!-- Getting Started Section -->        <div class="mt-6 rounded-xl p-6 border"
-             style="background: {$darkMode ? 'color-mix(in srgb, var(--theme-color-primary) 8%, #111827)' : 'color-mix(in srgb, var(--theme-color-primary) 5%, #f9fafb)'};
-                    border-color: {$darkMode ? 'color-mix(in srgb, var(--theme-color-primary) 15%, #374151)' : 'color-mix(in srgb, var(--theme-color-primary) 10%, #e5e7eb)'};">
-            <h3 class="text-lg font-semibold {$darkMode ? 'text-white' : 'text-gray-900'} mb-3">Getting Started</h3>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-                <div class="flex items-start gap-3">
-                    <div class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white"
-                         style="background-color: var(--theme-color-primary);">1</div>
-                    <div>
-                        <div class="font-medium {$darkMode ? 'text-white' : 'text-gray-900'}">Select a Mode</div>
-                        <div class="{$darkMode ? 'text-gray-300' : 'text-gray-600'}">Choose the advanced key behavior you want to configure</div>
-                    </div>
-                </div>
-                <div class="flex items-start gap-3">
-                    <div class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white"
-                         style="background-color: var(--theme-color-primary);">2</div>
-                    <div>
-                        <div class="font-medium {$darkMode ? 'text-white' : 'text-gray-900'}">Select Keys</div>
-                        <div class="{$darkMode ? 'text-gray-300' : 'text-gray-600'}">Click on keys in the keyboard layout to configure them</div>
-                    </div>
-                </div>
-                <div class="flex items-start gap-3">
-                    <div class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white"
-                         style="background-color: var(--theme-color-primary);">3</div>
-                    <div>
-                        <div class="font-medium {$darkMode ? 'text-white' : 'text-gray-900'}">Apply Settings</div>
-                        <div class="{$darkMode ? 'text-gray-300' : 'text-gray-600'}">Save your configuration to the keyboard</div>
-                    </div>
-                </div>
-            </div>
-        </div>
 
         <!-- Info Section -->
-        <div class="mt-8 text-center {$darkMode ? 'text-gray-300' : 'text-gray-600'}">
+        <div class="mt-4 text-center {$darkMode ? 'text-gray-300' : 'text-gray-600'}">
             <p class="text-sm">
                 Advanced key configurations allow you to customize how individual keys behave beyond standard typing.
                 Each mode offers unique functionality to enhance your keyboard experience.
