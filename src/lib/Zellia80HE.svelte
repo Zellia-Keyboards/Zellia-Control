@@ -5,9 +5,9 @@
         [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
         [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1],
         [1.5, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1.5, 1, 1, 1],
-        [1.75, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2.25],
-        [2.25, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2.75, 1],
-        [1.5, 1, 1.5, 7, 1.5, 1, 1.5, 1, 1, 1],
+        [1.75, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2.29],
+        [2.25, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2.82, 1],
+        [1.5, 1, 1.5, 7, 1.6, 1, 1.5, 1, 1, 1],
     ];
     
     interface Props {
@@ -35,7 +35,7 @@
 <div class="p-4 {$darkMode ? 'bg-neutral-800 border border-neutral-700' : 'bg-gray-100 border border-gray-300'} rounded-xl shadow-md inline-block space-y-0.5">
     {#each KEYBOARD_LAYOUT as row, y}
         <div
-            class="flex first:*:[&:nth-child(4n+2)]:ml-3.5 *:nth-15:ml-4 nth-[5]:*:nth-13:ml-18 nth-[6]:*:nth-8:ml-4 nth-[2]:mt-4 gap-x-0.5"
+            class="flex first:*:[&:nth-child(4n+2)]:ml-3.5 *:nth-15:ml-4 nth-[5]:*:nth-13:ml-18.5 nth-[6]:*:nth-8:ml-4 nth-[2]:mt-4 gap-x-0.5"
         >   
             {#each row as width, x}
                 {@const keyText = values.at(y)?.at(x)?.toString() ?? "null"}
