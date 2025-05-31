@@ -238,7 +238,7 @@
             </button>
         </div>
     </div><!-- Main Content -->    <div 
-        class="flex-1 flex flex-col gap-4 px-4 overflow-y-auto"
+        class="flex-1 flex flex-col gap-4 px-4 overflow-y-scroll"
         style="background-color: {$darkMode ? `color-mix(in srgb, var(--theme-color-primary) 3%, #030712)` : `color-mix(in srgb, var(--theme-color-primary) 5%, white)`};"    ><!-- Layer selector (hidden on about page) -->
         {#if $page.url.pathname !== '/about'}
         <div class="flex items-center -mb-3">
