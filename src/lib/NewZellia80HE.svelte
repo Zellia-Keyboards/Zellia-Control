@@ -21,7 +21,7 @@
 <div
     class="p-4 {$darkMode
         ? 'bg-neutral-800 border border-neutral-700'
-        : 'bg-gray-100 border border-gray-300'} rounded-xl shadow-md inline-block space-y-0.5"
+        : 'bg-gray-100 border border-gray-300'} rounded-xl shadow-md  space-y-0.5 m-auto"
 >
     {#each KEYBOARD_LAYOUT as row, y}
         <div

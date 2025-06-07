@@ -264,24 +264,9 @@
                 {/each}
             </div>        </div>
         {/if}
-        <!-- Global keyboard layout (hidden on about page) -->
-        {#if $page.url.pathname !== '/about'}
-        <div class="flex justify-center">
-            <Zellia80HE
-                onClick={(x, y) => {
-                    console.log(`Clicked on ${x}, ${y}`);
-                    $CurrentSelected = [x, y];
-                }}
-                values={$KeyboardDisplayValues}
-            />
-        </div>
-        {/if}
-        <!-- Component for adjust part --><div 
-            class="rounded-2xl shadow p-4 mt-2 mb-4 grow {$darkMode ? 'border border-gray-600 text-white' : 'text-black'}"
-            style="background-color: {$darkMode ? `color-mix(in srgb, var(--theme-color-primary) 5%, black)` : `color-mix(in srgb, var(--theme-color-primary) 10%, white)`};"
-        >
-            {@render children()}
-        </div>
+        <!-- Component for adjust part -->
+        
+            {@render children()} 
     </div>
 </div>
 
