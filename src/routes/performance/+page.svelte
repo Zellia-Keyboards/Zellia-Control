@@ -3,14 +3,23 @@
   import NewZellia80He from "$lib/NewZellia80HE.svelte";
   import { AlertTriangle } from "lucide-svelte";
 
-  let rapidTriggerEnabled = false;
-  let continuousRapidTriggerEnabled = false;
-  let actuationPoint = 2.0;
-  let sensitivityValue = 0.5;
-  let separateSensitivity = false;
-  let pressSensitivity = 0.5;
-  let releaseSensitivity = 0.5;
-  let keysSelected = 0;
+  let ACTUATION_POINT = $state([
+    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1],
+    [1.5, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1.5, 1, 1, 1],
+    [1.75, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2],
+    [2.25, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1],
+    [1.5, 1, 1.5, 2, 1.6, 1, 1.5, 1, 1, 1],
+  ]);
+
+  let rapidTriggerEnabled = $state(false);
+  let continuousRapidTriggerEnabled = $state(false);
+  let actuationPoint = $state(2.0);
+  let sensitivityValue = $state(0.5);
+  let separateSensitivity = $state(false);
+  let pressSensitivity = $state(0.5);
+  let releaseSensitivity = $state(0.5);
+  let keysSelected = $state(0);
 </script>
 
 <NewZellia80He
@@ -19,7 +28,7 @@
   }}
 >
   {#snippet body(x, y)}
-    <button class="h-full w-full"> 123 </button>
+    <p class="text-white">{ACTUATION_POINT[y][x]}</p>
   {/snippet}
 </NewZellia80He>
 
