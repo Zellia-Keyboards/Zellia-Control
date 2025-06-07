@@ -14,8 +14,9 @@
     interface Props {
         onClick: (x: number, y: number, event: MouseEvent) => void;
         body: Snippet<[number, number]>;
+        currentSelectedKey: [number, number] | null;
     }
-    const { onClick, body }: Props = $props();
+    let { onClick, body, currentSelectedKey = $bindable(null) }: Props = $props();
 </script>
 
 <div
@@ -35,7 +36,9 @@
                     style:width={y === 5 && x === 3
                         ? "400px"
                         : `${width * 3.5}rem`}
-                    onclick={(_) => onClick(x, y, _)}
+                    onclick={(_) => {
+                        currentSelectedKey = [x, y];
+                        onClick(x, y, _);}}
                 >
                     {@render body(x, y)}
                 </button>

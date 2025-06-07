@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { goto } from "$app/navigation";
 	import {
-		CurrentSelected,
 		KeyboardDisplayValues,
 	} from "$lib/KeyboardState.svelte";
 	import { darkMode } from "$lib/DarkModeStore.svelte";
@@ -26,7 +25,7 @@
 	import BottomOutPointConfig from "./BottomOutPointConfig.svelte";
 	import NoKeySelectedDisplay from "./NoKeySelectedDisplay.svelte";
 	import ConfiguredDKSList from "./ConfiguredDKSList.svelte";
-    import NewZellia80He from "$lib/NewZellia80HE.svelte";
+	import NewZellia80He from "$lib/NewZellia80HE.svelte";
 
 	// Define the dynamic keystroke specific configuration type (local usage if different from global)
 	type DynamicKeystrokeConfiguration = {
@@ -36,6 +35,7 @@
 		bottomOutPoint: number;
 	};
 
+	let currentSelected = $state<[number, number] | null>(null);
 	let selectedKeycodes = $state(["esc", "", "", ""]);
 	let selectedBitmaps = $state<DKSAction[][]>([
 		[DKSAction.PRESS, DKSAction.HOLD, DKSAction.HOLD, DKSAction.RELEASE],
@@ -268,8 +268,8 @@
 	});
 
 	function getCurrentKeyConfiguration(): DynamicKeystrokeConfiguration | null {
-		if (!$CurrentSelected) return null;
-		const keyId = `${$CurrentSelected[0]},${$CurrentSelected[1]}`;
+		if (!currentSelected) return null;
+		const keyId = `${currentSelected[0]},${currentSelected[1]}`;
 		const config = $globalConfigurations[keyId];
 
 		if (config && config.type === "dynamic") {
@@ -309,8 +309,8 @@
 	}
 
 	function updateConfiguration(): void {
-		if (!$CurrentSelected) return;
-		const keyId = `${$CurrentSelected[0]},${$CurrentSelected[1]}`;
+		if (!currentSelected) return;
+		const keyId = `${currentSelected[0]},${currentSelected[1]}`;
 		const config: DynamicKeystrokeConfiguration = {
 			type: "dynamic",
 			keycodes: selectedKeycodes.map((k) => k), // Ensure new array
@@ -324,8 +324,8 @@
 	}
 
 	function resetConfiguration(): void {
-		if (!$CurrentSelected) return;
-		const keyId = `${$CurrentSelected[0]},${$CurrentSelected[1]}`;
+		if (!currentSelected) return;
+		const keyId = `${currentSelected[0]},${currentSelected[1]}`;
 		resetGlobalConfiguration(keyId);
 		selectedKeycodes = ["esc", "enter", "space", "backspace"];
 		selectedBitmaps = [
@@ -356,9 +356,9 @@
 	}
 
 	let currentKeyName = $derived(
-		$CurrentSelected
-			? $KeyboardDisplayValues[$CurrentSelected[1]]?.[
-					$CurrentSelected[0]
+		currentSelected
+			? $KeyboardDisplayValues[currentSelected[1]]?.[
+					currentSelected[0]
 				] || "Unknown"
 			: "No key selected",
 	);
@@ -368,8 +368,8 @@
 	});
 
 	$effect(() => {
-		if ($CurrentSelected) {
-			const keyId = `${$CurrentSelected[0]},${$CurrentSelected[1]}`;
+		if (currentSelected) {
+			const keyId = `${currentSelected[0]},${currentSelected[1]}`;
 			const existingGlobalConfig = $globalConfigurations[keyId];
 
 			if (
@@ -545,22 +545,30 @@
 {/snippet}
 
 <NewZellia80He
-  onClick={(x, y, event) => {
-    console.log(`Key clicked at (${x}, ${y})`, event);
-  }}
+	onClick={(x, y, event) => {
+		console.log(`Key clicked at (${x}, ${y})`, event);
+	}}
+	bind:currentSelectedKey={currentSelected}
 >
-  {#snippet body(x, y)}
-  {/snippet}
+	{#snippet body(x, y)}{/snippet}
 </NewZellia80He>
 <div
-  class="rounded-2xl shadow p-4 mt-2 mb-4 grow {$darkMode
-    ? 'border border-gray-600 text-white'
-    : 'text-black'} h-full flex flex-col"
-  style="background-color: {$darkMode
-    ? `color-mix(in srgb, var(--theme-color-primary) 5%, black)`
-    : `color-mix(in srgb, var(--theme-color-primary) 10%, white)`};"
->     <!-- Header -->
-    <div class="border-b px-6 py-4" style="background-color: color-mix(in srgb, var(--theme-color-primary) 3%, ${$darkMode ? 'black' : 'white'}); border-color: color-mix(in srgb, var(--theme-color-primary) 20%, ${$darkMode ? 'white' : '#e5e5e5'});">
+	class="rounded-2xl shadow p-4 mt-2 mb-4 grow {$darkMode
+		? 'border border-gray-600 text-white'
+		: 'text-black'} h-full flex flex-col"
+	style="background-color: {$darkMode
+		? `color-mix(in srgb, var(--theme-color-primary) 5%, black)`
+		: `color-mix(in srgb, var(--theme-color-primary) 10%, white)`};"
+>
+	<!-- Header -->
+	<div
+		class="border-b px-6 py-4"
+		style="background-color: color-mix(in srgb, var(--theme-color-primary) 3%, ${$darkMode
+			? 'black'
+			: 'white'}); border-color: color-mix(in srgb, var(--theme-color-primary) 20%, ${$darkMode
+			? 'white'
+			: '#e5e5e5'});"
+	>
 		<div class="flex items-center justify-between">
 			<div class="flex items-center gap-4">
 				<a
@@ -602,13 +610,18 @@
 					</p>
 				</div>
 			</div>
-			<div class="flex gap-3">				<button
+			<div class="flex gap-3">
+				<button
 					class="px-4 py-2 rounded-md transition-colors text-sm font-medium"
-					style="background-color: color-mix(in srgb, var(--theme-color-primary) 10%, {$darkMode ? 'black' : 'white'}); 
-					       border: 1px solid color-mix(in srgb, var(--theme-color-primary) 30%, {$darkMode ? 'white' : '#e5e5e5'}); 
+					style="background-color: color-mix(in srgb, var(--theme-color-primary) 10%, {$darkMode
+						? 'black'
+						: 'white'}); 
+					       border: 1px solid color-mix(in srgb, var(--theme-color-primary) 30%, {$darkMode
+						? 'white'
+						: '#e5e5e5'}); 
 					       color: {$darkMode ? 'white' : '#374151'};"
 					onclick={resetConfiguration}
-					disabled={!$CurrentSelected}
+					disabled={!currentSelected}
 				>
 					Reset
 				</button>
@@ -617,7 +630,7 @@
 					style="background-color: var(--theme-color-primary); 
 					       border: 1px solid var(--theme-color-primary);"
 					onclick={applyConfiguration}
-					disabled={!$CurrentSelected}
+					disabled={!currentSelected}
 				>
 					Apply
 				</button>
@@ -626,17 +639,22 @@
 	</div>
 
 	<div class="flex-1 p-6 overflow-y-auto">
-		{#if $CurrentSelected}
+		{#if currentSelected}
 			<div class="max-w-7xl mx-auto">
 				<SelectedKeyInfo
 					{currentKeyName}
-					currentSelectedCoords={$CurrentSelected}
+					currentSelectedCoords={currentSelected}
 				/>
 
-				<div class="flex gap-8">					<div class="w-96 flex flex-col gap-4">
+				<div class="flex gap-8">
+					<div class="w-96 flex flex-col gap-4">
 						<div
 							class="rounded-lg border p-6"
-							style="background-color: color-mix(in srgb, var(--theme-color-primary) 5%, {$darkMode ? 'black' : 'white'}); border-color: color-mix(in srgb, var(--theme-color-primary) 25%, {$darkMode ? 'white' : '#e5e5e5'});"
+							style="background-color: color-mix(in srgb, var(--theme-color-primary) 5%, {$darkMode
+								? 'black'
+								: 'white'}); border-color: color-mix(in srgb, var(--theme-color-primary) 25%, {$darkMode
+								? 'white'
+								: '#e5e5e5'});"
 						>
 							<h3
 								class="text-lg font-medium {$darkMode
@@ -709,16 +727,19 @@
 						/>
 					</div>
 
-					<div class="flex-1 flex flex-col">						<div
+					<div class="flex-1 flex flex-col">
+						<div
 							class="flex border-b mb-6"
-							style="border-color: color-mix(in srgb, var(--theme-color-primary) 25%, {$darkMode ? 'white' : '#e5e5e5'});"
+							style="border-color: color-mix(in srgb, var(--theme-color-primary) 25%, {$darkMode
+								? 'white'
+								: '#e5e5e5'});"
 						>
-							{#each [["bindings", "Bindings"], ["performance", "Performance"], ["key-tester", "Key Tester"]] as [value, label]}								<button
+							{#each [["bindings", "Bindings"], ["performance", "Performance"], ["key-tester", "Key Tester"]] as [value, label]}
+								<button
 									class="px-4 py-2 text-sm font-medium border-b-2 transition-colors"
-									style="{activeTab === value
+									style={activeTab === value
 										? `border-color: var(--theme-color-primary); color: var(--theme-color-primary);`
-										: `border-color: transparent; color: ${$darkMode ? '#9ca3af' : '#6b7280'};`
-									}"
+										: `border-color: transparent; color: ${$darkMode ? "#9ca3af" : "#6b7280"};`}
 									onclick={() => (activeTab = value)}
 								>
 									{label}
