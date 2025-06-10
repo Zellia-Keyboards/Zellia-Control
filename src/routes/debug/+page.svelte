@@ -1,7 +1,48 @@
 <script lang="ts">
   import { darkMode } from '$lib/DarkModeStore.svelte';
+  import { CurrentSelected } from '$lib/KeyboardState.svelte';
+  import { browser } from '$app/environment';
+  import { onMount } from 'svelte';
   
   let keyPressReporting = false;
+  let isTracking = false;
+  let selectedKeyName = '';
+  let chartCanvas: HTMLCanvasElement;
+  let chart: any;
+  let trackingData: { x: number; y: number }[] = [];
+  let trackingInterval: NodeJS.Timeout | null = null;
+  let startTime = 0;
+  
+  //test data to check
+  function generateTestData() {
+    const data = [];
+    const duration = 30000;
+    const sampleRate = 100;
+    
+    for (let i = 0; i < duration; i += 10) {
+      let distance = 3.4;
+      
+      if (Math.random() < 0.02) {
+        const pressDepth = Math.random() * 3.4;
+        distance = 3.4 - pressDepth;
+      }
+      
+      distance += (Math.random() - 0.5) * 0.05;
+      distance = Math.max(0, Math.min(3.4, distance));
+      
+      data.push({
+        x: i,
+        y: distance
+      });
+    }
+    
+    return data;
+  }
+  
+  $: if ($CurrentSelected) {
+    const keyPosition = `${$CurrentSelected[0]},${$CurrentSelected[1]}`;
+    selectedKeyName = `Key ${keyPosition}`;
+  }
   
   function handleReset() {
 
@@ -10,6 +51,180 @@
   function handleRebootRecovery() {
 
   }
+  
+  function scrollToKeyboard() {
+
+  }
+  
+  function startTracking() {
+    if (!selectedKeyName) {
+      alert('Please select a key first');
+      return;
+    }
+    
+    isTracking = true;
+    startTime = Date.now();
+    trackingData = [];
+    
+    if (browser) {
+      setTimeout(() => {
+        trackingData = generateTestData();
+        updateChart();
+        
+        setTimeout(() => {
+          stopTracking();
+        }, 30000);
+      }, 100);
+    }
+  }
+  
+  function stopTracking() {
+    isTracking = false;
+    if (trackingInterval) {
+      clearInterval(trackingInterval);
+      trackingInterval = null;
+    }
+  }
+  
+  function clearChart() {
+    trackingData = [];
+    if (chart) {
+      chart.data.datasets[0].data = [];
+      chart.update();
+    }
+  }
+  
+  function updateChart() {
+    if (!chart) return;
+    
+    chart.data.datasets[0].data = trackingData;
+    chart.update('none');
+  }
+  
+  function initChart() {
+    if (!browser || !chartCanvas) return;
+    
+    import('chart.js/auto').then(async (Chart) => {
+      try {
+        const { default: zoomPlugin } = await import('chartjs-plugin-zoom');
+        Chart.default.register(zoomPlugin);
+      } catch (e) {
+        console.warn('Zoom plugin not available:', e);
+      }
+      
+      const ctx = chartCanvas.getContext('2d');
+      if (!ctx) return;
+
+      chart = new Chart.default(ctx, {
+        type: 'line',
+        data: {
+          datasets: [{
+            label: 'Key Distance',
+            data: [],
+            borderColor: 'rgb(34, 197, 94)',
+            backgroundColor: 'rgba(34, 197, 94, 0.1)',
+            borderWidth: 1,
+            pointRadius: 0,
+            pointHoverRadius: 3,
+            tension: 0.1
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          animation: false,
+          scales: {
+            x: {
+              type: 'linear',
+              position: 'bottom',
+              min: 0,
+              max: 30000,
+              title: {
+                display: true,
+                text: 'Time (ms)',
+                color: $darkMode ? '#9ca3af' : '#6b7280'
+              },
+              ticks: {
+                color: $darkMode ? '#9ca3af' : '#6b7280'
+              },
+              grid: {
+                color: $darkMode ? '#374151' : '#e5e7eb'
+              }
+            },
+            y: {
+              min: 0,
+              max: 3.4,
+              reverse: true,
+              title: {
+                display: true,
+                text: 'Distance (mm)',
+                color: $darkMode ? '#9ca3af' : '#6b7280'
+              },
+              ticks: {
+                color: $darkMode ? '#9ca3af' : '#6b7280',
+                callback: function(value) {
+                  return (value as number).toFixed(1) + 'mm';
+                }
+              },
+              grid: {
+                color: $darkMode ? '#374151' : '#e5e7eb'
+              }
+            }
+          },
+          plugins: {
+            legend: {
+              display: false
+            },
+            zoom: {
+              pan: {
+                enabled: true,
+                mode: 'x'
+              },
+              zoom: {
+                wheel: {
+                  enabled: true
+                },
+                pinch: {
+                  enabled: true
+                },
+                mode: 'x',
+              },
+              limits: {
+                x: {
+                  min: 0,
+                  max: 30000
+                },
+                y: {
+                  min: 0,
+                  max: 3.4
+                }
+              }
+            }
+          },
+          interaction: {
+            intersect: false,
+            mode: 'index'
+          }
+        }
+      });
+    });
+  }
+  
+  onMount(() => {
+    
+    if (browser) {
+      setTimeout(initChart, 100);
+    }
+    
+    return () => {
+      if (chart) {
+        chart.destroy();
+      }
+      if (trackingInterval) {
+        clearInterval(trackingInterval);
+      }
+    };
+  });
 </script>
 
 <div class="p-4 h-full flex flex-col">
@@ -35,7 +250,7 @@
         </button>
       </div>
       <p class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'}">
-        text
+        Allows the keyboard to report whether a key is considered to be pressed. Pressed keys are indicated by the visual above.
       </p>
     </div>
     
@@ -43,7 +258,7 @@
     <div class="p-5 {$darkMode ? 'bg-black border-gray-600' : 'bg-white border-gray-200'} rounded-lg border">
       <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'} mb-2">Reset</h3>
       <p class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'} mb-4">
-        text
+        Reset the configuration of the device to default. Please wait for about half a minute before unplugging the device to ensure the configuration is saved.
       </p>
       <button 
         type="button" 
@@ -57,7 +272,7 @@
     <div class="p-5 {$darkMode ? 'bg-black border-gray-600' : 'bg-white border-gray-200'} rounded-lg border">
       <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'} mb-2">Reboot to Recovery Mode</h3>
       <p class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'} mb-4">
-        text
+        Reboot the device into recovery mode. Normally, you don't need to use this. If triggered by mistake, simply reconnect the device to recover.
       </p>
       <button 
         type="button" 
@@ -65,6 +280,73 @@
         on:click={handleRebootRecovery}>
         Reboot to Recovery Mode
       </button>
+    </div>
+    
+    <!-- Key Tracking Section -->
+    <div class="p-5 {$darkMode ? 'bg-black border-gray-600' : 'bg-white border-gray-200'} rounded-lg border">
+      <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'} mb-4">Key Tracking</h3>
+      <p class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'} mb-4">
+        Track the pressing distance of a key in real time and visualize it in a chart for observation and analysis.
+      </p>
+      
+      <div class="flex items-start gap-4 mb-4">
+        <!-- Left column: controls -->
+        <div class="flex flex-col gap-3 min-w-[200px]">
+          <!-- Select Key -->
+          <button 
+            type="button"
+            class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+            on:click={scrollToKeyboard}>
+            Select Key
+          </button>
+          
+          <!-- Selected key display -->
+          <div class="text-sm {$darkMode ? 'text-gray-300' : 'text-gray-700'}">
+            {selectedKeyName ? `Selected: ${selectedKeyName}` : 'No key selected'}
+          </div>
+          
+          <!-- Start/Stop Tracking -->
+          {#if !isTracking}
+            <button
+              type="button"
+              class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-colors disabled:opacity-50"
+              on:click={startTracking}
+              disabled={!selectedKeyName}
+            >
+              Start Tracking (30s)
+            </button>
+          {:else}
+            <button
+              type="button"
+              class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
+              on:click={stopTracking}
+            >
+              Stop Tracking
+            </button>
+          {/if}
+          
+          <!-- Clear button -->
+          <button
+            type="button"
+            class="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700 transition-colors"
+            on:click={clearChart}
+          >
+            Clear
+          </button>
+        </div>
+
+        <!-- Right column: chart -->
+        <div class="flex-1 min-h-[400px]">
+          <div class="bg-{$darkMode ? 'gray-900' : 'gray-50'} border {$darkMode ? 'border-gray-600' : 'border-gray-300'} rounded-lg p-4 h-full">
+            <canvas bind:this={chartCanvas} class="w-full h-full"></canvas>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Chart controls -->
+      <div class="flex items-center gap-2 text-xs {$darkMode ? 'text-gray-400' : 'text-gray-600'}">
+        <span>💡 Tip: Use mouse wheel to zoom horizontally, drag to pan</span>
+      </div>
     </div>
   </div>
 </div>
