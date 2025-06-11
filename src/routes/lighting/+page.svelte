@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { CurrentSelected, KeyboardDisplayValues } from "$lib/KeyboardState.svelte";
+    import {  KeyboardDisplayValues } from "$lib/KeyboardState.svelte";
     import { darkMode } from '$lib/DarkModeStore.svelte';
     import NewZellia80He from "$lib/NewZellia80HE.svelte";
     
@@ -13,6 +13,8 @@
     let perKeyMode = $state(false);
     let selectedKeys = $state(new Set());
     let keyColor = $state('#ffffff');
+
+    let CurrentSelected = $state<[number, number] | null>(null);
     
     // Convert frontend brightness (0-100) to hardware brightness (0-70)
     function getHardwareBrightness(frontendBrightness: number): number {
@@ -62,8 +64,8 @@
     }
     
     function toggleKeySelection() {
-        if ($CurrentSelected) {
-            const keyId = `${$CurrentSelected[0]},${$CurrentSelected[1]}`;
+        if (CurrentSelected) {
+            const keyId = `${CurrentSelected[0]},${CurrentSelected[1]}`;
             if (selectedKeys.has(keyId)) {
                 selectedKeys.delete(keyId);
             } else {
@@ -104,6 +106,7 @@
   onClick={(x, y, event) => {
     console.log(`Key clicked at (${x}, ${y})`, event);
   }}
+  bind:currentSelectedKey={CurrentSelected}
 >
   {#snippet body(x, y)}
   {/snippet}
@@ -245,9 +248,9 @@
                             onmouseover={(e) => (e.currentTarget as HTMLElement).style.backgroundColor = 'color-mix(in srgb, var(--theme-color-primary) 85%, black)'}
                             onmouseout={(e) => (e.currentTarget as HTMLElement).style.backgroundColor = 'var(--theme-color-primary)'}
                             onclick={toggleKeySelection}
-                            disabled={!$CurrentSelected}
+                            disabled={!CurrentSelected}
                         >
-                            {$CurrentSelected && selectedKeys.has(`${$CurrentSelected[0]},${$CurrentSelected[1]}`) ? 'Deselect Key' : 'Select Key'}
+                            {CurrentSelected && selectedKeys.has(`${CurrentSelected[0]},${CurrentSelected[1]}`) ? 'Deselect Key' : 'Select Key'}
                         </button>
                         <button 
                             class="{$darkMode ? 'bg-gray-800 hover:bg-gray-700 text-white border border-white' : 'bg-gray-600 hover:bg-gray-700 text-white'} px-3 py-2 rounded transition-colors"

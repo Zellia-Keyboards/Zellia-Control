@@ -1,7 +1,7 @@
 <script lang="ts">
     import "../app.css";
     import Zellia80HE from "../lib/Zellia80HE.svelte";    
-    import { KeyboardDisplayValues, CurrentSelected } from "$lib/KeyboardState.svelte";
+    import { KeyboardDisplayValues } from "$lib/KeyboardState.svelte";
     import { page } from '$app/stores';
     import { darkMode, selectedThemeColor, themeColors, type ThemeColorName } from '$lib/DarkModeStore.svelte';
     import {Palette, Sun, Moon} from 'lucide-svelte';   

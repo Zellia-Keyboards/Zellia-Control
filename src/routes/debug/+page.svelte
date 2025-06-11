@@ -12,6 +12,8 @@
   let trackingData: { x: number; y: number }[] = [];
   let trackingInterval: NodeJS.Timeout | null = null;
   let startTime = 0;
+
+  let CurrentSelected= $state<[number, number] | null> (null);
   
   //test data to check
   function generateTestData() {
@@ -39,10 +41,10 @@
     return data;
   }
   
-  $: if ($CurrentSelected) {
-    const keyPosition = `${$CurrentSelected[0]},${$CurrentSelected[1]}`;
+  $effect(() => {if (CurrentSelected) {
+    const keyPosition = `${CurrentSelected[0]},${CurrentSelected[1]}`;
     selectedKeyName = `Key ${keyPosition}`;
-  }
+  }})
   
   function handleReset() {
 
@@ -233,6 +235,7 @@
   onClick={(x, y, event) => {
     console.log(`Key clicked at (${x}, ${y})`, event);
   }}
+  bind:currentSelectedKey={CurrentSelected}
 >
   {#snippet body(x, y)}
   {/snippet}
