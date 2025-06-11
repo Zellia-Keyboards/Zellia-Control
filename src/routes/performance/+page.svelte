@@ -1,133 +1,267 @@
 <script lang="ts">
-  import { darkMode } from '$lib/DarkModeStore.svelte';
-  import { AlertTriangle } from 'lucide-svelte';
-  
-  let rapidTriggerEnabled = false;
-  let continuousRapidTriggerEnabled = false;
-  let actuationPoint = 2.0;
-  let sensitivityValue = 0.5;
-  let separateSensitivity = false;
-  let pressSensitivity = 0.5;
-  let releaseSensitivity = 0.5;
-  let keysSelected = 0;
+  import { darkMode } from "$lib/DarkModeStore.svelte";
+  import NewZellia80He from "$lib/NewZellia80HE.svelte";
+  import { AlertTriangle } from "lucide-svelte";
+
+  let ACTUATION_POINT = $state([
+    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1],
+    [1.5, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1.5, 1, 1, 1],
+    [1.75, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2],
+    [2.25, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1],
+    [1.5, 1, 1.5, 2, 1.6, 1, 1.5, 1, 1, 1],
+  ]);
+
+  let rapidTriggerEnabled = $state(false);
+  let continuousRapidTriggerEnabled = $state(false);
+  let actuationPoint = $state(2.0);
+  let sensitivityValue = $state(0.5);
+  let separateSensitivity = $state(false);
+  let pressSensitivity = $state(0.5);
+  let releaseSensitivity = $state(0.5);
+  let keysSelected = $state(0);
 </script>
 
-<div class="p-4 h-full flex flex-col">  <div class="flex items-center justify-between -mt-4 mb-2">
-    <h2 class="text-2xl font-bold {$darkMode ? 'text-white' : 'text-gray-900'}">Performance</h2>
+<NewZellia80He
+  onClick={(x, y, event) => {
+    console.log(`Key clicked at (${x}, ${y})`, event);
+  }}
+>
+  {#snippet body(x, y)}
+    <p class="text-white">{ACTUATION_POINT[y][x]}</p>
+  {/snippet}
+</NewZellia80He>
+
+<div
+  class="rounded-2xl shadow p-8 mt-2 mb-4 grow {$darkMode
+    ? 'border border-gray-600 text-white'
+    : 'text-black'} h-full flex flex-col"
+  style="background-color: {$darkMode
+    ? `color-mix(in srgb, var(--theme-color-primary) 5%, black)`
+    : `color-mix(in srgb, var(--theme-color-primary) 10%, white)`};"
+>
+  <div class="flex items-center justify-between -mt-4 mb-2">
+    <h2 class="text-2xl font-bold {$darkMode ? 'text-white' : 'text-gray-900'}">
+      Performance
+    </h2>
     <div>
-      <button class="px-4 py-2 rounded mr-2 transition-colors duration-200 text-white"
-              style="background-color: var(--theme-color-primary);"
-              onmouseover={(e) => (e.currentTarget as HTMLElement).style.backgroundColor = 'color-mix(in srgb, var(--theme-color-primary) 85%, black)'}
-              onmouseout={(e) => (e.currentTarget as HTMLElement).style.backgroundColor = 'var(--theme-color-primary)'}>Select all keys</button>
-      <button class="{$darkMode ? 'bg-gray-800 hover:bg-gray-700 text-white border border-white' : 'bg-gray-200 hover:bg-gray-300 text-gray-600'} px-4 py-2 rounded transition-colors duration-200">Discard selection</button>
+      <button
+        class="px-4 py-2 rounded mr-2 transition-colors duration-200 text-white"
+        style="background-color: var(--theme-color-primary);"
+        onmouseover={(e) =>
+          ((e.currentTarget as HTMLElement).style.backgroundColor =
+            "color-mix(in srgb, var(--theme-color-primary) 85%, black)")}
+        onmouseout={(e) =>
+          ((e.currentTarget as HTMLElement).style.backgroundColor =
+            "var(--theme-color-primary)")}>Select all keys</button
+      >
+      <button
+        class="{$darkMode
+          ? 'bg-gray-800 hover:bg-gray-700 text-white border border-white'
+          : 'bg-gray-200 hover:bg-gray-300 text-gray-600'} px-4 py-2 rounded transition-colors duration-200"
+        >Discard selection</button
+      >
     </div>
   </div>
   <div class=" rounded-xl shadow p-6 flex flex-col md:flex-row gap-6 flex-1">
     <!-- 1st Box: Actuation Point -->
     <div class="flex-1 min-w-[260px] flex flex-col">
-      <h3 class="text-lg font-medium mb-4 {$darkMode ? 'text-white' : 'text-gray-900'}">Actuation Point</h3>
-      <p class="text-sm {$darkMode ? 'text-gray-300' : 'text-gray-600'} mb-4">Set the actuation point for your keys.</p>      <div class="mb-2 flex-1">
+      <h3
+        class="text-lg font-medium mb-4 {$darkMode
+          ? 'text-white'
+          : 'text-gray-900'}"
+      >
+        Actuation Point
+      </h3>
+      <p class="text-sm {$darkMode ? 'text-gray-300' : 'text-gray-600'} mb-4">
+        Set the actuation point for your keys.
+      </p>
+      <div class="mb-2 flex-1">
         <div class="relative">
-          <div class="flex justify-between text-sm {$darkMode ? 'text-gray-400' : 'text-gray-500'} mb-1">
+          <div
+            class="flex justify-between text-sm {$darkMode
+              ? 'text-gray-400'
+              : 'text-gray-500'} mb-1"
+          >
             <div>ACTUATION POINT</div>
             <div>{actuationPoint.toFixed(2)} mm</div>
           </div>
-          
-          <!-- Warning box for values below 0.3 -->          {#if actuationPoint < 0.3}
-            <div class="mb-2 p-2 {$darkMode ? 'bg-yellow-900 border-yellow-600 text-yellow-200' : 'bg-yellow-50 border-yellow-300 text-yellow-700'} border rounded-md text-xs flex items-center gap-2">
+
+          <!-- Warning box for values below 0.3 -->
+          {#if actuationPoint < 0.3}
+            <div
+              class="mb-2 p-2 {$darkMode
+                ? 'bg-yellow-900 border-yellow-600 text-yellow-200'
+                : 'bg-yellow-50 border-yellow-300 text-yellow-700'} border rounded-md text-xs flex items-center gap-2"
+            >
               <AlertTriangle size={14} />
               the key may be too sensitive, causing instability, please be careful
             </div>
           {/if}
-          
+
           <!-- Dual input: Slider -->
-          <input 
-            type="range" 
-            min="0.01" 
-            max="4" 
-            step="0.01" 
+          <input
+            type="range"
+            min="0.01"
+            max="4"
+            step="0.01"
             bind:value={actuationPoint}
-            class="w-full h-2 rounded-full {$darkMode ? 'bg-gray-700' : 'bg-gray-300'} appearance-none slider-thumb mb-2" 
+            class="w-full h-2 rounded-full {$darkMode
+              ? 'bg-gray-700'
+              : 'bg-gray-300'} appearance-none slider-thumb mb-2"
           />
-          
+
           <!-- Dual input: Text input -->
           <div class="flex items-center gap-2 mb-2">
-            <span class="text-xs {$darkMode ? 'text-gray-400' : 'text-gray-500'}">Direct input:</span>
-            <input 
-              type="number" 
-              min="0.01" 
-              max="4" 
-              step="0.01" 
+            <span
+              class="text-xs {$darkMode ? 'text-gray-400' : 'text-gray-500'}"
+              >Direct input:</span
+            >
+            <input
+              type="number"
+              min="0.01"
+              max="4"
+              step="0.01"
               bind:value={actuationPoint}
-              class="w-20 px-2 py-1 text-xs border rounded {$darkMode ? 'bg-gray-800 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'}"
+              class="w-20 px-2 py-1 text-xs border rounded {$darkMode
+                ? 'bg-gray-800 border-gray-600 text-white'
+                : 'bg-white border-gray-300 text-gray-900'}"
             />
-            <span class="text-xs {$darkMode ? 'text-gray-400' : 'text-gray-500'}">mm</span>
+            <span
+              class="text-xs {$darkMode ? 'text-gray-400' : 'text-gray-500'}"
+              >mm</span
+            >
           </div>
-          
-          <div class="flex justify-between text-sm {$darkMode ? 'text-gray-400' : 'text-gray-500'} mb-1">
+
+          <div
+            class="flex justify-between text-sm {$darkMode
+              ? 'text-gray-400'
+              : 'text-gray-500'} mb-1"
+          >
             <div>HIGH</div>
             <div>LOW</div>
           </div>
-        </div>        <!-- Keys selected indicator -->
-        <div class="mt-4 {$darkMode ? 'text-white' : 'text-gray-900'} font-medium">
+        </div>
+        <!-- Keys selected indicator -->
+        <div
+          class="mt-4 {$darkMode ? 'text-white' : 'text-gray-900'} font-medium"
+        >
           {keysSelected} keys selected
         </div>
       </div>
     </div>
 
     <!-- Divider for desktop -->
-    <div class="hidden md:block w-px {$darkMode ? 'bg-white' : 'bg-gray-200'} mx-2"></div>
+    <div
+      class="hidden md:block w-px {$darkMode ? 'bg-white' : 'bg-gray-200'} mx-2"
+    ></div>
 
     <!-- 2nd Box: Rapid Trigger Toggles (moved from 3rd position) -->
     <div class="flex-1 min-w-[260px] flex flex-col">
       <div class="flex items-center justify-between mb-4">
-        <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'}">Enable Rapid Trigger</h3>        <button class="relative inline-flex items-center h-6 rounded-full w-11 transition-colors focus:outline-none"
+        <h3
+          class="text-lg font-medium {$darkMode
+            ? 'text-white'
+            : 'text-gray-900'}"
+        >
+          Enable Rapid Trigger
+        </h3>
+        <button
+          class="relative inline-flex items-center h-6 rounded-full w-11 transition-colors focus:outline-none"
           aria-label="Rapid Trigger Toggle"
-          style="background-color: {rapidTriggerEnabled ? 'var(--theme-color-primary)' : ($darkMode ? '#4b5563' : '#d1d5db')};"
-          onclick={() => rapidTriggerEnabled = !rapidTriggerEnabled}>
-          <span class="inline-block w-4 h-4 transform rounded-full bg-white transition-transform shadow"
+          style="background-color: {rapidTriggerEnabled
+            ? 'var(--theme-color-primary)'
+            : $darkMode
+              ? '#4b5563'
+              : '#d1d5db'};"
+          onclick={() => (rapidTriggerEnabled = !rapidTriggerEnabled)}
+        >
+          <span
+            class="inline-block w-4 h-4 transform rounded-full bg-white transition-transform shadow"
             class:translate-x-6={rapidTriggerEnabled}
-            class:translate-x-1={!rapidTriggerEnabled}></span>
+            class:translate-x-1={!rapidTriggerEnabled}
+          ></span>
         </button>
       </div>
       <p class="text-sm {$darkMode ? 'text-gray-300' : 'text-gray-600'} mb-4">
-        Rapid Trigger dynamically actuates and resets your key based on your intention to press or release the key.
+        Rapid Trigger dynamically actuates and resets your key based on your
+        intention to press or release the key.
       </p>
       <div class="flex-1">
         {#if rapidTriggerEnabled}
-          <div class="flex items-center justify-between mb-4 border-t {$darkMode ? 'border-white' : 'border-gray-200'} pt-4">
-            <h4 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'}">Enable Continuous Rapid Trigger</h4>            <button class="relative inline-flex items-center h-6 rounded-full w-11 transition-colors focus:outline-none"
+          <div
+            class="flex items-center justify-between mb-4 border-t {$darkMode
+              ? 'border-white'
+              : 'border-gray-200'} pt-4"
+          >
+            <h4
+              class="text-lg font-medium {$darkMode
+                ? 'text-white'
+                : 'text-gray-900'}"
+            >
+              Enable Continuous Rapid Trigger
+            </h4>
+            <button
+              class="relative inline-flex items-center h-6 rounded-full w-11 transition-colors focus:outline-none"
               aria-label="Continuous Rapid Trigger Toggle"
-              style="background-color: {continuousRapidTriggerEnabled ? 'var(--theme-color-primary)' : ($darkMode ? '#4b5563' : '#d1d5db')};"
-              onclick={() => continuousRapidTriggerEnabled = !continuousRapidTriggerEnabled}>
-              <span class="inline-block w-4 h-4 transform rounded-full bg-white transition-transform shadow"
+              style="background-color: {continuousRapidTriggerEnabled
+                ? 'var(--theme-color-primary)'
+                : $darkMode
+                  ? '#4b5563'
+                  : '#d1d5db'};"
+              onclick={() =>
+                (continuousRapidTriggerEnabled =
+                  !continuousRapidTriggerEnabled)}
+            >
+              <span
+                class="inline-block w-4 h-4 transform rounded-full bg-white transition-transform shadow"
                 class:translate-x-6={continuousRapidTriggerEnabled}
-                class:translate-x-1={!continuousRapidTriggerEnabled}></span>
+                class:translate-x-1={!continuousRapidTriggerEnabled}
+              ></span>
             </button>
           </div>
           <p class="text-sm {$darkMode ? 'text-gray-300' : 'text-gray-600'}">
-            When enabled, Rapid Trigger ends when the entire key is released. When disabled, Rapid Trigger ends at the actuation point.
+            When enabled, Rapid Trigger ends when the entire key is released.
+            When disabled, Rapid Trigger ends at the actuation point.
           </p>
         {/if}
       </div>
     </div>
 
     <!-- Divider for desktop -->
-    <div class="hidden md:block w-px {$darkMode ? 'bg-white' : 'bg-gray-200'} mx-2"></div>
+    <div
+      class="hidden md:block w-px {$darkMode ? 'bg-white' : 'bg-gray-200'} mx-2"
+    ></div>
 
     <!-- 3rd Box: Sensitivity Slider & Toggle (moved from 2nd position) -->
     <div class="flex-1 min-w-[260px] flex flex-col">
       <div class="flex items-center justify-between mb-4">
-        <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'}">Rapid Trigger Sensitivity</h3>
-        <div class="flex items-center gap-2">          <span class="text-xs {$darkMode ? 'text-gray-400' : 'text-gray-500'}">Separate Press/Release</span>          <button
+        <h3
+          class="text-lg font-medium {$darkMode
+            ? 'text-white'
+            : 'text-gray-900'}"
+        >
+          Rapid Trigger Sensitivity
+        </h3>
+        <div class="flex items-center gap-2">
+          <span class="text-xs {$darkMode ? 'text-gray-400' : 'text-gray-500'}"
+            >Separate Press/Release</span
+          >
+          <button
             class="relative inline-flex items-center h-5 rounded-full w-10 transition-colors focus:outline-none"
             aria-label="Separate Sensitivity Toggle"
-            style="background-color: {separateSensitivity ? 'var(--theme-color-primary)' : ($darkMode ? '#4b5563' : '#d1d5db')};"
-            onclick={() => separateSensitivity = !separateSensitivity}
+            style="background-color: {separateSensitivity
+              ? 'var(--theme-color-primary)'
+              : $darkMode
+                ? '#4b5563'
+                : '#d1d5db'};"
+            onclick={() => (separateSensitivity = !separateSensitivity)}
           >
-            <span class="inline-block w-4 h-4 transform rounded-full bg-white transition-transform shadow"
+            <span
+              class="inline-block w-4 h-4 transform rounded-full bg-white transition-transform shadow"
               class:translate-x-5={separateSensitivity}
-              class:translate-x-1={!separateSensitivity}></span>
+              class:translate-x-1={!separateSensitivity}
+            ></span>
           </button>
         </div>
       </div>
@@ -137,56 +271,86 @@
       <div class="flex-1">
         {#if separateSensitivity}
           <div class="mb-4">
-            <div class="flex justify-between text-sm {$darkMode ? 'text-gray-400' : 'text-gray-500'} mb-1">
+            <div
+              class="flex justify-between text-sm {$darkMode
+                ? 'text-gray-400'
+                : 'text-gray-500'} mb-1"
+            >
               <div>PRESS SENSITIVITY</div>
               <div>{pressSensitivity.toFixed(2)} mm</div>
             </div>
-            <input 
-              type="range" 
-              min="0.01" 
-              max="2" 
-              step="0.01" 
+            <input
+              type="range"
+              min="0.01"
+              max="2"
+              step="0.01"
               bind:value={pressSensitivity}
-              class="w-full h-2 rounded-full {$darkMode ? 'bg-gray-700' : 'bg-gray-300'} appearance-none slider-thumb"
+              class="w-full h-2 rounded-full {$darkMode
+                ? 'bg-gray-700'
+                : 'bg-gray-300'} appearance-none slider-thumb"
             />
-            <div class="flex justify-between text-sm {$darkMode ? 'text-gray-400' : 'text-gray-500'} mt-1">
+            <div
+              class="flex justify-between text-sm {$darkMode
+                ? 'text-gray-400'
+                : 'text-gray-500'} mt-1"
+            >
               <div>HIGH</div>
               <div>LOW</div>
             </div>
           </div>
           <div>
-            <div class="flex justify-between text-sm {$darkMode ? 'text-gray-400' : 'text-gray-500'} mb-1">
+            <div
+              class="flex justify-between text-sm {$darkMode
+                ? 'text-gray-400'
+                : 'text-gray-500'} mb-1"
+            >
               <div>RELEASE SENSITIVITY</div>
               <div>{releaseSensitivity.toFixed(2)} mm</div>
             </div>
-            <input 
-              type="range" 
-              min="0.01" 
-              max="2" 
-              step="0.01" 
+            <input
+              type="range"
+              min="0.01"
+              max="2"
+              step="0.01"
               bind:value={releaseSensitivity}
-              class="w-full h-2 rounded-full {$darkMode ? 'bg-gray-700' : 'bg-gray-300'} appearance-none slider-thumb"
+              class="w-full h-2 rounded-full {$darkMode
+                ? 'bg-gray-700'
+                : 'bg-gray-300'} appearance-none slider-thumb"
             />
-            <div class="flex justify-between text-sm {$darkMode ? 'text-gray-400' : 'text-gray-500'} mt-1">
+            <div
+              class="flex justify-between text-sm {$darkMode
+                ? 'text-gray-400'
+                : 'text-gray-500'} mt-1"
+            >
               <div>HIGH</div>
               <div>LOW</div>
             </div>
           </div>
         {:else}
           <div>
-            <div class="flex justify-between text-sm {$darkMode ? 'text-gray-400' : 'text-gray-500'} mb-1">
+            <div
+              class="flex justify-between text-sm {$darkMode
+                ? 'text-gray-400'
+                : 'text-gray-500'} mb-1"
+            >
               <div>SENSITIVITY</div>
               <div>{sensitivityValue.toFixed(2)} mm</div>
             </div>
-            <input 
-              type="range" 
-              min="0.01" 
-              max="2" 
-              step="0.01" 
+            <input
+              type="range"
+              min="0.01"
+              max="2"
+              step="0.01"
               bind:value={sensitivityValue}
-              class="w-full h-2 rounded-full {$darkMode ? 'bg-gray-700' : 'bg-gray-300'} appearance-none slider-thumb"
+              class="w-full h-2 rounded-full {$darkMode
+                ? 'bg-gray-700'
+                : 'bg-gray-300'} appearance-none slider-thumb"
             />
-            <div class="flex justify-between text-sm {$darkMode ? 'text-gray-400' : 'text-gray-500'} mt-1">
+            <div
+              class="flex justify-between text-sm {$darkMode
+                ? 'text-gray-400'
+                : 'text-gray-500'} mt-1"
+            >
               <div>HIGH</div>
               <div>LOW</div>
             </div>
@@ -200,7 +364,8 @@
 <style>
   .slider-thumb {
     appearance: none;
-  }  .slider-thumb::-webkit-slider-thumb {
+  }
+  .slider-thumb::-webkit-slider-thumb {
     appearance: none;
     width: 16px;
     height: 16px;

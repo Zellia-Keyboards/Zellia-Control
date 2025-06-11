@@ -1,6 +1,7 @@
 <script lang="ts">
     import { goto } from '$app/navigation';
     import { darkMode } from '$lib/DarkModeStore.svelte';
+    import NewZellia80He from '$lib/NewZellia80HE.svelte';
     import { Zap, RotateCcw, Settings, Target } from 'lucide-svelte';    // Available advanced key modes
     const keyModes = [
         {
@@ -62,7 +63,23 @@
     }
 </script>
 
-<div class="flex-1 w-full">
+
+<NewZellia80He
+  onClick={(x, y, event) => {
+    console.log(`Key clicked at (${x}, ${y})`, event);
+  }}
+>
+  {#snippet body(x, y)}
+  {/snippet}
+</NewZellia80He>
+<div
+  class="rounded-2xl shadow p-8 mt-2 mb-4 grow {$darkMode
+    ? 'border border-gray-600 text-white'
+    : 'text-black'} h-full flex flex-col"
+  style="background-color: {$darkMode
+    ? `color-mix(in srgb, var(--theme-color-primary) 5%, black)`
+    : `color-mix(in srgb, var(--theme-color-primary) 10%, white)`};"
+>
     <div class="flex items-center justify-between mb-6">
         <div>
             <h2 class="text-3xl font-bold {$darkMode ? 'text-white' : 'text-gray-900'}">Advanced Keys</h2>

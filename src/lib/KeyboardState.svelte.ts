@@ -18,6 +18,4 @@ const KeyboardKeySizes = writable([
     [1.5, 1, 1.5, 7, 1.5, 1, 1.5, 1, 1, 1],
 ]);
 
-const CurrentSelected = writable<[number, number] | null>(null);
-
-export { KeyboardDisplayValues, KeyboardKeySizes, CurrentSelected };
+export { KeyboardDisplayValues, KeyboardKeySizes };

@@ -9,6 +9,7 @@
         resetGlobalConfiguration,
         keyActions
     } from "$lib/AdvancedKeyShared";
+    import NewZellia80He from '$lib/NewZellia80HE.svelte';
 
     // Define the null bind specific configuration type
     type NullBindConfiguration = {
@@ -187,8 +188,22 @@
     });
 </script>
 
-<div class="h-full flex flex-col" style="background-color: color-mix(in srgb, var(--theme-color-primary) 2%, ${$darkMode ? 'black' : '#f9fafb'});">
-    <!-- Header -->
+<NewZellia80He
+  onClick={(x, y, event) => {
+    console.log(`Key clicked at (${x}, ${y})`, event);
+  }}
+>
+  {#snippet body(x, y)}
+  {/snippet}
+</NewZellia80He>
+<div
+  class="rounded-2xl shadow p-4 mt-2 mb-4 grow {$darkMode
+    ? 'border border-gray-600 text-white'
+    : 'text-black'} h-full flex flex-col"
+  style="background-color: {$darkMode
+    ? `color-mix(in srgb, var(--theme-color-primary) 5%, black)`
+    : `color-mix(in srgb, var(--theme-color-primary) 10%, white)`};"
+>     <!-- Header -->
     <div class="border-b px-6 py-4" style="background-color: color-mix(in srgb, var(--theme-color-primary) 3%, ${$darkMode ? 'black' : 'white'}); border-color: color-mix(in srgb, var(--theme-color-primary) 20%, ${$darkMode ? 'white' : '#e5e5e5'});">
         <div class="flex items-center justify-between">
             <div class="flex items-center gap-4">
