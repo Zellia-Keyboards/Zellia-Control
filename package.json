@@ -20,7 +20,6 @@
     "lucide-svelte": "^0.511.0"
   },
   "devDependencies": {
-    "@rollup/rollup-win32-x64-msvc": "^4.42.0",
     "@sveltejs/adapter-static": "^3.0.1",
     "@sveltejs/kit": "^2.0.0",
     "@sveltejs/vite-plugin-svelte": "^5.0.3",
