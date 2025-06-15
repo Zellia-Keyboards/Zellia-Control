@@ -239,7 +239,7 @@
         </div>
     </div><!-- Main Content -->    <div 
         class="flex-1 flex flex-col gap-4 px-4 overflow-y-scroll"
-        style="background-color: {$darkMode ? `color-mix(in srgb, var(--theme-color-primary) 3%, #030712)` : `color-mix(in srgb, var(--theme-color-primary) 5%, white)`};"    ><!-- Layer selector (hidden on about page) -->
+        style="background-color: {$darkMode ? `color-mix(in srgb, var(--theme-color-primary) 5%, black)` : `color-mix(in srgb, var(--theme-color-primary) 5%, white)`};"    ><!-- Layer selector (hidden on about page) -->
         {#if $page.url.pathname !== '/about'}
         <div class="flex items-center -mb-3">
             <div class="flex items-center gap-2 px-4 py-2">
@@ -277,6 +277,6 @@
         --theme-color-primary: #6366F1; /* Default Indigo, will be overridden */
     }
     :global(html.dark) {
-        background-color: #000000; /* Ensure body background for dark mode is pure black if needed */
+        background-color: #c00000; /* Ensure body background for dark mode is pure black if needed */
     }
 </style>
