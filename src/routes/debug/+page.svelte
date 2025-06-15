@@ -252,9 +252,11 @@
     <h2 class="text-2xl font-bold {$darkMode ? 'text-white' : 'text-gray-900'}">Debug</h2>
   </div>
   
-  <div class="rounded-xl shadow p-6 space-y-8 flex-1 {$darkMode ? 'border-gray-600' : ''}">
-    <!-- Key Press Reporting -->
-    <div class="p-5 {$darkMode ? 'bg-black border-gray-600' : 'bg-white border-gray-200'} rounded-lg border">
+  <div class="rounded-xl shadow p-6 space-y-8 flex-1 {$darkMode ? 'border-gray-600' : ''}">    <!-- Key Press Reporting -->
+    <div class="p-5 rounded-lg border {$darkMode ? 'border-gray-600' : 'border-gray-200'}" 
+         style="background-color: {$darkMode
+           ? `color-mix(in srgb, var(--theme-color-primary) 5%, black)`
+           : `color-mix(in srgb, var(--theme-color-primary) 10%, white)`};">
       <div class="flex items-center justify-between mb-2">
         <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'}">Reports whether key is pressed</h3>
         <button 
@@ -273,9 +275,11 @@
         Allows the keyboard to report whether a key is considered to be pressed. Pressed keys are indicated by the visual above.
       </p>
     </div>
-    
-    <!-- Reset Configuration -->
-    <div class="p-5 {$darkMode ? 'bg-black border-gray-600' : 'bg-white border-gray-200'} rounded-lg border">
+      <!-- Reset Configuration -->
+    <div class="p-5 rounded-lg border {$darkMode ? 'border-gray-600' : 'border-gray-200'}" 
+         style="background-color: {$darkMode
+           ? `color-mix(in srgb, var(--theme-color-primary) 5%, black)`
+           : `color-mix(in srgb, var(--theme-color-primary) 10%, white)`};">
       <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'} mb-2">Reset</h3>
       <p class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'} mb-4">
         Reset the configuration of the device to default. Please wait for about half a minute before unplugging the device to ensure the configuration is saved.
@@ -287,9 +291,11 @@
         Reset
       </button>
     </div>
-    
-    <!-- Recovery Mode -->
-    <div class="p-5 {$darkMode ? 'bg-black border-gray-600' : 'bg-white border-gray-200'} rounded-lg border">
+      <!-- Recovery Mode -->
+    <div class="p-5 rounded-lg border {$darkMode ? 'border-gray-600' : 'border-gray-200'}" 
+         style="background-color: {$darkMode
+           ? `color-mix(in srgb, var(--theme-color-primary) 5%, black)`
+           : `color-mix(in srgb, var(--theme-color-primary) 10%, white)`};">
       <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'} mb-2">Reboot to Recovery Mode</h3>
       <p class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'} mb-4">
         Reboot the device into recovery mode. Normally, you don't need to use this. If triggered by mistake, simply reconnect the device to recover.
@@ -301,9 +307,11 @@
         Reboot to Recovery Mode
       </button>
     </div>
-    
-    <!-- Key Tracking Section -->
-    <div class="p-5 {$darkMode ? 'bg-black border-gray-600' : 'bg-white border-gray-200'} rounded-lg border">
+      <!-- Key Tracking Section -->
+    <div class="p-5 rounded-lg border {$darkMode ? 'border-gray-600' : 'border-gray-200'}" 
+         style="background-color: {$darkMode
+           ? `color-mix(in srgb, var(--theme-color-primary) 5%, black)`
+           : `color-mix(in srgb, var(--theme-color-primary) 10%, white)`};">
       <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'} mb-4">Key Tracking</h3>
       <p class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'} mb-4">
         Track the pressing distance of a key in real time and visualize it in a chart for observation and analysis.
@@ -353,11 +361,12 @@
           >
             Clear
           </button>
-        </div>
-
-        <!-- Right column: chart -->
+        </div>        <!-- Right column: chart -->
         <div class="flex-1 min-h-[400px]">
-          <div class="bg-{$darkMode ? 'gray-900' : 'gray-50'} border {$darkMode ? 'border-gray-600' : 'border-gray-300'} rounded-lg p-4 h-full">
+          <div class="border {$darkMode ? 'border-gray-600' : 'border-gray-300'} rounded-lg p-4 h-full" 
+               style="background-color: {$darkMode
+                 ? `color-mix(in srgb, var(--theme-color-primary) 3%, black)`
+                 : `color-mix(in srgb, var(--theme-color-primary) 8%, white)`};">
             <canvas bind:this={chartCanvas} class="w-full h-full"></canvas>
           </div>
         </div>
