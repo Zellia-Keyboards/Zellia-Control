@@ -1,6 +1,6 @@
 <script lang="ts">
     import { goto } from '$app/navigation';
-    import { CurrentSelected, KeyboardDisplayValues } from "$lib/KeyboardState.svelte";
+    import {  KeyboardDisplayValues } from "$lib/KeyboardState.svelte";
     import { darkMode } from '$lib/DarkModeStore.svelte';
     import { 
         globalConfigurations,
@@ -19,6 +19,7 @@
         tapTimeout: number;
     };
 
+    let CurrentSelected = $state<[number, number] | null>(null);
     let tapAction = $state('esc');
     let holdAction = $state('ctrl');
     let holdDelay = $state(200); // milliseconds
@@ -29,8 +30,8 @@
     }
 
     function getCurrentKeyConfiguration(): TapHoldConfiguration | null {
-        if (!$CurrentSelected) return null;
-        const keyId = `${$CurrentSelected[0]},${$CurrentSelected[1]}`;
+        if (!CurrentSelected) return null;
+        const keyId = `${CurrentSelected[0]},${CurrentSelected[1]}`;
         const config = $globalConfigurations[keyId];
         
         if (config && config.type === 'tap-hold') {
@@ -47,8 +48,8 @@
     }
 
     function updateConfiguration(): void {
-        if (!$CurrentSelected) return;
-        const keyId = `${$CurrentSelected[0]},${$CurrentSelected[1]}`;
+        if (!CurrentSelected) return;
+        const keyId = `${CurrentSelected[0]},${CurrentSelected[1]}`;
         const config: TapHoldConfiguration = {
             type: 'tap-hold',
             tapAction: tapAction,
@@ -60,8 +61,8 @@
     }
 
     function resetConfiguration(): void {
-        if (!$CurrentSelected) return;
-        const keyId = `${$CurrentSelected[0]},${$CurrentSelected[1]}`;
+        if (!CurrentSelected) return;
+        const keyId = `${CurrentSelected[0]},${CurrentSelected[1]}`;
         resetGlobalConfiguration(keyId);
         tapAction = 'esc';
         holdAction = 'ctrl';
@@ -87,15 +88,15 @@
     }
 
     // Reactive values
-    const currentKeyName = $derived($CurrentSelected ? 
-        $KeyboardDisplayValues[$CurrentSelected[1]]?.[$CurrentSelected[0]] || 'Unknown' : 
+    const currentKeyName = $derived(CurrentSelected ? 
+        $KeyboardDisplayValues[CurrentSelected[1]]?.[CurrentSelected[0]] || 'Unknown' : 
         'No key selected');
 
     // Load existing configuration when key selection changes
     $effect(() => {
-        if ($CurrentSelected) {
+        if (CurrentSelected) {
             const config = getCurrentKeyConfiguration();
-            if (config && $globalConfigurations[`${$CurrentSelected[0]},${$CurrentSelected[1]}`]) {
+            if (config && $globalConfigurations[`${CurrentSelected[0]},${CurrentSelected[1]}`]) {
                 tapAction = config.tapAction || 'esc';
                 holdAction = config.holdAction || 'ctrl';
                 holdDelay = config.holdDelay || 200;
@@ -184,7 +185,7 @@
                         (e.currentTarget as HTMLElement).style.backgroundColor = $darkMode ? '#374151' : `color-mix(in srgb, var(--theme-color-primary) 10%, white)`;
                     }}
                     onclick={resetConfiguration}
-                    disabled={!$CurrentSelected}
+                    disabled={!CurrentSelected}
                 >
                     Reset
                 </button>
@@ -195,7 +196,7 @@
                     onmouseover={(e) => (e.currentTarget as HTMLElement).style.backgroundColor = `color-mix(in srgb, var(--theme-color-primary) 80%, black)`}
                     onmouseout={(e) => (e.currentTarget as HTMLElement).style.backgroundColor = `var(--theme-color-primary)`}
                     onclick={applyConfiguration}
-                    disabled={!$CurrentSelected}
+                    disabled={!CurrentSelected}
                 >
                     Apply
                 </button>
@@ -205,7 +206,7 @@
 
     <!-- Main Content -->
     <div class="flex-1 p-6">
-        {#if $CurrentSelected}
+        {#if CurrentSelected}
             <div class="max-w-6xl mx-auto">
                 <!-- Selected Key Info -->
                 <div class="rounded-lg border p-6 mb-6" style="background-color: color-mix(in srgb, var(--theme-color-primary) 8%, ${$darkMode ? 'black' : 'white'}); border-color: color-mix(in srgb, var(--theme-color-primary) 30%, ${$darkMode ? 'white' : '#e5e5e5'});">
@@ -218,7 +219,7 @@
                                 </div>
                                 <div>
                                     <h3 class="font-medium {$darkMode ? 'text-white' : 'text-gray-900'}">Selected Key</h3>
-                                    <p class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-500'}">Position: {$CurrentSelected[0]}, {$CurrentSelected[1]}</p>
+                                    <p class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-500'}">Position: {CurrentSelected[0]}, {CurrentSelected[1]}</p>
                                 </div>
                             </div>
                         </div>

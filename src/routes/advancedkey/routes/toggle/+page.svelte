@@ -1,6 +1,6 @@
 <script lang="ts">
     import { goto } from '$app/navigation';
-    import { CurrentSelected, KeyboardDisplayValues } from "$lib/KeyboardState.svelte";
+    import {  KeyboardDisplayValues } from "$lib/KeyboardState.svelte";
     import { darkMode } from '$lib/DarkModeStore.svelte';
     import { 
         globalConfigurations,
@@ -14,14 +14,15 @@
     let selectedToggleAction = $state('caps');
     let toggleMode = $state('press');
     let toggleState = $state(false);
+    let CurrentSelected = $state<[number, number] | null>(null);
 
     function goBack(): void {
         goto('/advancedkey');
     }
 
     function getCurrentKeyConfiguration(): KeyConfiguration | null {
-        if (!$CurrentSelected) return null;
-        const keyId = `${$CurrentSelected[0]},${$CurrentSelected[1]}`;
+        if (!CurrentSelected) return null;
+        const keyId = `${CurrentSelected[0]},${CurrentSelected[1]}`;
         return $globalConfigurations[keyId] || {
             type: 'toggle',
             toggleAction: selectedToggleAction,
@@ -31,8 +32,8 @@
     }
 
     function updateConfiguration(): void {
-        if (!$CurrentSelected) return;
-        const keyId = `${$CurrentSelected[0]},${$CurrentSelected[1]}`;
+        if (!CurrentSelected) return;
+        const keyId = `${CurrentSelected[0]},${CurrentSelected[1]}`;
         updateGlobalConfiguration(keyId, {
             type: 'toggle',
             toggleAction: selectedToggleAction,
@@ -42,8 +43,8 @@
     }
 
     function resetConfiguration(): void {
-        if (!$CurrentSelected) return;
-        const keyId = `${$CurrentSelected[0]},${$CurrentSelected[1]}`;
+        if (!CurrentSelected) return;
+        const keyId = `${CurrentSelected[0]},${CurrentSelected[1]}`;
         resetGlobalConfiguration(keyId);
         selectedToggleAction = 'caps';
         toggleMode = 'press';
@@ -68,12 +69,12 @@
     }
 
     // Reactive values
-    const currentKeyName = $derived($CurrentSelected ? 
-        $KeyboardDisplayValues[$CurrentSelected[1]]?.[$CurrentSelected[0]] || 'Unknown' : 
+    const currentKeyName = $derived(CurrentSelected ? 
+        $KeyboardDisplayValues[CurrentSelected[1]]?.[CurrentSelected[0]] || 'Unknown' : 
         'No key selected');    // Load existing configuration when key selection changes
     $effect(() => {
-        if ($CurrentSelected) {
-            const keyId = `${$CurrentSelected[0]},${$CurrentSelected[1]}`;
+        if (CurrentSelected) {
+            const keyId = `${CurrentSelected[0]},${CurrentSelected[1]}`;
             const config = $globalConfigurations[keyId];
             if (config && config.type === 'toggle') {
                 selectedToggleAction = config.toggleAction || 'caps';
@@ -158,16 +159,16 @@
                 <button 
                     class="px-4 py-2 {$darkMode ? 'text-white bg-gray-800 hover:bg-gray-700 border border-white' : 'text-gray-700 bg-gray-100 hover:bg-gray-200'} rounded-md transition-colors text-sm font-medium"
                     on:click={resetConfiguration}
-                    disabled={!$CurrentSelected}
+                    disabled={!CurrentSelected}
                 >
                     Reset
                 </button>
                 <button 
                     class="px-4 py-2 text-white rounded-md transition-colors text-sm font-medium disabled:opacity-50"
                     style="background-color: var(--theme-color-primary); 
-                           {!($CurrentSelected) ? '' : 'hover:background-color: color-mix(in srgb, var(--theme-color-primary) 85%, black);'}"
+                           {!(CurrentSelected) ? '' : 'hover:background-color: color-mix(in srgb, var(--theme-color-primary) 85%, black);'}"
                     on:click={applyConfiguration}
-                    disabled={!$CurrentSelected}
+                    disabled={!CurrentSelected}
                 >
                     Apply
                 </button>
@@ -177,7 +178,7 @@
 
     <!-- Main Content -->
     <div class="flex-1 p-6">
-        {#if $CurrentSelected}
+        {#if CurrentSelected}
             <div class="max-w-6xl mx-auto">                <!-- Selected Key Info -->
                 <div class="rounded-lg border p-6 mb-6"
                      style="background-color: color-mix(in srgb, var(--theme-color-primary) 8%, {$darkMode ? 'black' : 'white'});
@@ -192,7 +193,7 @@
                                 </div>
                                 <div>
                                     <h3 class="font-medium {$darkMode ? 'text-white' : 'text-gray-900'}">Selected Key</h3>
-                                    <p class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-500'}">Position: {$CurrentSelected[0]}, {$CurrentSelected[1]}</p>
+                                    <p class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-500'}">Position: {CurrentSelected[0]}, {CurrentSelected[1]}</p>
                                 </div>
                             </div>
                         </div>

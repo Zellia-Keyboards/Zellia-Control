@@ -1,6 +1,6 @@
 <script lang="ts">
     import { goto } from '$app/navigation';
-    import { CurrentSelected, KeyboardDisplayValues } from "$lib/KeyboardState.svelte";
+    import {  KeyboardDisplayValues } from "$lib/KeyboardState.svelte";
     import { darkMode } from '$lib/DarkModeStore.svelte';
     import { AlertTriangle } from 'lucide-svelte';
     import { 
@@ -67,6 +67,7 @@
     let rtDown = $state(0); // Rapid trigger down
     let rtUp = $state(0); // Rapid trigger up
     let continuous = $state(false);
+    let CurrentSelected = $state<[number, number] | null>(null);
 
     // UI state variables for real-time updates
     let uiBottomOutPoint = $state(DEFAULT_BOTTOM_OUT_POINT);
@@ -78,8 +79,8 @@
 
     // Automatically add selected key without needing to press a button
     $effect(() => {
-        if ($CurrentSelected && selectedKeys.length < 2) {
-            const keyName = $KeyboardDisplayValues[$CurrentSelected[1]]?.[$CurrentSelected[0]] || 'Unknown';
+        if (CurrentSelected && selectedKeys.length < 2) {
+            const keyName = $KeyboardDisplayValues[CurrentSelected[1]]?.[CurrentSelected[0]] || 'Unknown';
             
             if (!selectedKeys.includes(keyName)) {
                 selectedKeys = [...selectedKeys, keyName];
