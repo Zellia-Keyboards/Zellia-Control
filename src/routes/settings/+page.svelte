@@ -1,14 +1,64 @@
 <script lang="ts">
   import { darkMode } from '$lib/DarkModeStore.svelte';
-    import NewZellia80He from '$lib/NewZellia80HE.svelte';
+  import NewZellia80He from '$lib/NewZellia80HE.svelte';
+  import { RotateCcw, Download, Trash2, Info } from 'lucide-svelte';
+  
+  // Settings options
+  const settingsOptions = [
+    {
+      id: 'restart',
+      name: 'Restart Device',
+      description: 'Restart your keyboard to apply changes',
+      icon: RotateCcw,
+      action: handleRestart,
+      type: 'primary',
+      features: [
+        'Applies pending configurations',
+        'Refreshes device connection',
+        'Quick restart process',
+        'No data loss'
+      ]
+    },
+    {
+      id: 'bootloader',
+      name: 'Enter Bootloader',
+      description: 'Enter bootloader mode for firmware updates',
+      icon: Download,
+      action: handleBootloader,
+      type: 'secondary',
+      features: [
+        'Firmware update mode',
+        'Advanced configuration access',
+        'Recovery capabilities',
+        'Expert users only'
+      ]
+    },
+    {
+      id: 'factory-reset',
+      name: 'Factory Reset',
+      description: 'Reset all settings to factory defaults',
+      icon: Trash2,
+      action: handleFactoryReset,
+      type: 'danger',
+      features: [
+        'Restores default settings',
+        'Clears all configurations',
+        'Cannot be undone',
+        'Fresh start guarantee'
+      ]
+    }
+  ];
   
   function handleRestart() {
+    // Implementation for restart
   }
   
   function handleBootloader() {
+    // Implementation for bootloader
   }
   
   function handleFactoryReset() {
+    // Implementation for factory reset
   }
 </script>
 
@@ -29,52 +79,70 @@
     ? `color-mix(in srgb, var(--theme-color-primary) 5%, black)`
     : `color-mix(in srgb, var(--theme-color-primary) 10%, white)`};"
 >
-  <div class="flex items-center justify-between -mt-4 mb-2">
-    <h2 class="text-2xl font-bold {$darkMode ? 'text-white' : 'text-gray-900'}">Settings</h2>
+  <div class="flex items-center justify-between mb-6">
+    <div>
+      <h2 class="text-3xl font-bold {$darkMode ? 'text-white' : 'text-gray-900'}">Settings</h2>
+      <p class="{$darkMode ? 'text-gray-300' : 'text-gray-600'} mt-2">Configure device settings and manage your keyboard</p>
+    </div>
   </div>
-  
-  <div class="{$darkMode ? 'bg-black border border-gray-600' : 'bg-white'} rounded-xl shadow p-6 space-y-8 flex-1">
-    <!-- Restart Device -->
-    <div class="p-5 rounded-lg">
-      <h3 class="text-lg font-medium mb-2 {$darkMode ? 'text-white' : 'text-gray-900'}">Restart Device</h3>
-      <p class="text-sm {$darkMode ? 'text-gray-300' : 'text-gray-600'} mb-4">
-        restart device text
-      </p>
-      <button 
-        type="button" 
-        class="action-button {$darkMode ? 'dark' : ''}"
-        on:click={handleRestart}>
-        Restart Device
-      </button>
-    </div>
-    
-    <!-- Enter Bootloader -->
-    <div class="p-5 rounded-lg">
-      <h3 class="text-lg font-medium mb-2 {$darkMode ? 'text-white' : 'text-gray-900'}">Enter Bootloader</h3>
-      <p class="text-sm {$darkMode ? 'text-gray-300' : 'text-gray-600'} mb-4">
-        enter bootloader text
-      </p>
-      <button 
-        type="button" 
-        class="action-button {$darkMode ? 'dark' : ''}"
-        on:click={handleBootloader}>
-        Enter Bootloader
-      </button>
-    </div>
-    
-    <!-- Factory Reset -->
-    <div class="p-5 rounded-lg">
-      <h3 class="text-lg font-medium mb-2 {$darkMode ? 'text-white' : 'text-gray-900'}">Factory Reset</h3>
-      <p class="text-sm {$darkMode ? 'text-gray-300' : 'text-gray-600'} mb-4">
-        factory reset text
-      </p>
-      <button 
-        type="button" 
-        class="action-button red {$darkMode ? 'dark' : ''}"
-        on:click={handleFactoryReset}>
-        Factory Reset
-      </button>
-    </div>
+
+
+
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    {#each settingsOptions as option}
+      <div class="group relative w-full">
+        <button
+          class="w-full h-full p-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border-2 text-left group-hover:scale-105 flex flex-col"
+          style="background-color: {$darkMode ? 'black' : 'white'}; 
+                 border-color: {$darkMode ? 'color-mix(in srgb, var(--theme-color-primary) 20%, #374151)' : 'color-mix(in srgb, var(--theme-color-primary) 15%, #e5e7eb)'};
+                 --hover-border: {option.type === 'danger' ? '#dc2626' : 'var(--theme-color-primary)'};"
+          onmouseover={(e) => (e.currentTarget as HTMLElement).style.borderColor = option.type === 'danger' ? '#dc2626' : 'var(--theme-color-primary)'}
+          onmouseout={(e) => (e.currentTarget as HTMLElement).style.borderColor = $darkMode ? 'color-mix(in srgb, var(--theme-color-primary) 20%, #374151)' : 'color-mix(in srgb, var(--theme-color-primary) 15%, #e5e7eb)'}
+          onclick={() => option.action()}
+        >
+          <!-- Option Header -->
+          <div class="flex items-center gap-4 mb-4">
+            <div class="flex items-center justify-center w-10 h-10">
+              <svelte:component this={option.icon} class="w-8 h-8" style="color: {option.type === 'danger' ? '#dc2626' : 'var(--theme-color-primary)'};" />
+            </div>
+            <div class="flex-1">
+              <h3 class="text-xl font-bold transition-colors"
+                  style="color: {$darkMode ? 'white' : '#111827'};"
+                  onmouseover={(e) => (e.currentTarget as HTMLElement).style.color = option.type === 'danger' ? '#dc2626' : 'var(--theme-color-primary)'}
+                  onmouseout={(e) => (e.currentTarget as HTMLElement).style.color = $darkMode ? 'white' : '#111827'}>
+                {option.name}
+              </h3>
+              <p class="text-sm {$darkMode ? 'text-gray-300' : 'text-gray-600'} mt-1">{option.description}</p>
+            </div>
+          </div>
+
+          <div class="space-y-2 flex-1">
+            {#each option.features as feature}
+              <div class="flex items-center gap-2 text-sm {$darkMode ? 'text-gray-300' : 'text-gray-700'}">
+                <div class="w-1.5 h-1.5 rounded-full" style="background-color: {option.type === 'danger' ? '#dc2626' : 'var(--theme-color-primary)'};"></div>
+                <span>{feature}</span>
+              </div>
+            {/each}
+          </div>          <!-- Action Arrow -->
+          <div class="absolute top-6 right-6 text-gray-400 transition-colors"
+              style="transition: color 0.3s ease;"
+              onmouseover={(e) => {(e.currentTarget as HTMLElement).style.color = option.type === 'danger' ? '#dc2626' : 'var(--theme-color-primary)'}}
+              onmouseout={(e) => {(e.currentTarget as HTMLElement).style.color = '#9ca3af'}}> 
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+            </svg>
+          </div>
+        </button>
+      </div>
+    {/each}
+  </div>
+
+  <!-- Info Section -->
+  <div class="mt-4 text-center {$darkMode ? 'text-gray-300' : 'text-gray-600'}">
+    <p class="text-sm">
+      Device settings allow you to manage your keyboard's operational state.
+      Choose actions carefully, especially factory reset which cannot be undone.
+    </p>
   </div>
 </div>
 
