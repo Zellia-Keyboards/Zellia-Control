@@ -137,7 +137,7 @@
                 >                    <!-- Mode Header -->
                     <div class="flex items-center gap-4 mb-4">
                         <div class="flex items-center justify-center w-10 h-10">
-                            <svelte:component this={mode.icon} class="w-8 h-8" style="color: var(--theme-color-primary);" />
+                            <sveltecomponent this={mode.icon} class="w-8 h-8" style="color: var(--theme-color-primary);" />
                         </div><div class="flex-1">
                             <h3 class="text-xl font-bold transition-colors"
                                 style="color: {$darkMode ? 'white' : '#111827'};"
