@@ -34,36 +34,34 @@
     const DEFAULT_ACTUATION = 1.5;
     const DEFAULT_BOTTOM_OUT_POINT = 4.0;
     const DEFAULT_RT_DOWN = 0.1;
-    const SWITCH_DISTANCE = 4.0;
-
-    // NULL_BIND_BEHAVIOR_METADATA with all 5 modes
-    const NULL_BIND_BEHAVIOR_METADATA = [
+    const SWITCH_DISTANCE = 4.0;    // NULL_BIND_BEHAVIOR_METADATA with all 5 modes - reactive to language changes
+    const NULL_BIND_BEHAVIOR_METADATA = $derived([
         {
             behavior: 0,
-            name: 'Last Input',
-            description: 'The most recently pressed key takes priority over the previously held key'
+            name: t('advancedkey.lastInputBehavior', currentLanguage),
+            description: t('advancedkey.lastInputBehaviorDesc', currentLanguage)
         },
         {
             behavior: 1,
-            name: 'Absolute Priority Key1',
-            description: 'First selected key always has absolute priority over the second key'
+            name: t('advancedkey.absolutePriority1Behavior', currentLanguage),
+            description: t('advancedkey.absolutePriority1BehaviorDesc', currentLanguage)
         },
         {
             behavior: 2,
-            name: 'Absolute Priority Key2', 
-            description: 'Second selected key always has absolute priority over the first key'
+            name: t('advancedkey.absolutePriority2Behavior', currentLanguage),
+            description: t('advancedkey.absolutePriority2BehaviorDesc', currentLanguage)
         },
         {
             behavior: 3,
-            name: 'Neutral',
-            description: 'Both opposing inputs are canceled when pressed simultaneously'
+            name: t('advancedkey.neutralBehavior', currentLanguage),
+            description: t('advancedkey.neutralBehaviorDesc', currentLanguage)
         },
         {
             behavior: 4,
-            name: 'Distance (Rappy Snappy)',
-            description: 'Priority based on key travel distance - deeper pressed key wins'
+            name: t('advancedkey.distanceBehavior', currentLanguage),
+            description: t('advancedkey.distanceBehaviorDesc', currentLanguage)
         }
-    ];
+    ]);
 
     // State variables
     let behavior = $state(0); // Default to last input
@@ -128,25 +126,12 @@
 
     function commitActuationPoint(): void {
         actuationPoint = uiActuationPoint;
-    }
-
-    function updateConfiguration(): void {
+    }    function updateConfiguration(): void {
         if (selectedKeys.length !== 2) return;
         
         // Apply configuration to both keys
         selectedKeys.forEach((keyName) => {
-            // Find the key position for this key name
-            let keyPosition: [number, number] | null = null;
-            
-            for (let row = 0; row < $KeyboardDisplayValues.length; row++) {
-                for (let col = 0; col < $KeyboardDisplayValues[row].length; col++) {
-                    if ($KeyboardDisplayValues[row][col] === keyName) {
-                        keyPosition = [col, row];
-                        break;
-                    }
-                }
-                if (keyPosition) break;
-            }
+            const keyPosition = findKeyPosition(keyName);
             
             if (keyPosition) {
                 const keyId = `${keyPosition[0]},${keyPosition[1]}`;
@@ -160,8 +145,14 @@
                     rtUp: rtUp,
                     continuous: continuous
                 };
+                
+                // Force update even if configuration exists
                 updateGlobalConfiguration(keyId, config);
-            }        });
+                console.log(`Updated configuration for key ${keyId}:`, config);
+            }
+        });
+        
+        console.log('Configuration updated for keys:', selectedKeys);
     }
 
     function resetConfiguration(): void {
@@ -214,15 +205,65 @@
     function applyConfiguration(): void {
         updateConfiguration();
         console.log('Applying null bind configurations:', $globalConfigurations);
-    }
-
-    // Get configured null bind keys count
-    const configuredNullBindKeys = $derived(
-        Object.entries($globalConfigurations).filter(([_, config]) => config.type === 'null-bind')
-    );
-
-    // Check if we have exactly 2 keys selected
+    }    // Get configured null bind keys count - only show unique pairs
+    const configuredNullBindKeys = $derived(() => {
+        const nullBindConfigs = Object.entries($globalConfigurations).filter(([_, config]) => config.type === 'null-bind');
+        const uniquePairs = new Map();
+        
+        nullBindConfigs.forEach(([keyId, config]) => {
+            const nullBindConfig = config as NullBindConfiguration;
+            // Create a consistent pair key by sorting the paired keys
+            const pairKey = [...nullBindConfig.pairedKeys].sort().join('-');
+            
+            // Only keep the first occurrence of each pair
+            if (!uniquePairs.has(pairKey)) {
+                uniquePairs.set(pairKey, [keyId, config]);
+            }
+        });
+        
+        return Array.from(uniquePairs.values());
+    });    // Check if we have exactly 2 keys selected
     const canConfigure = $derived(selectedKeys.length === 2);
+
+    // Load existing configuration when two keys are selected
+    $effect(() => {
+        if (selectedKeys.length === 2) {
+            // Check if these keys already have a configuration
+            const firstKeyPosition = findKeyPosition(selectedKeys[0]);
+            if (firstKeyPosition) {
+                const keyId = `${firstKeyPosition[0]},${firstKeyPosition[1]}`;
+                const existingConfig = $globalConfigurations[keyId] as NullBindConfiguration | undefined;
+                
+                if (existingConfig && existingConfig.type === 'null-bind') {
+                    // Load the existing configuration into the UI
+                    behavior = existingConfig.behavior;
+                    bottomOutPoint = existingConfig.bottomOutPoint;
+                    actuationPoint = existingConfig.actuationPoint;
+                    uiActuationPoint = existingConfig.actuationPoint;
+                    if (existingConfig.bottomOutPoint > 0) {
+                        uiBottomOutPoint = existingConfig.bottomOutPoint;
+                    }
+                    rtDown = existingConfig.rtDown;
+                    rtUp = existingConfig.rtUp;
+                    continuous = existingConfig.continuous;
+                    
+                    console.log('Loaded existing configuration for keys:', selectedKeys, existingConfig);
+                }
+            }
+        }
+    });
+
+    // Helper function to find key position
+    function findKeyPosition(keyName: string): [number, number] | null {
+        for (let row = 0; row < $KeyboardDisplayValues.length; row++) {
+            for (let col = 0; col < $KeyboardDisplayValues[row].length; col++) {
+                if ($KeyboardDisplayValues[row][col] === keyName) {
+                    return [col, row];
+                }
+            }
+        }
+        return null;
+    }
 
     // Helper function to get behavior name
     function getBehaviorName(behaviorValue: number): string {
@@ -286,7 +327,8 @@
                 </button>
             </div>
         </div>
-    </div>    <!-- Key Selection Section -->    {#if !canConfigure}
+    </div>    <!-- Key Selection Section -->
+    {#if !canConfigure}
         <div class="p-6" style="background-color: color-mix(in srgb, var(--theme-color-primary) 5%, {$darkMode ? 'black' : 'white'}); border-color: color-mix(in srgb, var(--theme-color-primary) 25%, {$darkMode ? 'white' : '#e5e5e5'});" >
             <div class="max-w-4xl mx-auto">
                 <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'}  mb-3">Select Two Keys</h3>
@@ -358,18 +400,6 @@
                         </div>
                     </div>
                 </div>
-
-                <!-- Action Buttons -->
-                <div class="flex gap-3">
-                    {#if selectedKeys.length > 0}
-                        <button 
-                            class="px-4 py-2 {$darkMode ? 'text-white bg-gray-800 hover:bg-gray-700 border border-white' : 'text-gray-700 bg-gray-100 hover:bg-gray-200'} rounded-md transition-colors text-sm font-medium"
-                            onclick={resetSelection}
-                        >
-                            Reset Selection
-                        </button>
-                    {/if}
-                </div>
             </div>
         </div>
     {/if}
@@ -381,24 +411,37 @@
                 <div class="flex w-full gap-8">
                     <!-- Left Panel - Configuration -->
                     <div class="flex w-72 flex-col gap-4">                        <!-- Selected Keys Info -->
-                        <div class="p-4 border rounded-lg"
-                             style="background-color: color-mix(in srgb, var(--theme-color-primary) 15%, {$darkMode ? 'black' : 'white'});
-                                    border-color: color-mix(in srgb, var(--theme-color-primary) 40%, {$darkMode ? 'white' : '#e5e5e5'});">
-                            <div class="text-sm font-medium {$darkMode ? 'text-white' : 'text-gray-900'} mb-2">Selected Keys</div>
-                            <div class="flex items-center gap-2 text-sm" style="color: var(--theme-color-primary);">
-                                <span class="font-mono font-bold">{selectedKeys[0]}</span>
-                                <span>↔</span>
-                                <span class="font-mono font-bold">{selectedKeys[1]}</span>
+                        <div class="relative overflow-hidden rounded-lg border"
+                             style="background: linear-gradient(135deg, 
+                                     color-mix(in srgb, var(--theme-color-primary) 10%, {$darkMode ? '#1f2937' : '#ffffff'}) 0%, 
+                                     color-mix(in srgb, var(--theme-color-primary) 5%, {$darkMode ? '#111827' : '#f8fafc'}) 100%);
+                                     border-color: color-mix(in srgb, var(--theme-color-primary) 25%, {$darkMode ? '#374151' : '#e2e8f0'});">
+                            <div class="p-4">
+                                <div class="text-sm font-medium {$darkMode ? 'text-white' : 'text-gray-900'} mb-3">{t('advancedkey.selectedKeys', currentLanguage)}</div>
+                                <div class="flex items-center justify-center gap-3">
+                                    <div class="px-3 py-2 rounded-lg font-mono font-bold text-sm"
+                                         style="background-color: var(--theme-color-primary); color: white;">
+                                        {selectedKeys[0]}
+                                    </div>
+                                    <div class="flex items-center gap-1" style="color: var(--theme-color-primary);">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
+                                        </svg>
+                                    </div>
+                                    <div class="px-3 py-2 rounded-lg font-mono font-bold text-sm"
+                                         style="background-color: var(--theme-color-primary); color: white;">
+                                        {selectedKeys[1]}
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
                         <!-- Configure Null Bind Behavior -->
-                        <div class="flex flex-col">
-                            <p class="text-sm font-semibold leading-none tracking-tight {$darkMode ? 'text-white' : 'text-gray-900'}">
-                                Configure Null Bind Behavior
+                        <div class="flex flex-col">                            <p class="text-sm font-semibold leading-none tracking-tight {$darkMode ? 'text-white' : 'text-gray-900'}">
+                                {t('advancedkey.configureNullBindBehavior', currentLanguage)}
                             </p>
                             <p class="mt-1 text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'}">
-                                Select how to resolve the key events when both keys are pressed.
+                                {t('advancedkey.selectHowToResolveKeyEvents', currentLanguage)}
                             </p>
                             
                             <div class="mt-3 grid gap-1">                                {#each NULL_BIND_BEHAVIOR_METADATA as behaviorMetadata}
@@ -445,9 +488,8 @@
                         </div>                        <!-- Alternative Bottom Out -->
                         <div class="flex flex-col">
                             <div class="flex items-center justify-between">
-                                <div class="flex-1">
-                                    <div class="text-sm font-medium {$darkMode ? 'text-white' : 'text-gray-900'}">Alternative Bottom Out Behavior</div>
-                                    <div class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'}">When both keys are bottomed out, register key press for both keys.</div>
+                                <div class="flex-1">                                    <div class="text-sm font-medium {$darkMode ? 'text-white' : 'text-gray-900'}">{t('advancedkey.alternativeBottomOutBehavior', currentLanguage)}</div>
+                                    <div class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'}">{t('advancedkey.alternativeBottomOutBehaviorDesc', currentLanguage)}</div>
                                 </div>                                <button
                                     class="relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2"
                                     style="background-color: {bottomOutPoint > 0 ? 'var(--theme-color-primary)' : ($darkMode ? '#4b5563' : '#d1d5db')}; 
@@ -463,11 +505,10 @@
                         {#if bottomOutPoint > 0}
                             <div class="flex flex-col">
                                 <div class="flex justify-between items-center mb-2">
-                                    <div>
-                                        <div class="text-sm font-medium {$darkMode ? 'text-white' : 'text-gray-900'}">Bottom Out Point</div>
-                                        <div class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'}">Set the distance at which the key is bottomed out.</div>
+                                    <div>                                        <div class="text-sm font-medium {$darkMode ? 'text-white' : 'text-gray-900'}">{t('advancedkey.bottomOutPoint', currentLanguage)}</div>
+                                        <div class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'}">{t('advancedkey.bottomOutPointDesc', currentLanguage)}</div>
                                     </div>
-                                    <span class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-500'}">{uiBottomOutPoint.toFixed(1)}mm</span>
+                                    <span class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-500'}">{uiBottomOutPoint.toFixed(1)}{t('units.mm', currentLanguage)}</span>
                                 </div>
                                 <input 
                                     type="range" 
@@ -478,9 +519,8 @@
                                     onchange={commitBottomOutPoint}
                                     class="w-full h-2 rounded-full {$darkMode ? 'bg-gray-600' : 'bg-gray-300'} appearance-none slider-thumb"
                                 />
-                                <div class="flex justify-between text-xs {$darkMode ? 'text-gray-400' : 'text-gray-500'} mt-1">
-                                    <span>{(actuationPoint + 0.1).toFixed(1)}mm</span>
-                                    <span>{SWITCH_DISTANCE.toFixed(1)}mm</span>
+                                <div class="flex justify-between text-xs {$darkMode ? 'text-gray-400' : 'text-gray-500'} mt-1">                                    <span>{(actuationPoint + 0.1).toFixed(1)}{t('units.mm', currentLanguage)}</span>
+                                    <span>{SWITCH_DISTANCE.toFixed(1)}{t('units.mm', currentLanguage)}</span>
                                 </div>
                             </div>
                         {/if}
@@ -504,11 +544,10 @@
                                             (e.currentTarget as HTMLElement).style.color = $darkMode ? '#9ca3af' : '#6b7280';
                                             (e.currentTarget as HTMLElement).style.borderColor = 'transparent';
                                         }
-                                    }}
-                                    onclick={() => activeTab = 'performance'}
+                                    }}                                    onclick={() => activeTab = 'performance'}
                                 >
-                                    Performance
-                                </button>                                <button
+                                    {t('advancedkey.performance', currentLanguage)}
+                                </button><button
                                     class="py-2 px-1 border-b-2 font-medium text-sm transition-colors"
                                     style="{activeTab === 'key-tester'
                                         ? `border-color: var(--theme-color-primary); color: var(--theme-color-primary);`
@@ -527,7 +566,7 @@
                                         }
                                     }}                                    onclick={() => activeTab = 'key-tester'}
                                 >
-                                    Key Tester
+                                    {t('advancedkey.keyTester', currentLanguage)}
                                 </button>
                             </nav>
                         </div>
@@ -538,9 +577,8 @@
                                 <div class="flex flex-col gap-4 rounded-md border {$darkMode ? 'border-white bg-black' : 'border-gray-200 bg-white'} p-4 shadow-sm">
                                     <!-- Rapid Trigger Toggle -->
                                     <div class="flex items-center justify-between">
-                                        <div class="flex-1">
-                                            <div class="text-sm font-medium {$darkMode ? 'text-white' : 'text-gray-900'}">Rapid Trigger</div>
-                                            <div class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'}">Enable Rapid Trigger to resolve key events only when Rapid Trigger registers the key press. Adjust the sensitivity below.</div>
+                                        <div class="flex-1">                                            <div class="text-sm font-medium {$darkMode ? 'text-white' : 'text-gray-900'}">{t('advancedkey.rapidTrigger', currentLanguage)}</div>
+                                            <div class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'}">{t('advancedkey.rapidTriggerDesc', currentLanguage)}</div>
                                         </div>                                        <button
                                             class="relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2"
                                             style="background-color: {rtDown > 0 ? 'var(--theme-color-primary)' : ($darkMode ? '#4b5563' : '#d1d5db')}; 
@@ -552,17 +590,15 @@
                                     </div>                                    <!-- Actuation Point Slider -->
                                     <div class="flex flex-col">
                                         <div class="flex justify-between items-center mb-2">
-                                            <div>
-                                                <div class="text-sm font-medium {$darkMode ? 'text-white' : 'text-gray-900'}">Actuation Point</div>
-                                                <div class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'}">Set the distance at which the key press is registered.</div>
+                                            <div>                                                <div class="text-sm font-medium {$darkMode ? 'text-white' : 'text-gray-900'}">{t('advancedkey.actuationPoint', currentLanguage)}</div>
+                                                <div class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'}">{t('advancedkey.actuationPointDesc', currentLanguage)}</div>
                                             </div>
-                                            <span class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-500'}">{uiActuationPoint.toFixed(1)}mm</span>
+                                            <span class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-500'}">{uiActuationPoint.toFixed(1)}{t('units.mm', currentLanguage)}</span>
                                         </div>
                                           <!-- Warning box for values below 0.3 -->
-                                        {#if uiActuationPoint < 0.3}
-                                            <div class="mb-2 p-2 {$darkMode ? 'bg-yellow-900 border-yellow-600 text-yellow-200' : 'bg-yellow-50 border-yellow-300 text-yellow-700'} border rounded-md text-xs flex items-center gap-2">
+                                        {#if uiActuationPoint < 0.3}                                            <div class="mb-2 p-2 {$darkMode ? 'bg-yellow-900 border-yellow-600 text-yellow-200' : 'bg-yellow-50 border-yellow-300 text-yellow-700'} border rounded-md text-xs flex items-center gap-2">
                                                 <AlertTriangle class="w-4 h-4 flex-shrink-0" />
-                                                <span>the key may be too sensitive, causing instability, please be careful</span>
+                                                <span>{t('advancedkey.keySensitivityWarning', currentLanguage)}</span>
                                             </div>
                                         {/if}
                                         
@@ -579,7 +615,7 @@
                                         
                                         <!-- Dual input: Text input -->
                                         <div class="flex items-center gap-2 mb-2">
-                                            <span class="text-xs {$darkMode ? 'text-gray-400' : 'text-gray-500'}">Direct input:</span>
+                                            <span class="text-xs {$darkMode ? 'text-gray-400' : 'text-gray-500'}">{t('advancedkey.directInput', currentLanguage)}</span>
                                             <input 
                                                 type="number" 
                                                 min="0.01" 
@@ -589,12 +625,11 @@
                                                 onchange={commitActuationPoint}
                                                 class="w-20 px-2 py-1 text-xs border rounded {$darkMode ? 'bg-gray-800 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'}"
                                             />
-                                            <span class="text-xs {$darkMode ? 'text-gray-400' : 'text-gray-500'}">mm</span>
+                                            <span class="text-xs {$darkMode ? 'text-gray-400' : 'text-gray-500'}">{t('advancedkey.millimeters', currentLanguage)}</span>
                                         </div>
                                         
-                                        <div class="flex justify-between text-xs {$darkMode ? 'text-gray-400' : 'text-gray-500'} mt-1">
-                                            <span>0.01mm</span>
-                                            <span>{(bottomOutPoint > 0 ? bottomOutPoint - 0.1 : SWITCH_DISTANCE).toFixed(1)}mm</span>
+                                        <div class="flex justify-between text-xs {$darkMode ? 'text-gray-400' : 'text-gray-500'} mt-1">                                            <span>0.01{t('units.mm', currentLanguage)}</span>
+                                            <span>{(bottomOutPoint > 0 ? bottomOutPoint - 0.1 : SWITCH_DISTANCE).toFixed(1)}{t('units.mm', currentLanguage)}</span>
                                         </div>
                                     </div>
 
@@ -602,11 +637,10 @@
                                     {#if rtDown > 0}
                                         <div class="flex flex-col">
                                             <div class="flex justify-between items-center mb-2">
-                                                <div>
-                                                    <div class="text-sm font-medium {$darkMode ? 'text-white' : 'text-gray-900'}">Rapid Trigger Down Sensitivity</div>
-                                                    <div class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'}">Set how sensitive the rapid trigger should be on key press.</div>
+                                                <div>                                                    <div class="text-sm font-medium {$darkMode ? 'text-white' : 'text-gray-900'}">{t('advancedkey.rapidTriggerDownSensitivity', currentLanguage)}</div>
+                                                    <div class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'}">{t('advancedkey.rapidTriggerDownSensitivityDesc', currentLanguage)}</div>
                                                 </div>
-                                                <span class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-500'}">{rtDown.toFixed(2)}mm</span>
+                                                <span class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-500'}">{rtDown.toFixed(2)}{t('units.mm', currentLanguage)}</span>
                                             </div>
                                             <input 
                                                 type="range" 
@@ -616,44 +650,39 @@
                                                 bind:value={rtDown}
                                                 class="w-full h-2 rounded-full {$darkMode ? 'bg-gray-600' : 'bg-gray-300'} appearance-none slider-thumb"
                                             />
-                                            <div class="flex justify-between text-xs {$darkMode ? 'text-gray-400' : 'text-gray-500'} mt-1">
-                                                <span>0.01mm</span>
-                                                <span>1.00mm</span>
+                                            <div class="flex justify-between text-xs {$darkMode ? 'text-gray-400' : 'text-gray-500'} mt-1">                                                <span>0.01{t('units.mm', currentLanguage)}</span>
+                                                <span>1.00{t('units.mm', currentLanguage)}</span>
                                             </div>
                                         </div>
                                     {/if}
                                 </div>                            {:else if activeTab === 'key-tester'}
                                 <div class="flex flex-col gap-4 rounded-md border {$darkMode ? 'border-white bg-black' : 'border-gray-200 bg-white'} p-4 shadow-sm">
-                                    <div class="text-center">
-                                        <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'} mb-2">Key Tester</h3>
-                                        <p class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'} mb-4">Press the configured keys to test the null bind behavior</p>
+                                    <div class="text-center">                                        <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'} mb-2">{t('advancedkey.keyTesterTitle', currentLanguage)}</h3>
+                                        <p class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'} mb-4">{t('advancedkey.keyTesterDesc', currentLanguage)}</p>
                                         
                                         <div class="grid grid-cols-2 gap-4 max-w-md mx-auto">
                                             <div class="p-6 border-2 {$darkMode ? 'border-white' : 'border-gray-300'} rounded-lg">
-                                                <div class="text-2xl font-mono font-bold {$darkMode ? 'text-white' : 'text-gray-900'} mb-2">{selectedKeys[0]}</div>
-                                                <div class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'}">Key 1</div>
+                                                <div class="text-2xl font-mono font-bold {$darkMode ? 'text-white' : 'text-gray-900'} mb-2">{selectedKeys[0]}</div>                                                <div class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'}">{t('advancedkey.key1', currentLanguage)}</div>
                                                 {#if behavior === 1}
-                                                    <div class="text-xs text-green-600 mt-1 font-medium">Priority Key</div>
+                                                    <div class="text-xs text-green-600 mt-1 font-medium">{t('advancedkey.priorityKey', currentLanguage)}</div>
                                                 {/if}
                                             </div>
                                             <div class="p-6 border-2 {$darkMode ? 'border-white' : 'border-gray-300'} rounded-lg">
-                                                <div class="text-2xl font-mono font-bold {$darkMode ? 'text-white' : 'text-gray-900'} mb-2">{selectedKeys[1]}</div>
-                                                <div class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'}">Key 2</div>
+                                                <div class="text-2xl font-mono font-bold {$darkMode ? 'text-white' : 'text-gray-900'} mb-2">{selectedKeys[1]}</div>                                                <div class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'}">{t('advancedkey.key2', currentLanguage)}</div>
                                                 {#if behavior === 2}
-                                                    <div class="text-xs text-green-600 mt-1 font-medium">Priority Key</div>
+                                                    <div class="text-xs text-green-600 mt-1 font-medium">{t('advancedkey.priorityKey', currentLanguage)}</div>
                                                 {/if}
                                             </div>
                                         </div>
                                         
-                                        <div class="mt-6 p-4 {$darkMode ? 'bg-gray-800' : 'bg-gray-50'} rounded-lg">
-                                            <div class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'}">
-                                                Current Behavior: <span class="font-medium {$darkMode ? 'text-white' : 'text-gray-900'}">{getBehaviorName(behavior)}</span>
+                                        <div class="mt-6 p-4 {$darkMode ? 'bg-gray-800' : 'bg-gray-50'} rounded-lg">                                            <div class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'}">
+                                                {t('advancedkey.currentBehavior', currentLanguage)} <span class="font-medium {$darkMode ? 'text-white' : 'text-gray-900'}">{getBehaviorName(behavior)}</span>
                                             </div>
                                             <div class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'} mt-1">
-                                                Bottom Out: <span class="font-medium {$darkMode ? 'text-white' : 'text-gray-900'}">{bottomOutPoint > 0 ? 'Enabled' : 'Disabled'}</span>
+                                                {t('advancedkey.bottomOut', currentLanguage)} <span class="font-medium {$darkMode ? 'text-white' : 'text-gray-900'}">{bottomOutPoint > 0 ? t('advancedkey.enabled', currentLanguage) : t('advancedkey.disabled', currentLanguage)}</span>
                                             </div>
                                             <div class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'} mt-1">
-                                                Rapid Trigger: <span class="font-medium {$darkMode ? 'text-white' : 'text-gray-900'}">{rtDown > 0 ? 'Enabled' : 'Disabled'}</span>
+                                                {t('advancedkey.rapidTrigger', currentLanguage)}: <span class="font-medium {$darkMode ? 'text-white' : 'text-gray-900'}">{rtDown > 0 ? t('advancedkey.enabled', currentLanguage) : t('advancedkey.disabled', currentLanguage)}</span>
                                             </div>
                                         </div>
                                     </div>
@@ -665,39 +694,119 @@
             </div>
         </div>
     {/if}    <!-- Configured Keys Summary -->
-    {#if configuredNullBindKeys.length > 0}
-        <div class="{$darkMode ? 'bg-black border-white' : 'bg-white border-gray-200'} border-t p-6">
-            <div class="max-w-7xl mx-auto">
-                <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'}">Configured Null Bind Keys</h3>
-                    <span class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-500'}">{configuredNullBindKeys.length} pair{configuredNullBindKeys.length !== 1 ? 's' : ''}</span>
+    {#if configuredNullBindKeys().length > 0}
+        <div class="{$darkMode ? `color-mix(in srgb, var(--theme-color-primary) 5%, black)` : `color-mix(in srgb, var(--theme-color-primary) 10%, white)`} border-t p-6">
+            <div class="max-w-7xl mx-auto">                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'}">{t('advancedkey.configuredNullBindKeys', currentLanguage)}</h3>
+                    <div class="flex items-center gap-2">
+                        <span class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-500'}">{configuredNullBindKeys().length} {configuredNullBindKeys().length === 1 ? t('advancedkey.pair', currentLanguage) : t('advancedkey.pairs', currentLanguage)}</span>                        <button 
+                            class="px-4 py-2 {$darkMode ? 'bg-red-700 hover:bg-red-600' : 'bg-red-600 hover:bg-red-700'} text-white rounded-md transition-colors text-sm font-medium"
+                            onclick={resetAllNullBindKeys}
+                        >
+                            {t('advancedkey.resetAll', currentLanguage)}
+                        </button>
+                    </div>
                 </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {#each configuredNullBindKeys as [keyId, config]}
+                <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                    {#each configuredNullBindKeys() as [keyId, config]}
                         {@const [x, y] = keyId.split(',').map(Number)}
                         {@const keyName = $KeyboardDisplayValues[y]?.[x] || 'Unknown'}
                         {@const nullBindConfig = config as NullBindConfiguration}
-                        <div class="p-4 {$darkMode ? 'bg-gray-800 border-white' : 'bg-gray-50 border-gray-200'} rounded-lg border">
-                            <div class="flex items-center justify-between mb-2">
-                                <span class="font-mono font-bold {$darkMode ? 'text-white' : 'text-gray-900'}">{keyName}</span>
-                            </div>                                            <div class="text-sm space-y-1">
-                                                <div class="flex justify-between">
-                                                    <span class="{$darkMode ? 'text-gray-400' : 'text-gray-600'}">Paired With:</span>
-                                                    <span class="{$darkMode ? 'text-white' : 'text-gray-700'} font-mono text-xs">{nullBindConfig.pairedKeys.join(' ↔ ')}</span>
-                                                </div>
-                                                <div class="flex justify-between">
-                                                    <span class="{$darkMode ? 'text-gray-400' : 'text-gray-600'}">Behavior:</span>
-                                                    <span class="font-medium" style="color: var(--theme-color-primary);">{getBehaviorName(nullBindConfig.behavior)}</span>
-                                                </div>
-                                                <div class="flex justify-between">
-                                                    <span class="{$darkMode ? 'text-gray-400' : 'text-gray-600'}">Bottom Out:</span>
-                                                    <span class="text-green-600 font-medium">{nullBindConfig.bottomOutPoint > 0 ? 'On' : 'Off'}</span>
-                                                </div>
-                                                <div class="flex justify-between">
-                                                    <span class="{$darkMode ? 'text-gray-400' : 'text-gray-600'}">Rapid Trigger:</span>
-                                                    <span class="text-green-600 font-medium">{nullBindConfig.rtDown > 0 ? 'On' : 'Off'}</span>
-                                                </div>
-                                            </div>
+                        <div class="group relative overflow-hidden rounded-xl border transition-all duration-200 hover:shadow-lg hover:scale-[1.02]"
+                             style="background: linear-gradient(135deg, 
+                                     color-mix(in srgb, var(--theme-color-primary) 8%, {$darkMode ? '#1f2937' : '#ffffff'}) 0%, 
+                                     color-mix(in srgb, var(--theme-color-primary) 3%, {$darkMode ? '#111827' : '#f8fafc'}) 100%);
+                                     border-color: color-mix(in srgb, var(--theme-color-primary) 20%, {$darkMode ? '#374151' : '#e2e8f0'});">
+                            
+                            <!-- Header with key pair -->
+                            <div class="p-4 border-b" 
+                                 style="border-color: color-mix(in srgb, var(--theme-color-primary) 15%, {$darkMode ? '#374151' : '#e2e8f0'});">
+                                <div class="flex items-center justify-center gap-3">
+                                    <div class="px-3 py-1.5 rounded-lg font-mono font-bold text-sm"
+                                         style="background-color: var(--theme-color-primary); color: white;">
+                                        {nullBindConfig.pairedKeys[0]}
+                                    </div>
+                                    <div class="flex items-center gap-1" style="color: var(--theme-color-primary);">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
+                                        </svg>
+                                    </div>
+                                    <div class="px-3 py-1.5 rounded-lg font-mono font-bold text-sm"
+                                         style="background-color: var(--theme-color-primary); color: white;">
+                                        {nullBindConfig.pairedKeys[1]}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Content -->
+                            <div class="p-4 space-y-3">
+                                <!-- Behavior -->
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center gap-2">
+                                        <div class="w-2 h-2 rounded-full" style="background-color: var(--theme-color-primary);"></div>
+                                        <span class="text-sm font-medium {$darkMode ? 'text-gray-300' : 'text-gray-600'}">{t('advancedkey.behavior', currentLanguage)}</span>
+                                    </div>
+                                    <span class="text-sm font-semibold" style="color: var(--theme-color-primary);">
+                                        {getBehaviorName(nullBindConfig.behavior)}
+                                    </span>
+                                </div>
+
+                                <!-- Features -->
+                                <div class="grid grid-cols-2 gap-3">
+                                    <div class="flex items-center gap-2">
+                                        <div class="w-3 h-3 rounded-full flex items-center justify-center"
+                                             style="background-color: {nullBindConfig.bottomOutPoint > 0 ? '#10b981' : '#6b7280'};">
+                                            <div class="w-1.5 h-1.5 rounded-full bg-white"></div>
+                                        </div>
+                                        <div class="flex flex-col">
+                                            <span class="text-xs {$darkMode ? 'text-gray-400' : 'text-gray-500'}">{t('advancedkey.bottomOut', currentLanguage)}</span>
+                                            <span class="text-xs font-medium {nullBindConfig.bottomOutPoint > 0 ? 'text-green-600' : ($darkMode ? 'text-gray-400' : 'text-gray-500')}">
+                                                {nullBindConfig.bottomOutPoint > 0 ? t('advancedkey.on', currentLanguage) : t('advancedkey.off', currentLanguage)}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="flex items-center gap-2">
+                                        <div class="w-3 h-3 rounded-full flex items-center justify-center"
+                                             style="background-color: {nullBindConfig.rtDown > 0 ? '#10b981' : '#6b7280'};">
+                                            <div class="w-1.5 h-1.5 rounded-full bg-white"></div>
+                                        </div>
+                                        <div class="flex flex-col">
+                                            <span class="text-xs {$darkMode ? 'text-gray-400' : 'text-gray-500'}">{t('advancedkey.rapidTrigger', currentLanguage)}</span>
+                                            <span class="text-xs font-medium {nullBindConfig.rtDown > 0 ? 'text-green-600' : ($darkMode ? 'text-gray-400' : 'text-gray-500')}">
+                                                {nullBindConfig.rtDown > 0 ? t('advancedkey.on', currentLanguage) : t('advancedkey.off', currentLanguage)}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Technical details -->
+                                <div class="pt-2 border-t space-y-1"
+                                     style="border-color: color-mix(in srgb, var(--theme-color-primary) 10%, {$darkMode ? '#374151' : '#e2e8f0'});">
+                                    <div class="flex justify-between text-xs">
+                                        <span class="{$darkMode ? 'text-gray-400' : 'text-gray-500'}">Actuation</span>
+                                        <span class="{$darkMode ? 'text-gray-300' : 'text-gray-700'}">{nullBindConfig.actuationPoint.toFixed(1)}{t('units.mm', currentLanguage)}</span>
+                                    </div>
+                                    {#if nullBindConfig.bottomOutPoint > 0}
+                                        <div class="flex justify-between text-xs">
+                                            <span class="{$darkMode ? 'text-gray-400' : 'text-gray-500'}">Bottom Out</span>
+                                            <span class="{$darkMode ? 'text-gray-300' : 'text-gray-700'}">{nullBindConfig.bottomOutPoint.toFixed(1)}{t('units.mm', currentLanguage)}</span>
+                                        </div>
+                                    {/if}
+                                    {#if nullBindConfig.rtDown > 0}
+                                        <div class="flex justify-between text-xs">
+                                            <span class="{$darkMode ? 'text-gray-400' : 'text-gray-500'}">RT Sensitivity</span>
+                                            <span class="{$darkMode ? 'text-gray-300' : 'text-gray-700'}">{nullBindConfig.rtDown.toFixed(2)}{t('units.mm', currentLanguage)}</span>
+                                        </div>
+                                    {/if}
+                                </div>
+                            </div>
+
+                            <!-- Hover effect overlay -->
+                            <div class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none"
+                                 style="background: linear-gradient(135deg, 
+                                         color-mix(in srgb, var(--theme-color-primary) 5%, transparent) 0%, 
+                                         color-mix(in srgb, var(--theme-color-primary) 2%, transparent) 100%);"></div>
                         </div>
                     {/each}
                 </div>

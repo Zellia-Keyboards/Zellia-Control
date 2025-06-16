@@ -18,20 +18,18 @@
     class="rounded-lg border p-6"
     style="background-color: color-mix(in srgb, var(--theme-color-primary) 5%, ${$darkMode ? 'black' : 'white'});
            border-color: {$darkMode ? 'color-mix(in srgb, var(--theme-color-primary) 20%, #374151)' : 'color-mix(in srgb, var(--theme-color-primary) 15%, #e5e7eb)'};"
->
-    <h3
+>    <h3
         class="text-lg font-medium {$darkMode
             ? 'text-white'
             : 'text-gray-900'} mb-4"
     >
-        Performance Settings
-    </h3>    <div class="mb-6">
-        <div class="flex justify-between items-center mb-2">
-            <label
+        {t('advancedkey.performanceSettings', currentLanguage)}
+    </h3><div class="mb-6">
+        <div class="flex justify-between items-center mb-2">            <label
                 for="actuation-point-slider"
                 class="text-sm font-medium {$darkMode
                     ? 'text-gray-300'
-                    : 'text-gray-700'}">Actuation Point</label
+                    : 'text-gray-700'}">{t('advancedkey.actuationPoint', currentLanguage)}</label
             >
             <span
                 class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-500'}"
@@ -44,7 +42,7 @@
                         border-color: {$darkMode ? 'color-mix(in srgb, #f59e0b 30%, #78716c)' : 'color-mix(in srgb, #f59e0b 25%, #e7e5e4)'};
                         color: {$darkMode ? '#fbbf24' : '#a16207'};">
                 <AlertTriangle class="w-4 h-4 flex-shrink-0" />
-                <span>the key may be too sensitive, causing instability, please be careful</span>
+                <span>{t('advancedkey.sensitivityWarning', currentLanguage)}</span>
             </div>
         {/if}
           <!-- Dual input: Slider -->
@@ -75,9 +73,8 @@
             />
             <span class="text-xs {$darkMode ? 'text-gray-400' : 'text-gray-500'}">mm</span>
         </div>
-        
-        <p class="text-xs {$darkMode ? 'text-gray-400' : 'text-gray-500'} mt-1">
-            Set the distance at which the key press is registered
+          <p class="text-xs {$darkMode ? 'text-gray-400' : 'text-gray-500'} mt-1">
+            {t('advancedkey.actuationPointDesc', currentLanguage)}
         </p>
     </div>    <div
         class="flex items-start gap-3 p-4 border rounded-lg"
@@ -101,12 +98,11 @@
                 class="text-sm font-medium"
                 style="color: {$darkMode ? 'white' : 'color-mix(in srgb, var(--theme-color-primary) 85%, black)'};"
             >
-                Rapid Trigger Disabled
+                {t('advancedkey.rapidTriggerDisabled', currentLanguage)}
             </p>
             <p class="text-sm"
                style="color: {$darkMode ? '#d1d5db' : 'color-mix(in srgb, var(--theme-color-primary) 75%, black)'};">
-                Rapid Trigger is automatically disabled when the key is bound to
-                a DKS.
+                {t('advancedkey.rapidTriggerDisabledDesc', currentLanguage)}
             </p>
         </div>
     </div>

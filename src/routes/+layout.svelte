@@ -34,12 +34,15 @@
 
     function setLanguage(lang: Language) {
         language.set(lang);
-    }
-
-    // Function to check if a navigation item is active
+    }    // Function to check if a navigation item is active
     function isActive(href: string): boolean {
         return $page.url.pathname === href || $page.url.pathname.startsWith(href + '/');
-    }
+    }    // Set page language for accessibility
+    $effect(() => {
+        if (typeof document !== 'undefined') {
+            document.documentElement.lang = currentLanguage;
+        }
+    });
 </script>
 
 <!-- Small Screen Warning (follows codebase theme) -->

@@ -350,7 +350,18 @@
 			],
 			[DKSAction.HOLD, DKSAction.HOLD, DKSAction.HOLD, DKSAction.HOLD],
 		];
-		bottomOutPoint = 4.0;
+		bottomOutPoint = 4.0;	}
+
+	function resetAllDynamicKeys(): void {
+		globalConfigurations.update(configs => {
+			const newConfigs = { ...configs };
+			Object.keys(newConfigs).forEach(keyId => {
+				if (newConfigs[keyId].type === 'dynamic') {
+					delete newConfigs[keyId];
+				}
+			});
+			return newConfigs;
+		});
 	}
 
 	function applyConfiguration(): void {
@@ -461,13 +472,12 @@
 			([_, config]) => config.type === "dynamic",
 		) as [string, GlobalDynamicKeystrokeConfiguration][],
 	);
-
-	const phaseDescriptions = [
-		{ name: "Key pressed past actuation point", icon: "↓" },
-		{ name: "Key pressed past bottom-out point", icon: "⬇" },
-		{ name: "Key released past bottom-out point", icon: "⬆" },
-		{ name: "Key released past actuation point", icon: "↑" },
-	];
+	const phaseDescriptions = $derived([
+		{ name: t('advancedkey.keyPressedPastActuation', currentLanguage), icon: "↓" },
+		{ name: t('advancedkey.keyPressedPastBottomOut', currentLanguage), icon: "⬇" },
+		{ name: t('advancedkey.keyReleasedPastBottomOut', currentLanguage), icon: "⬆" },
+		{ name: t('advancedkey.keyReleasedPastActuation', currentLanguage), icon: "↑" },
+	]);
 
 	function handleSelectBinding(bindingIdx: number) {
 		selectedBindingIndex =
@@ -594,42 +604,31 @@
 							stroke-linejoin="round"
 							stroke-width="2"
 							d="M15 19l-7-7 7-7"
-						/>
-					</svg>
-					Back
+						/>					</svg>
+					{t('ui.back', currentLanguage)}
 				</a>
-				<div>
-					<h1
+				<div>					<h1
 						class="text-xl font-semibold {$darkMode
 							? 'text-white'
 							: 'text-gray-900'}"
 					>
-						Dynamic Keystroke Configuration
+						{t('advancedkey.dynamicTitle', currentLanguage)}
 					</h1>
 					<p
 						class="text-sm {$darkMode
 							? 'text-gray-400'
 							: 'text-gray-500'}"
 					>
-						Configure 4-phase keystroke control with analog input
-						response
+						{t('advancedkey.dynamicSubtitle', currentLanguage)}
 					</p>
 				</div>
-			</div>
-			<div class="flex gap-3">
+			</div>			<div class="flex gap-3">
 				<button
-					class="px-4 py-2 rounded-md transition-colors text-sm font-medium"
-					style="background-color: color-mix(in srgb, var(--theme-color-primary) 10%, {$darkMode
-						? 'black'
-						: 'white'}); 
-					       border: 1px solid color-mix(in srgb, var(--theme-color-primary) 30%, {$darkMode
-						? 'white'
-						: '#e5e5e5'}); 
-					       color: {$darkMode ? 'white' : '#374151'};"
+					class="px-4 py-2 {$darkMode ? 'bg-red-700 hover:bg-red-600' : 'bg-red-600 hover:bg-red-700'} text-white rounded-md transition-colors text-sm font-medium"
 					onclick={resetConfiguration}
 					disabled={!currentSelected}
 				>
-					Reset
+					{t('advancedkey.resetConfiguration', currentLanguage)}
 				</button>
 				<button
 					class="px-4 py-2 rounded-md transition-colors text-sm font-medium text-white"
@@ -638,7 +637,7 @@
 					onclick={applyConfiguration}
 					disabled={!currentSelected}
 				>
-					Apply
+					{t('advancedkey.applyConfiguration', currentLanguage)}
 				</button>
 			</div>
 		</div>
@@ -661,22 +660,19 @@
 								: 'white'}); border-color: color-mix(in srgb, var(--theme-color-primary) 25%, {$darkMode
 								? 'white'
 								: '#e5e5e5'});"
-						>
-							<h3
+						>							<h3
 								class="text-lg font-medium {$darkMode
 									? 'text-white'
 									: 'text-gray-900'} mb-2"
 							>
-								Configure DKS Bindings
+								{t('advancedkey.configureDKSBindings', currentLanguage)}
 							</h3>
 							<p
 								class="text-sm {$darkMode
 									? 'text-gray-400'
 									: 'text-gray-600'} mb-4"
 							>
-								Assign a keycode to each binding. Click nodes to
-								create intervals, drag grips to resize, click
-								bars to delete.
+								{t('advancedkey.dksBindingInstructions', currentLanguage)}
 							</p>
 
 							<div class="flex items-center gap-4 mb-3">
@@ -740,7 +736,7 @@
 								? 'white'
 								: '#e5e5e5'});"
 						>
-							{#each [["bindings", "Bindings"], ["performance", "Performance"], ["key-tester", "Key Tester"]] as [value, label]}
+							{#each [["bindings", t('advancedkey.bindings', currentLanguage)], ["performance", t('advancedkey.performance', currentLanguage)], ["key-tester", t('advancedkey.keyTester', currentLanguage)]] as [value, label]}
 								<button
 									class="px-4 py-2 text-sm font-medium border-b-2 transition-colors"
 									style={activeTab === value
@@ -769,10 +765,10 @@
 			</div>
 		{:else}
 			<NoKeySelectedDisplay />
-		{/if}
-		<ConfiguredDKSList
+		{/if}		<ConfiguredDKSList
 			configuredDynamicKeys={configuredDynamicKeysList}
 			{KeyboardDisplayValues}
+			{resetAllDynamicKeys}
 		/>
 	</div>
 </div>

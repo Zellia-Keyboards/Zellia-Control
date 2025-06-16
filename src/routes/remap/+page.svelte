@@ -10,10 +10,8 @@
         currentLanguage = value;
     });
     
-    const NORMAL_KEY = [...Array(94).keys()].map(_ => _ + 33).map(_ => [String.fromCharCode(_), _]);
-
-    let selectedSection = 'basic';
-    let expandedGroups: string[] = ['alphabet'];
+    const NORMAL_KEY = [...Array(94).keys()].map(_ => _ + 33).map(_ => [String.fromCharCode(_), _]);    let selectedSection = $state('basic');
+    let expandedGroups = $state(['alphabet']);
 
     const sections = [
         { id: 'basic', label: 'Basic Keys' },
@@ -66,11 +64,13 @@
 </style>
 
 <NewZellia80He
+  currentSelectedKey={null}
   onClick={(x, y, event) => {
     console.log(`Key clicked at (${x}, ${y})`, event);
   }}
 >
   {#snippet body(x, y)}
+    <span></span>
   {/snippet}
 </NewZellia80He>
 <div
@@ -80,13 +80,18 @@
   style="background-color: {$darkMode
     ? `color-mix(in srgb, var(--theme-color-primary) 5%, black)`
     : `color-mix(in srgb, var(--theme-color-primary) 10%, white)`};"
->
-    <!-- Section Tabs - Large and full width -->
-    <div class="flex flex-col}">
+>    <!-- Section Tabs - Large and full width -->
+    <div class="flex border-b mb-6"
+         style="border-color: color-mix(in srgb, var(--theme-color-primary) 25%, {$darkMode ? 'white' : '#e5e5e5'});">
         {#each sections as section}
             <button
-            class="px-8 py-4 font-semibold rounded-4xl text-xl transition-colors duration-500 flex-1 h-full {selectedSection === section.id ? ($darkMode ? 'border-white text-white bg-gray-800 rounded-4xl' : 'border-blue-600 text-blue-600 bg-blue-50 rounded-4xl') : ($darkMode ? 'border-transparent text-gray-400 hover:text-white hover:border-gray-400' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300')}"
-            on:click={() => selectedSection = section.id}
+                class="px-6 py-3 text-lg font-medium border-b-2 transition-colors flex-1 {selectedSection === section.id 
+                    ? 'border-color: var(--theme-color-primary); color: var(--theme-color-primary);' 
+                    : `border-color: transparent; color: ${$darkMode ? '#9ca3af' : '#6b7280'};`}"
+                style={selectedSection === section.id 
+                    ? 'border-color: var(--theme-color-primary); color: var(--theme-color-primary);' 
+                    : `border-color: transparent; color: ${$darkMode ? '#9ca3af' : '#6b7280'};`}
+                onclick={() => selectedSection = section.id}
             >
                 {section.label}
             </button>
@@ -100,10 +105,9 @@
             <div class="flex-1 flex flex-col overflow-y-auto">
                 {#each keyGroups as group}
                     <div class="mb-4">
-                        <!-- Collapsible Panel Header -->
-                        <button
+                        <!-- Collapsible Panel Header -->                        <button
                             class="w-full flex items-center justify-between p-3 {$darkMode ? 'bg-gray-800 hover:bg-gray-700 text-white' : 'bg-gray-50 hover:bg-gray-100 text-gray-900'} rounded-lg transition-colors"
-                            on:click={() => toggleGroup(group.id)}
+                            onclick={() => toggleGroup(group.id)}
                         >
                             <span class="text-base font-semibold">{group.label}</span>
                             <svg 

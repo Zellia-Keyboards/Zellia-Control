@@ -1,5 +1,13 @@
 <script lang="ts">
     import { darkMode } from "$lib/DarkModeStore.svelte";
+    import { language, t } from '$lib/LanguageStore.svelte';
+    
+    let currentLanguage = $state($language);
+    
+    // Subscribe to language changes
+    language.subscribe(value => {
+        currentLanguage = value;
+    });
 
     type Props = {
         bottomOutPointValue: number;
@@ -11,25 +19,23 @@
     class="rounded-lg border p-6"
     style="background-color: color-mix(in srgb, var(--theme-color-primary) 5%, ${$darkMode ? 'black' : 'white'});
            border-color: {$darkMode ? 'color-mix(in srgb, var(--theme-color-primary) 20%, #374151)' : 'color-mix(in srgb, var(--theme-color-primary) 15%, #e5e7eb)'};"
->
-    <h3
+>    <h3
         class="text-lg font-medium {$darkMode
             ? 'text-white'
             : 'text-gray-900'} mb-4"
     >
-        Bottom Out Point
+        {t('advancedkey.bottomOutPoint', currentLanguage)}
     </h3>
     <p class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'} mb-4">
-        Set the distance at which the key is bottomed out.
+        {t('advancedkey.bottomOutPointDesc', currentLanguage)}
     </p>
 
     <div>
-        <div class="flex justify-between items-center mb-2">
-            <label
+        <div class="flex justify-between items-center mb-2">            <label
                 for="bottom-out-slider"
                 class="text-sm font-medium {$darkMode
                     ? 'text-gray-300'
-                    : 'text-gray-700'}">Distance</label
+                    : 'text-gray-700'}">{t('advancedkey.distance', currentLanguage)}</label
             >
             <span
                 class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-500'}"
