@@ -129,8 +129,7 @@
   }}
   bind:currentSelectedKey={CurrentSelected}
 >
-  {#snippet body(x, y)}
-  {/snippet}
+  {#snippet body(x, y)}{/snippet}
 </NewZellia80He>
 <div
   class="rounded-2xl shadow p-4 mt-2 mb-4 grow {$darkMode
@@ -145,7 +144,7 @@
             <div class="flex items-center gap-4">
                 <button 
                     class="flex items-center gap-2 {$darkMode ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900'} transition-colors"
-                    on:click={goBack}
+                    onclick={goBack}
                 >
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
@@ -158,20 +157,19 @@
                 </div>
             </div>            <div class="flex gap-3">
                 <button 
-                    class="px-4 py-2 {$darkMode ? 'text-white bg-gray-800 hover:bg-gray-700 border border-white' : 'text-gray-700 bg-gray-100 hover:bg-gray-200'} rounded-md transition-colors text-sm font-medium"
-                    on:click={resetConfiguration}
-                    disabled={!CurrentSelected}
-                >
-                    Reset
-                </button>
-                <button 
                     class="px-4 py-2 text-white rounded-md transition-colors text-sm font-medium disabled:opacity-50"
                     style="background-color: var(--theme-color-primary); 
                            {!(CurrentSelected) ? '' : 'hover:background-color: color-mix(in srgb, var(--theme-color-primary) 85%, black);'}"
-                    on:click={applyConfiguration}
+                    onclick={applyConfiguration}
                     disabled={!CurrentSelected}
                 >
                     Apply
+                </button>
+                <button 
+                    class="px-4 py-2 {$darkMode ? 'bg-red-700 hover:bg-red-600' : 'bg-red-600 hover:bg-red-700'} text-white rounded-md transition-colors text-sm font-medium"
+                    onclick={resetAllToggleKeys}
+                >
+                    Reset All
                 </button>
             </div>
         </div>
@@ -227,13 +225,13 @@
                                                            color: ${$darkMode ? 'white' : '#374151'}; 
                                                            border-color: ${$darkMode ? 'white' : '#e5e5e5'};`
                                                     }"
-                                                    on:mouseenter={(e) => e.currentTarget.style.backgroundColor = selectedToggleAction === action.id 
+                                                    onmouseenter={(e) => e.currentTarget.style.backgroundColor = selectedToggleAction === action.id 
                                                         ? 'color-mix(in srgb, var(--theme-color-primary) 85%, black)' 
                                                         : ($darkMode ? '#1f2937' : '#f9fafb')}
-                                                    on:mouseleave={(e) => e.currentTarget.style.backgroundColor = selectedToggleAction === action.id 
+                                                    onmouseleave={(e) => e.currentTarget.style.backgroundColor = selectedToggleAction === action.id 
                                                         ? 'var(--theme-color-primary)' 
                                                         : ($darkMode ? 'black' : 'white')}
-                                                    on:click={() => selectedToggleAction = action.id}
+                                                    onclick={() => selectedToggleAction = action.id}
                                                     title={action.name}
                                                 >
                                                     {action.name}
@@ -256,13 +254,13 @@
                                         ? `border-color: var(--theme-color-primary); background-color: color-mix(in srgb, var(--theme-color-primary) 15%, ${$darkMode ? 'black' : 'white'});`
                                         : `border-color: ${$darkMode ? '#4b5563' : '#e5e5e5'}; background-color: transparent;`
                                     }"
-                                    on:mouseenter={(e) => e.currentTarget.style.borderColor = toggleMode === 'press' 
+                                    onmouseenter={(e) => e.currentTarget.style.borderColor = toggleMode === 'press' 
                                         ? 'var(--theme-color-primary)' 
                                         : ($darkMode ? '#6b7280' : '#d1d5db')}
-                                    on:mouseleave={(e) => e.currentTarget.style.borderColor = toggleMode === 'press' 
+                                    onmouseleave={(e) => e.currentTarget.style.borderColor = toggleMode === 'press' 
                                         ? 'var(--theme-color-primary)' 
                                         : ($darkMode ? '#4b5563' : '#e5e5e5')}
-                                    on:click={() => toggleMode = 'press'}
+                                    onclick={() => toggleMode = 'press'}
                                 >
                                     <div class="flex items-center gap-3 mb-2">
                                         <div class="w-4 h-4 rounded-full border-2"
@@ -283,13 +281,13 @@
                                         ? `border-color: var(--theme-color-primary); background-color: color-mix(in srgb, var(--theme-color-primary) 15%, ${$darkMode ? 'black' : 'white'});`
                                         : `border-color: ${$darkMode ? '#4b5563' : '#e5e5e5'}; background-color: transparent;`
                                     }"
-                                    on:mouseenter={(e) => e.currentTarget.style.borderColor = toggleMode === 'release' 
+                                    onmouseenter={(e) => e.currentTarget.style.borderColor = toggleMode === 'release' 
                                         ? 'var(--theme-color-primary)' 
                                         : ($darkMode ? '#6b7280' : '#d1d5db')}
-                                    on:mouseleave={(e) => e.currentTarget.style.borderColor = toggleMode === 'release' 
+                                    onmouseleave={(e) => e.currentTarget.style.borderColor = toggleMode === 'release' 
                                         ? 'var(--theme-color-primary)' 
                                         : ($darkMode ? '#4b5563' : '#e5e5e5')}
-                                    on:click={() => toggleMode = 'release'}
+                                    onclick={() => toggleMode = 'release'}
                                 >
                                     <div class="flex items-center gap-3 mb-2">
                                         <div class="w-4 h-4 rounded-full border-2"
@@ -320,7 +318,8 @@
                                         class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2"
                                         style="background-color: {toggleState ? 'var(--theme-color-primary)' : ($darkMode ? '#4b5563' : '#d1d5db')}; 
                                                focus:ring-color: var(--theme-color-primary);"
-                                        on:click={() => toggleState = !toggleState}
+                                        onclick={() => toggleState = !toggleState}
+                                        aria-label={toggleState ? 'Set toggle state to inactive' : 'Set toggle state to active'}
                                     >
                                         <span class="inline-block h-4 w-4 transform rounded-full {toggleState ? ($darkMode ? 'bg-black' : 'bg-white') : 'bg-white'} transition-transform shadow-sm {toggleState ? 'translate-x-6' : 'translate-x-1'}"></span>
                                     </button>
@@ -364,17 +363,50 @@
                                 This key will toggle <strong style="color: var(--theme-color-primary);">{keyActions.find(k => k.id === selectedToggleAction)?.name || selectedToggleAction}</strong> 
                                 {toggleMode === 'press' ? 'when pressed' : 'when released'}. Each trigger will switch between active and inactive states.
                             </p>
-                        </div>
-
-                        <!-- Actions -->
-                        <div class="space-y-3">
+                        </div>                        <!-- Reset Button -->
+                        <div class="space-y-4">
                             <button 
-                                class="w-full px-4 py-2 {$darkMode ? 'bg-red-700 hover:bg-red-600' : 'bg-red-600 hover:bg-red-700'} text-white rounded-md transition-colors text-sm font-medium"
-                                on:click={resetAllToggleKeys}
+                                class="w-full px-4 py-2 {$darkMode ? 'text-white bg-gray-800 hover:bg-gray-700 border border-white' : 'text-gray-700 bg-gray-100 hover:bg-gray-200'} rounded-md transition-colors text-sm font-medium"
+                                onclick={resetConfiguration}
+                                disabled={!CurrentSelected}
                             >
-                                Reset All Toggle Keys
+                                Reset Key Configuration
                             </button>
                         </div>
+
+                        <!-- Configured Keys -->
+                        {#if configuredToggleKeys.length > 0}
+                            <div class="rounded-lg border p-4"
+                                 style="background-color: color-mix(in srgb, var(--theme-color-primary) 8%, {$darkMode ? 'black' : 'white'});
+                                        border-color: color-mix(in srgb, var(--theme-color-primary) 25%, {$darkMode ? 'white' : '#e5e5e5'});">
+                                <div class="flex items-center justify-between mb-3">
+                                    <h4 class="text-base font-medium {$darkMode ? 'text-white' : 'text-gray-900'}">Configured Keys</h4>
+                                    <span class="text-xs px-2 py-1 rounded-full {$darkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-600'}">{configuredToggleKeys.length}</span>
+                                </div>
+                                <div class="space-y-2 max-h-40 overflow-y-auto">
+                                    {#each configuredToggleKeys as [keyId, config]}
+                                        {@const [x, y] = keyId.split(',').map(Number)}
+                                        {@const keyName = $KeyboardDisplayValues[y]?.[x] || 'Unknown'}
+                                        <div class="flex items-center justify-between p-2 rounded border"
+                                             style="background-color: color-mix(in srgb, var(--theme-color-primary) 5%, {$darkMode ? 'black' : 'white'});
+                                                    border-color: color-mix(in srgb, var(--theme-color-primary) 15%, {$darkMode ? 'white' : '#e5e5e5'});">
+                                            <div class="flex items-center gap-2">
+                                                <span class="font-mono text-sm font-bold {$darkMode ? 'text-white' : 'text-gray-900'}">{keyName}</span>
+                                                <div class="w-1.5 h-1.5 rounded-full {config.toggleState ? 'bg-green-500' : 'bg-gray-400'}"></div>
+                                            </div>
+                                            <div class="text-right">
+                                                <div class="text-xs font-medium" style="color: var(--theme-color-primary);">
+                                                    {keyActions.find(k => k.id === config.toggleAction)?.name || config.toggleAction}
+                                                </div>
+                                                <div class="text-xs {$darkMode ? 'text-gray-400' : 'text-gray-500'} capitalize">
+                                                    {config.toggleMode}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {/each}
+                                </div>
+                            </div>
+                        {/if}
                     </div>
                 </div>
             </div>
@@ -394,37 +426,6 @@
                         <strong>Tip:</strong> Toggle keys are perfect for Caps Lock, Num Lock, or creating custom modifier states
                     </div>
                 </div>
-            </div>
-        {/if}        <!-- Configured Keys Summary -->
-        {#if configuredToggleKeys.length > 0}
-            <div class="max-w-6xl mx-auto mt-6">                <div class="rounded-lg border p-6"
-                     style="background-color: color-mix(in srgb, var(--theme-color-primary) 5%, {$darkMode ? 'black' : 'white'});
-                            border-color: color-mix(in srgb, var(--theme-color-primary) 25%, {$darkMode ? 'white' : '#e5e5e5'});">
-                    <div class="flex items-center justify-between mb-4">
-                        <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'}">Configured Toggle Keys</h3>
-                        <span class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-500'}">{configuredToggleKeys.length} key{configuredToggleKeys.length !== 1 ? 's' : ''}</span>
-                    </div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {#each configuredToggleKeys as [keyId, config]}
-                            {@const [x, y] = keyId.split(',').map(Number)}
-                            {@const keyName = $KeyboardDisplayValues[y]?.[x] || 'Unknown'}                            <div class="p-4 rounded-lg border"
-                                 style="background-color: color-mix(in srgb, var(--theme-color-primary) 8%, {$darkMode ? 'black' : 'white'});
-                                        border-color: color-mix(in srgb, var(--theme-color-primary) 25%, {$darkMode ? 'white' : '#e5e5e5'});">
-                                <div class="flex items-center justify-between mb-2">
-                                    <span class="font-mono font-bold {$darkMode ? 'text-white' : 'text-gray-900'}">{keyName}</span>
-                                    <div class="w-2 h-2 rounded-full {config.toggleState ? 'bg-green-500' : 'bg-gray-400'}"></div>
-                                </div>
-                                <div class="text-sm font-medium" style="color: var(--theme-color-primary);">
-                                    {keyActions.find(k => k.id === config.toggleAction)?.name || config.toggleAction}
-                                </div>
-                                <div class="text-xs {$darkMode ? 'text-gray-400' : 'text-gray-500'} capitalize">
-                                    {config.toggleMode} trigger
-                                </div>
-                            </div>
-                        {/each}
-                    </div>
-                </div>
-            </div>
-        {/if}
+            </div>        {/if}
     </div>
 </div>
