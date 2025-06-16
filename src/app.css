@@ -1,1 +1,16 @@
 @import 'tailwindcss';
+
+/* Global font - Noto Sans SC for all text */
+* {
+  font-family: 'Noto Sans SC', sans-serif;
+}
+
+body,
+html,
+input,
+textarea,
+button,
+select,
+option {
+  font-family: 'Noto Sans SC', sans-serif;
+}
