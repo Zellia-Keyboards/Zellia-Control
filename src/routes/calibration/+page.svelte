@@ -1,13 +1,23 @@
-<script lang="ts">
-    import { darkMode } from "$lib/DarkModeStore.svelte";
+<script lang="ts">    import { darkMode } from "$lib/DarkModeStore.svelte";
     import NewZellia80He from "$lib/NewZellia80HE.svelte";
-    import { Target, Play, RotateCcw, CheckCircle, AlertCircle, Info } from 'lucide-svelte';    let CurrentSelected = $state<[number, number] | null>(null);
+    import { Target, Play, RotateCcw, CheckCircle, AlertCircle, Info, X } from 'lucide-svelte';
+
+    let CurrentSelected = $state<[number, number] | null>(null);
     let selectedKeyName = $state('');
-    let calibrationStep = $state<'select' | 'rest-phase' | 'wait-for-press' | 'press-phase' | 'complete'>('select');    let isCalibrating = $state(false);
+    let calibrationStep = $state<'select' | 'rest-phase' | 'wait-for-press' | 'press-phase' | 'complete'>('select');
+
+    let isCalibrating = $state(false);
     let calibrationProgress = $state(0);
     let isKeyPressed = $state(false);
     let calibrationMessage = $state('');
     let showPressButton = $state(false);
+      // Notification state
+    let showNotification = $state(false);
+    let notificationMessage = $state('');
+    let notificationTimeout: ReturnType<typeof setTimeout>;
+    
+    // Press phase function reference
+    let pressPhaseFunction: (() => void) | null = null;
       // Dynamic calibration steps data
     function getCalibrationSteps() {
         return [
@@ -72,13 +82,12 @@
             // Wait phase - 1-2 seconds before showing press instruction
             calibrationStep = 'wait-for-press';
             calibrationMessage = 'Rest phase complete. Get ready...';
-            
-            setTimeout(() => {
+              setTimeout(() => {
                 calibrationMessage = 'Now press and hold the selected key firmly!';
                 showPressButton = true;
                 
                 // Store the pressed phase function for the button
-                window.startPressPhase = () => {
+                pressPhaseFunction = () => {
                     showPressButton = false;
                     calibrationStep = 'press-phase';
                     calibrationMessage = 'Measuring key pressed position...';
@@ -110,13 +119,11 @@
             }, 1500); // 1.5 seconds wait
             
         }, 500); // 0.5 seconds for rest phase
-    }
-
-    function startPressPhase() {
-        if (window.startPressPhase) {
-            window.startPressPhase();
+    }    function startPressPhase() {
+        if (pressPhaseFunction) {
+            pressPhaseFunction();
         }
-    }    function resetCalibration() {
+    }function resetCalibration() {
         calibrationStep = 'select';
         CurrentSelected = null;
         selectedKeyName = '';
@@ -125,9 +132,34 @@
         isKeyPressed = false;
         calibrationMessage = '';
         showPressButton = false;
-    }    function applyCalibration() {
+        dismissNotification();
+    }
+
+    function showSuccessNotification(message: string) {
+        notificationMessage = message;
+        showNotification = true;
+        
+        // Clear existing timeout
+        if (notificationTimeout) {
+            clearTimeout(notificationTimeout);
+        }
+        
+        // Auto-dismiss after 5 seconds
+        notificationTimeout = setTimeout(() => {
+            dismissNotification();
+        }, 5000);
+    }
+
+    function dismissNotification() {
+        showNotification = false;
+        if (notificationTimeout) {
+            clearTimeout(notificationTimeout);
+        }
+    }
+
+    function applyCalibration() {
         // Apply the calibration settings
-        alert(`Calibration applied for ${selectedKeyName}`);
+        showSuccessNotification(`Calibration applied for ${selectedKeyName}`);
     }
 
     function getStepStatus(step: any) {
@@ -146,8 +178,42 @@
   bind:currentSelectedKey={CurrentSelected}
 >
   {#snippet body(x, y)}
-  {/snippet}
+{/snippet}
 </NewZellia80He>
+
+<!-- Success Notification -->
+{#if showNotification}
+  <div class="fixed top-4 left-1/2 z-50 notification-enter" style="transform: translateX(-50%);">
+    <div class="flex items-center gap-3 bg-green-500 text-white px-4 py-3 rounded-lg shadow-lg min-w-80">
+      <CheckCircle class="w-5 h-5 flex-shrink-0" />
+      <span class="flex-1 font-medium">{notificationMessage}</span>
+      <button 
+        onclick={dismissNotification}
+        class="flex-shrink-0 p-1 hover:bg-green-600 rounded transition-colors"
+        aria-label="Dismiss notification"
+      >
+        <X class="w-4 h-4" />
+      </button>
+    </div>
+  </div>
+{/if}
+
+<style>
+  .notification-enter {
+    animation: slideInFromTop 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  @keyframes slideInFromTop {
+    0% {
+      transform: translateX(-50%) translateY(-100px) scale(0.9);
+      opacity: 0;
+    }
+    100% {
+      transform: translateX(-50%) translateY(0) scale(1);
+      opacity: 1;
+    }
+  }
+</style>
 <div
   class="rounded-2xl shadow p-8 mt-2 mb-4 grow {$darkMode
     ? 'border border-gray-600 text-white'
@@ -168,7 +234,6 @@
        style="background: {$darkMode ? 'color-mix(in srgb, var(--theme-color-primary) 8%, #111827)' : 'color-mix(in srgb, var(--theme-color-primary) 5%, #f9fafb)'};
               border-color: {$darkMode ? 'color-mix(in srgb, var(--theme-color-primary) 15%, #374151)' : 'color-mix(in srgb, var(--theme-color-primary) 10%, #e5e7eb)'};">    <h3 class="text-lg font-semibold {$darkMode ? 'text-white' : 'text-gray-900'} mb-4">Calibration Process</h3>
     <div class="flex items-center justify-between">
-      
         {#each getCalibrationSteps() as step, index}
           <div class="flex items-center flex-1">
             <div class="flex items-center gap-3">
