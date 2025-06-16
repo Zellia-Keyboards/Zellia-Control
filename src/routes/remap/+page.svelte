@@ -1,6 +1,14 @@
 <script lang="ts">
     import { darkMode } from '$lib/DarkModeStore.svelte';
     import NewZellia80He from '$lib/NewZellia80HE.svelte';
+    import { language, t } from '$lib/LanguageStore.svelte';
+    
+    let currentLanguage = $state($language);
+    
+    // Subscribe to language changes
+    language.subscribe(value => {
+        currentLanguage = value;
+    });
     
     const NORMAL_KEY = [...Array(94).keys()].map(_ => _ + 33).map(_ => [String.fromCharCode(_), _]);
 
@@ -135,7 +143,7 @@
                 </div>
             </div>
         {:else if selectedSection === 'media'}
-            <h3 class="text-lg font-medium mb-4 flex-shrink-0 {$darkMode ? 'text-white' : 'text-gray-900'}">Media Keys</h3>
+            <h3 class="text-lg font-medium mb-4 flex-shrink-0 {$darkMode ? 'text-white' : 'text-gray-900'}">{t('media.mediaKeys', currentLanguage)}</h3>
             <div class="flex-1 overflow-y-auto">
                 <div class="flex flex-wrap gap-3">
                     {#each ['Play/Pause', 'Stop', 'Previous', 'Next', 'Volume Up', 'Volume Down', 'Mute'] as key}

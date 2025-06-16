@@ -2,6 +2,14 @@
 	import { darkMode } from '$lib/DarkModeStore.svelte';
 	import type { KeyboardDisplayValues as KeyboardDisplayValuesType } from '$lib/KeyboardState.svelte';
 	import type { globalConfigurations, DynamicKeystrokeConfiguration } from '$lib/AdvancedKeyShared';
+	import { language, t } from '$lib/LanguageStore.svelte';
+	
+	let currentLanguage = $state($language);
+	
+	// Subscribe to language changes
+	language.subscribe(value => {
+		currentLanguage = value;
+	});
 
 
 	type ConfiguredDynamicKeyEntry = [string, DynamicKeystrokeConfiguration];
@@ -20,21 +28,20 @@
 			class="rounded-lg border p-6"
 			style="background-color: color-mix(in srgb, var(--theme-color-primary) 5%, ${$darkMode ? 'black' : 'white'}); border-color: ${$darkMode ? 'color-mix(in srgb, var(--theme-color-primary) 20%, #374151)' : 'color-mix(in srgb, var(--theme-color-primary) 15%, #e5e7eb)'};"
 		>
-			<div class="flex items-center justify-between mb-4">
-				<h3
+			<div class="flex items-center justify-between mb-4">				<h3
 					class="text-lg font-medium {$darkMode
 						? 'text-white'
 						: 'text-gray-900'}"
 				>
-					Configured Dynamic Keys
+					{t('advancedkey.configuredDynamicKeys', currentLanguage)}
 				</h3>
 				<span
 					class="text-sm {$darkMode
 						? 'text-gray-400'
 						: 'text-gray-500'}"
-					>{configuredDynamicKeys.length} key{configuredDynamicKeys.length !== 1
-						? 's'
-						: ''}</span
+					>{configuredDynamicKeys.length} {configuredDynamicKeys.length !== 1
+						? t('advancedkey.keysCountPlural', currentLanguage)
+						: t('advancedkey.keysCount', currentLanguage)}</span
 				>
 			</div>
 			<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -52,12 +59,11 @@
 							>
 						</div>
 						<div class="text-sm space-y-1">
-							<div class="flex justify-between">
-								<span
+							<div class="flex justify-between">								<span
 									class={$darkMode
 										? 'text-gray-400'
 										: 'text-gray-600'}
-									>Bindings:</span
+									>{t('advancedkey.bindingsLabel', currentLanguage)}:</span
 								>
 								<span
 									class={$darkMode
@@ -66,12 +72,11 @@
 									>{config.keycodes.length}</span
 								>
 							</div>
-							<div class="flex justify-between">
-								<span
+							<div class="flex justify-between">								<span
 									class={$darkMode
 										? 'text-gray-400'
 										: 'text-gray-600'}
-									>Bottom Out:</span
+									>{t('advancedkey.bottomOutLabel', currentLanguage)}:</span
 								>
 								<span
 									class={$darkMode

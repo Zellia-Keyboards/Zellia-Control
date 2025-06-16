@@ -1,7 +1,7 @@
-<script lang="ts">
-    import { goto } from '$app/navigation';
+<script lang="ts">    import { goto } from '$app/navigation';
     import {  KeyboardDisplayValues } from "$lib/KeyboardState.svelte";
     import { darkMode } from '$lib/DarkModeStore.svelte';
+    import { language, t } from '$lib/LanguageStore.svelte';
     import { AlertTriangle } from 'lucide-svelte';
     import { 
         globalConfigurations,
@@ -10,6 +10,13 @@
         keyActions
     } from "$lib/AdvancedKeyShared";
     import NewZellia80He from '$lib/NewZellia80HE.svelte';
+
+    let currentLanguage = $state($language);
+    
+    // Subscribe to language changes
+    language.subscribe(value => {
+        currentLanguage = value;
+    });
 
     // Define the null bind specific configuration type
     type NullBindConfiguration = {
@@ -154,7 +161,53 @@
                     continuous: continuous
                 };
                 updateGlobalConfiguration(keyId, config);
+            }        });
+    }
+
+    function resetConfiguration(): void {
+        if (selectedKeys.length !== 2) return;
+        
+        // Reset configuration for both selected keys
+        selectedKeys.forEach((keyName) => {
+            // Find the key position for this key name
+            let keyPosition: [number, number] | null = null;
+            
+            for (let row = 0; row < $KeyboardDisplayValues.length; row++) {
+                for (let col = 0; col < $KeyboardDisplayValues[row].length; col++) {
+                    if ($KeyboardDisplayValues[row][col] === keyName) {
+                        keyPosition = [col, row];
+                        break;
+                    }
+                }
+                if (keyPosition) break;
             }
+            
+            if (keyPosition) {
+                const keyId = `${keyPosition[0]},${keyPosition[1]}`;
+                resetGlobalConfiguration(keyId);
+            }
+        });
+        
+        // Reset local settings to defaults
+        behavior = 0;
+        bottomOutPoint = 0;
+        actuationPoint = DEFAULT_ACTUATION;
+        uiActuationPoint = DEFAULT_ACTUATION;
+        uiBottomOutPoint = DEFAULT_BOTTOM_OUT_POINT;
+        rtDown = 0;
+        rtUp = 0;
+        continuous = false;
+    }
+
+    function resetAllNullBindKeys(): void {
+        globalConfigurations.update(configs => {
+            const newConfigs = { ...configs };
+            Object.keys(newConfigs).forEach(keyId => {
+                if (newConfigs[keyId].type === 'null-bind') {
+                    delete newConfigs[keyId];
+                }
+            });
+            return newConfigs;
         });
     }
 
@@ -201,7 +254,7 @@
 <div
   class="rounded-2xl shadow p-4 mt-2 mb-4 grow {$darkMode
     ? 'border border-gray-600 text-white'
-    : 'text-black'} h-full flex flex-col"
+    : 'text-black'} flex flex-col"
   style="background-color: {$darkMode
     ? `color-mix(in srgb, var(--theme-color-primary) 5%, black)`
     : `color-mix(in srgb, var(--theme-color-primary) 10%, white)`};"
@@ -215,12 +268,11 @@
                 >
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-                    </svg>
-                    Back
+                    </svg>                    {t('advancedkey.backToAdvanced', currentLanguage)}
                 </button>
                 <div>
-                    <h1 class="text-xl font-semibold {$darkMode ? 'text-white' : 'text-gray-900'}">Null Bind Configuration</h1>
-                    <p class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-500'}">Configure rapid trigger with SOCD cleaning for competitive gaming</p>
+                    <h1 class="text-xl font-semibold {$darkMode ? 'text-white' : 'text-gray-900'}">{t('advancedkey.nullBindTitle', currentLanguage)}</h1>
+                    <p class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-500'}">{t('advancedkey.nullBindSubtitle', currentLanguage)}</p>
                 </div>
             </div>            <div class="flex gap-3">
                 <button 
@@ -230,7 +282,7 @@
                     onclick={applyConfiguration}
                     disabled={!canConfigure}
                 >
-                    Apply
+                    {t('advancedkey.applyConfiguration', currentLanguage)}
                 </button>
             </div>
         </div>

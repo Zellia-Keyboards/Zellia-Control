@@ -1,6 +1,14 @@
 <script lang="ts">
 	import { darkMode } from '$lib/DarkModeStore.svelte';
 	import type { KeyAction } from '$lib/AdvancedKeyShared';
+	import { language, t } from '$lib/LanguageStore.svelte';
+	
+	let currentLanguage = $state($language);
+	
+	// Subscribe to language changes
+	language.subscribe(value => {
+		currentLanguage = value;
+	});
 
 	interface Props {
 		selectedKeycodes: string[];
@@ -22,21 +30,19 @@
 	class="rounded-lg border p-6"
 	style="background-color: color-mix(in srgb, var(--theme-color-primary) 5%, ${$darkMode ? 'black' : 'white'});
 		   border-color: {$darkMode ? 'color-mix(in srgb, var(--theme-color-primary) 20%, #374151)' : 'color-mix(in srgb, var(--theme-color-primary) 15%, #e5e7eb)'};"
->
-	<h3
+>	<h3
 		class="text-lg font-medium {$darkMode
 			? 'text-white'
 			: 'text-gray-900'} mb-4"
 	>
-		Keycode Selection
-	</h3>
-	{#if selectedBindingIndex !== null}
+		{t('advancedkey.keycodeSelectionTitle', currentLanguage)}
+	</h3>	{#if selectedBindingIndex !== null}
 		<p class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'} mb-4">
-			Select a keycode for binding {selectedBindingIndex + 1}
+			{t('advancedkey.selectKeycodeForBinding', currentLanguage).replace('{0}', String(selectedBindingIndex + 1))}
 		</p>
 	{:else}
 		<p class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'} mb-4">
-			Click on a binding button to select a keycode
+			{t('advancedkey.clickOnBinding', currentLanguage)}
 		</p>
 	{/if}
 

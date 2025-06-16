@@ -1,7 +1,21 @@
 <script lang="ts">
     import {  KeyboardDisplayValues } from "$lib/KeyboardState.svelte";
     import { darkMode } from '$lib/DarkModeStore.svelte';
-    import NewZellia80He from "$lib/NewZellia80HE.svelte";
+    import NewZellia80He from "$lib/NewZellia80HE.svelte";    import { language, t } from '$lib/LanguageStore.svelte';
+    
+    // Helper function for string formatting
+    const formatString = (template: string, ...args: (string | number)[]): string => {
+        return template.replace(/{(\d+)}/g, (match, index) => {
+            return args[index] !== undefined ? String(args[index]) : match;
+        });
+    };
+    
+    let currentLanguage = $state($language);
+    
+    // Subscribe to language changes
+    language.subscribe(value => {
+        currentLanguage = value;
+    });
     
     let selectedEffect = $state('static');
     let brightness = $state(100); // Frontend display value (0-100)
@@ -19,32 +33,30 @@
     // Convert frontend brightness (0-100) to hardware brightness (0-70)
     function getHardwareBrightness(frontendBrightness: number): number {
         return Math.round((frontendBrightness / 100) * 70);
-    }
-    
-    // Convert hardware brightness (0-70) to frontend brightness (0-100)
+    }    // Convert hardware brightness (0-70) to frontend brightness (0-100)
     function getFrontendBrightness(hardwareBrightness: number): number {
         return Math.round((hardwareBrightness / 70) * 100);
     }
     
-    const effects = [
-        { id: 'static', name: 'Static', description: 'Single solid color' },
-        { id: 'breathing', name: 'Breathing', description: 'Smooth fade in and out' },
-        { id: 'wave', name: 'Wave', description: 'Color wave across keyboard' },
-        { id: 'ripple', name: 'Ripple', description: 'Ripple effect on keypress' },
-        { id: 'rainbow', name: 'Rainbow', description: 'Cycling rainbow colors' },
-        { id: 'reactive', name: 'Reactive', description: 'Color change on keypress' },
-        { id: 'spectrum', name: 'Spectrum', description: 'Color spectrum cycling' },
-        { id: 'gradient', name: 'Gradient', description: 'Custom color gradient' }
-    ];
+    const effects = $derived([
+        { id: 'static', name: t('lighting.static', currentLanguage), description: t('lighting.staticDesc', currentLanguage) },
+        { id: 'breathing', name: t('lighting.breathing', currentLanguage), description: t('lighting.breathingDesc', currentLanguage) },
+        { id: 'wave', name: t('lighting.wave', currentLanguage), description: t('lighting.waveDesc', currentLanguage) },
+        { id: 'ripple', name: t('lighting.ripple', currentLanguage), description: t('lighting.rippleDesc', currentLanguage) },
+        { id: 'rainbow', name: t('lighting.rainbow', currentLanguage), description: t('lighting.rainbowDesc', currentLanguage) },
+        { id: 'reactive', name: t('lighting.reactive', currentLanguage), description: t('lighting.reactiveDesc', currentLanguage) },
+        { id: 'spectrum', name: t('lighting.spectrum', currentLanguage), description: t('lighting.spectrumDesc', currentLanguage) },
+        { id: 'gradient', name: t('lighting.gradient', currentLanguage), description: t('lighting.gradientDesc', currentLanguage) }
+    ]);
     
-    const directions = [
-        { id: 'left-to-right', name: 'Left to Right' },
-        { id: 'right-to-left', name: 'Right to Left' },
-        { id: 'top-to-bottom', name: 'Top to Bottom' },
-        { id: 'bottom-to-top', name: 'Bottom to Top' },
-        { id: 'center-out', name: 'Center Out' },
-        { id: 'outside-in', name: 'Outside In' }
-    ];
+    const directions = $derived([
+        { id: 'left-to-right', name: t('lighting.leftToRight', currentLanguage) },
+        { id: 'right-to-left', name: t('lighting.rightToLeft', currentLanguage) },
+        { id: 'top-to-bottom', name: t('lighting.topToBottom', currentLanguage) },
+        { id: 'bottom-to-top', name: t('lighting.bottomToTop', currentLanguage) },
+        { id: 'center-out', name: t('lighting.centerOut', currentLanguage) },
+        { id: 'outside-in', name: t('lighting.outsideIn', currentLanguage) }
+    ]);
     
     function hexToRgb(hex: string) {
         const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
@@ -120,21 +132,20 @@
     : `color-mix(in srgb, var(--theme-color-primary) 10%, white)`};"
 >
     <div class="flex items-center justify-between -mt-4 mb-4">
-        <h2 class="text-2xl font-bold {$darkMode ? 'text-white' : 'text-gray-900'}">Lighting</h2>        <div class="flex gap-2">
+        <h2 class="text-2xl font-bold {$darkMode ? 'text-white' : 'text-gray-900'}">{t('lighting.title', currentLanguage)}</h2>        <div class="flex gap-2">
             <button 
                 class="px-4 py-2 rounded transition-colors text-white"
                 style="background-color: var(--theme-color-primary);"
                 onmouseover={(e) => (e.currentTarget as HTMLElement).style.backgroundColor = 'color-mix(in srgb, var(--theme-color-primary) 85%, black)'}
                 onmouseout={(e) => (e.currentTarget as HTMLElement).style.backgroundColor = 'var(--theme-color-primary)'}
-                onclick={applySettings}
-            >
-                Apply Settings
+                onclick={applySettings}            >
+                {t('lighting.applySettings', currentLanguage)}
             </button>
             <button 
                 class="{$darkMode ? 'bg-gray-800 hover:bg-gray-700 text-white border border-white' : 'bg-gray-200 hover:bg-gray-300 text-gray-600'} px-4 py-2 rounded transition-colors"
                 onclick={() => perKeyMode = !perKeyMode}
             >
-                {perKeyMode ? 'Exit Per-Key Mode' : 'Per-Key Mode'}
+                {perKeyMode ? t('lighting.exitPerKeyMode', currentLanguage) : t('lighting.perKeyMode', currentLanguage)}
             </button>
         </div>
     </div>
@@ -160,12 +171,10 @@
             </div>
             
             <!-- Global Controls -->
-            <div class="space-y-4">
-                <!-- Brightness -->
-                <div>
-                    <div class="flex justify-between text-sm {$darkMode ? 'text-gray-300' : 'text-gray-600'} mb-2">
-                        <span>Brightness</span>
-                        <span>{brightness}% <span class="text-xs {$darkMode ? 'text-gray-400' : 'text-gray-400'}"></span>
+            <div class="space-y-4">                <!-- Brightness -->
+                <div>                    <div class="flex justify-between text-sm {$darkMode ? 'text-gray-300' : 'text-gray-600'} mb-2">
+                        <span>{t('lighting.brightness', currentLanguage)}</span>
+                        <span>{brightness}%</span>
                     </div>
                     <input 
                         type="range" 
@@ -177,10 +186,9 @@
                 </div>
                 
                 <!-- Speed (for animated effects) -->
-                {#if ['breathing', 'wave', 'rainbow', 'spectrum'].includes(selectedEffect)}
-                    <div>
+                {#if ['breathing', 'wave', 'rainbow', 'spectrum'].includes(selectedEffect)}                    <div>
                         <div class="flex justify-between text-sm {$darkMode ? 'text-gray-300' : 'text-gray-600'} mb-2">
-                            <span>Speed</span>
+                            <span>{t('lighting.speed', currentLanguage)}</span>
                             <span>{speed}%</span>
                         </div>
                         <input 
@@ -194,9 +202,8 @@
                 {/if}
                 
                 <!-- Direction (for directional effects) -->
-                {#if ['wave', 'gradient', 'spectrum'].includes(selectedEffect)}
-                    <div>
-                        <label class="block text-sm {$darkMode ? 'text-gray-300' : 'text-gray-600'} mb-2">Direction</label>
+                {#if ['wave', 'gradient', 'spectrum'].includes(selectedEffect)}                    <div>
+                        <label class="block text-sm {$darkMode ? 'text-gray-300' : 'text-gray-600'} mb-2">{t('lighting.direction', currentLanguage)}</label>
                         <select 
                             bind:value={direction}
                             class="w-full p-2 border {$darkMode ? 'border-white bg-black text-white' : 'border-gray-300 bg-white text-gray-900'} rounded-lg"
@@ -213,20 +220,19 @@
         <!-- Divider -->
         <div class="hidden lg:block w-px {$darkMode ? 'bg-white' : 'bg-gray-200'}"></div>
         
-        <!-- Color Controls Panel -->
-        <div class="flex-1 min-w-[300px]">
-            <h3 class="text-lg font-medium mb-4 {$darkMode ? 'text-white' : 'text-gray-900'}">Color Settings</h3>
+        <!-- Color Controls Panel -->        <div class="flex-1 min-w-[300px]">
+            <h3 class="text-lg font-medium mb-4 {$darkMode ? 'text-white' : 'text-gray-900'}">{t('lighting.colorSettings', currentLanguage)}</h3>
               {#if perKeyMode}
                 <!-- Per-Key Color Mode -->
                 <div class="space-y-4">                    <div class="p-3 rounded-lg border"
                          style="background-color: color-mix(in srgb, var(--theme-color-primary) 12%, {$darkMode ? 'black' : 'white'});
                                 border-color: color-mix(in srgb, var(--theme-color-primary) 30%, {$darkMode ? 'white' : '#e5e5e5'});">
-                        <div class="font-medium {$darkMode ? 'text-white' : 'text-gray-900'}">Per-Key Mode Active</div>
-                        <div class="text-sm" style="color: var(--theme-color-primary);">Click keys on the keyboard to select them</div>
+                        <div class="font-medium {$darkMode ? 'text-white' : 'text-gray-900'}">{t('lighting.perKeyModeActive', currentLanguage)}</div>
+                        <div class="text-sm" style="color: var(--theme-color-primary);">{t('lighting.clickKeysToSelect', currentLanguage)}</div>
                     </div>
                     
                     <div>
-                        <label class="block text-sm {$darkMode ? 'text-gray-300' : 'text-gray-600'} mb-2">Key Color</label>
+                        <label class="block text-sm {$darkMode ? 'text-gray-300' : 'text-gray-600'} mb-2">{t('lighting.keyColor', currentLanguage)}</label>
                         <div class="flex gap-2">
                             <input 
                                 type="color" 
@@ -248,18 +254,16 @@
                             onmouseover={(e) => (e.currentTarget as HTMLElement).style.backgroundColor = 'color-mix(in srgb, var(--theme-color-primary) 85%, black)'}
                             onmouseout={(e) => (e.currentTarget as HTMLElement).style.backgroundColor = 'var(--theme-color-primary)'}
                             onclick={toggleKeySelection}
-                            disabled={!CurrentSelected}
-                        >
-                            {CurrentSelected && selectedKeys.has(`${CurrentSelected[0]},${CurrentSelected[1]}`) ? 'Deselect Key' : 'Select Key'}
+                            disabled={!CurrentSelected}                        >
+                            {CurrentSelected && selectedKeys.has(`${CurrentSelected[0]},${CurrentSelected[1]}`) ? t('lighting.deselectKey', currentLanguage) : t('lighting.selectKey', currentLanguage)}
                         </button>
                         <button 
                             class="{$darkMode ? 'bg-gray-800 hover:bg-gray-700 text-white border border-white' : 'bg-gray-600 hover:bg-gray-700 text-white'} px-3 py-2 rounded transition-colors"
                             onclick={clearKeySelection}
                         >
-                            Clear ({selectedKeys.size})
+                            {t('lighting.clear', currentLanguage)} ({selectedKeys.size})
                         </button>
-                    </div>
-                      <button 
+                    </div>                      <button 
                         class="w-full px-3 py-2 rounded transition-colors text-white"
                         style="background-color: var(--theme-color-primary);"
                         onmouseover={(e) => (e.currentTarget as HTMLElement).style.backgroundColor = 'color-mix(in srgb, var(--theme-color-primary) 85%, black)'}
@@ -267,14 +271,13 @@
                         onclick={applyToSelectedKeys}
                         disabled={selectedKeys.size === 0}
                     >
-                        Apply to Selected Keys
+                        {t('lighting.applyToSelectedKeys', currentLanguage)}
                     </button>
                 </div>
             {:else}
-                <!-- Effect-based Color Controls -->
-                {#if selectedEffect === 'static' || selectedEffect === 'breathing' || selectedEffect === 'reactive'}
+                <!-- Effect-based Color Controls -->                {#if selectedEffect === 'static' || selectedEffect === 'breathing' || selectedEffect === 'reactive'}
                     <div>
-                        <label class="block text-sm {$darkMode ? 'text-gray-300' : 'text-gray-600'} mb-2">Color</label>
+                        <label class="block text-sm {$darkMode ? 'text-gray-300' : 'text-gray-600'} mb-2">{t('lighting.color', currentLanguage)}</label>
                         <div class="flex gap-2">
                             <input 
                                 type="color" 
@@ -289,17 +292,15 @@
                             />
                         </div>
                         {#if hexToRgb(staticColor)}
-                            {@const rgb = hexToRgb(staticColor)}
-                            {#if rgb}
+                            {@const rgb = hexToRgb(staticColor)}                            {#if rgb}
                                 <div class="text-xs {$darkMode ? 'text-gray-400' : 'text-gray-600'}">
-                                    RGB: {rgb.r}, {rgb.g}, {rgb.b}
+                                    {formatString(t('lighting.rgbValues', currentLanguage), rgb.r, rgb.g, rgb.b)}
                                 </div>
                             {/if}
                         {/if}
-                    </div>
-                {:else if selectedEffect === 'gradient'}
+                    </div>                {:else if selectedEffect === 'gradient'}
                     <div>
-                        <label class="block text-sm {$darkMode ? 'text-gray-300' : 'text-gray-600'} mb-2">Gradient Colors</label>
+                        <label class="block text-sm {$darkMode ? 'text-gray-300' : 'text-gray-600'} mb-2">{t('lighting.gradientColors', currentLanguage)}</label>
                         <div class="space-y-2">
                             {#each gradientColors as color, index}
                                 <div class="flex gap-2 items-center">
@@ -321,32 +322,29 @@
                                     {/if}
                                 </div>
                             {/each}
-                        </div>
-                        <button 
+                        </div>                        <button 
                             class="mt-2 w-full {$darkMode ? 'bg-gray-800 hover:bg-gray-700 text-white border border-white' : 'bg-gray-200 hover:bg-gray-300 text-gray-700'} px-3 py-2 rounded transition-colors"
                             onclick={addGradientColor}
                         >
-                            Add Color
+                            {t('lighting.addColor', currentLanguage)}
                         </button>
-                    </div>
-                {:else}
+                    </div>                {:else}
                     <div class="p-4 {$darkMode ? 'bg-gray-800' : 'bg-gray-50'} rounded-lg text-center">
                         <div class="{$darkMode ? 'text-gray-300' : 'text-gray-600'}">
-                            {selectedEffect === 'rainbow' || selectedEffect === 'spectrum' ? 'This effect uses automatic colors' : 'No color settings needed for this effect'}
+                            {selectedEffect === 'rainbow' || selectedEffect === 'spectrum' ? t('lighting.automaticColors', currentLanguage) : t('lighting.noColorSettings', currentLanguage)}
                         </div>
                     </div>
                 {/if}
             {/if}
-            
-            <!-- Preview -->
+              <!-- Preview -->
             <div class="mt-6">
-                <label class="block text-sm {$darkMode ? 'text-gray-300' : 'text-gray-600'} mb-2">Preview</label>
+                <label class="block text-sm {$darkMode ? 'text-gray-300' : 'text-gray-600'} mb-2">{t('lighting.preview', currentLanguage)}</label>
                 <div class="h-16 rounded-lg border {$darkMode ? 'border-white' : 'border-gray-300'} flex items-center justify-center" 
                      style:background={selectedEffect === 'static' ? staticColor : selectedEffect === 'gradient' ? `linear-gradient(90deg, ${gradientColors.join(', ')})` : $darkMode ? '#374151' : '#f3f4f6'}>
                     {#if selectedEffect === 'rainbow' || selectedEffect === 'spectrum'}
-                        <div class="text-sm {$darkMode ? 'text-gray-300' : 'text-gray-600'}">Animated Effect</div>
+                        <div class="text-sm {$darkMode ? 'text-gray-300' : 'text-gray-600'}">{t('lighting.animatedEffect', currentLanguage)}</div>
                     {:else if selectedEffect === 'reactive' || selectedEffect === 'ripple'}
-                        <div class="text-sm {$darkMode ? 'text-gray-300' : 'text-gray-600'}">Reactive Effect</div>
+                        <div class="text-sm {$darkMode ? 'text-gray-300' : 'text-gray-600'}">{t('lighting.reactiveEffect', currentLanguage)}</div>
                     {/if}
                 </div>
             </div>
