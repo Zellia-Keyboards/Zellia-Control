@@ -135,7 +135,7 @@
 <div
   class="rounded-2xl shadow p-4 mt-2 mb-4 grow {$darkMode
     ? 'border border-gray-600 text-white'
-    : 'text-black'} h-full flex flex-col"
+    : 'text-black'}  flex flex-col"
   style="background-color: {$darkMode
     ? `color-mix(in srgb, var(--theme-color-primary) 5%, black)`
     : `color-mix(in srgb, var(--theme-color-primary) 10%, white)`};"
@@ -175,16 +175,14 @@
                 </button>
             </div>
         </div>
-    </div>
-
-    <!-- Main Content -->
-    <div class="flex-1 p-6">
+    </div>    <!-- Main Content -->
+    <div class="flex-1 p-4 sm:p-6">
         {#if CurrentSelected}
-            <div class="max-w-6xl mx-auto">                <!-- Selected Key Info -->
-                <div class="rounded-lg border p-6 mb-6"
+            <div class="max-w-7xl mx-auto">                <!-- Selected Key Info -->
+                <div class="rounded-lg border p-4 sm:p-6 mb-6"
                      style="background-color: color-mix(in srgb, var(--theme-color-primary) 8%, {$darkMode ? 'black' : 'white'});
                             border-color: color-mix(in srgb, var(--theme-color-primary) 30%, {$darkMode ? 'white' : '#e5e5e5'});">
-                    <div class="flex items-center justify-between">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                         <div class="flex items-center gap-4">
                             <div class="flex items-center gap-3">
                                 <div class="w-12 h-12 rounded-lg flex items-center justify-center border-2"
@@ -208,23 +206,21 @@
                             </div>
                         </div>
                     </div>
-                </div>
-
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                </div>                <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
                     <!-- Configuration Panel -->
-                    <div class="lg:col-span-2 space-y-6">                        <!-- Toggle Action Selection -->
-                        <div class="rounded-lg border p-6"
+                    <div class="xl:col-span-2 space-y-6">                        <!-- Toggle Action Selection -->
+                        <div class="rounded-lg border p-4 sm:p-6"
                              style="background-color: color-mix(in srgb, var(--theme-color-primary) 5%, {$darkMode ? 'black' : 'white'});
                                     border-color: color-mix(in srgb, var(--theme-color-primary) 25%, {$darkMode ? 'white' : '#e5e5e5'});">
                             <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'} mb-4">Toggle Action</h3>
                             
                             <div class="space-y-4">
-                                {#each toggleCategories as category}
-                                    <div>
-                                        <h4 class="text-sm font-medium {$darkMode ? 'text-white' : 'text-gray-700'} ">{category.name}</h4>
-                                        <div class="grid grid-cols-10 gap-2">
-                                            {#each category.actions as action}                                <button
-                                                    class="aspect-square w-15 h-15 text-xs rounded-md border transition-all"
+                                {#each toggleCategories as category}                                    <div>
+                                        <h4 class="text-sm font-medium {$darkMode ? 'text-white' : 'text-gray-700'} mb-2">{category.name}</h4>
+                                        <div class="grid grid-cols-6 sm:grid-cols-8 md:grid-cols-10 lg:grid-cols-12 gap-2">
+                                            {#each category.actions as action}
+                                                <button
+                                                    class="aspect-square min-w-12 text-xs rounded-md border transition-all flex items-center justify-center p-1"
                                                     style="{selectedToggleAction === action.id 
                                                         ? `background-color: var(--theme-color-primary); color: white; border-color: var(--theme-color-primary);`
                                                         : `background-color: ${$darkMode ? 'black' : 'white'}; 
@@ -248,11 +244,12 @@
                                 {/each}
                             </div>
                         </div>                        <!-- Toggle Mode -->
-                        <div class="rounded-lg border p-6"
+                        <div class="rounded-lg border p-4 sm:p-6"
                              style="background-color: color-mix(in srgb, var(--theme-color-primary) 5%, {$darkMode ? 'black' : 'white'});
                                     border-color: color-mix(in srgb, var(--theme-color-primary) 25%, {$darkMode ? 'white' : '#e5e5e5'});">
                             <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'} mb-4">Trigger Mode</h3>
-                              <div class="grid grid-cols-2 gap-4">
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <button
                                     class="p-4 rounded-lg border-2 text-left transition-all"
                                     style="{toggleMode === 'press'
@@ -308,30 +305,33 @@
                                 </button>
                             </div>
                         </div>                        <!-- State Control -->
-                        <div class="rounded-lg border p-6"
+                        <div class="rounded-lg border p-4 sm:p-6"
                              style="background-color: color-mix(in srgb, var(--theme-color-primary) 5%, {$darkMode ? 'black' : 'white'});
                                     border-color: color-mix(in srgb, var(--theme-color-primary) 25%, {$darkMode ? 'white' : '#e5e5e5'});">
                             <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'} mb-4">Initial State</h3>
-                              <div class="flex items-center justify-between p-4 rounded-lg"
+                            
+                            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-lg"
                                  style="background-color: color-mix(in srgb, var(--theme-color-primary) 8%, {$darkMode ? 'black' : 'white'});">
-                                <div>
+                                <div class="flex-1">
                                     <div class="font-medium {$darkMode ? 'text-white' : 'text-gray-900'}">Toggle State</div>
                                     <div class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'}">Set the initial state for this toggle key</div>
-                                </div>                                <button
-                                    class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2"
-                                    style="background-color: {toggleState ? 'var(--theme-color-primary)' : ($darkMode ? '#4b5563' : '#d1d5db')}; 
-                                           focus:ring-color: var(--theme-color-primary);"
-                                    on:click={() => toggleState = !toggleState}
-                                >
-                                    <span class="inline-block h-4 w-4 transform rounded-full {toggleState ? ($darkMode ? 'bg-black' : 'bg-white') : 'bg-white'} transition-transform shadow-sm {toggleState ? 'translate-x-6' : 'translate-x-1'}"></span>
-                                </button>
+                                </div>                                <div class="flex-shrink-0">
+                                    <button
+                                        class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2"
+                                        style="background-color: {toggleState ? 'var(--theme-color-primary)' : ($darkMode ? '#4b5563' : '#d1d5db')}; 
+                                               focus:ring-color: var(--theme-color-primary);"
+                                        on:click={() => toggleState = !toggleState}
+                                    >
+                                        <span class="inline-block h-4 w-4 transform rounded-full {toggleState ? ($darkMode ? 'bg-black' : 'bg-white') : 'bg-white'} transition-transform shadow-sm {toggleState ? 'translate-x-6' : 'translate-x-1'}"></span>
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
 
                     <!-- Preview Panel -->
                     <div class="space-y-6">                        <!-- Live Preview -->
-                        <div class="rounded-lg border p-6"
+                        <div class="rounded-lg border p-4 sm:p-6"
                              style="background-color: color-mix(in srgb, var(--theme-color-primary) 5%, {$darkMode ? 'black' : 'white'});
                                     border-color: color-mix(in srgb, var(--theme-color-primary) 25%, {$darkMode ? 'white' : '#e5e5e5'});">
                             <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'} mb-4">Preview</h3>
