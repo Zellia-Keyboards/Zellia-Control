@@ -14,23 +14,22 @@
   let startTime = 0;
 
   let CurrentSelected= $state<[number, number] | null> (null);
-  
-  //test data to check
+    //test data to check
   function generateTestData() {
     const data = [];
     const duration = 30000;
     const sampleRate = 100;
     
     for (let i = 0; i < duration; i += 10) {
-      let distance = 3.4;
+      let distance = 4.0;
       
       if (Math.random() < 0.02) {
-        const pressDepth = Math.random() * 3.4;
-        distance = 3.4 - pressDepth;
+        const pressDepth = Math.random() * 4.0;
+        distance = 4.0 - pressDepth;
       }
       
       distance += (Math.random() - 0.5) * 0.05;
-      distance = Math.max(0, Math.min(3.4, distance));
+      distance = Math.max(0, Math.min(4.0, distance));
       
       data.push({
         x: i,
@@ -151,11 +150,10 @@
               },
               grid: {
                 color: $darkMode ? '#374151' : '#e5e7eb'
-              }
-            },
+              }            },
             y: {
               min: 0,
-              max: 3.4,
+              max: 4.0,
               reverse: true,
               title: {
                 display: true,
@@ -198,7 +196,7 @@
                 },
                 y: {
                   min: 0,
-                  max: 3.4
+                  max: 4.0
                 }
               }
             }
