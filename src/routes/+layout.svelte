@@ -275,7 +275,5 @@
     :global(html) {
         background-color: theme(--color-gray-50);
         --theme-color-primary: #6366F1; /* Default Indigo, will be overridden */
-    }    :global(html.dark) {
-        background-color: #000000; /* Ensure body background for dark mode is pure black */
     }
 </style>
