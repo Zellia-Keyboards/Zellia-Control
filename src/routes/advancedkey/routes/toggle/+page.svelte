@@ -127,6 +127,7 @@
   onClick={(x, y, event) => {
     console.log(`Key clicked at (${x}, ${y})`, event);
   }}
+  bind:currentSelectedKey={CurrentSelected}
 >
   {#snippet body(x, y)}
   {/snippet}
