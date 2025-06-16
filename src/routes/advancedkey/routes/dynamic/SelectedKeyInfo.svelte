@@ -1,11 +1,19 @@
 <script lang="ts">
 	import { darkMode } from '$lib/DarkModeStore.svelte';
+	import { language, t } from '$lib/LanguageStore.svelte';
 
 	type Props = {
 		currentKeyName: string;
 		currentSelectedCoords: [number, number] | null;
 	};
 	let { currentKeyName, currentSelectedCoords }: Props = $props();
+	
+	let currentLanguage = $state($language);
+	
+	// Subscribe to language changes
+	language.subscribe(value => {
+		currentLanguage = value;
+	});
 </script>
 
 <div
@@ -28,13 +36,12 @@
 						>{currentKeyName}</span
 					>
 				</div>
-				<div>
-					<h3
+				<div>					<h3
 						class="font-medium {$darkMode
 							? 'text-white'
 							: 'text-gray-900'}"
 					>
-						Selected Key
+						{t('advancedkey.selectedKey', currentLanguage)}
 					</h3>
 					{#if currentSelectedCoords}
 						<p
@@ -42,24 +49,23 @@
 								? 'text-gray-400'
 								: 'text-gray-500'}"
 						>
-							Position: {currentSelectedCoords[0]}, {currentSelectedCoords[1]}
+							{t('advancedkey.position', currentLanguage)}: {currentSelectedCoords[0]}, {currentSelectedCoords[1]}
 						</p>
 					{/if}
 				</div>
 			</div>
-		</div>
-		<div class="flex items-center gap-3">
+		</div>		<div class="flex items-center gap-3">
 			<span
 				class="text-sm {$darkMode
 					? 'text-gray-400'
-					: 'text-gray-600'}">Mode:</span
+					: 'text-gray-600'}">{t('advancedkey.mode', currentLanguage)}:</span
 			>			<span
 				class="px-3 py-1 rounded-full text-sm font-medium border"
 				style="background-color: color-mix(in srgb, var(--theme-color-primary) 20%, {$darkMode ? 'black' : 'white'});
 				       color: {$darkMode ? 'white' : 'var(--theme-color-primary)'};
 				       border-color: color-mix(in srgb, var(--theme-color-primary) 40%, {$darkMode ? 'white' : '#e5e5e5'});"
 			>
-				Dynamic Keystroke
+				{t('advancedkey.dynamicKeystroke', currentLanguage)}
 			</span>
 		</div>
 	</div>

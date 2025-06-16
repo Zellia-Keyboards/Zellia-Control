@@ -421,7 +421,7 @@
                          style="background-color: color-mix(in srgb, var(--theme-color-primary) 15%, white);
                                 border-color: color-mix(in srgb, var(--theme-color-primary) 40%, #e5e5e5);
                                 color: color-mix(in srgb, var(--theme-color-primary) 80%, black);">
-                        <strong>Tip:</strong> Toggle keys are perfect for Caps Lock, Num Lock, or creating custom modifier states
+                        <strong>{t('advancedkey.tip', currentLanguage)}:</strong> {t('advancedkey.toggleTip', currentLanguage)}
                     </div>
                 </div>
             </div>        {/if}

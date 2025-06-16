@@ -13,13 +13,13 @@
 
 
 	type ConfiguredDynamicKeyEntry = [string, DynamicKeystrokeConfiguration];
-
 	type Props = {
 		configuredDynamicKeys: ConfiguredDynamicKeyEntry[];
 		KeyboardDisplayValues: typeof KeyboardDisplayValuesType; // Store type
+		resetAllDynamicKeys?: () => void; // Optional reset function
 	};
 
-	let { configuredDynamicKeys, KeyboardDisplayValues }: Props = $props();
+	let { configuredDynamicKeys, KeyboardDisplayValues, resetAllDynamicKeys }: Props = $props();
 	const KDisplayValues = $state.snapshot($KeyboardDisplayValues); // Get static snapshot for display
 </script>
 
@@ -27,22 +27,31 @@
 		<div
 			class="rounded-lg border p-6"
 			style="background-color: color-mix(in srgb, var(--theme-color-primary) 5%, ${$darkMode ? 'black' : 'white'}); border-color: ${$darkMode ? 'color-mix(in srgb, var(--theme-color-primary) 20%, #374151)' : 'color-mix(in srgb, var(--theme-color-primary) 15%, #e5e7eb)'};"
-		>
-			<div class="flex items-center justify-between mb-4">				<h3
+		>			<div class="flex items-center justify-between mb-4">				<h3
 					class="text-lg font-medium {$darkMode
 						? 'text-white'
 						: 'text-gray-900'}"
 				>
 					{t('advancedkey.configuredDynamicKeys', currentLanguage)}
 				</h3>
-				<span
-					class="text-sm {$darkMode
-						? 'text-gray-400'
-						: 'text-gray-500'}"
-					>{configuredDynamicKeys.length} {configuredDynamicKeys.length !== 1
-						? t('advancedkey.keysCountPlural', currentLanguage)
-						: t('advancedkey.keysCount', currentLanguage)}</span
-				>
+				<div class="flex items-center gap-2">
+					<span
+						class="text-sm {$darkMode
+							? 'text-gray-400'
+							: 'text-gray-500'}"
+						>{configuredDynamicKeys.length} {configuredDynamicKeys.length !== 1
+							? t('advancedkey.keysCountPlural', currentLanguage)
+							: t('advancedkey.keysCount', currentLanguage)}</span
+					>
+					{#if resetAllDynamicKeys}
+						<button 
+							class="px-4 py-2 {$darkMode ? 'bg-red-700 hover:bg-red-600' : 'bg-red-600 hover:bg-red-700'} text-white rounded-md transition-colors text-sm font-medium"
+							onclick={resetAllDynamicKeys}
+						>
+							{t('advancedkey.resetAllDynamic', currentLanguage)}
+						</button>
+					{/if}
+				</div>
 			</div>
 			<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
 				{#each configuredDynamicKeys as [keyId, config]}
