@@ -2,7 +2,12 @@
     import { goto } from '$app/navigation';
     import { darkMode } from '$lib/DarkModeStore.svelte';
     import NewZellia80He from '$lib/NewZellia80HE.svelte';
-    import { Zap, RotateCcw, Settings, Target } from 'lucide-svelte';    // Available advanced key modes
+    import { Zap, RotateCcw, Settings, Target } from 'lucide-svelte';
+    
+    // Add the missing state variable
+    let currentSelectedKey = $state<[number, number] | null>(null);
+    
+    // Available advanced key modes
     const keyModes = [
         {
             id: 'tap-hold',
@@ -68,6 +73,7 @@
   onClick={(x, y, event) => {
     console.log(`Key clicked at (${x}, ${y})`, event);
   }}
+  bind:currentSelectedKey={currentSelectedKey}
 >
   {#snippet body(x, y)}
   {/snippet}
