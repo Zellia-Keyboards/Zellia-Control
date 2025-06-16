@@ -1,7 +1,15 @@
 <script lang="ts">
     import { darkMode } from "$lib/DarkModeStore.svelte";
+    import { language, t } from '$lib/LanguageStore.svelte';
     import { AlertTriangle } from 'lucide-svelte';
     
+    let currentLanguage = $state($language);
+    
+    // Subscribe to language changes
+    language.subscribe(value => {
+        currentLanguage = value;
+    });
+
     // Add actuation point state
     let actuationPoint = $state(1.5);
 </script>
@@ -54,7 +62,7 @@
         
         <!-- Dual input: Text input -->
         <div class="flex items-center gap-2 mb-2">
-            <span class="text-xs {$darkMode ? 'text-gray-400' : 'text-gray-500'}">Direct input:</span>            <input 
+            <span class="text-xs {$darkMode ? 'text-gray-400' : 'text-gray-500'}">{t('performance.directInput', currentLanguage)}:</span>            <input 
                 type="number" 
                 min="0.01" 
                 max="3.5" 

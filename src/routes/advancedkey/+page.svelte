@@ -3,65 +3,72 @@
     import { darkMode } from '$lib/DarkModeStore.svelte';
     import NewZellia80He from '$lib/NewZellia80HE.svelte';
     import { Zap, RotateCcw, Settings, Target } from 'lucide-svelte';
+    import { language, t } from '$lib/LanguageStore.svelte';
+    
+    let currentLanguage = $state($language);
+    
+    // Subscribe to language changes
+    language.subscribe(value => {
+        currentLanguage = value;
+    });
     
     // Add the missing state variable
     let currentSelectedKey = $state<[number, number] | null>(null);
-    
-    // Available advanced key modes
-    const keyModes = [
+      // Available advanced key modes
+    const keyModes = $derived([
         {
             id: 'tap-hold',
-            name: 'Tap Hold',
-            description: 'Different actions for tap vs hold',
+            name: t('advancedkey.tapHold', currentLanguage),
+            description: t('advancedkey.tapHoldDesc', currentLanguage),
             icon: Zap,
             path: '/advancedkey/routes/tap-hold',
             features: [
-                'Quick tap action',
-                'Hold action with configurable delay',
-                'Perfect for modifier keys',
-                'Customizable timing'
+                t('advancedkey.tapHoldFeature1', currentLanguage),
+                t('advancedkey.tapHoldFeature2', currentLanguage),
+                t('advancedkey.tapHoldFeature3', currentLanguage),
+                t('advancedkey.tapHoldFeature4', currentLanguage)
             ]
         },
         {
             id: 'toggle',
-            name: 'Toggle',
-            description: 'Toggle between two states',
+            name: t('advancedkey.toggle', currentLanguage),
+            description: t('advancedkey.toggleDesc', currentLanguage),
             icon: RotateCcw,
             path: '/advancedkey/routes/toggle',
             features: [
-                'Toggle on press or release',
-                'Perfect for Caps Lock behavior',
-                'State persistence',
-                'Visual feedback'
+                t('advancedkey.toggleFeature1', currentLanguage),
+                t('advancedkey.toggleFeature2', currentLanguage),
+                t('advancedkey.toggleFeature3', currentLanguage),
+                t('advancedkey.toggleFeature4', currentLanguage)
             ]
         },
         {
             id: 'dynamic',
-            name: 'Dynamic Key Stroke',
-            description: 'Interactive keystroke configuration',
+            name: t('advancedkey.dynamic', currentLanguage),
+            description: t('advancedkey.dynamicDesc', currentLanguage),
             icon: Settings,
             path: '/advancedkey/routes/dynamic',
             features: [
-                '4-phase keystroke control',
-                'Analog input response',
-                'Multiple key bindings',
-                'Advanced customization'
+                t('advancedkey.dynamicFeature1', currentLanguage),
+                t('advancedkey.dynamicFeature2', currentLanguage),
+                t('advancedkey.dynamicFeature3', currentLanguage),
+                t('advancedkey.dynamicFeature4', currentLanguage)
             ]
         },
         {
             id: 'null-bind',
-            name: 'Null Bind',
-            description: 'Rapid trigger with SOCD cleaning',
+            name: t('advancedkey.nullBind', currentLanguage),
+            description: t('advancedkey.nullBindDesc', currentLanguage),
             icon: Target,
             path: '/advancedkey/routes/nullbind',
             features: [
-                'Rapid trigger technology',
-                'SOCD (Simultaneous Opposing Cardinal Directions)',
-                'Perfect for gaming',
-                'Ultra-responsive input'
+                t('advancedkey.nullBindFeature1', currentLanguage),
+                t('advancedkey.nullBindFeature2', currentLanguage),
+                t('advancedkey.nullBindFeature3', currentLanguage),
+                t('advancedkey.nullBindFeature4', currentLanguage)
             ]
         }
-    ];
+    ]);
 
     function navigateToMode(path: string): void {
         goto(path);
@@ -87,39 +94,37 @@
     : `color-mix(in srgb, var(--theme-color-primary) 10%, white)`};"
 >
     <div class="flex items-center justify-between mb-6">
-        <div>
-            <h2 class="text-3xl font-bold {$darkMode ? 'text-white' : 'text-gray-900'}">Advanced Keys</h2>
-            <p class="{$darkMode ? 'text-gray-300' : 'text-gray-600'} mt-2">Configure advanced keyboard behaviors for enhanced productivity</p>
+        <div>            <h2 class="text-3xl font-bold {$darkMode ? 'text-white' : 'text-gray-900'}">{t('advancedkey.title', currentLanguage)}</h2>
+            <p class="{$darkMode ? 'text-gray-300' : 'text-gray-600'} mt-2">{t('advancedkey.subtitle', currentLanguage)}</p>
         </div>
     </div>
     <!-- Getting Started Section -->        
         <div class="mt-6 rounded-xl p-6 border mb-4"
              style="background: {$darkMode ? 'color-mix(in srgb, var(--theme-color-primary) 8%, #111827)' : 'color-mix(in srgb, var(--theme-color-primary) 5%, #f9fafb)'};
-                    border-color: {$darkMode ? 'color-mix(in srgb, var(--theme-color-primary) 15%, #374151)' : 'color-mix(in srgb, var(--theme-color-primary) 10%, #e5e7eb)'};">
-            <h3 class="text-lg font-semibold {$darkMode ? 'text-white' : 'text-gray-900'} mb-3">Getting Started</h3>
+                    border-color: {$darkMode ? 'color-mix(in srgb, var(--theme-color-primary) 15%, #374151)' : 'color-mix(in srgb, var(--theme-color-primary) 10%, #e5e7eb)'};">            <h3 class="text-lg font-semibold {$darkMode ? 'text-white' : 'text-gray-900'} mb-3">{t('advancedkey.gettingStarted', currentLanguage)}</h3>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                 <div class="flex items-start gap-3">
                     <div class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white"
                          style="background-color: var(--theme-color-primary);">1</div>
                     <div>
-                        <div class="font-medium {$darkMode ? 'text-white' : 'text-gray-900'}">Select a Mode</div>
-                        <div class="{$darkMode ? 'text-gray-300' : 'text-gray-600'}">Choose the advanced key behavior you want to configure</div>
+                        <div class="font-medium {$darkMode ? 'text-white' : 'text-gray-900'}">{t('advancedkey.step1Title', currentLanguage)}</div>
+                        <div class="{$darkMode ? 'text-gray-300' : 'text-gray-600'}">{t('advancedkey.step1Desc', currentLanguage)}</div>
                     </div>
                 </div>
                 <div class="flex items-start gap-3">
                     <div class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white"
                          style="background-color: var(--theme-color-primary);">2</div>
                     <div>
-                        <div class="font-medium {$darkMode ? 'text-white' : 'text-gray-900'}">Select Keys</div>
-                        <div class="{$darkMode ? 'text-gray-300' : 'text-gray-600'}">Click on keys in the keyboard layout to configure them</div>
+                        <div class="font-medium {$darkMode ? 'text-white' : 'text-gray-900'}">{t('advancedkey.step2Title', currentLanguage)}</div>
+                        <div class="{$darkMode ? 'text-gray-300' : 'text-gray-600'}">{t('advancedkey.step2Desc', currentLanguage)}</div>
                     </div>
                 </div>
                 <div class="flex items-start gap-3">
                     <div class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white"
                          style="background-color: var(--theme-color-primary);">3</div>
                     <div>
-                        <div class="font-medium {$darkMode ? 'text-white' : 'text-gray-900'}">Apply Settings</div>
-                        <div class="{$darkMode ? 'text-gray-300' : 'text-gray-600'}">Save your configuration to the keyboard</div>
+                        <div class="font-medium {$darkMode ? 'text-white' : 'text-gray-900'}">{t('advancedkey.step3Title', currentLanguage)}</div>
+                        <div class="{$darkMode ? 'text-gray-300' : 'text-gray-600'}">{t('advancedkey.step3Desc', currentLanguage)}</div>
                     </div>
                 </div>
             </div>
@@ -165,14 +170,9 @@
                         </div>
                     </button>
                 </div>
-            {/each}        </div>
-
-
-        <!-- Info Section -->
-        <div class="mt-4 text-center {$darkMode ? 'text-gray-300' : 'text-gray-600'}">
+            {/each}        </div>        <div class="mt-4 text-center {$darkMode ? 'text-gray-300' : 'text-gray-600'}">
             <p class="text-sm">
-                Advanced key configurations allow you to customize how individual keys behave beyond standard typing.
-                Each mode offers unique functionality to enhance your keyboard experience.
+                {t('advancedkey.infoDesc', currentLanguage)}
             </p>
         </div>
     </div>

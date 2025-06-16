@@ -2,7 +2,10 @@
   import { darkMode } from '$lib/DarkModeStore.svelte';
   import { browser } from '$app/environment';
   import { onMount } from 'svelte';
-    import NewZellia80He from '$lib/NewZellia80HE.svelte';
+  import NewZellia80He from '$lib/NewZellia80HE.svelte';
+  import { language, t } from '$lib/LanguageStore.svelte';
+  
+  let currentLanguage = $state($language);
   
   let keyPressReporting = false;
   let isTracking = false;
@@ -12,7 +15,6 @@
   let trackingData: { x: number; y: number }[] = [];
   let trackingInterval: NodeJS.Timeout | null = null;
   let startTime = 0;
-
   let CurrentSelected= $state<[number, number] | null> (null);
     //test data to check
   function generateTestData() {
@@ -39,11 +41,15 @@
     
     return data;
   }
-  
-  $effect(() => {if (CurrentSelected) {
+    $effect(() => {if (CurrentSelected) {
     const keyPosition = `${CurrentSelected[0]},${CurrentSelected[1]}`;
     selectedKeyName = `Key ${keyPosition}`;
   }})
+
+  // Subscribe to language changes
+  language.subscribe(value => {
+    currentLanguage = value;
+  });
   
   function handleReset() {
 
@@ -117,10 +123,9 @@
       if (!ctx) return;
 
       chart = new Chart.default(ctx, {
-        type: 'line',
-        data: {
+        type: 'line',        data: {
           datasets: [{
-            label: 'Key Distance',
+            label: t('debug.keyDistance', currentLanguage),
             data: [],
             borderColor: 'rgb(34, 197, 94)',
             backgroundColor: 'rgba(34, 197, 94, 0.1)',
@@ -139,10 +144,9 @@
               type: 'linear',
               position: 'bottom',
               min: 0,
-              max: 30000,
-              title: {
+              max: 30000,              title: {
                 display: true,
-                text: 'Time (ms)',
+                text: t('debug.timeLabel', currentLanguage),
                 color: $darkMode ? '#9ca3af' : '#6b7280'
               },
               ticks: {
@@ -154,16 +158,14 @@
             y: {
               min: 0,
               max: 4.0,
-              reverse: true,
-              title: {
+              reverse: true,              title: {
                 display: true,
-                text: 'Distance (mm)',
+                text: t('debug.distanceLabel', currentLanguage),
                 color: $darkMode ? '#9ca3af' : '#6b7280'
-              },
-              ticks: {
+              },              ticks: {
                 color: $darkMode ? '#9ca3af' : '#6b7280',
                 callback: function(value) {
-                  return (value as number).toFixed(1) + 'mm';
+                  return (value as number).toFixed(1) + t('units.mm', currentLanguage);
                 }
               },
               grid: {
@@ -245,18 +247,16 @@
   style="background-color: {$darkMode
     ? `color-mix(in srgb, var(--theme-color-primary) 5%, black)`
     : `color-mix(in srgb, var(--theme-color-primary) 10%, white)`};"
->
-  <div class="flex items-center justify-between -mt-4 mb-2">
-    <h2 class="text-2xl font-bold {$darkMode ? 'text-white' : 'text-gray-900'}">Debug</h2>
+>  <div class="flex items-center justify-between -mt-4 mb-2">
+    <h2 class="text-2xl font-bold {$darkMode ? 'text-white' : 'text-gray-900'}">{t('debug.title', currentLanguage)}</h2>
   </div>
   
   <div class="rounded-xl shadow p-6 space-y-8 flex-1 {$darkMode ? 'border-gray-600' : ''}">    <!-- Key Press Reporting -->
     <div class="p-5 rounded-lg border {$darkMode ? 'border-gray-600' : 'border-gray-200'}" 
          style="background-color: {$darkMode
            ? `color-mix(in srgb, var(--theme-color-primary) 5%, black)`
-           : `color-mix(in srgb, var(--theme-color-primary) 10%, white)`};">
-      <div class="flex items-center justify-between mb-2">
-        <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'}">Reports whether key is pressed</h3>
+           : `color-mix(in srgb, var(--theme-color-primary) 10%, white)`};">      <div class="flex items-center justify-between mb-2">
+        <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'}">{t('debug.keyPressReporting', currentLanguage)}</h3>
         <button 
           class="relative inline-flex items-center h-6 rounded-full w-11 transition-colors focus:outline-none"
           aria-label="Key Press Reporting Toggle"
@@ -270,65 +270,61 @@
         </button>
       </div>
       <p class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'}">
-        Allows the keyboard to report whether a key is considered to be pressed. Pressed keys are indicated by the visual above.
+        {t('debug.keyPressReportingDesc', currentLanguage)}
       </p>
     </div>
       <!-- Reset Configuration -->
     <div class="p-5 rounded-lg border {$darkMode ? 'border-gray-600' : 'border-gray-200'}" 
          style="background-color: {$darkMode
            ? `color-mix(in srgb, var(--theme-color-primary) 5%, black)`
-           : `color-mix(in srgb, var(--theme-color-primary) 10%, white)`};">
-      <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'} mb-2">Reset</h3>
+           : `color-mix(in srgb, var(--theme-color-primary) 10%, white)`};">      <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'} mb-2">{t('debug.reset', currentLanguage)}</h3>
       <p class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'} mb-4">
-        Reset the configuration of the device to default. Please wait for about half a minute before unplugging the device to ensure the configuration is saved.
+        {t('debug.resetDesc', currentLanguage)}
       </p>
       <button 
         type="button" 
         class="action-button red"
         on:click={handleReset}>
-        Reset
+        {t('debug.resetButton', currentLanguage)}
       </button>
     </div>
       <!-- Recovery Mode -->
     <div class="p-5 rounded-lg border {$darkMode ? 'border-gray-600' : 'border-gray-200'}" 
          style="background-color: {$darkMode
            ? `color-mix(in srgb, var(--theme-color-primary) 5%, black)`
-           : `color-mix(in srgb, var(--theme-color-primary) 10%, white)`};">
-      <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'} mb-2">Reboot to Recovery Mode</h3>
+           : `color-mix(in srgb, var(--theme-color-primary) 10%, white)`};">      <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'} mb-2">{t('debug.recoveryMode', currentLanguage)}</h3>
       <p class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'} mb-4">
-        Reboot the device into recovery mode. Normally, you don't need to use this. If triggered by mistake, simply reconnect the device to recover.
+        {t('debug.recoveryModeDesc', currentLanguage)}
       </p>
       <button 
         type="button" 
         class="action-button purple"
         on:click={handleRebootRecovery}>
-        Reboot to Recovery Mode
+        {t('debug.recoveryModeButton', currentLanguage)}
       </button>
     </div>
       <!-- Key Tracking Section -->
     <div class="p-5 rounded-lg border {$darkMode ? 'border-gray-600' : 'border-gray-200'}" 
          style="background-color: {$darkMode
            ? `color-mix(in srgb, var(--theme-color-primary) 5%, black)`
-           : `color-mix(in srgb, var(--theme-color-primary) 10%, white)`};">
-      <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'} mb-4">Key Tracking</h3>
+           : `color-mix(in srgb, var(--theme-color-primary) 10%, white)`};">      <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'} mb-4">{t('debug.keyTracking', currentLanguage)}</h3>
       <p class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'} mb-4">
-        Track the pressing distance of a key in real time and visualize it in a chart for observation and analysis.
+        {t('debug.keyTrackingDesc', currentLanguage)}
       </p>
       
       <div class="flex items-start gap-4 mb-4">
         <!-- Left column: controls -->
-        <div class="flex flex-col gap-3 min-w-[200px]">
-          <!-- Select Key -->
+        <div class="flex flex-col gap-3 min-w-[200px]">          <!-- Select Key -->
           <button 
             type="button"
             class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
             on:click={scrollToKeyboard}>
-            Select Key
+            {t('debug.selectKey', currentLanguage)}
           </button>
           
           <!-- Selected key display -->
           <div class="text-sm {$darkMode ? 'text-gray-300' : 'text-gray-700'}">
-            {selectedKeyName ? `Selected: ${selectedKeyName}` : 'No key selected'}
+            {selectedKeyName ? `${t('debug.selectedKey', currentLanguage)}: ${selectedKeyName}` : t('debug.noKeySelected', currentLanguage)}
           </div>
           
           <!-- Start/Stop Tracking -->
@@ -339,7 +335,7 @@
               on:click={startTracking}
               disabled={!selectedKeyName}
             >
-              Start Tracking (30s)
+              {t('debug.startTracking', currentLanguage)}
             </button>
           {:else}
             <button
@@ -347,17 +343,16 @@
               class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
               on:click={stopTracking}
             >
-              Stop Tracking
+              {t('debug.stopTracking', currentLanguage)}
             </button>
           {/if}
-          
-          <!-- Clear button -->
+            <!-- Clear button -->
           <button
             type="button"
             class="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700 transition-colors"
             on:click={clearChart}
           >
-            Clear
+            {t('debug.clearChart', currentLanguage)}
           </button>
         </div>        <!-- Right column: chart -->
         <div class="flex-1 min-h-[400px]">

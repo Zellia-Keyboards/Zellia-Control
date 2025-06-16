@@ -1,14 +1,19 @@
-<script lang="ts">
-    import { goto } from '$app/navigation';
-    import {  KeyboardDisplayValues } from "$lib/KeyboardState.svelte";
-    import { darkMode } from '$lib/DarkModeStore.svelte';
+<script lang="ts">    import { goto } from '$app/navigation';
+    import {  KeyboardDisplayValues } from "$lib/KeyboardState.svelte";    import { darkMode } from '$lib/DarkModeStore.svelte';
+    import { language, t, tPlaceholder } from '$lib/LanguageStore.svelte';
     import { 
         globalConfigurations,
         updateGlobalConfiguration, 
         resetGlobalConfiguration,
         keyActions,
-        type KeyConfiguration 
-    } from "$lib/AdvancedKeyShared";
+        type KeyConfiguration    } from "$lib/AdvancedKeyShared";
+
+    let currentLanguage = $state($language);
+    
+    // Subscribe to language changes
+    language.subscribe(value => {
+        currentLanguage = value;
+    });
     import NewZellia80He from '$lib/NewZellia80HE.svelte';
 
     let selectedToggleAction = $state('caps');
@@ -148,12 +153,11 @@
                 >
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-                    </svg>
-                    Back
+                    </svg>                    {t('advancedkey.backToAdvanced', currentLanguage)}
                 </button>
                 <div>
-                    <h1 class="text-xl font-semibold {$darkMode ? 'text-white' : 'text-gray-900'}">Toggle Key Configuration</h1>
-                    <p class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-500'}">Configure keys to toggle between states</p>
+                    <h1 class="text-xl font-semibold {$darkMode ? 'text-white' : 'text-gray-900'}">{t('advancedkey.toggleTitle', currentLanguage)}</h1>
+                    <p class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-500'}">{t('advancedkey.toggleSubtitle', currentLanguage)}</p>
                 </div>
             </div>            <div class="flex gap-3">
                 <button 
@@ -162,14 +166,13 @@
                            {!(CurrentSelected) ? '' : 'hover:background-color: color-mix(in srgb, var(--theme-color-primary) 85%, black);'}"
                     onclick={applyConfiguration}
                     disabled={!CurrentSelected}
-                >
-                    Apply
+                >                    {t('advancedkey.applyConfiguration', currentLanguage)}
                 </button>
                 <button 
                     class="px-4 py-2 {$darkMode ? 'bg-red-700 hover:bg-red-600' : 'bg-red-600 hover:bg-red-700'} text-white rounded-md transition-colors text-sm font-medium"
                     onclick={resetAllToggleKeys}
                 >
-                    Reset All
+                    {t('advancedkey.resetAllToggle', currentLanguage)}
                 </button>
             </div>
         </div>
@@ -194,12 +197,11 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="flex items-center gap-3">
-                            <span class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'}">Current State:</span>
+                        <div class="flex items-center gap-3">                            <span class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'}">{t('advancedkey.toggleState', currentLanguage)}:</span>
                             <div class="flex items-center gap-2">
                                 <div class="w-2 h-2 rounded-full {toggleState ? 'bg-green-500' : 'bg-gray-400'}"></div>
                                 <span class="text-sm font-medium {toggleState ? 'text-green-700' : ($darkMode ? 'text-gray-400' : 'text-gray-600')}">
-                                    {toggleState ? 'Active' : 'Inactive'}
+                                    {toggleState ? t('advancedkey.enabled', currentLanguage) : t('advancedkey.disabled', currentLanguage)}
                                 </span>
                             </div>
                         </div>
@@ -210,7 +212,7 @@
                         <div class="rounded-lg border p-4 sm:p-6"
                              style="background-color: color-mix(in srgb, var(--theme-color-primary) 5%, {$darkMode ? 'black' : 'white'});
                                     border-color: color-mix(in srgb, var(--theme-color-primary) 25%, {$darkMode ? 'white' : '#e5e5e5'});">
-                            <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'} mb-4">Toggle Action</h3>
+                            <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'} mb-4">{t('advancedkey.toggleAction', currentLanguage)}</h3>
                             
                             <div class="space-y-4">
                                 {#each toggleCategories as category}                                    <div>
@@ -245,7 +247,7 @@
                         <div class="rounded-lg border p-4 sm:p-6"
                              style="background-color: color-mix(in srgb, var(--theme-color-primary) 5%, {$darkMode ? 'black' : 'white'});
                                     border-color: color-mix(in srgb, var(--theme-color-primary) 25%, {$darkMode ? 'white' : '#e5e5e5'});">
-                            <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'} mb-4">Trigger Mode</h3>
+                            <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'} mb-4">{t('advancedkey.toggleMode', currentLanguage)}</h3>
                             
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <button
@@ -269,10 +271,9 @@
                                             {#if toggleMode === 'press'}
                                                 <div class="w-2 h-2 {$darkMode ? 'bg-black' : 'bg-white'} rounded-full m-0.5"></div>
                                             {/if}
-                                        </div>
-                                        <span class="font-medium {$darkMode ? 'text-white' : 'text-gray-900'}">On Press</span>
+                                        </div>                                        <span class="font-medium {$darkMode ? 'text-white' : 'text-gray-900'}">{t('advancedkey.onPress', currentLanguage)}</span>
                                     </div>
-                                    <p class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'}">Toggle when key is pressed down</p>
+                                    <p class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'}">{t('advancedkey.toggleModeDesc', currentLanguage)}</p>
                                 </button>
                                 
                                 <button
@@ -296,23 +297,21 @@
                                             {#if toggleMode === 'release'}
                                                 <div class="w-2 h-2 {$darkMode ? 'bg-black' : 'bg-white'} rounded-full m-0.5"></div>
                                             {/if}
-                                        </div>
-                                        <span class="font-medium {$darkMode ? 'text-white' : 'text-gray-900'}">On Release</span>
+                                        </div>                                        <span class="font-medium {$darkMode ? 'text-white' : 'text-gray-900'}">{t('advancedkey.onRelease', currentLanguage)}</span>
                                     </div>
-                                    <p class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'}">Toggle when key is released</p>
+                                    <p class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'}">{t('advancedkey.toggleModeDesc', currentLanguage)}</p>
                                 </button>
                             </div>
                         </div>                        <!-- State Control -->
                         <div class="rounded-lg border p-4 sm:p-6"
                              style="background-color: color-mix(in srgb, var(--theme-color-primary) 5%, {$darkMode ? 'black' : 'white'});
-                                    border-color: color-mix(in srgb, var(--theme-color-primary) 25%, {$darkMode ? 'white' : '#e5e5e5'});">
-                            <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'} mb-4">Initial State</h3>
+                                    border-color: color-mix(in srgb, var(--theme-color-primary) 25%, {$darkMode ? 'white' : '#e5e5e5'});">                            <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'} mb-4">{t('advancedkey.toggleState', currentLanguage)}</h3>
                             
                             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-lg"
                                  style="background-color: color-mix(in srgb, var(--theme-color-primary) 8%, {$darkMode ? 'black' : 'white'});">
                                 <div class="flex-1">
-                                    <div class="font-medium {$darkMode ? 'text-white' : 'text-gray-900'}">Toggle State</div>
-                                    <div class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'}">Set the initial state for this toggle key</div>
+                                    <div class="font-medium {$darkMode ? 'text-white' : 'text-gray-900'}">{t('advancedkey.toggleState', currentLanguage)}</div>
+                                    <div class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'}">{t('advancedkey.toggleStateDesc', currentLanguage)}</div>
                                 </div>                                <div class="flex-shrink-0">
                                     <button
                                         class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2"
@@ -344,24 +343,24 @@
                                     <span class="font-medium" style="color: var(--theme-color-primary);">{keyActions.find(k => k.id === selectedToggleAction)?.name || selectedToggleAction}</span>
                                 </div>
                                 <div class="flex justify-between items-center py-2 border-b {$darkMode ? 'border-gray-600' : 'border-gray-100'}">
-                                    <span class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'}">Trigger</span>
-                                    <span class="font-medium {$darkMode ? 'text-white' : 'text-gray-900'}">{toggleMode === 'press' ? 'On Press' : 'On Release'}</span>
+                                    <span class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'}">Trigger</span>                                    <span class="font-medium {$darkMode ? 'text-white' : 'text-gray-900'}">{toggleMode === 'press' ? t('advancedkey.onPress', currentLanguage) : t('advancedkey.onRelease', currentLanguage)}</span>
                                 </div>
                                 <div class="flex justify-between items-center py-2">
-                                    <span class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'}">State</span>
+                                    <span class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'}">{t('advancedkey.toggleState', currentLanguage)}</span>
                                     <span class="font-medium {toggleState ? 'text-green-600' : ($darkMode ? 'text-gray-400' : 'text-gray-600')}">
-                                        {toggleState ? 'Active' : 'Inactive'}
+                                        {toggleState ? t('advancedkey.enabled', currentLanguage) : t('advancedkey.disabled', currentLanguage)}
                                     </span>
                                 </div>
                             </div>
                         </div>                        <!-- Info Panel -->
                         <div class="border rounded-lg p-6"
                              style="background-color: color-mix(in srgb, var(--theme-color-primary) 12%, {$darkMode ? 'black' : 'white'});
-                                    border-color: color-mix(in srgb, var(--theme-color-primary) 30%, {$darkMode ? 'white' : '#e5e5e5'});">
-                            <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'} mb-2">How it works</h3>
+                                    border-color: color-mix(in srgb, var(--theme-color-primary) 30%, {$darkMode ? 'white' : '#e5e5e5'});">                            <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'} mb-2">{t('advancedkey.howItWorks', currentLanguage)}</h3>
                             <p class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'}">
-                                This key will toggle <strong style="color: var(--theme-color-primary);">{keyActions.find(k => k.id === selectedToggleAction)?.name || selectedToggleAction}</strong> 
-                                {toggleMode === 'press' ? 'when pressed' : 'when released'}. Each trigger will switch between active and inactive states.
+                                {@html tPlaceholder('advancedkey.toggleDescription', currentLanguage, 
+                                    `<strong style="color: var(--theme-color-primary);">${keyActions.find(k => k.id === selectedToggleAction)?.name || selectedToggleAction}</strong>`,
+                                    toggleMode === 'press' ? t('advancedkey.whenPressed', currentLanguage) : t('advancedkey.whenReleased', currentLanguage)
+                                )}
                             </p>
                         </div>                        <!-- Reset Button -->
                         <div class="space-y-4">
@@ -370,7 +369,7 @@
                                 onclick={resetConfiguration}
                                 disabled={!CurrentSelected}
                             >
-                                Reset Key Configuration
+                                {t('advancedkey.resetConfiguration', currentLanguage)}
                             </button>
                         </div>
 
@@ -380,7 +379,7 @@
                                  style="background-color: color-mix(in srgb, var(--theme-color-primary) 8%, {$darkMode ? 'black' : 'white'});
                                         border-color: color-mix(in srgb, var(--theme-color-primary) 25%, {$darkMode ? 'white' : '#e5e5e5'});">
                                 <div class="flex items-center justify-between mb-3">
-                                    <h4 class="text-base font-medium {$darkMode ? 'text-white' : 'text-gray-900'}">Configured Keys</h4>
+                                    <h4 class="text-base font-medium {$darkMode ? 'text-white' : 'text-gray-900'}">{t('advancedkey.configuredToggle', currentLanguage)}</h4>
                                     <span class="text-xs px-2 py-1 rounded-full {$darkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-600'}">{configuredToggleKeys.length}</span>
                                 </div>
                                 <div class="space-y-2 max-h-40 overflow-y-auto">
@@ -417,9 +416,8 @@
                         <svg class="w-12 h-12 {$darkMode ? 'text-gray-400' : 'text-gray-400'}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l4-4 4 4m0 6l-4 4-4-4" />
                         </svg>
-                    </div>
-                    <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'} mb-2">No Key Selected</h3>
-                    <p class="{$darkMode ? 'text-gray-400' : 'text-gray-600'} mb-4">Select a key from the keyboard layout to configure its toggle behavior</p>                    <div class="{$darkMode ? 'bg-blue-50 border-blue-200 text-blue-700' : 'bg-blue-50 border-blue-200 text-blue-700'} border rounded-lg p-4 text-sm"
+                    </div>                    <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'} mb-2">{t('advancedkey.noKeySelected', currentLanguage)}</h3>
+                    <p class="{$darkMode ? 'text-gray-400' : 'text-gray-600'} mb-4">{t('advancedkey.selectKeyToConfig', currentLanguage)}</p><div class="{$darkMode ? 'bg-blue-50 border-blue-200 text-blue-700' : 'bg-blue-50 border-blue-200 text-blue-700'} border rounded-lg p-4 text-sm"
                          style="background-color: color-mix(in srgb, var(--theme-color-primary) 15%, white);
                                 border-color: color-mix(in srgb, var(--theme-color-primary) 40%, #e5e5e5);
                                 color: color-mix(in srgb, var(--theme-color-primary) 80%, black);">

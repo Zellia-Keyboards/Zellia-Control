@@ -2,6 +2,9 @@
   import { darkMode } from "$lib/DarkModeStore.svelte";
   import NewZellia80He from "$lib/NewZellia80HE.svelte";
   import { AlertTriangle } from "lucide-svelte";
+  import { language, t } from '$lib/LanguageStore.svelte';
+
+  let currentLanguage = $state($language);
 
   let ACTUATION_POINT = $state([
     [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
@@ -11,7 +14,6 @@
     [2.25, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1],
     [1.5, 1, 1.5, 2, 1.6, 1, 1.5, 1, 1, 1],
   ]);
-
   let rapidTriggerEnabled = $state(false);
   let continuousRapidTriggerEnabled = $state(false);
   let actuationPoint = $state(2.0);
@@ -20,6 +22,11 @@
   let pressSensitivity = $state(0.5);
   let releaseSensitivity = $state(0.5);
   let keysSelected = $state(0);
+
+  // Subscribe to language changes
+  language.subscribe(value => {
+    currentLanguage = value;
+  });
 </script>
 
 <NewZellia80He
@@ -39,10 +46,9 @@
   style="background-color: {$darkMode
     ? `color-mix(in srgb, var(--theme-color-primary) 5%, black)`
     : `color-mix(in srgb, var(--theme-color-primary) 10%, white)`};"
->
-  <div class="flex items-center justify-between -mt-4 mb-2">
+>  <div class="flex items-center justify-between -mt-4 mb-2">
     <h2 class="text-2xl font-bold {$darkMode ? 'text-white' : 'text-gray-900'}">
-      Performance
+      {t('performance.title', currentLanguage)}
     </h2>
     <div>
       <button
@@ -53,28 +59,29 @@
             "color-mix(in srgb, var(--theme-color-primary) 85%, black)")}
         onmouseout={(e) =>
           ((e.currentTarget as HTMLElement).style.backgroundColor =
-            "var(--theme-color-primary)")}>Select all keys</button
-      >
+            "var(--theme-color-primary)")}>
+        {t('performance.selectAllKeys', currentLanguage)}
+      </button>
       <button
         class="{$darkMode
           ? 'bg-gray-800 hover:bg-gray-700 text-white border border-white'
           : 'bg-gray-200 hover:bg-gray-300 text-gray-600'} px-4 py-2 rounded transition-colors duration-200"
-        >Discard selection</button
-      >
+        >
+        {t('performance.discardSelection', currentLanguage)}
+      </button>
     </div>
   </div>
-  <div class=" rounded-xl shadow p-6 flex flex-col md:flex-row gap-6 flex-1">
-    <!-- 1st Box: Actuation Point -->
+  <div class=" rounded-xl shadow p-6 flex flex-col md:flex-row gap-6 flex-1">    <!-- 1st Box: Actuation Point -->
     <div class="flex-1 min-w-[260px] flex flex-col">
       <h3
         class="text-lg font-medium mb-4 {$darkMode
           ? 'text-white'
           : 'text-gray-900'}"
       >
-        Actuation Point
+        {t('performance.actuationPoint', currentLanguage)}
       </h3>
       <p class="text-sm {$darkMode ? 'text-gray-300' : 'text-gray-600'} mb-4">
-        Set the actuation point for your keys.
+        {t('performance.actuationPointDesc', currentLanguage)}
       </p>
       <div class="mb-2 flex-1">
         <div class="relative">
@@ -83,8 +90,8 @@
               ? 'text-gray-400'
               : 'text-gray-500'} mb-1"
           >
-            <div>ACTUATION POINT</div>
-            <div>{actuationPoint.toFixed(2)} mm</div>
+            <div>{t('performance.actuationPointLabel', currentLanguage)}</div>
+            <div>{actuationPoint.toFixed(2)} {t('units.mm', currentLanguage)}</div>
           </div>
 
           <!-- Warning box for values below 0.3 -->
@@ -95,7 +102,7 @@
                 : 'bg-yellow-50 border-yellow-300 text-yellow-700'} border rounded-md text-xs flex items-center gap-2"
             >
               <AlertTriangle size={14} />
-              the key may be too sensitive, causing instability, please be careful
+              {t('performance.sensitivityWarning', currentLanguage)}
             </div>
           {/if}
 
@@ -115,7 +122,7 @@
           <div class="flex items-center gap-2 mb-2">
             <span
               class="text-xs {$darkMode ? 'text-gray-400' : 'text-gray-500'}"
-              >Direct input:</span
+              >{t('performance.directInput', currentLanguage)}:</span
             >
             <input
               type="number"
@@ -131,22 +138,20 @@
               class="text-xs {$darkMode ? 'text-gray-400' : 'text-gray-500'}"
               >mm</span
             >
-          </div>
-
-          <div
+          </div>          <div
             class="flex justify-between text-sm {$darkMode
               ? 'text-gray-400'
               : 'text-gray-500'} mb-1"
           >
-            <div>HIGH</div>
-            <div>LOW</div>
+            <div>{t('performance.high', currentLanguage)}</div>
+            <div>{t('performance.low', currentLanguage)}</div>
           </div>
         </div>
         <!-- Keys selected indicator -->
         <div
           class="mt-4 {$darkMode ? 'text-white' : 'text-gray-900'} font-medium"
         >
-          {keysSelected} keys selected
+          {keysSelected} {t('performance.keysSelected', currentLanguage)}
         </div>
       </div>
     </div>
@@ -158,13 +163,12 @@
 
     <!-- 2nd Box: Rapid Trigger Toggles (moved from 3rd position) -->
     <div class="flex-1 min-w-[260px] flex flex-col">
-      <div class="flex items-center justify-between mb-4">
-        <h3
+      <div class="flex items-center justify-between mb-4">        <h3
           class="text-lg font-medium {$darkMode
             ? 'text-white'
             : 'text-gray-900'}"
         >
-          Enable Rapid Trigger
+          {t('performance.enableRapidTrigger', currentLanguage)}
         </h3>
         <button
           class="relative inline-flex items-center h-6 rounded-full w-11 transition-colors focus:outline-none"
@@ -182,10 +186,8 @@
             class:translate-x-1={!rapidTriggerEnabled}
           ></span>
         </button>
-      </div>
-      <p class="text-sm {$darkMode ? 'text-gray-300' : 'text-gray-600'} mb-4">
-        Rapid Trigger dynamically actuates and resets your key based on your
-        intention to press or release the key.
+      </div>      <p class="text-sm {$darkMode ? 'text-gray-300' : 'text-gray-600'} mb-4">
+        {t('performance.rapidTriggerDesc', currentLanguage)}
       </p>
       <div class="flex-1">
         {#if rapidTriggerEnabled}
@@ -193,13 +195,12 @@
             class="flex items-center justify-between mb-4 border-t {$darkMode
               ? 'border-white'
               : 'border-gray-200'} pt-4"
-          >
-            <h4
+          >            <h4
               class="text-lg font-medium {$darkMode
                 ? 'text-white'
                 : 'text-gray-900'}"
             >
-              Enable Continuous Rapid Trigger
+              {t('performance.enableContinuousRapidTrigger', currentLanguage)}
             </h4>
             <button
               class="relative inline-flex items-center h-6 rounded-full w-11 transition-colors focus:outline-none"
@@ -219,10 +220,8 @@
                 class:translate-x-1={!continuousRapidTriggerEnabled}
               ></span>
             </button>
-          </div>
-          <p class="text-sm {$darkMode ? 'text-gray-300' : 'text-gray-600'}">
-            When enabled, Rapid Trigger ends when the entire key is released.
-            When disabled, Rapid Trigger ends at the actuation point.
+          </div>          <p class="text-sm {$darkMode ? 'text-gray-300' : 'text-gray-600'}">
+            {t('performance.continuousRapidTriggerFullDesc', currentLanguage)}
           </p>
         {/if}
       </div>
@@ -235,13 +234,12 @@
 
     <!-- 3rd Box: Sensitivity Slider & Toggle (moved from 2nd position) -->
     <div class="flex-1 min-w-[260px] flex flex-col">
-      <div class="flex items-center justify-between mb-4">
-        <h3
+      <div class="flex items-center justify-between mb-4">        <h3
           class="text-lg font-medium {$darkMode
             ? 'text-white'
             : 'text-gray-900'}"
         >
-          Rapid Trigger Sensitivity
+          {t('performance.rapidTriggerSensitivity', currentLanguage)}
         </h3>
         <div class="flex items-center gap-2">
           <span class="text-xs {$darkMode ? 'text-gray-400' : 'text-gray-500'}"
@@ -264,9 +262,8 @@
             ></span>
           </button>
         </div>
-      </div>
-      <p class="text-sm {$darkMode ? 'text-gray-300' : 'text-gray-600'} mb-4">
-        Adjust the sensitivity for rapid trigger.
+      </div>      <p class="text-sm {$darkMode ? 'text-gray-300' : 'text-gray-600'} mb-4">
+        {t('performance.adjustSensitivity', currentLanguage)}
       </p>
       <div class="flex-1">
         {#if separateSensitivity}
@@ -276,7 +273,7 @@
                 ? 'text-gray-400'
                 : 'text-gray-500'} mb-1"
             >
-              <div>PRESS SENSITIVITY</div>
+              <div>{t('performance.pressSensitivityLabel', currentLanguage)}</div>
               <div>{pressSensitivity.toFixed(2)} mm</div>
             </div>
             <input
@@ -287,15 +284,14 @@
               bind:value={pressSensitivity}
               class="w-full h-2 rounded-full {$darkMode
                 ? 'bg-gray-700'
-                : 'bg-gray-300'} appearance-none slider-thumb"
-            />
+                : 'bg-gray-300'} appearance-none slider-thumb"            />
             <div
               class="flex justify-between text-sm {$darkMode
                 ? 'text-gray-400'
                 : 'text-gray-500'} mt-1"
             >
-              <div>HIGH</div>
-              <div>LOW</div>
+              <div>{t('performance.high', currentLanguage)}</div>
+              <div>{t('performance.low', currentLanguage)}</div>
             </div>
           </div>
           <div>
@@ -304,7 +300,7 @@
                 ? 'text-gray-400'
                 : 'text-gray-500'} mb-1"
             >
-              <div>RELEASE SENSITIVITY</div>
+              <div>{t('performance.releaseSensitivityLabel', currentLanguage)}</div>
               <div>{releaseSensitivity.toFixed(2)} mm</div>
             </div>
             <input
@@ -315,15 +311,14 @@
               bind:value={releaseSensitivity}
               class="w-full h-2 rounded-full {$darkMode
                 ? 'bg-gray-700'
-                : 'bg-gray-300'} appearance-none slider-thumb"
-            />
+                : 'bg-gray-300'} appearance-none slider-thumb"            />
             <div
               class="flex justify-between text-sm {$darkMode
                 ? 'text-gray-400'
                 : 'text-gray-500'} mt-1"
             >
-              <div>HIGH</div>
-              <div>LOW</div>
+              <div>{t('performance.high', currentLanguage)}</div>
+              <div>{t('performance.low', currentLanguage)}</div>
             </div>
           </div>
         {:else}
@@ -333,7 +328,7 @@
                 ? 'text-gray-400'
                 : 'text-gray-500'} mb-1"
             >
-              <div>SENSITIVITY</div>
+              <div>{t('performance.sensitivityLabel', currentLanguage)}</div>
               <div>{sensitivityValue.toFixed(2)} mm</div>
             </div>
             <input
@@ -346,13 +341,12 @@
                 ? 'bg-gray-700'
                 : 'bg-gray-300'} appearance-none slider-thumb"
             />
-            <div
-              class="flex justify-between text-sm {$darkMode
+            <div              class="flex justify-between text-sm {$darkMode
                 ? 'text-gray-400'
                 : 'text-gray-500'} mt-1"
             >
-              <div>HIGH</div>
-              <div>LOW</div>
+              <div>{t('performance.high', currentLanguage)}</div>
+              <div>{t('performance.low', currentLanguage)}</div>
             </div>
           </div>
         {/if}

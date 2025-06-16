@@ -1,15 +1,22 @@
 <script lang="ts">
     import { darkMode } from '$lib/DarkModeStore.svelte';
     import { Keyboard, Heart } from 'lucide-svelte';
+    import { language, t } from '$lib/LanguageStore.svelte';
+    
+    let currentLanguage = $state($language);
+    
+    // Subscribe to language changes
+    language.subscribe(value => {
+        currentLanguage = value;
+    });
 </script>
 
 <div class="flex-1 w-full p-6">
-    <div class="max-w-4xl mx-auto">
-        <!-- Header -->
+    <div class="max-w-4xl mx-auto">        <!-- Header -->
         <div class="flex items-center justify-between mb-8">
             <div>
-                <h2 class="text-3xl font-bold {$darkMode ? 'text-white' : 'text-gray-900'}">About Zellia Control</h2>
-                <p class="{$darkMode ? 'text-gray-300' : 'text-gray-600'} mt-2">Hall Effect keyboard configurator</p>
+                <h2 class="text-3xl font-bold {$darkMode ? 'text-white' : 'text-gray-900'}">{t('about.title', currentLanguage)}</h2>
+                <p class="{$darkMode ? 'text-gray-300' : 'text-gray-600'} mt-2">{t('about.subtitle', currentLanguage)}</p>
             </div>
         </div>
 
@@ -24,21 +31,19 @@
                              style="background-color: color-mix(in srgb, var(--theme-color-primary) 15%, {$darkMode ? 'black' : 'white'});">
                             <Keyboard class="w-8 h-8" style="color: var(--theme-color-primary);" />
                         </div>
-                    </div>
-                    <div class="flex-1">
-                        <h3 class="text-xl font-bold {$darkMode ? 'text-white' : 'text-gray-900'} mb-3">Zellia Control</h3>
+                    </div>                    <div class="flex-1">
+                        <h3 class="text-xl font-bold {$darkMode ? 'text-white' : 'text-gray-900'} mb-3">{t('about.appName', currentLanguage)}</h3>
                         <p class="text-sm {$darkMode ? 'text-gray-300' : 'text-gray-600'} mb-4">
-                            A powerful desktop application for configuring Zellia keyboards with Hall Effect switches. 
-                            Built with modern web technologies for cross-platform compatibility and an intuitive user experience.
+                            {t('about.appDescription', currentLanguage)}
                         </p>
                         <div class="flex items-center gap-4 text-sm">
                             <div class="flex items-center gap-2" style="color: var(--theme-color-primary);">
                                 <div class="w-2 h-2 rounded-full" style="background-color: var(--theme-color-primary);"></div>
-                                <span>Version 1.0.0</span>
+                                <span>{t('about.version', currentLanguage)}</span>
                             </div>
                             <div class="flex items-center gap-2 {$darkMode ? 'text-gray-400' : 'text-gray-500'}">
                                 <div class="w-2 h-2 rounded-full {$darkMode ? 'bg-gray-400' : 'bg-gray-400'}"></div>
-                                <span>Built with Tauri & SvelteKit</span>
+                                <span>{t('about.builtWith', currentLanguage)}</span>
                             </div>
                         </div>
                     </div>
@@ -46,74 +51,69 @@
             </div>
 
             <!-- Features Grid -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- Performance Features -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">                <!-- Performance Features -->
                 <div class="rounded-lg border p-6"
                      style="background-color: color-mix(in srgb, var(--theme-color-primary) 5%, {$darkMode ? 'black' : 'white'});
                             border-color: color-mix(in srgb, var(--theme-color-primary) 25%, {$darkMode ? 'white' : '#e5e5e5'});">
-                    <h4 class="text-lg font-semibold {$darkMode ? 'text-white' : 'text-gray-900'} mb-4">Performance</h4>
+                    <h4 class="text-lg font-semibold {$darkMode ? 'text-white' : 'text-gray-900'} mb-4">{t('about.performance', currentLanguage)}</h4>
                     <ul class="space-y-2 text-sm {$darkMode ? 'text-gray-300' : 'text-gray-600'}">
                         <li class="flex items-center gap-2">
                             <div class="w-1.5 h-1.5 rounded-full" style="background-color: var(--theme-color-primary);"></div>
-                            Adjustable actuation points (0-4mm)
+                            {t('about.adjustableActuation', currentLanguage)}
                         </li>
                         <li class="flex items-center gap-2">
                             <div class="w-1.5 h-1.5 rounded-full" style="background-color: var(--theme-color-primary);"></div>
-                            Rapid trigger technology
+                            {t('about.rapidTrigger', currentLanguage)}
                         </li>
                         <li class="flex items-center gap-2">
                             <div class="w-1.5 h-1.5 rounded-full" style="background-color: var(--theme-color-primary);"></div>
-                            Real-time pressure monitoring
+                            {t('about.realtimeMonitoring', currentLanguage)}
                         </li>
                     </ul>
-                </div>
-
-                <!-- Advanced Features -->
+                </div>                <!-- Advanced Features -->
                 <div class="rounded-lg border p-6"
                      style="background-color: color-mix(in srgb, var(--theme-color-primary) 5%, {$darkMode ? 'black' : 'white'});
                             border-color: color-mix(in srgb, var(--theme-color-primary) 25%, {$darkMode ? 'white' : '#e5e5e5'});">
-                    <h4 class="text-lg font-semibold {$darkMode ? 'text-white' : 'text-gray-900'} mb-4">Advanced Keys</h4>
+                    <h4 class="text-lg font-semibold {$darkMode ? 'text-white' : 'text-gray-900'} mb-4">{t('about.advancedKeys', currentLanguage)}</h4>
                     <ul class="space-y-2 text-sm {$darkMode ? 'text-gray-300' : 'text-gray-600'}">
                         <li class="flex items-center gap-2">
                             <div class="w-1.5 h-1.5 rounded-full" style="background-color: var(--theme-color-primary);"></div>
-                            Tap-hold functionality
+                            {t('about.tapHold', currentLanguage)}
                         </li>
                         <li class="flex items-center gap-2">
                             <div class="w-1.5 h-1.5 rounded-full" style="background-color: var(--theme-color-primary);"></div>
-                            Toggle modes
+                            {t('about.toggleModes', currentLanguage)}
                         </li>
                         <li class="flex items-center gap-2">
                             <div class="w-1.5 h-1.5 rounded-full" style="background-color: var(--theme-color-primary);"></div>
-                            Dynamic keystroke control
+                            {t('about.dynamicKeystroke', currentLanguage)}
                         </li>
                         <li class="flex items-center gap-2">
                             <div class="w-1.5 h-1.5 rounded-full" style="background-color: var(--theme-color-primary);"></div>
-                            Null bind with SOCD cleaning
+                            {t('about.nullBind', currentLanguage)}
                         </li>
                     </ul>
-                </div>
-
-                <!-- Customization -->
+                </div>                <!-- Customization -->
                 <div class="rounded-lg border p-6"
                      style="background-color: color-mix(in srgb, var(--theme-color-primary) 5%, {$darkMode ? 'black' : 'white'});
                             border-color: color-mix(in srgb, var(--theme-color-primary) 25%, {$darkMode ? 'white' : '#e5e5e5'});">
-                    <h4 class="text-lg font-semibold {$darkMode ? 'text-white' : 'text-gray-900'} mb-4">Customization</h4>
+                    <h4 class="text-lg font-semibold {$darkMode ? 'text-white' : 'text-gray-900'} mb-4">{t('about.customization', currentLanguage)}</h4>
                     <ul class="space-y-2 text-sm {$darkMode ? 'text-gray-300' : 'text-gray-600'}">
                         <li class="flex items-center gap-2">
                             <div class="w-1.5 h-1.5 rounded-full" style="background-color: var(--theme-color-primary);"></div>
-                            RGB lighting effects
+                            {t('about.rgbLighting', currentLanguage)}
                         </li>
                         <li class="flex items-center gap-2">
                             <div class="w-1.5 h-1.5 rounded-full" style="background-color: var(--theme-color-primary);"></div>
-                            Key remapping
+                            {t('about.keyRemapping', currentLanguage)}
                         </li>
                         <li class="flex items-center gap-2">
                             <div class="w-1.5 h-1.5 rounded-full" style="background-color: var(--theme-color-primary);"></div>
-                            Multiple theme colors
+                            {t('about.multipleThemes', currentLanguage)}
                         </li>
                         <li class="flex items-center gap-2">
                             <div class="w-1.5 h-1.5 rounded-full" style="background-color: var(--theme-color-primary);"></div>
-                            Dark/light mode support
+                            {t('about.darkLightMode', currentLanguage)}
                         </li>
                     </ul>
                 </div>
@@ -122,23 +122,23 @@
                 <div class="rounded-lg border p-6"
                      style="background-color: color-mix(in srgb, var(--theme-color-primary) 5%, {$darkMode ? 'black' : 'white'});
                             border-color: color-mix(in srgb, var(--theme-color-primary) 25%, {$darkMode ? 'white' : '#e5e5e5'});">
-                    <h4 class="text-lg font-semibold {$darkMode ? 'text-white' : 'text-gray-900'} mb-4">Technical</h4>
+                    <h4 class="text-lg font-semibold {$darkMode ? 'text-white' : 'text-gray-900'} mb-4">{t('about.technical', currentLanguage)}</h4>
                     <ul class="space-y-2 text-sm {$darkMode ? 'text-gray-300' : 'text-gray-600'}">
                         <li class="flex items-center gap-2">
                             <div class="w-1.5 h-1.5 rounded-full" style="background-color: var(--theme-color-primary);"></div>
-                            Cross-platform support
+                            {t('about.crossPlatform', currentLanguage)}
                         </li>
                         <li class="flex items-center gap-2">
                             <div class="w-1.5 h-1.5 rounded-full" style="background-color: var(--theme-color-primary);"></div>
-                            Hardware calibration
+                            {t('about.hardwareCalibration', currentLanguage)}
                         </li>
                         <li class="flex items-center gap-2">
                             <div class="w-1.5 h-1.5 rounded-full" style="background-color: var(--theme-color-primary);"></div>
-                            Debug tools
+                            {t('about.debugTools', currentLanguage)}
                         </li>
                         <li class="flex items-center gap-2">
                             <div class="w-1.5 h-1.5 rounded-full" style="background-color: var(--theme-color-primary);"></div>
-                            Profile import/export
+                            {t('about.profileImportExport', currentLanguage)}
                         </li>
                     </ul>
                 </div>

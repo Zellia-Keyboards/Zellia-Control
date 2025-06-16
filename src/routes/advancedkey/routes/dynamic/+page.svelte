@@ -1,8 +1,8 @@
-<script lang="ts">
-	import {
+<script lang="ts">	import {
 		KeyboardDisplayValues,
 	} from "$lib/KeyboardState.svelte";
 	import { darkMode } from "$lib/DarkModeStore.svelte";
+	import { language, t } from '$lib/LanguageStore.svelte';
 	import {
 		globalConfigurations,
 		updateGlobalConfiguration,
@@ -25,6 +25,13 @@
 	import NoKeySelectedDisplay from "./NoKeySelectedDisplay.svelte";
 	import ConfiguredDKSList from "./ConfiguredDKSList.svelte";
 	import NewZellia80He from "$lib/NewZellia80HE.svelte";
+
+	let currentLanguage = $state($language);
+	
+	// Subscribe to language changes
+	language.subscribe(value => {
+		currentLanguage = value;
+	});
 
 	// Define the dynamic keystroke specific configuration type (local usage if different from global)
 	type DynamicKeystrokeConfiguration = {

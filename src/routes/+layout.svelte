@@ -2,31 +2,38 @@
     import "../app.css";
     import Zellia80HE from "../lib/Zellia80HE.svelte";    
     import { KeyboardDisplayValues } from "$lib/KeyboardState.svelte";
-    import { page } from '$app/stores';
-    import { darkMode, selectedThemeColor, themeColors, type ThemeColorName } from '$lib/DarkModeStore.svelte';
-    import {Palette, Sun, Moon} from 'lucide-svelte';   
-     
+    import { page } from '$app/stores';    import { darkMode, selectedThemeColor, themeColors, type ThemeColorName } from '$lib/DarkModeStore.svelte';
+    import { language, t, type Language } from '$lib/LanguageStore.svelte';
+    import {Palette, Sun, Moon, Globe} from 'lucide-svelte';     
     const NAVIGATE = [
-        ["/performance", "Performance"],
-        ["/remap", "Remap"],
-        ["/lighting", "Lighting"],
-        ["/advancedkey", "Advanced Keys"],
-        ["/calibration", "Calibration"],
-        ["/debug", "Debug"],
-        ["/settings", "Settings"],
-        ["/about", "About"],
+        ["/performance", "nav.performance"],
+        ["/remap", "nav.remap"],
+        ["/lighting", "nav.lighting"],
+        ["/advancedkey", "nav.advancedkey"],
+        ["/calibration", "nav.calibration"],
+        ["/debug", "nav.debug"],
+        ["/settings", "nav.settings"],
+        ["/about", "nav.about"],
     ];let { children } = $props();
     let selectedLayer = $state(1);
     let showDropdown = $state(false);
     let showThemeSelector = $state(false);
+    let showLanguageSelector = $state(false);
     let currentTheme = $state<ThemeColorName>('indigo');
+    let currentLanguage = $state<Language>('en');
 
     selectedThemeColor.subscribe(value => {
         currentTheme = value;
     });
 
-    function setTheme(colorName: ThemeColorName) {
+    language.subscribe(value => {
+        currentLanguage = value;
+    });    function setTheme(colorName: ThemeColorName) {
         selectedThemeColor.set(colorName);
+    }
+
+    function setLanguage(lang: Language) {
+        language.set(lang);
     }
 
     // Function to check if a navigation item is active
@@ -68,16 +75,15 @@
             </div>
             
             <!-- Features that require larger screen -->
-            <div class="text-left space-y-3 mb-6">
-                <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'} text-center mb-4">Features requiring larger display:</h3>
+            <div class="text-left space-y-3 mb-6">                <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'} text-center mb-4">{t('ui.featuresRequiringLargerDisplay', currentLanguage)}</h3>
                 <div class="grid grid-cols-1 gap-3">
                     <div class="flex items-center gap-3 text-sm {$darkMode ? 'text-gray-300' : 'text-gray-700'}">
                         <div class="w-1.5 h-1.5 rounded-full {$darkMode ? 'bg-white' : 'bg-indigo-500'}"></div>
-                        <span>Keyboard layout visualization</span>
+                        <span>{t('ui.keyboardLayoutVisualization', currentLanguage)}</span>
                     </div>
                     <div class="flex items-center gap-3 text-sm {$darkMode ? 'text-gray-300' : 'text-gray-700'}">
                         <div class="w-1.5 h-1.5 rounded-full {$darkMode ? 'bg-white' : 'bg-indigo-500'}"></div>
-                        <span>Advanced key configuration panels</span>
+                        <span>{t('ui.advancedKeyConfigPanels', currentLanguage)}</span>
                     </div>
                     <div class="flex items-center gap-3 text-sm {$darkMode ? 'text-gray-300' : 'text-gray-700'}">
                         <div class="w-1.5 h-1.5 rounded-full {$darkMode ? 'bg-white' : 'bg-indigo-500'}"></div>
@@ -96,30 +102,27 @@
 <!-- Main Application (hidden on small screens) -->
 <div class="hidden xl:flex h-screen {$darkMode ? 'bg-black' : 'bg-gray-50'}">
     <!-- Sidebar -->
-    <div class="flex flex-col w-52 {$darkMode ? 'bg-black border-gray-600' : 'bg-white border-gray-200'} shadow-lg h-full overflow-y-auto border-r">
-        <!-- Header -->
+    <div class="flex flex-col w-52 {$darkMode ? 'bg-black border-gray-600' : 'bg-white border-gray-200'} shadow-lg h-full overflow-y-auto border-r">        <!-- Header -->
         <div class="p-4">
-            <h1 class="font-bold text-xl {$darkMode ? 'text-white' : 'text-gray-900'} text-center">Zellia Control</h1>
-        </div>
-          <!-- Sync Button -->
+            <h1 class="font-bold text-xl {$darkMode ? 'text-white' : 'text-gray-900'} text-center">{t('common.zellia', currentLanguage)}</h1>
+        </div>          <!-- Sync Button -->
         <div class="flex justify-center mb-4 mt-2">
             <button 
                 class="px-18 py-2 rounded-4xl font-bold transition-colors duration-200 shadow w-auto"
                 style="background-color: var(--theme-color-primary); color: white;"
                 onmouseover={(e) => (e.currentTarget as HTMLElement).style.backgroundColor = `color-mix(in srgb, var(--theme-color-primary) 80%, black)`}
                 onmouseout={(e) => (e.currentTarget as HTMLElement).style.backgroundColor = `var(--theme-color-primary)`}
-            >Sync</button>
+            >{t('ui.sync', currentLanguage)}</button>
         </div>
         
         <!-- Profile Section -->
         <div class="px-3 pb-3 border-b {$darkMode ? 'border-gray-600' : 'border-gray-100'}">
             <!-- Profile Dropdown -->
-            <div class="relative mb-2">
-                <button 
+            <div class="relative mb-2">                <button 
                     class="flex items-center justify-between w-full px-3 py-2 text-sm font-medium {$darkMode ? 'text-white bg-black border-gray-600 hover:bg-gray-900' : 'text-gray-700 bg-gray-50 border-gray-200 hover:bg-gray-100'} border rounded-lg transition-colors duration-200" 
                     onclick={() => showDropdown = !showDropdown}
                 >
-                    <span>Profiles</span>
+                    <span>{t('ui.profiles', currentLanguage)}</span>
                     <svg class="w-4 h-4 transition-transform duration-200" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style:transform={showDropdown ? 'rotate(180deg)' : 'rotate(0deg)'}>
                         <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
                     </svg>
@@ -127,7 +130,7 @@
                 
                 {#if showDropdown}
                     <div class="absolute top-full left-0 right-0 mt-1 {$darkMode ? 'bg-black border-gray-600' : 'bg-white border-gray-200'} border rounded-lg shadow-lg z-10">
-                        <div class="p-3 text-sm {$darkMode ? 'text-gray-300' : 'text-gray-600'}">No profiles available</div>
+                        <div class="p-3 text-sm {$darkMode ? 'text-gray-300' : 'text-gray-600'}">{t('ui.noProfilesAvailable', currentLanguage)}</div>
                     </div>
                 {/if}
             </div>
@@ -135,11 +138,10 @@
             <div class="grid grid-cols-2 gap-2">
                 <button 
                     class="px-3 py-2 text-xs font-medium border rounded-md transition-colors duration-200 text-white border-transparent"
-                    style="background-color: var(--theme-color-primary);"
-                    onmouseover={(e) => (e.currentTarget as HTMLElement).style.backgroundColor = `color-mix(in srgb, var(--theme-color-primary) 80%, black)`}
+                    style="background-color: var(--theme-color-primary);"                    onmouseover={(e) => (e.currentTarget as HTMLElement).style.backgroundColor = `color-mix(in srgb, var(--theme-color-primary) 80%, black)`}
                     onmouseout={(e) => (e.currentTarget as HTMLElement).style.backgroundColor = `var(--theme-color-primary)`}
                 >
-                    Import
+                    {t('ui.import', currentLanguage)}
                 </button>
                 <button 
                     class="px-3 py-2 text-xs font-medium border rounded-md transition-colors duration-200 text-white border-transparent"
@@ -147,7 +149,7 @@
                     onmouseover={(e) => (e.currentTarget as HTMLElement).style.backgroundColor = `color-mix(in srgb, var(--theme-color-primary) 80%, black)`}
                     onmouseout={(e) => (e.currentTarget as HTMLElement).style.backgroundColor = `var(--theme-color-primary)`}
                 >
-                    Export
+                    {t('ui.export', currentLanguage)}
                 </button>
             </div>
         </div>
@@ -178,7 +180,7 @@
                             }
                         }}
                     >
-                        <span>{name}</span>
+                        <span>{t(name, currentLanguage)}</span>
                     </a>
                 {/each}
             </nav>
@@ -188,10 +190,9 @@
             <!-- Theme Button -->
             <button 
                 class="flex items-center justify-between w-full px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 {$darkMode ? 'text-white hover:bg-gray-900' : 'text-gray-700 hover:bg-gray-100'}"
-                onclick={() => showThemeSelector = !showThemeSelector}            >
-                <div class="flex items-center gap-3">
+                onclick={() => showThemeSelector = !showThemeSelector}            >                <div class="flex items-center gap-3">
                     <Palette class="w-4 h-4" />
-                    <span>Theme Colors</span>
+                    <span>{t('ui.themeColors', currentLanguage)}</span>
                 </div>
                 <svg class="w-4 h-4 transition-transform duration-200" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style:transform={showThemeSelector ? 'rotate(180deg)' : 'rotate(0deg)'}>
                     <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
@@ -210,20 +211,56 @@
                             onclick={() => setTheme(name as ThemeColorName)}
                         ></button>
                     {/each}
+                </div>            {/if}
+        </div>        
+
+        <!-- Language Selector -->
+        <div class="p-3 border-t {$darkMode ? 'border-gray-600' : 'border-gray-200'}">
+            <!-- Language Button -->
+            <button 
+                class="flex items-center justify-between w-full px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 {$darkMode ? 'text-white hover:bg-gray-900' : 'text-gray-700 hover:bg-gray-100'}"
+                onclick={() => showLanguageSelector = !showLanguageSelector}
+            >
+                <div class="flex items-center gap-3">
+                    <Globe class="w-4 h-4" />
+                    <span>{t('ui.language', currentLanguage)}</span>
+                </div>
+                <svg class="w-4 h-4 transition-transform duration-200" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style:transform={showLanguageSelector ? 'rotate(180deg)' : 'rotate(0deg)'}>
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+                </svg>
+            </button>
+            
+            <!-- Language Options (collapsible) -->
+            {#if showLanguageSelector}
+                <div class="mt-2 space-y-1">
+                    <button 
+                        class="w-full px-3 py-2 text-sm text-left rounded-lg transition-all duration-150 {currentLanguage === 'en' ? `text-white` : ($darkMode ? 'text-gray-300 hover:bg-gray-800' : 'text-gray-700 hover:bg-gray-100')}"
+                        style={currentLanguage === 'en' ? `background-color: var(--theme-color-primary);` : ''}
+                        onclick={() => setLanguage('en')}
+                    >
+                        {t('common.english', currentLanguage)}
+                    </button>
+                    <button 
+                        class="w-full px-3 py-2 text-sm text-left rounded-lg transition-all duration-150 {currentLanguage === 'zh' ? `text-white` : ($darkMode ? 'text-gray-300 hover:bg-gray-800' : 'text-gray-700 hover:bg-gray-100')}"
+                        style={currentLanguage === 'zh' ? `background-color: var(--theme-color-primary);` : ''}
+                        onclick={() => setLanguage('zh')}
+                    >
+                        {t('common.chinese', currentLanguage)}
+                    </button>
                 </div>
             {/if}
-        </div>        
+        </div>
+        
         <!-- Dark Mode Toggle at Bottom -->
         <div class="p-3 border-t border-transparent">            <button
                 class="flex items-center gap-3 w-full px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 {$darkMode ? 'text-white hover:bg-gray-900' : 'text-gray-700 hover:bg-gray-100'}"
                 onclick={() => darkMode.toggle()}
-            >
-                {#if $darkMode}
+            >                {#if $darkMode}
                     <Sun class="w-4 h-4" />
-                    <span>Light Mode</span>
+                    <span>{t('ui.lightMode', currentLanguage)}</span>
                 {:else}
                     <Moon class="w-4 h-4" />
-                    <span>Dark Mode</span>
+                    <span>{t('ui.darkMode', currentLanguage)}</span>
                 {/if}
             </button>
         </div>

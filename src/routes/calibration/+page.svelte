@@ -1,6 +1,14 @@
 <script lang="ts">    import { darkMode } from "$lib/DarkModeStore.svelte";
     import NewZellia80He from "$lib/NewZellia80HE.svelte";
     import { Target, Play, RotateCcw, CheckCircle, AlertCircle, Info, X } from 'lucide-svelte';
+    import { language, t } from '$lib/LanguageStore.svelte';
+    
+    let currentLanguage = $state($language);
+    
+    // Subscribe to language changes
+    language.subscribe(value => {
+        currentLanguage = value;
+    });
 
     let CurrentSelected = $state<[number, number] | null>(null);
     let selectedKeyName = $state('');
@@ -224,7 +232,7 @@
 >
   <div class="flex items-center justify-between mb-6">
     <div>
-      <h2 class="text-3xl font-bold {$darkMode ? 'text-white' : 'text-gray-900'}">Calibration</h2>
+      <h2 class="text-3xl font-bold {$darkMode ? 'text-white' : 'text-gray-900'}">{t('calibration.title', currentLanguage)}</h2>
       <p class="{$darkMode ? 'text-gray-300' : 'text-gray-600'} mt-2">Calibrate individual keys for optimal performance</p>
     </div>
   </div>
@@ -331,14 +339,13 @@
       <div class="p-6 rounded-xl border"
            style="background-color: color-mix(in srgb, var(--theme-color-primary) 5%, {$darkMode ? 'black' : 'white'}); 
                   border-color: {$darkMode ? 'color-mix(in srgb, var(--theme-color-primary) 20%, #374151)' : 'color-mix(in srgb, var(--theme-color-primary) 15%, #e5e7eb)'};">
-        <h3 class="text-xl font-bold {$darkMode ? 'text-white' : 'text-gray-900'} mb-4">Controls</h3>        {#if calibrationStep === 'rest-phase' || calibrationStep === 'press-phase'}
+        <h3 class="text-xl font-bold {$darkMode ? 'text-white' : 'text-gray-900'} mb-4">{t('calibration.controls', currentLanguage)}</h3>        {#if calibrationStep === 'rest-phase' || calibrationStep === 'press-phase'}
           <div class="mb-4">
             <div class="flex justify-between text-sm {$darkMode ? 'text-gray-300' : 'text-gray-600'} mb-2">
-              <span>
-                {#if calibrationStep === 'rest-phase'}
-                  Phase 1: Measuring key at rest...
+              <span>                {#if calibrationStep === 'rest-phase'}
+                  {t('calibration.phase1', currentLanguage)}
                 {:else}
-                  Phase 2: Measuring key pressed...
+                  {t('calibration.phase2', currentLanguage)}
                 {/if}
               </span>
               <span>{calibrationProgress}%</span>
@@ -365,7 +372,7 @@
             onclick={startPressPhase}
           >
             <Target class="w-4 h-4 inline mr-2" />
-            Press Key Now!
+            {t('calibration.pressKeyNow', currentLanguage)}
           </button>
         {/if}
 

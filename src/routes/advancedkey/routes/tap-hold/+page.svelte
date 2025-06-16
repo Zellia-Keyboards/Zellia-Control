@@ -1,7 +1,6 @@
-<script lang="ts">
-    import { goto } from '$app/navigation';
-    import {  KeyboardDisplayValues } from "$lib/KeyboardState.svelte";
-    import { darkMode } from '$lib/DarkModeStore.svelte';
+<script lang="ts">    import { goto } from '$app/navigation';
+    import {  KeyboardDisplayValues } from "$lib/KeyboardState.svelte";    import { darkMode } from '$lib/DarkModeStore.svelte';
+    import { language, t, tPlaceholder } from '$lib/LanguageStore.svelte';
     import { 
         globalConfigurations,
         updateGlobalConfiguration, 
@@ -9,6 +8,13 @@
         keyActions
     } from "$lib/AdvancedKeyShared";
     import NewZellia80He from '$lib/NewZellia80HE.svelte';
+    
+    let currentLanguage = $state($language);
+    
+    // Subscribe to language changes
+    language.subscribe(value => {
+        currentLanguage = value;
+    });
 
     // Define the tap-hold specific configuration type
     type TapHoldConfiguration = {
@@ -83,14 +89,7 @@
                     delete newConfigs[keyId];
                 }
             });
-            return newConfigs;
-        });
-    }
-
-    // Reactive values
-    const currentKeyName = $derived(CurrentSelected ? 
-        $KeyboardDisplayValues[CurrentSelected[1]]?.[CurrentSelected[0]] || 'Unknown' : 
-        'No key selected');
+            return newConfigs;        });    }
 
     // Load existing configuration when key selection changes
     $effect(() => {
@@ -103,35 +102,33 @@
                 tapTimeout = config.tapTimeout || 150;
             }
         }
-    });
-
-    // Action categories for better organization
-    const actionCategories = [
+    });    // Action categories for better organization
+    const actionCategories = $derived([
         {
-            name: 'Common',
+            name: t('advancedkey.common', currentLanguage),
             actions: keyActions.filter(action => 
                 ['esc', 'enter', 'space', 'tab', 'backspace', 'delete'].includes(action.id)
             )
         },
         {
-            name: 'Modifiers',
+            name: t('advancedkey.modifiers', currentLanguage),
             actions: keyActions.filter(action => 
                 ['ctrl', 'shift', 'alt', 'win'].includes(action.id)
             )
         },
         {
-            name: 'Function',
+            name: t('advancedkey.function', currentLanguage),
             actions: keyActions.filter(action => 
                 action.category === 'Function'
             ).slice(0, 12)
         },
         {
-            name: 'Letters',
+            name: t('advancedkey.letters', currentLanguage),
             actions: keyActions.filter(action => 
                 action.category === 'Letter'
             ).slice(0, 20)
         }
-    ];
+    ]);
 
     // Get configured tap-hold keys count
     const configuredTapHoldKeys = $derived(
@@ -152,7 +149,7 @@
 <div
   class="rounded-2xl shadow p-4 mt-2 mb-4 grow {$darkMode
     ? 'border border-gray-600 text-white'
-    : 'text-black'} h-full flex flex-col"
+    : 'text-black'} flex flex-col"
   style="background-color: {$darkMode
     ? `color-mix(in srgb, var(--theme-color-primary) 5%, black)`
     : `color-mix(in srgb, var(--theme-color-primary) 10%, white)`};"
@@ -163,43 +160,30 @@
                 <button 
                     class="flex items-center gap-2 {$darkMode ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900'} transition-colors"
                     onclick={goBack}
-                >
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                >                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
                     </svg>
-                    Back
+                    {t('advancedkey.backToAdvanced', currentLanguage)}
                 </button>
                 <div>
-                    <h1 class="text-xl font-semibold {$darkMode ? 'text-white' : 'text-gray-900'}">Tap Hold Key Configuration</h1>
-                    <p class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-500'}">Configure keys to perform different actions on tap vs hold</p>
+                    <h1 class="text-xl font-semibold {$darkMode ? 'text-white' : 'text-gray-900'}">{t('advancedkey.tapHoldTitle', currentLanguage)}</h1>
+                    <p class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-500'}">{t('advancedkey.tapHoldSubtitle', currentLanguage)}</p>
                 </div>
-            </div>
-            <div class="flex gap-3">                <button 
-                    class="px-4 py-2 text-sm font-medium rounded-md transition-colors"
-                    style="background-color: {$darkMode ? '#374151' : 'color-mix(in srgb, var(--theme-color-primary) 10%, white)'};
-                           border: 1px solid {$darkMode ? 'white' : 'color-mix(in srgb, var(--theme-color-primary) 30%, transparent)'};
-                           color: {$darkMode ? 'white' : '#374151'};"
-                    onmouseover={(e) => {
-                        (e.currentTarget as HTMLElement).style.backgroundColor = $darkMode ? '#4b5563' : `color-mix(in srgb, var(--theme-color-primary) 20%, white)`;
-                    }}
-                    onmouseout={(e) => {
-                        (e.currentTarget as HTMLElement).style.backgroundColor = $darkMode ? '#374151' : `color-mix(in srgb, var(--theme-color-primary) 10%, white)`;
-                    }}
-                    onclick={resetConfiguration}
-                    disabled={!CurrentSelected}
-                >
-                    Reset
-                </button>
+            </div>            <div class="flex gap-3">
                 <button 
-                    class="px-4 py-2 text-sm font-medium rounded-md transition-colors text-white"
-                    style="background-color: var(--theme-color-primary);
-                           border: 1px solid var(--theme-color-primary);"
-                    onmouseover={(e) => (e.currentTarget as HTMLElement).style.backgroundColor = `color-mix(in srgb, var(--theme-color-primary) 80%, black)`}
-                    onmouseout={(e) => (e.currentTarget as HTMLElement).style.backgroundColor = `var(--theme-color-primary)`}
+                    class="px-4 py-2 text-white rounded-md transition-colors text-sm font-medium disabled:opacity-50"
+                    style="background-color: var(--theme-color-primary); 
+                           {!(CurrentSelected) ? '' : 'hover:background-color: color-mix(in srgb, var(--theme-color-primary) 85%, black);'}"
                     onclick={applyConfiguration}
                     disabled={!CurrentSelected}
                 >
-                    Apply
+                    {t('advancedkey.applyConfiguration', currentLanguage)}
+                </button>
+                <button 
+                    class="px-4 py-2 {$darkMode ? 'bg-red-700 hover:bg-red-600' : 'bg-red-600 hover:bg-red-700'} text-white rounded-md transition-colors text-sm font-medium"
+                    onclick={resetAllTapHoldKeys}
+                >
+                    {t('advancedkey.resetAllTapHold', currentLanguage)}
                 </button>
             </div>
         </div>
@@ -216,18 +200,16 @@
                             <div class="flex items-center gap-3">                                <div class="w-12 h-12 rounded-lg flex items-center justify-center border-2"
                                      style="background-color: color-mix(in srgb, var(--theme-color-primary) 10%, {$darkMode ? 'black' : 'white'});
                                             border-color: var(--theme-color-primary);">
-                                    <span class="font-mono font-bold {$darkMode ? 'text-white' : 'text-gray-900'}">{currentKeyName}</span>
-                                </div>
-                                <div>
-                                    <h3 class="font-medium {$darkMode ? 'text-white' : 'text-gray-900'}">Selected Key</h3>
-                                    <p class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-500'}">Position: {CurrentSelected[0]}, {CurrentSelected[1]}</p>
+                                    <span class="font-mono font-bold {$darkMode ? 'text-white' : 'text-gray-900'}">{CurrentSelected ? ($KeyboardDisplayValues[CurrentSelected[1]]?.[CurrentSelected[0]] || t('common.unknown', currentLanguage)) : t('advancedkey.noKeySelected', currentLanguage)}</span>
+                                </div>                                <div>
+                                    <h3 class="font-medium {$darkMode ? 'text-white' : 'text-gray-900'}">{t('advancedkey.selectedKey', currentLanguage)}</h3>
+                                    <p class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-500'}">{t('advancedkey.position', currentLanguage)}: {CurrentSelected[0]}, {CurrentSelected[1]}</p>
                                 </div>
                             </div>
-                        </div>
-                        <div class="flex items-center gap-3">
-                            <span class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'}">Mode:</span>                            <span class="px-3 py-1 rounded-full text-sm font-medium text-white"
+                        </div>                        <div class="flex items-center gap-3">
+                            <span class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'}">{t('advancedkey.mode', currentLanguage)}:</span><span class="px-3 py-1 rounded-full text-sm font-medium text-white"
                                   style="background-color: var(--theme-color-primary);">
-                                Tap Hold
+                                {t('advancedkey.tapHold', currentLanguage)}
                             </span>
                         </div>
                     </div>
@@ -235,10 +217,9 @@
 
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <!-- Configuration Panel -->
-                    <div class="lg:col-span-2 space-y-6">                        <!-- Tap Action Selection -->
-                        <div class="rounded-lg border p-6" style="background-color: color-mix(in srgb, var(--theme-color-primary) 5%, ${$darkMode ? 'black' : 'white'}); border-color: color-mix(in srgb, var(--theme-color-primary) 25%, ${$darkMode ? 'white' : '#e5e5e5'});">
-                            <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'} mb-4">Tap Action</h3>
-                            <p class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'} mb-4">Action to perform when key is quickly tapped</p>
+                    <div class="lg:col-span-2 space-y-6">                        <!-- Tap Action Selection -->                        <div class="rounded-lg border p-6" style="background-color: color-mix(in srgb, var(--theme-color-primary) 5%, ${$darkMode ? 'black' : 'white'}); border-color: color-mix(in srgb, var(--theme-color-primary) 25%, ${$darkMode ? 'white' : '#e5e5e5'});">
+                            <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'} mb-4">{t('advancedkey.tapAction', currentLanguage)}</h3>
+                            <p class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'} mb-4">{t('advancedkey.tapActionDesc', currentLanguage)}</p>
                             
                             <div class="space-y-4">
                                 {#each actionCategories as category}
@@ -276,10 +257,9 @@
                                     </div>
                                 {/each}
                             </div>
-                        </div>                        <!-- Hold Action Selection -->
-                        <div class="rounded-lg border p-6" style="background-color: color-mix(in srgb, var(--theme-color-primary) 5%, ${$darkMode ? 'black' : 'white'}); border-color: color-mix(in srgb, var(--theme-color-primary) 25%, ${$darkMode ? 'white' : '#e5e5e5'});">
-                            <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'} mb-4">Hold Action</h3>
-                            <p class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'} mb-4">Action to perform when key is held down</p>
+                        </div>                        <!-- Hold Action Selection -->                        <div class="rounded-lg border p-6" style="background-color: color-mix(in srgb, var(--theme-color-primary) 5%, ${$darkMode ? 'black' : 'white'}); border-color: color-mix(in srgb, var(--theme-color-primary) 25%, ${$darkMode ? 'white' : '#e5e5e5'});">
+                            <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'} mb-4">{t('advancedkey.holdAction', currentLanguage)}</h3>
+                            <p class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'} mb-4">{t('advancedkey.holdActionDesc', currentLanguage)}</p>
                             
                             <div class="space-y-4">
                                 {#each actionCategories as category}
@@ -319,7 +299,7 @@
                             </div>
                         </div>                        <!-- Timing Configuration -->
                         <div class="rounded-lg border p-6" style="background-color: color-mix(in srgb, var(--theme-color-primary) 5%, ${$darkMode ? 'black' : 'white'}); border-color: color-mix(in srgb, var(--theme-color-primary) 25%, ${$darkMode ? 'white' : '#e5e5e5'});">
-                            <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'} mb-4">Timing Settings</h3>
+                            <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'} mb-4">{t('advancedkey.tapAction', currentLanguage)} & {t('advancedkey.holdAction', currentLanguage)} {t('advancedkey.actionCategories', currentLanguage)}</h3>
                             
                             <div class="space-y-6">
                                 <!-- Hold Delay -->
@@ -365,11 +345,10 @@
                         <div class="rounded-lg border p-6" style="background-color: color-mix(in srgb, var(--theme-color-primary) 5%, ${$darkMode ? 'black' : 'white'}); border-color: color-mix(in srgb, var(--theme-color-primary) 25%, ${$darkMode ? 'white' : '#e5e5e5'});">
                             <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'} mb-4">Preview</h3>
                             
-                            <div class="space-y-3">
-                                <div class="flex justify-between items-center py-2 {$darkMode ? 'border-gray-700' : 'border-gray-100'} border-b">
+                            <div class="space-y-3">                                <div class="flex justify-between items-center py-2 {$darkMode ? 'border-gray-700' : 'border-gray-100'} border-b">
                                     <span class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'}">Key</span>
-                                    <span class="font-mono font-medium {$darkMode ? 'text-white' : 'text-gray-900'}">{currentKeyName}</span>
-                                </div>                                <div class="flex justify-between items-center py-2 {$darkMode ? 'border-gray-700' : 'border-gray-100'} border-b">
+                                    <span class="font-mono font-medium {$darkMode ? 'text-white' : 'text-gray-900'}">{CurrentSelected ? ($KeyboardDisplayValues[CurrentSelected[1]]?.[CurrentSelected[0]] || t('common.unknown', currentLanguage)) : t('advancedkey.noKeySelected', currentLanguage)}</span>
+                                </div><div class="flex justify-between items-center py-2 {$darkMode ? 'border-gray-700' : 'border-gray-100'} border-b">
                                     <span class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'}">Tap</span>
                                     <span class="font-medium" style="color: var(--theme-color-primary);">{keyActions.find(k => k.id === tapAction)?.name || tapAction}</span>
                                 </div>
@@ -383,80 +362,75 @@
                                 </div>
                             </div>
                         </div>                        <!-- Info Panel -->                        <div class="border rounded-lg p-6" style="background-color: color-mix(in srgb, var(--theme-color-primary) 12%, ${$darkMode ? 'black' : 'white'}); border-color: color-mix(in srgb, var(--theme-color-primary) 30%, ${$darkMode ? 'white' : '#e5e5e5'});">
-                            <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'} mb-2">How it works</h3>
+                            <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'} mb-2">{t('advancedkey.howItWorks', currentLanguage)}</h3>
                             <div class="text-sm {$darkMode ? 'text-gray-300' : 'text-gray-800'} space-y-2">
-                                <p>• Quick tap (under {tapTimeout}ms): <strong>{keyActions.find(k => k.id === tapAction)?.name || tapAction}</strong></p>
-                                <p>• Hold (over {holdDelay}ms): <strong>{keyActions.find(k => k.id === holdAction)?.name || holdAction}</strong></p>
-                                <p class="mt-3 text-xs">Perfect for modifier keys that can also function as regular keys when tapped quickly.</p>
-                            </div>
-                        </div><!-- Actions -->
-                        <div class="{$darkMode ? 'bg-black border-white' : 'bg-white border-gray-200'} rounded-lg border p-6">
-                            <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'} mb-4">Actions</h3>
-                            <div class="space-y-3">                                <button 
-                                    class="w-full px-4 py-2 rounded-md transition-colors text-sm font-medium text-white"
-                                    style="background-color: #dc2626; border: 1px solid #dc2626;"
-                                    onmouseover={(e) => (e.currentTarget as HTMLElement).style.backgroundColor = '#b91c1c'}
-                                    onmouseout={(e) => (e.currentTarget as HTMLElement).style.backgroundColor = '#dc2626'}
-                                    onclick={resetAllTapHoldKeys}
-                                >
-                                    Reset All Tap Hold Keys
-                                </button>
-                            </div>
+                                <p>• {tPlaceholder('advancedkey.quickTap', currentLanguage, tapTimeout.toString())}: <strong>{keyActions.find(k => k.id === tapAction)?.name || tapAction}</strong></p>
+                                <p>• {tPlaceholder('advancedkey.holdOver', currentLanguage, holdDelay.toString())}: <strong>{keyActions.find(k => k.id === holdAction)?.name || holdAction}</strong></p>
+                                <p class="mt-3 text-xs">{t('advancedkey.tapHoldDescription', currentLanguage)}</p>
+                            </div>                        </div>
+                        
+                        <!-- Reset Button -->
+                        <div class="space-y-4">
+                            <button 
+                                class="w-full px-4 py-2 {$darkMode ? 'text-white bg-gray-800 hover:bg-gray-700 border border-white' : 'text-gray-700 bg-gray-100 hover:bg-gray-200'} rounded-md transition-colors text-sm font-medium"
+                                onclick={resetConfiguration}
+                                disabled={!CurrentSelected}
+                            >
+                                {t('advancedkey.resetConfiguration', currentLanguage)}
+                            </button>
                         </div>
+                        
+                        <!-- Configured Keys Summary -->
+                        {#if configuredTapHoldKeys.length > 0}
+                            <div class="rounded-lg border p-6" style="background-color: color-mix(in srgb, var(--theme-color-primary) 5%, ${$darkMode ? 'black' : 'white'}); border-color: color-mix(in srgb, var(--theme-color-primary) 25%, ${$darkMode ? 'white' : '#e5e5e5'});">
+                                <div class="flex items-center justify-between mb-4">
+                                    <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'}">{t('advancedkey.configuredTapHold', currentLanguage)}</h3>
+                                    <span class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-500'}">{configuredTapHoldKeys.length} {configuredTapHoldKeys.length !== 1 ? t('advancedkey.keysCountPlural', currentLanguage) : t('advancedkey.keysCount', currentLanguage)}</span>
+                                </div>
+                                <div class="space-y-3 max-h-64 overflow-y-auto">
+                                    {#each configuredTapHoldKeys as [keyId, config]}
+                                        {@const [x, y] = keyId.split(',').map(Number)}
+                                        {@const keyName = $KeyboardDisplayValues[y]?.[x] || t('common.unknown', currentLanguage)}
+                                        {@const tapHoldConfig = config as TapHoldConfiguration}
+                                        <div class="p-3 rounded-lg border" style="background-color: color-mix(in srgb, var(--theme-color-primary) 8%, ${$darkMode ? 'black' : 'white'}); border-color: color-mix(in srgb, var(--theme-color-primary) 25%, ${$darkMode ? 'white' : '#e5e5e5'});">
+                                            <div class="flex items-center justify-between mb-2">
+                                                <span class="font-mono font-bold {$darkMode ? 'text-white' : 'text-gray-900'} text-sm">{keyName}</span>
+                                            </div>
+                                            <div class="text-xs space-y-1">
+                                                <div class="flex justify-between">
+                                                    <span class="{$darkMode ? 'text-gray-400' : 'text-gray-600'}">{t('advancedkey.tap', currentLanguage)}:</span>
+                                                    <span class="font-medium" style="color: var(--theme-color-primary);">{keyActions.find(k => k.id === tapHoldConfig.tapAction)?.name || tapHoldConfig.tapAction}</span>
+                                                </div>
+                                                <div class="flex justify-between">
+                                                    <span class="{$darkMode ? 'text-gray-400' : 'text-gray-600'}">{t('advancedkey.hold', currentLanguage)}:</span>
+                                                    <span class="font-medium" style="color: color-mix(in srgb, var(--theme-color-primary) 80%, green);">{keyActions.find(k => k.id === tapHoldConfig.holdAction)?.name || tapHoldConfig.holdAction}</span>
+                                                </div>
+                                                <div class="flex justify-between">
+                                                    <span class="{$darkMode ? 'text-gray-400' : 'text-gray-600'}">{t('advancedkey.holdDelay', currentLanguage)}:</span>
+                                                    <span class="{$darkMode ? 'text-gray-300' : 'text-gray-700'}">{tapHoldConfig.holdDelay}{t('advancedkey.milliseconds', currentLanguage)}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {/each}
+                                </div>
+                            </div>
+                        {/if}
                     </div>
                 </div>
             </div>
-        {:else}            <!-- No Key Selected State -->
+        {:else}<!-- No Key Selected State -->
             <div class="flex-1 flex items-center justify-center">
                 <div class="text-center max-w-md mx-auto">
                     <div class="w-24 h-24 {$darkMode ? 'bg-gray-800' : 'bg-gray-100'} rounded-full flex items-center justify-center mx-auto mb-4">
                         <svg class="w-12 h-12 {$darkMode ? 'text-gray-400' : 'text-gray-400'}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l4-4 4 4m0 6l-4 4-4-4" />
                         </svg>
-                    </div>
-                    <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'} mb-2">No Key Selected</h3>
-                    <p class="{$darkMode ? 'text-gray-400' : 'text-gray-600'} mb-4">Select a key from the keyboard layout to configure its tap-hold behavior</p>
+                    </div>                    <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'} mb-2">{t('advancedkey.noKeySelected', currentLanguage)}</h3>
+                    <p class="{$darkMode ? 'text-gray-400' : 'text-gray-600'} mb-4">{t('advancedkey.selectKeyToConfig', currentLanguage)}</p>
                     <div class="{$darkMode ? 'bg-gray-900 border-gray-600 text-gray-300' : 'bg-blue-50 border-blue-200 text-blue-700'} border rounded-lg p-4 text-sm">
-                        <strong>Tip:</strong> Tap-hold keys are perfect for modifier keys that can also function as regular keys when tapped quickly
+                        <strong>{t('advancedkey.tip', currentLanguage)}:</strong> {t('advancedkey.tapHoldTip', currentLanguage)}
                     </div>
-                </div>
-            </div>
-        {/if}
-
-        <!-- Configured Keys Summary -->
-        {#if configuredTapHoldKeys.length > 0}
-            <div class="max-w-6xl mx-auto mt-6">
-                <div class="rounded-lg border p-6" style="background-color: color-mix(in srgb, var(--theme-color-primary) 5%, ${$darkMode ? 'black' : 'white'}); border-color: color-mix(in srgb, var(--theme-color-primary) 25%, ${$darkMode ? 'white' : '#e5e5e5'});">
-                    <div class="flex items-center justify-between mb-4">
-                        <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'}">Configured Tap Hold Keys</h3>
-                        <span class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-500'}">{configuredTapHoldKeys.length} key{configuredTapHoldKeys.length !== 1 ? 's' : ''}</span>
-                    </div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {#each configuredTapHoldKeys as [keyId, config]}
-                            {@const [x, y] = keyId.split(',').map(Number)}
-                            {@const keyName = $KeyboardDisplayValues[y]?.[x] || 'Unknown'}
-                            {@const tapHoldConfig = config as TapHoldConfiguration}                            <div class="p-4 rounded-lg border" style="background-color: color-mix(in srgb, var(--theme-color-primary) 8%, ${$darkMode ? 'black' : 'white'}); border-color: color-mix(in srgb, var(--theme-color-primary) 25%, ${$darkMode ? 'white' : '#e5e5e5'});">
-                                <div class="flex items-center justify-between mb-2">
-                                    <span class="font-mono font-bold {$darkMode ? 'text-white' : 'text-gray-900'}">{keyName}</span>
-                                </div>
-                                <div class="text-sm space-y-1">                                    <div class="flex justify-between">
-                                        <span class="{$darkMode ? 'text-gray-400' : 'text-gray-600'}">Tap:</span>
-                                        <span class="font-medium" style="color: var(--theme-color-primary);">{keyActions.find(k => k.id === tapHoldConfig.tapAction)?.name || tapHoldConfig.tapAction}</span>
-                                    </div>
-                                    <div class="flex justify-between">
-                                        <span class="{$darkMode ? 'text-gray-400' : 'text-gray-600'}">Hold:</span>
-                                        <span class="font-medium" style="color: color-mix(in srgb, var(--theme-color-primary) 80%, green);">{keyActions.find(k => k.id === tapHoldConfig.holdAction)?.name || tapHoldConfig.holdAction}</span>
-                                    </div>
-                                    <div class="flex justify-between">
-                                        <span class="{$darkMode ? 'text-gray-400' : 'text-gray-600'}">Delay:</span>
-                                        <span class="{$darkMode ? 'text-gray-300' : 'text-gray-700'}">{tapHoldConfig.holdDelay}ms</span>
-                                    </div>
-                                </div>
-                            </div>
-                        {/each}
-                    </div>
-                </div>
-            </div>
+                </div>            </div>
         {/if}
     </div>
 </div>
