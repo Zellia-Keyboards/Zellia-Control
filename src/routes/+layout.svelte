@@ -89,16 +89,6 @@
                     </div>
                 </div>
             </div>
-            
-            <!-- Action Button -->
-            <div class="flex justify-center">
-                <button 
-                    class="{$darkMode ? 'bg-white hover:bg-gray-200 text-black' : 'bg-indigo-600 hover:bg-indigo-700 text-white'} font-medium px-6 py-3 rounded-lg transition-colors duration-200 shadow-sm"
-                    onclick={() => window.location.reload()}
-                >
-                    Retry After Resizing
-                </button>
-            </div>
         </div>
     </div>
 </div>
