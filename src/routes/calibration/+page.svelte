@@ -23,23 +23,23 @@
     let showNotification = $state(false);
     let notificationMessage = $state('');
     let notificationTimeout: ReturnType<typeof setTimeout>;
-    
-    // Press phase function reference
+      // Press phase function reference
     let pressPhaseFunction: (() => void) | null = null;
-      // Dynamic calibration steps data
+    
+    // Dynamic calibration steps data
     function getCalibrationSteps() {
         return [
             {
                 step: 1,
-                title: 'Select Key',
-                description: 'Click on the key you want to calibrate',
+                title: t('calibration.selectKeyStep', currentLanguage),
+                description: t('calibration.selectKeyDesc', currentLanguage),
                 icon: Target,
                 status: CurrentSelected ? 'complete' : 'current'
             },
             {
                 step: 2,
-                title: 'Start Calibration',
-                description: 'Begin the automatic calibration process',
+                title: t('calibration.startCalibrationStep', currentLanguage),
+                description: t('calibration.startCalibrationDesc', currentLanguage),
                 icon: Play,
                 status: calibrationStep === 'complete' ? 'complete' : 
                        (calibrationStep === 'rest-phase' || calibrationStep === 'wait-for-press' || calibrationStep === 'press-phase') ? 'current' : 
@@ -47,8 +47,8 @@
             },
             {
                 step: 3,
-                title: 'Test & Adjust',
-                description: 'Fine-tune the actuation points',
+                title: t('calibration.testAdjustStep', currentLanguage),
+                description: t('calibration.testAdjustDesc', currentLanguage),
                 icon: CheckCircle,
                 status: calibrationStep === 'complete' ? 'current' : 'pending'
             }
@@ -61,7 +61,9 @@
             selectedKeyName = `Key ${keyPosition}`;
             calibrationStep = 'select';
         }
-    });    function startCalibration() {
+    });
+    
+    function startCalibration() {
         if (!selectedKeyName) {
             return;
         }
@@ -69,7 +71,7 @@
         isCalibrating = true;
         calibrationStep = 'rest-phase';
         calibrationProgress = 0;
-        calibrationMessage = 'Measuring key at rest position...';
+        calibrationMessage = t('calibration.measuringRest', currentLanguage);
         showPressButton = false;
           // Phase 1: Measure key at rest for 0.5 seconds
         let restValues: number[] = [];
@@ -89,16 +91,16 @@
             
             // Wait phase - 1-2 seconds before showing press instruction
             calibrationStep = 'wait-for-press';
-            calibrationMessage = 'Rest phase complete. Get ready...';
+            calibrationMessage = t('calibration.restComplete', currentLanguage);
               setTimeout(() => {
-                calibrationMessage = 'Now press and hold the selected key firmly!';
+                calibrationMessage = t('calibration.pressKeyFirmly', currentLanguage);
                 showPressButton = true;
                 
                 // Store the pressed phase function for the button
                 pressPhaseFunction = () => {
                     showPressButton = false;
                     calibrationStep = 'press-phase';
-                    calibrationMessage = 'Measuring key pressed position...';
+                    calibrationMessage = t('calibration.measuringPressed', currentLanguage);
                       // Phase 2: Measure key pressed for 0.5 seconds
                     const pressedPhase = setInterval(() => {
                         calibrationProgress = Math.min(calibrationProgress + 10, 100);
@@ -119,7 +121,10 @@
                         isCalibrating = false;
                         isKeyPressed = false;
                         calibrationStep = 'complete';
-                        calibrationMessage = `Calibration Complete! Rest: ${avgRest.toFixed(2)}mm, Pressed: ${avgPressed.toFixed(2)}mm, Travel: ${(avgRest - avgPressed).toFixed(2)}mm`;
+                        calibrationMessage = t('calibration.calibrationResults', currentLanguage)
+                            .replace('{0}', avgRest.toFixed(2))
+                            .replace('{1}', avgPressed.toFixed(2))
+                            .replace('{2}', (avgRest - avgPressed).toFixed(2));
                         
                     }, 500); // 0.5 seconds for pressed phase
                 };
@@ -167,7 +172,7 @@
 
     function applyCalibration() {
         // Apply the calibration settings
-        showSuccessNotification(`Calibration applied for ${selectedKeyName}`);
+        showSuccessNotification(t('calibration.calibrationApplied', currentLanguage).replace('{0}', selectedKeyName));
     }
 
     function getStepStatus(step: any) {
@@ -233,20 +238,19 @@
   <div class="flex items-center justify-between mb-6">
     <div>
       <h2 class="text-3xl font-bold {$darkMode ? 'text-white' : 'text-gray-900'}">{t('calibration.title', currentLanguage)}</h2>
-      <p class="{$darkMode ? 'text-gray-300' : 'text-gray-600'} mt-2">Calibrate individual keys for optimal performance</p>
+      <p class="{$darkMode ? 'text-gray-300' : 'text-gray-600'} mt-2">{t('calibration.subtitle', currentLanguage)}</p>
     </div>
   </div>
 
   <!-- Calibration Steps -->
   <div class="mb-6 rounded-xl p-6 border"
        style="background: {$darkMode ? 'color-mix(in srgb, var(--theme-color-primary) 8%, #111827)' : 'color-mix(in srgb, var(--theme-color-primary) 5%, #f9fafb)'};
-              border-color: {$darkMode ? 'color-mix(in srgb, var(--theme-color-primary) 15%, #374151)' : 'color-mix(in srgb, var(--theme-color-primary) 10%, #e5e7eb)'};">    <h3 class="text-lg font-semibold {$darkMode ? 'text-white' : 'text-gray-900'} mb-4">Calibration Process</h3>
-    <div class="flex items-center justify-between">
-        {#each getCalibrationSteps() as step, index}
+              border-color: {$darkMode ? 'color-mix(in srgb, var(--theme-color-primary) 15%, #374151)' : 'color-mix(in srgb, var(--theme-color-primary) 10%, #e5e7eb)'};">    <h3 class="text-lg font-semibold {$darkMode ? 'text-white' : 'text-gray-900'} mb-4">{t('calibration.calibrationProcess', currentLanguage)}</h3>
+    <div class="flex items-center justify-between">        {#each getCalibrationSteps() as step, index}
+          {@const IconComponent = step.icon}
           <div class="flex items-center flex-1">
-            <div class="flex items-center gap-3">
-              <div class="w-10 h-10 rounded-full flex items-center justify-center text-white {getStepStatus(step)}">
-                <svelte:component this={step.icon} class="w-5 h-5" />
+            <div class="flex items-center gap-3">              <div class="w-10 h-10 rounded-full flex items-center justify-center text-white {getStepStatus(step)}">
+                <IconComponent class="w-5 h-5" />
               </div>
               <div class="text-center">
                 <div class="font-medium {$darkMode ? 'text-white' : 'text-gray-900'}">{step.title}</div>
@@ -267,7 +271,7 @@
       <div class="p-6 rounded-xl border"
            style="background-color: color-mix(in srgb, var(--theme-color-primary) 5%, {$darkMode ? 'black' : 'white'}); 
                   border-color: {$darkMode ? 'color-mix(in srgb, var(--theme-color-primary) 20%, #374151)' : 'color-mix(in srgb, var(--theme-color-primary) 15%, #e5e7eb)'};">
-        <h3 class="text-xl font-bold {$darkMode ? 'text-white' : 'text-gray-900'} mb-4">Calibration Status</h3>
+        <h3 class="text-xl font-bold {$darkMode ? 'text-white' : 'text-gray-900'} mb-4">{t('calibration.calibrationStatus', currentLanguage)}</h3>
         
         <!-- Selected Key Info -->
         {#if selectedKeyName}
@@ -278,10 +282,9 @@
             </div>
             <div class="flex-1">
               <div class="font-semibold {$darkMode ? 'text-white' : 'text-gray-900'}">{selectedKeyName}</div>
-              <div class="text-sm {$darkMode ? 'text-gray-300' : 'text-gray-600'}">Position: {CurrentSelected?.[0]}, {CurrentSelected?.[1]}</div>
-            </div>
-            <div class="text-xs {$darkMode ? 'text-gray-400' : 'text-gray-500'} px-2 py-1 rounded {$darkMode ? 'bg-green-900/30 text-green-400' : 'bg-green-100 text-green-600'}">
-              Selected
+              <div class="text-sm {$darkMode ? 'text-gray-300' : 'text-gray-600'}">{t('calibration.position', currentLanguage)}: {CurrentSelected?.[0]}, {CurrentSelected?.[1]}</div>
+            </div>            <div class="text-xs {$darkMode ? 'text-gray-400' : 'text-gray-500'} px-2 py-1 rounded {$darkMode ? 'bg-green-900/30 text-green-400' : 'bg-green-100 text-green-600'}">
+              {t('calibration.selected', currentLanguage)}
             </div>
           </div>
         {/if}
@@ -290,49 +293,46 @@
         {#if calibrationStep === 'select'}
           <div class="flex items-center gap-3 text-yellow-600 dark:text-yellow-400">
             <AlertCircle class="w-5 h-5" />
-            <span>Ready to calibrate - Select a key to begin</span>
+            <span>{t('calibration.readyToCalibrate', currentLanguage)}</span>
           </div>
         {:else if calibrationStep === 'rest-phase'}
           <div class="space-y-2">
             <div class="flex items-center gap-3 text-blue-600 dark:text-blue-400">
               <Play class="w-5 h-5" />
-              <span>Phase 1: Measuring rest position</span>
-            </div>
-            <div class="text-sm {$darkMode ? 'text-gray-300' : 'text-gray-600'}">
-              📏 Keep the key unpressed during this phase
+              <span>{t('calibration.phase1Measuring', currentLanguage)}</span>
+            </div>            <div class="text-sm {$darkMode ? 'text-gray-300' : 'text-gray-600'}">
+              📏 {t('calibration.keepKeyUnpressed', currentLanguage)}
             </div>
           </div>
         {:else if calibrationStep === 'wait-for-press'}
-          <div class="space-y-2">
-            <div class="flex items-center gap-3 text-orange-600 dark:text-orange-400">
+          <div class="space-y-2">            <div class="flex items-center gap-3 text-orange-600 dark:text-orange-400">
               <AlertCircle class="w-5 h-5" />
-              <span>Get ready to press the key</span>
+              <span>{t('calibration.getReadyToPress', currentLanguage)}</span>
             </div>
             <div class="text-sm {$darkMode ? 'text-gray-300' : 'text-gray-600'}">
-              ⏳ Waiting for press instruction...
+              ⏳ {t('calibration.waitingForPress', currentLanguage)}
             </div>
           </div>
         {:else if calibrationStep === 'press-phase'}
           <div class="space-y-2">
             <div class="flex items-center gap-3 text-red-600 dark:text-red-400">
               <Target class="w-5 h-5" />
-              <span>Phase 2: Measuring pressed position</span>
-            </div>
-            <div class="text-sm {$darkMode ? 'text-gray-300' : 'text-gray-600'}">
-              🔽 Hold the key pressed firmly
+              <span>{t('calibration.phase2Measuring', currentLanguage)}</span>
+            </div>            <div class="text-sm {$darkMode ? 'text-gray-300' : 'text-gray-600'}">
+              🔽 {t('calibration.holdKeyPressed', currentLanguage)}
             </div>
           </div>
         {:else if calibrationStep === 'complete'}
           <div class="flex items-center gap-3 text-green-600 dark:text-green-400">
             <CheckCircle class="w-5 h-5" />
-            <span>Calibration complete for {selectedKeyName}</span>
+            <span>{t('calibration.calibrationComplete', currentLanguage)} for {selectedKeyName}</span>
           </div>
         {/if}
         
         {#if !selectedKeyName}
           <div class="text-center py-8">
             <Target class="w-12 h-12 mx-auto text-gray-400 mb-3" />
-            <p class="{$darkMode ? 'text-gray-300' : 'text-gray-600'}">Click on a key above to start calibration</p>
+            <p class="{$darkMode ? 'text-gray-300' : 'text-gray-600'}">{t('calibration.clickOnKey', currentLanguage)}</p>
           </div>
         {/if}
       </div>      <!-- Right: Controls -->
@@ -380,22 +380,20 @@
             class="w-full px-4 py-3 rounded-lg font-semibold transition-colors {selectedKeyName && !isCalibrating ? 'text-white' : 'text-gray-400 cursor-not-allowed'}"
             style="background-color: {selectedKeyName && !isCalibrating ? 'var(--theme-color-primary)' : '#6b7280'};"            onclick={startCalibration}
             disabled={!selectedKeyName || isCalibrating || showPressButton}
-          >
-            {#if isCalibrating}
+          >            {#if isCalibrating}
               <Play class="w-4 h-4 inline mr-2" />
-              Calibrating...
+              {t('calibration.calibrating', currentLanguage)}
             {:else}
               <Play class="w-4 h-4 inline mr-2" />
-              Start Calibration
+              {t('calibration.startCalibration', currentLanguage)}
             {/if}
           </button>
 
           <button
             class="w-full px-4 py-3 rounded-lg font-semibold bg-gray-600 hover:bg-gray-700 text-white transition-colors"
             onclick={resetCalibration}
-          >
-            <RotateCcw class="w-4 h-4 inline mr-2" />
-            Reset
+          >            <RotateCcw class="w-4 h-4 inline mr-2" />
+            {t('common.reset', currentLanguage)}
           </button>
 
           {#if selectedKeyName && calibrationStep === 'complete'}
@@ -403,9 +401,8 @@
               class="w-full px-4 py-3 rounded-lg font-semibold text-white transition-colors"
               style="background-color: var(--theme-color-primary);"
               onclick={applyCalibration}
-            >
-              <CheckCircle class="w-4 h-4 inline mr-2" />
-              Apply Calibration
+            >              <CheckCircle class="w-4 h-4 inline mr-2" />
+              {t('calibration.applyCalibration', currentLanguage)}
             </button>          {/if}
         </div>
       </div>
@@ -414,12 +411,11 @@
         ? 'bg-blue-900 border-blue-600 text-blue-200'
         : 'bg-blue-50 border-blue-300 text-blue-700'} border rounded-md text-xs flex items-start gap-2">
         <Info class="w-4 h-4 flex-shrink-0 mt-0.5" />
-        <div>
-          <p class="font-medium mb-1">Calibration Tips:</p>          <ul class="space-y-1">
-            <li>• Ensure the key is completely at rest during the first phase</li>
-            <li>• Press the key firmly and consistently during the second phase</li>
-            <li>• Avoid touching other keys during calibration</li>
-          </ul>        </div>
+        <div>          <p class="font-medium mb-1">{t('calibration.helpTitle', currentLanguage)}</p>          <ul class="space-y-1">
+            <li>• {t('calibration.helpTip1', currentLanguage)}</li>
+            <li>• {t('calibration.helpTip2', currentLanguage)}</li>
+            <li>• {t('calibration.helpTip3', currentLanguage)}</li>
+          </ul></div>
       </div>
   </div>
 </div>
