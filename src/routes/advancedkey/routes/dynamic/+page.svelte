@@ -471,12 +471,11 @@
 		Object.entries($globalConfigurations).filter(
 			([_, config]) => config.type === "dynamic",
 		) as [string, GlobalDynamicKeystrokeConfiguration][],
-	);
-	const phaseDescriptions = $derived([
-		{ name: t('advancedkey.keyPressedPastActuation', currentLanguage), icon: "↓" },
-		{ name: t('advancedkey.keyPressedPastBottomOut', currentLanguage), icon: "⬇" },
-		{ name: t('advancedkey.keyReleasedPastBottomOut', currentLanguage), icon: "⬆" },
-		{ name: t('advancedkey.keyReleasedPastActuation', currentLanguage), icon: "↑" },
+	);	const phaseDescriptions = $derived([
+		{ name: t('advancedkey.keyPressedPastActuation', currentLanguage), icon: "arrow-down" },
+		{ name: t('advancedkey.keyPressedPastBottomOut', currentLanguage), icon: "arrow-down-line" },
+		{ name: t('advancedkey.keyReleasedPastBottomOut', currentLanguage), icon: "arrow-up-line" },
+		{ name: t('advancedkey.keyReleasedPastActuation', currentLanguage), icon: "arrow-up" },
 	]);
 
 	function handleSelectBinding(bindingIdx: number) {
@@ -695,13 +694,29 @@
 												NODE_SIZE / 2 -
 												8}px;"
 											title={phase.name}
-										>
-											<span
-												class="text-sm {$darkMode
-													? 'text-gray-300'
-													: 'text-gray-700'}"
-												>{phase.icon}</span
-											>
+										>											{#if phase.icon === "arrow-down"}
+												<svg class="w-4 h-4 {$darkMode ? 'text-gray-300' : 'text-gray-700'}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+													<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+												</svg>
+											{:else if phase.icon === "arrow-down-line"}
+												<div class="flex flex-col items-center">
+													<svg class="w-4 h-4 {$darkMode ? 'text-gray-300' : 'text-gray-700'}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+														<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+													</svg>
+													<div class="w-6 h-0.5 {$darkMode ? 'bg-gray-300' : 'bg-gray-700'} mt-1"></div>
+												</div>
+											{:else if phase.icon === "arrow-up-line"}
+												<div class="flex flex-col items-center">
+													<div class="w-6 h-0.5 {$darkMode ? 'bg-gray-300' : 'bg-gray-700'} mb-1"></div>
+													<svg class="w-4 h-4 {$darkMode ? 'text-gray-300' : 'text-gray-700'}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+														<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18" />
+													</svg>
+												</div>
+											{:else if phase.icon === "arrow-up"}
+												<svg class="w-4 h-4 {$darkMode ? 'text-gray-300' : 'text-gray-700'}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+													<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18" />
+												</svg>
+											{/if}
 										</div>
 									{/each}
 								</div>
