@@ -570,7 +570,7 @@
 <div
 	class="rounded-2xl shadow p-4 mt-2 mb-4 grow {$darkMode
 		? 'border border-gray-600 text-white'
-		: 'text-black'} h-full flex flex-col"
+		: 'text-black'} flex flex-col"
 	style="background-color: {$darkMode
 		? `color-mix(in srgb, var(--theme-color-primary) 5%, black)`
 		: `color-mix(in srgb, var(--theme-color-primary) 10%, white)`};"
