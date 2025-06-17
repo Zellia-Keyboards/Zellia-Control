@@ -218,7 +218,7 @@
         </div>        
 
         <!-- Language Selector -->
-        <div class="p-3 border-t {$darkMode ? 'border-gray-600' : 'border-gray-200'}">
+        <div class="p-3 {$darkMode ? 'border-gray-600' : 'border-gray-200'}">
             <!-- Language Button -->
             <button 
                 class="flex items-center justify-between w-full px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 {$darkMode ? 'text-white hover:bg-gray-900' : 'text-gray-700 hover:bg-gray-100'}"
