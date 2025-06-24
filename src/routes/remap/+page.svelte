@@ -3,13 +3,33 @@
   import NewZellia80He from "$lib/NewZellia80HE.svelte";
   import { language, t } from "$lib/LanguageStore.svelte";
   import Basic from "./Basic.svelte";
+  import System from "./System.svelte";
+  import type { Component } from "svelte";
 
   let currentLanguage = $state($language);
+
+  const Tabs = [
+    {
+      name: "Basic",
+      component: Basic as Component,
+    },
+    {
+      name: "System",
+      component: System as Component,
+    },
+  ];
+
+  let activeTab = $state(Tabs[0].name);
+
+  const ActiveTabComponent = $derived(
+    Tabs.find((t) => t.name === activeTab)!!.component,
+  );
 
   // Subscribe to language changes
   language.subscribe((value) => {
     currentLanguage = value;
   });
+  $inspect(ActiveTabComponent, "ActiveTabComponent");
 </script>
 
 <NewZellia80He
@@ -30,10 +50,19 @@
     ? `color-mix(in srgb, var(--theme-color-primary) 5%, black)`
     : `color-mix(in srgb, var(--theme-color-primary) 10%, white)`};"
 >
-  <!-- Section Tabs - Large and full width -->
-  <button>Basic</button>
+  <div class="flex items-center gap-6 mb-4">
+    {#each Tabs as tab}
+      <button
+        class="text-lg font-semibold px-4 py-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 data-[active=true]:bg-gray-300 dark:data-[active=true]:bg-gray-600"
+        onclick={() => (activeTab = tab.name)}
+        data-active={activeTab === tab.name}
+      >
+        {tab.name}
+      </button>
+    {/each}
+  </div>
 
-  <Basic />
+  <ActiveTabComponent />
 </div>
 
 <style>
