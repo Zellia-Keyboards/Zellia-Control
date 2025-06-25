@@ -324,7 +324,7 @@
                     }}
                     onclick={() => showFirefoxWarning = false}
                 >
-                    I don't care, let me continue !
+                    I don't care, let me continue!
                 </button>
             </div>
         </div>
