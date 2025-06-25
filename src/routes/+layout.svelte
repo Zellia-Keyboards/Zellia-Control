@@ -129,7 +129,8 @@
               <!-- Firefox Icon and Title -->
             <div class="flex items-center justify-center mb-6">                
                 <div class="w-16 h-16 rounded-xl flex items-center justify-center relative"
-                     style="background-color: {$darkMode ? `color-mix(in srgb, var(--theme-color-primary) 20%, white)` : `color-mix(in srgb, var(--theme-color-primary) 15%, white)`};">                    <!-- Firefox SVG -->
+                     style="background-color: {$darkMode ? `color-mix(in srgb, var(--theme-color-primary) 20%, white)` : `color-mix(in srgb, var(--theme-color-primary) 15%, white)`};">                    
+                    <!-- Firefox SVG -->
                     <svg class="w-10 h-10" viewBox="0 0 512 512">
                         <defs>
                             <radialGradient id="g" cx="210%" cy="-100%" r="290%">
@@ -225,7 +226,8 @@
                 <div class="flex justify-center gap-8">
                     <div class="text-center">
                         <!-- Chrome Logo -->
-                        <div class="w-12 h-12 flex items-center justify-center mb-2 mx-auto">                            <svg class="w-10 h-10" viewBox="0 0 48 48" fill="none">
+                        <div class="w-12 h-12 flex items-center justify-center mb-2 mx-auto">                            
+                            <svg class="w-10 h-10" viewBox="0 0 48 48" fill="none">
                                 <defs>
                                     <linearGradient id="chrome-a" x1="3.2173" y1="15" x2="44.7812" y2="15" gradientUnits="userSpaceOnUse">
                                         <stop offset="0" stop-color="#d93025" />
