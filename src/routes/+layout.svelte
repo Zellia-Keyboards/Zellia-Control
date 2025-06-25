@@ -249,7 +249,8 @@
                                 <path d="M34.3913,30.0029,24.0007,48A23.994,23.994,0,0,0,44.78,12.0031H23.9989l-.0025.0093A11.985,11.985,0,0,1,34.3913,30.0029Z" fill="url(#chrome-b)" />
                                 <path d="M13.6086,30.0031,3.218,12.006A23.994,23.994,0,0,0,24.0025,48L34.3931,30.0029l-.0067-.0068a11.9852,11.9852,0,0,1-20.7778.007Z" fill="url(#chrome-c)" />
                             </svg>
-                        </div>                        <div class="text-sm font-medium {$darkMode ? 'text-gray-800' : 'text-gray-700'}">Google Chrome</div>
+                        </div>                        
+                        <div class="text-sm font-medium {$darkMode ? 'text-gray-800' : 'text-gray-700'}">Google Chrome</div>
                     </div>
                     <div class="text-center">
                         <!-- Edge Logo -->                        
@@ -309,9 +310,7 @@
                     onmouseover={(e) => (e.currentTarget as HTMLElement).style.backgroundColor = `color-mix(in srgb, var(--theme-color-primary) 80%, black)`}
                     onmouseout={(e) => (e.currentTarget as HTMLElement).style.backgroundColor = `var(--theme-color-primary)`}
                     onclick={() => window.open('https://www.google.com/chrome/', '_blank')}
-                >
-                    Download Chrome
-                </button>
+                >Download Chrome</button>
                 <button 
                     class="px-6 py-3 rounded-lg font-medium border transition-all duration-200"
                     style="border-color: {$darkMode ? 'color-mix(in srgb, var(--theme-color-primary) 30%, gray)' : `color-mix(in srgb, var(--theme-color-primary) 20%, white)`}; 
