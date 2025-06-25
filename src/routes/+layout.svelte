@@ -335,10 +335,12 @@
 <!-- Main Application (hidden on small screens) -->
 <div class="hidden xl:flex h-screen {$darkMode ? 'bg-black' : 'bg-gray-50'}">
     <!-- Sidebar -->
-    <div class="flex flex-col w-52 {$darkMode ? 'bg-black border-gray-600' : 'bg-white border-gray-200'} shadow-lg h-full overflow-y-auto border-r">        <!-- Header -->
+    <div class="flex flex-col w-52 {$darkMode ? 'bg-black border-gray-600' : 'bg-white border-gray-200'} shadow-lg h-full overflow-y-auto border-r">        
+        <!-- Header -->
         <div class="p-4">
             <h1 class="font-bold text-xl {$darkMode ? 'text-white' : 'text-gray-900'} text-center">{t('common.zellia', currentLanguage)}</h1>
-        </div>          <!-- Sync Button -->
+        </div>          
+        <!-- Sync Button -->
         <div class="flex justify-center mb-4 mt-2">
             <button 
                 class="px-18 py-2 rounded-4xl font-bold transition-colors duration-200 shadow w-auto"
@@ -423,7 +425,8 @@
             <!-- Theme Button -->
             <button 
                 class="flex items-center justify-between w-full px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 {$darkMode ? 'text-white hover:bg-gray-900' : 'text-gray-700 hover:bg-gray-100'}"
-                onclick={() => showThemeSelector = !showThemeSelector}            >                <div class="flex items-center gap-3">
+                onclick={() => showThemeSelector = !showThemeSelector}            >                
+                <div class="flex items-center gap-3">
                     <Palette class="w-4 h-4" />
                     <span>{t('ui.themeColors', currentLanguage)}</span>
                 </div>
@@ -444,7 +447,8 @@
                             onclick={() => setTheme(name as ThemeColorName)}
                         ></button>
                     {/each}
-                </div>            {/if}
+                </div>            
+                {/if}
         </div>        
 
         <!-- Language Selector -->
@@ -452,8 +456,7 @@
             <!-- Language Button -->
             <button 
                 class="flex items-center justify-between w-full px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 {$darkMode ? 'text-white hover:bg-gray-900' : 'text-gray-700 hover:bg-gray-100'}"
-                onclick={() => showLanguageSelector = !showLanguageSelector}
-            >
+                onclick={() => showLanguageSelector = !showLanguageSelector}>
                 <div class="flex items-center gap-3">
                     <Globe class="w-4 h-4" />
                     <span>{t('ui.language', currentLanguage)}</span>
@@ -469,15 +472,13 @@
                     <button 
                         class="w-full px-3 py-2 text-sm text-left rounded-lg transition-all duration-150 {currentLanguage === 'en' ? `text-white` : ($darkMode ? 'text-gray-300 hover:bg-gray-800' : 'text-gray-700 hover:bg-gray-100')}"
                         style={currentLanguage === 'en' ? `background-color: var(--theme-color-primary);` : ''}
-                        onclick={() => setLanguage('en')}
-                    >
+                        onclick={() => setLanguage('en')}>
                         {t('common.english', currentLanguage)}
                     </button>
                     <button 
                         class="w-full px-3 py-2 text-sm text-left rounded-lg transition-all duration-150 {currentLanguage === 'zh' ? `text-white` : ($darkMode ? 'text-gray-300 hover:bg-gray-800' : 'text-gray-700 hover:bg-gray-100')}"
                         style={currentLanguage === 'zh' ? `background-color: var(--theme-color-primary);` : ''}
-                        onclick={() => setLanguage('zh')}
-                    >
+                        onclick={() => setLanguage('zh')}>
                         {t('common.chinese', currentLanguage)}
                     </button>
                 </div>
@@ -487,8 +488,8 @@
         <!-- Dark Mode Toggle at Bottom -->
         <div class="p-3 border-t border-transparent">            <button
                 class="flex items-center gap-3 w-full px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 {$darkMode ? 'text-white hover:bg-gray-900' : 'text-gray-700 hover:bg-gray-100'}"
-                onclick={() => darkMode.toggle()}
-            >                {#if $darkMode}
+                onclick={() => darkMode.toggle()}>                
+                {#if $darkMode}
                     <Sun class="w-4 h-4" />
                     <span>{t('ui.lightMode', currentLanguage)}</span>
                 {:else}
@@ -497,9 +498,10 @@
                 {/if}
             </button>
         </div>
-    </div><!-- Main Content -->    <div 
+    </div><!-- Main Content -->    
+    <div 
         class="flex-1 flex flex-col gap-4 px-4 overflow-y-scroll"
-        style="background-color: {$darkMode ? `color-mix(in srgb, var(--theme-color-primary) 5%, black)` : `color-mix(in srgb, var(--theme-color-primary) 5%, white)`};"    ><!-- Layer selector (hidden on about page) -->
+        style="background-color: {$darkMode ? `color-mix(in srgb, var(--theme-color-primary) 5%, black)` : `color-mix(in srgb, var(--theme-color-primary) 5%, white)`};"><!-- Layer selector (hidden on about page) -->
         {#if $page.url.pathname !== '/about'}
         <div class="flex items-center -mb-3">
             <div class="flex items-center gap-2 px-4 py-2">
