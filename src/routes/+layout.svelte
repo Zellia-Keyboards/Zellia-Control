@@ -24,6 +24,11 @@
     let currentTheme = $state<ThemeColorName>('indigo');
     let currentLanguage = $state<Language>('en');
 
+    // Long click animation states
+    let longClickStates = $state<Record<string, { isPressed: boolean; progress: number; timeout?: any; animationFrame?: any; x: number; y: number; completed: boolean; fadeProgress: number; showAnimation: boolean }>>({});
+    let longClickDuration = 800; // milliseconds
+    let animationDelay = 300; // milliseconds delay before showing animation
+
     selectedThemeColor.subscribe(value => {
         currentTheme = value;
     });
@@ -39,6 +44,114 @@
     }    // Function to check if a navigation item is active
     function isActive(href: string): boolean {
         return $page.url.pathname === href || $page.url.pathname.startsWith(href + '/');
+    }
+
+    // Long click animation functions
+    function startLongClick(id: string, event: MouseEvent | TouchEvent) {
+        // Get cursor position relative to the button
+        const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
+        let x, y;
+        
+        if (event instanceof MouseEvent) {
+            x = event.clientX - rect.left;
+            y = event.clientY - rect.top;
+        } else {
+            // TouchEvent
+            x = event.touches[0].clientX - rect.left;
+            y = event.touches[0].clientY - rect.top;
+        }
+        
+        // Initialize state if not exists
+        if (!longClickStates[id]) {
+            longClickStates[id] = { isPressed: false, progress: 0, x: 0, y: 0, completed: false, fadeProgress: 1, showAnimation: false };
+        }
+        
+        const state = longClickStates[id];
+        state.isPressed = true;
+        state.progress = 0;
+        state.x = x;
+        state.y = y;
+        state.completed = false;
+        state.fadeProgress = 1;
+        state.showAnimation = false;
+        
+        // Start animation after delay
+        state.timeout = setTimeout(() => {
+            if (state.isPressed) {
+                state.showAnimation = true;
+                const startTime = Date.now();
+                
+                const animateProgress = () => {
+                    if (!state.isPressed && !state.completed) return;
+                    
+                    const elapsed = Date.now() - startTime;
+                    state.progress = Math.min(elapsed / longClickDuration, 1);
+                    
+                    if (state.progress < 1) {
+                        state.animationFrame = requestAnimationFrame(animateProgress);
+                    } else {
+                        // Long click completed
+                        state.completed = true;
+                        onLongClickComplete(id);
+                    }
+                };
+                
+                state.animationFrame = requestAnimationFrame(animateProgress);
+            }
+        }, animationDelay);
+    }
+
+    function endLongClick(id: string) {
+        const state = longClickStates[id];
+        if (state) {
+            state.isPressed = false;
+            if (state.completed) {
+                // If completed, start fade out animation
+                const fadeStartTime = Date.now();
+                const fadeDuration = 200; // 200ms fade out
+                
+                const fadeOut = () => {
+                    const elapsed = Date.now() - fadeStartTime;
+                    const fadeProgress = Math.min(elapsed / fadeDuration, 1);
+                    state.fadeProgress = 1 - fadeProgress;
+                    
+                    if (fadeProgress < 1) {
+                        requestAnimationFrame(fadeOut);
+                    } else {
+                        // Reset state after fade out
+                        state.completed = false;
+                        state.progress = 0;
+                        state.fadeProgress = 1;
+                        state.showAnimation = false;
+                    }
+                };
+                
+                requestAnimationFrame(fadeOut);
+            } else {
+                // Not completed, reset immediately
+                state.progress = 0;
+                state.showAnimation = false;
+            }
+            
+            if (state.animationFrame) {
+                cancelAnimationFrame(state.animationFrame);
+            }
+            if (state.timeout) {
+                clearTimeout(state.timeout);
+            }
+        }
+    }
+
+    function onLongClickComplete(id: string) {
+        console.log(`Long click completed for: ${id}`);
+        // Add your long click action here
+        // For example, you could show a context menu, perform a special action, etc.
+        
+        // Keep the completed state - it will stay until user releases
+        const state = longClickStates[id];
+        if (state) {
+            state.completed = true;
+        }
     }    // Set page language for accessibility
     $effect(() => {
         if (typeof document !== 'undefined') {
@@ -347,11 +460,41 @@
         <!-- Sync Button -->
         <div class="flex justify-center mb-4 mt-2">
             <button 
-                class="px-18 py-2 rounded-4xl font-bold transition-colors duration-200 shadow w-auto"
+                class="px-18 py-2 rounded-4xl font-bold transition-colors duration-200 shadow w-auto relative overflow-hidden"
                 style="background-color: var(--theme-color-primary); color: white;"
+                onmousedown={(e) => startLongClick('sync', e)}
+                onmouseup={() => endLongClick('sync')}
+                onmouseleave={() => endLongClick('sync')}
+                ontouchstart={(e) => startLongClick('sync', e)}
+                ontouchend={() => endLongClick('sync')}
+                ontouchcancel={() => endLongClick('sync')}
                 onmouseover={(e) => (e.currentTarget as HTMLElement).style.backgroundColor = `color-mix(in srgb, var(--theme-color-primary) 80%, black)`}
                 onmouseout={(e) => (e.currentTarget as HTMLElement).style.backgroundColor = `var(--theme-color-primary)`}
-            >{t('ui.sync', currentLanguage)}</button>
+            >
+                <!-- Long click circular animation -->
+                {#if longClickStates['sync']?.showAnimation && (longClickStates['sync']?.isPressed || longClickStates['sync']?.completed)}
+                <div 
+                    class="absolute inset-0 rounded-4xl overflow-hidden pointer-events-none"
+                >
+                    <div
+                        class="absolute rounded-full transition-all duration-75"
+                        style="
+                            left: {longClickStates['sync'].x}px; 
+                            top: {longClickStates['sync'].y}px;
+                            width: {longClickStates['sync'].progress * 300}px;
+                            height: {longClickStates['sync'].progress * 300}px;
+                            margin-left: -{longClickStates['sync'].progress * 150}px;
+                            margin-top: -{longClickStates['sync'].progress * 150}px;
+                            background-color: color-mix(in srgb, white {longClickStates['sync'].completed ? '30%' : '15%'}, transparent);
+                            opacity: {longClickStates['sync'].fadeProgress};
+                            transition: background-color 0.3s ease;
+                        "
+                    ></div>
+                </div>
+                {/if}
+                
+                <span class="relative z-10">{t('ui.sync', currentLanguage)}</span>
+            </button>
         </div>
         
         <!-- Profile Section -->
@@ -376,19 +519,76 @@
               <!-- Import/Export Buttons -->
             <div class="grid grid-cols-2 gap-2">
                 <button 
-                    class="px-3 py-2 text-xs font-medium border rounded-md transition-colors duration-200 text-white border-transparent"
-                    style="background-color: var(--theme-color-primary);"                    onmouseover={(e) => (e.currentTarget as HTMLElement).style.backgroundColor = `color-mix(in srgb, var(--theme-color-primary) 80%, black)`}
-                    onmouseout={(e) => (e.currentTarget as HTMLElement).style.backgroundColor = `var(--theme-color-primary)`}
-                >
-                    {t('ui.import', currentLanguage)}
-                </button>
-                <button 
-                    class="px-3 py-2 text-xs font-medium border rounded-md transition-colors duration-200 text-white border-transparent"
+                    class="px-3 py-2 text-xs font-medium border rounded-md transition-colors duration-200 text-white border-transparent relative overflow-hidden"
                     style="background-color: var(--theme-color-primary);"
+                    onmousedown={(e) => startLongClick('import', e)}
+                    onmouseup={() => endLongClick('import')}
+                    onmouseleave={() => endLongClick('import')}
+                    ontouchstart={(e) => startLongClick('import', e)}
+                    ontouchend={() => endLongClick('import')}
+                    ontouchcancel={() => endLongClick('import')}
                     onmouseover={(e) => (e.currentTarget as HTMLElement).style.backgroundColor = `color-mix(in srgb, var(--theme-color-primary) 80%, black)`}
                     onmouseout={(e) => (e.currentTarget as HTMLElement).style.backgroundColor = `var(--theme-color-primary)`}
                 >
-                    {t('ui.export', currentLanguage)}
+                    <!-- Long click circular animation -->
+                    {#if longClickStates['import']?.showAnimation && (longClickStates['import']?.isPressed || longClickStates['import']?.completed)}
+                    <div 
+                        class="absolute inset-0 rounded-md overflow-hidden pointer-events-none"
+                    >
+                        <div
+                            class="absolute rounded-full transition-all duration-75"
+                            style="
+                                left: {longClickStates['import'].x}px; 
+                                top: {longClickStates['import'].y}px;
+                                width: {longClickStates['import'].progress * 200}px;
+                                height: {longClickStates['import'].progress * 200}px;
+                                margin-left: -{longClickStates['import'].progress * 100}px;
+                                margin-top: -{longClickStates['import'].progress * 100}px;
+                                background-color: color-mix(in srgb, white {longClickStates['import'].completed ? '30%' : '15%'}, transparent);
+                                opacity: {longClickStates['import'].fadeProgress};
+                                transition: background-color 0.3s ease;
+                            "
+                        ></div>
+                    </div>
+                    {/if}
+                    
+                    <span class="relative z-10">{t('ui.import', currentLanguage)}</span>
+                </button>
+                <button 
+                    class="px-3 py-2 text-xs font-medium border rounded-md transition-colors duration-200 text-white border-transparent relative overflow-hidden"
+                    style="background-color: var(--theme-color-primary);"
+                    onmousedown={(e) => startLongClick('export', e)}
+                    onmouseup={() => endLongClick('export')}
+                    onmouseleave={() => endLongClick('export')}
+                    ontouchstart={(e) => startLongClick('export', e)}
+                    ontouchend={() => endLongClick('export')}
+                    ontouchcancel={() => endLongClick('export')}
+                    onmouseover={(e) => (e.currentTarget as HTMLElement).style.backgroundColor = `color-mix(in srgb, var(--theme-color-primary) 80%, black)`}
+                    onmouseout={(e) => (e.currentTarget as HTMLElement).style.backgroundColor = `var(--theme-color-primary)`}
+                >
+                    <!-- Long click circular animation -->
+                    {#if longClickStates['export']?.showAnimation && (longClickStates['export']?.isPressed || longClickStates['export']?.completed)}
+                    <div 
+                        class="absolute inset-0 rounded-md overflow-hidden pointer-events-none"
+                    >
+                        <div
+                            class="absolute rounded-full transition-all duration-75"
+                            style="
+                                left: {longClickStates['export'].x}px; 
+                                top: {longClickStates['export'].y}px;
+                                width: {longClickStates['export'].progress * 200}px;
+                                height: {longClickStates['export'].progress * 200}px;
+                                margin-left: -{longClickStates['export'].progress * 100}px;
+                                margin-top: -{longClickStates['export'].progress * 100}px;
+                                background-color: color-mix(in srgb, white {longClickStates['export'].completed ? '30%' : '15%'}, transparent);
+                                opacity: {longClickStates['export'].fadeProgress};
+                                transition: background-color 0.3s ease;
+                            "
+                        ></div>
+                    </div>
+                    {/if}
+                    
+                    <span class="relative z-10">{t('ui.export', currentLanguage)}</span>
                 </button>
             </div>
         </div>
@@ -398,10 +598,16 @@
                 {#each NAVIGATE as [href, name]}                    
                 <a 
                         {href} 
-                        class="flex items-center gap-3 w-full px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 {isActive(href) 
+                        class="flex items-center gap-3 w-full px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative overflow-hidden {isActive(href) 
                             ? 'text-white shadow-sm'
                             : ($darkMode ? 'text-white hover:bg-gray-900 hover:text-white' : 'text-gray-700')}"
                         style={isActive(href) ? `background-color: var(--theme-color-primary);` : ''}
+                        onmousedown={(e) => startLongClick(href, e)}
+                        onmouseup={() => endLongClick(href)}
+                        onmouseleave={() => endLongClick(href)}
+                        ontouchstart={(e) => startLongClick(href, e)}
+                        ontouchend={() => endLongClick(href)}
+                        ontouchcancel={() => endLongClick(href)}
                         onmouseover={(e) => {
                             if (!isActive(href)) {
                                 (e.currentTarget as HTMLElement).style.backgroundColor = $darkMode ? '#374151' : `color-mix(in srgb, var(--theme-color-primary) 10%, white)`;
@@ -419,7 +625,29 @@
                             }
                         }}
                     >
-                        <span>{t(name, currentLanguage)}</span>
+                        <!-- Long click circular animation -->
+                        {#if longClickStates[href]?.showAnimation && (longClickStates[href]?.isPressed || longClickStates[href]?.completed)}
+                        <div 
+                            class="absolute inset-0 rounded-lg overflow-hidden pointer-events-none"
+                        >
+                            <div
+                                class="absolute rounded-full transition-all duration-75"
+                                style="
+                                    left: {longClickStates[href].x}px; 
+                                    top: {longClickStates[href].y}px;
+                                    width: {longClickStates[href].progress * 400}px;
+                                    height: {longClickStates[href].progress * 400}px;
+                                    margin-left: -{longClickStates[href].progress * 200}px;
+                                    margin-top: -{longClickStates[href].progress * 200}px;
+                                    background-color: color-mix(in srgb, var(--theme-color-primary) {longClickStates[href].completed ? '40%' : '20%'}, transparent);
+                                    opacity: {longClickStates[href].fadeProgress};
+                                    transition: background-color 0.3s ease;
+                                "
+                            ></div>
+                        </div>
+                        {/if}
+                        
+                        <span class="relative z-10">{t(name, currentLanguage)}</span>
                     </a>
                 {/each}
             </nav>
@@ -491,15 +719,46 @@
         
         <!-- Dark Mode Toggle at Bottom -->
         <div class="p-3 border-t border-transparent">            <button
-                class="flex items-center gap-3 w-full px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 {$darkMode ? 'text-white hover:bg-gray-900' : 'text-gray-700 hover:bg-gray-100'}"
-                onclick={() => darkMode.toggle()}>                
-                {#if $darkMode}
-                    <Sun class="w-4 h-4" />
-                    <span>{t('ui.lightMode', currentLanguage)}</span>
-                {:else}
-                    <Moon class="w-4 h-4" />
-                    <span>{t('ui.darkMode', currentLanguage)}</span>
+                class="flex items-center gap-3 w-full px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative overflow-hidden {$darkMode ? 'text-white hover:bg-gray-900' : 'text-gray-700 hover:bg-gray-100'}"
+                onmousedown={(e) => startLongClick('darkmode', e)}
+                onmouseup={() => endLongClick('darkmode')}
+                onmouseleave={() => endLongClick('darkmode')}
+                ontouchstart={(e) => startLongClick('darkmode', e)}
+                ontouchend={() => endLongClick('darkmode')}
+                ontouchcancel={() => endLongClick('darkmode')}
+                onclick={() => darkMode.toggle()}>
+                
+                <!-- Long click circular animation -->
+                {#if longClickStates['darkmode']?.showAnimation && (longClickStates['darkmode']?.isPressed || longClickStates['darkmode']?.completed)}
+                <div 
+                    class="absolute inset-0 rounded-lg overflow-hidden pointer-events-none"
+                >
+                    <div
+                        class="absolute rounded-full transition-all duration-75"
+                        style="
+                            left: {longClickStates['darkmode'].x}px; 
+                            top: {longClickStates['darkmode'].y}px;
+                            width: {longClickStates['darkmode'].progress * 400}px;
+                            height: {longClickStates['darkmode'].progress * 400}px;
+                            margin-left: -{longClickStates['darkmode'].progress * 200}px;
+                            margin-top: -{longClickStates['darkmode'].progress * 200}px;
+                            background-color: color-mix(in srgb, var(--theme-color-primary) {longClickStates['darkmode'].completed ? '30%' : '15%'}, transparent);
+                            opacity: {longClickStates['darkmode'].fadeProgress};
+                            transition: background-color 0.3s ease;
+                        "
+                    ></div>
+                </div>
                 {/if}
+                
+                <div class="flex items-center gap-3 relative z-10">
+                    {#if $darkMode}
+                        <Sun class="w-4 h-4" />
+                        <span>{t('ui.lightMode', currentLanguage)}</span>
+                    {:else}
+                        <Moon class="w-4 h-4" />
+                        <span>{t('ui.darkMode', currentLanguage)}</span>
+                    {/if}
+                </div>
             </button>
         </div>
     </div><!-- Main Content -->    
