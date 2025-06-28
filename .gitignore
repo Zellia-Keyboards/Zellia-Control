@@ -20,7 +20,7 @@ node_modules/
 # npm, yarn and bun lock files
 package-lock.json
 yarn.lock
-bun.lockb
+bun.lock
 
 # rust compiled folders
 target/
