@@ -6,15 +6,15 @@
         "Vol-",
         "Vol+",
         "Mute",
-        "Play/Pause",
+        "Play\nPause",
         "Stop",
         "Prev",
         "Next",
         "Email",
         "Calculator",
         "Explorer",
-        "Media Player",
-        "Control Panel",
+        "Media\nPlayer",
+        "Control\nPanel",
         "Search",
         "Home",
         "Back",
@@ -22,7 +22,7 @@
         "Stop",
         "Refresh",
         "Bookmarks",
-        "Mission Control",
+        "Mission\nControl",
         "Launchpad",
     ]
 </script>
@@ -30,7 +30,7 @@
 
 
 {#snippet keyslot(content: string)}
-    <button class="size-14 text-wrap text-sm border overflow-auto">
+    <button class="size-14 text-wrap text-sm border overflow-auto whitespace-pre-line">
         {content}
     </button>
 {/snippet}
