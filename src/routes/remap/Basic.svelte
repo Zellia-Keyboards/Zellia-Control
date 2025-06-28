@@ -17,7 +17,7 @@
             "None",
             "Print Screen",
             "Scroll Lock",
-            "Pause/Break",
+            "Pause\nBreak",
         ],
         [
             "~",
