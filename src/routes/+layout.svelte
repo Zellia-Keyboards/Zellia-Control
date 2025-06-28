@@ -20,6 +20,7 @@
     let showThemeSelector = $state(false);
     let showLanguageSelector = $state(false);
     let showFirefoxWarning = $state(false);
+    let firefoxWarningDismissed = $state(false);
     let currentTheme = $state<ThemeColorName>('indigo');
     let currentLanguage = $state<Language>('en');
 
@@ -43,8 +44,8 @@
         if (typeof document !== 'undefined') {
             document.documentElement.lang = currentLanguage;
             
-            // Check if user is using Firefox
-            if (navigator.userAgent.toLowerCase().includes('firefox')) {
+            // Check if user is using Firefox - only show warning if not dismissed
+            if (navigator.userAgent.toLowerCase().includes('firefox') && !firefoxWarningDismissed) {
                 showFirefoxWarning = true;
             }
         }
@@ -322,7 +323,10 @@
                     onmouseout={(e) => {
                         (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent';
                     }}
-                    onclick={() => showFirefoxWarning = false}
+                    onclick={() => {
+                        showFirefoxWarning = false;
+                        firefoxWarningDismissed = true;
+                    }}
                 >
                     I don't care, let me continue!
                 </button>
