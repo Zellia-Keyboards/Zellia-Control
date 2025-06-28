@@ -99,7 +99,7 @@
         </div>
     </div>
     <!-- Getting Started Section -->        
-        <div class="mt-6 rounded-xl p-6 border mb-4"
+        <div class=" rounded-xl p-6 border mb-4"
              style="background: {$darkMode ? 'color-mix(in srgb, var(--theme-color-primary) 8%, #111827)' : 'color-mix(in srgb, var(--theme-color-primary) 5%, #f9fafb)'};
                     border-color: {$darkMode ? 'color-mix(in srgb, var(--theme-color-primary) 15%, #374151)' : 'color-mix(in srgb, var(--theme-color-primary) 10%, #e5e7eb)'};">            <h3 class="text-lg font-semibold {$darkMode ? 'text-white' : 'text-gray-900'} mb-3">{t('advancedkey.gettingStarted', currentLanguage)}</h3>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
