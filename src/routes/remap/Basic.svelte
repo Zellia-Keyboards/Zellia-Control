@@ -15,8 +15,8 @@
             "F11",
             "F12",
             "None",
-            "Print Screen",
-            "Scroll Lock",
+            "Print\nScreen",
+            "Scroll\nLock",
             "Pause\nBreak",
         ],
         [
@@ -36,7 +36,7 @@
             "Backspace",
             "Insert",
             "Home",
-            "Page Up",
+            "PgUp",
         ],
         [
             "Tab",
@@ -55,7 +55,7 @@
             "\\",
             "Delete",
             "End",
-            "Page Down",
+            "PgDn",
         ],
         [
             "Caps Lock",
@@ -109,19 +109,19 @@
             "*",
             "-",
             "=",
-            "7 Home",
-            "8 ↑",
-            "9 PgUp",
+            "7\nHome",
+            "↑\n8",
+            "9\nPgUp",
             "+",
             "4 ←",
             "5",
-            "6 →",
-            "1 End",
-            "2 ↓",
-            "3 PgDn",
+            "→ 6",
+            "1\nEnd",
+            "2\n↓",
+            "3\nPgDn",
             "Enter",
-            "0 Ins",
-            ". Del",
+            "0\nIns",
+            ".\nDel",
         ],
         [
             // Additional keys
@@ -155,7 +155,7 @@
 </script>
 
 {#snippet keyslot(content: string)}
-    <button class="size-14 text-wrap text-sm border">
+    <button class="size-14 text-wrap text-sm border whitespace-pre-line rounded-lg">
         {content}
     </button>
 {/snippet}
