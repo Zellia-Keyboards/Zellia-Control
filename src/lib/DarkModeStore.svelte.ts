@@ -11,7 +11,7 @@ export const themeColors = {
     lime: '#A3E635',   // Brighter lime
     green: '#4ADE80',  // Lighter green
     teal: '#2DD4BF',   // Lighter teal
-    blue: '#60A5FA',   // Lighter blue
+    blue: '#0e9dec',   // Alipay blue
 };
 
 export type ThemeColorName = keyof typeof themeColors;

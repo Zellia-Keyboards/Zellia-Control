@@ -15,7 +15,7 @@
 
 
 {#snippet keyslot(content: string)}
-    <button class="size-14 text-wrap text-sm border overflow-auto whitespace-pre-line">
+    <button class="size-14 text-wrap text-sm border overflow-auto whitespace-pre-line rounded-lg">
         {content}
     </button>
 {/snippet}
