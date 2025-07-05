@@ -217,7 +217,7 @@
                                         </svg>
                                     </div>
                                     <div class="w-24 h-24 bg-white rounded-lg flex items-center justify-center p-1">
-                                        <img src="/src/assets/alipayqr.jpg" alt="Alipay QR Code" class="w-full h-full object-contain rounded" />
+                                        <img src="/alipayqr.jpg" alt="Alipay QR Code" class="w-full h-full object-contain rounded" />
                                     </div>
                                 </div>
 
