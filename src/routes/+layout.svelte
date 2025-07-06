@@ -767,29 +767,35 @@
     <div 
         class="flex-1 flex flex-col gap-4 px-4 overflow-y-scroll"
         style="background-color: {$darkMode ? `color-mix(in srgb, var(--theme-color-primary) 5%, black)` : `color-mix(in srgb, var(--theme-color-primary) 5%, white)`};"><!-- Layer selector (hidden on about page) -->
-        {#if $page.url.pathname !== '/about'}
-        <div class="flex items-center -mb-3">
-            <div class="flex items-center gap-2 px-4 py-2">
-                <span class="font-semibold {$darkMode ? 'text-white' : 'text-gray-700'} mr-2">Layer:</span>                {#each [1, 2, 3, 4] as layer}
-                    <button
-                        class="w-8 h-8 flex items-center justify-center rounded-lg border font-bold text-lg transition-colors duration-200 focus:outline-none {selectedLayer === layer ? 'text-white' : ($darkMode ? 'bg-black text-white border-gray-600 hover:bg-gray-900' : '')}"
-                        style={selectedLayer === layer ? `background-color: var(--theme-color-primary); border-color: color-mix(in srgb, var(--theme-color-primary) 70%, black);` : (selectedLayer !== layer ? `background-color: ${$darkMode ? 'black' : 'white'}; border-color: color-mix(in srgb, var(--theme-color-primary) 30%, ${$darkMode ? 'black' : 'white'}); color: var(--theme-color-primary);` : '')}
-                        onmouseover={(e) => {
-                            if (selectedLayer !== layer) {
-                                (e.currentTarget as HTMLElement).style.backgroundColor = $darkMode ? '#374151' : `color-mix(in srgb, var(--theme-color-primary) 15%, white)`;
-                            }
-                        }}
-                        onmouseout={(e) => {
-                            if (selectedLayer !== layer) {
-                                (e.currentTarget as HTMLElement).style.backgroundColor = $darkMode ? 'black' : 'white';
-                            }
-                        }}
-                        onclick={() => selectedLayer = layer}
-                    >
-                        {layer}
-                    </button>
-                {/each}
-            </div>        </div>
+        {#if $page.url.pathname === '/about' || $page.url.pathname === '/lighting' || $page.url.pathname === '/calibration' || $page.url.pathname === '/debug' || $page.url.pathname === '/settings'}
+            <!-- Spacer to maintain layout consistency -->
+            <div class="flex items-center -mb-3">
+                <div class="flex items-center gap-2 px-4 py-2 h-12"></div>
+            </div>
+        {:else}
+            <div class="flex items-center -mb-3 animate-fade-in">
+                <div class="flex items-center gap-2 px-4 py-2">
+                    <span class="font-semibold {$darkMode ? 'text-white' : 'text-gray-700'} mr-2">Layer:</span>                    {#each [1, 2, 3, 4] as layer}
+                        <button
+                            class="w-8 h-8 flex items-center justify-center rounded-lg border font-bold text-lg transition-colors duration-200 focus:outline-none {selectedLayer === layer ? 'text-white' : ($darkMode ? 'bg-black text-white border-gray-600 hover:bg-gray-900' : '')}"
+                            style={selectedLayer === layer ? `background-color: var(--theme-color-primary); border-color: color-mix(in srgb, var(--theme-color-primary) 70%, black);` : (selectedLayer !== layer ? `background-color: ${$darkMode ? 'black' : 'white'}; border-color: color-mix(in srgb, var(--theme-color-primary) 30%, ${$darkMode ? 'black' : 'white'}); color: var(--theme-color-primary);` : '')}
+                            onmouseover={(e) => {
+                                if (selectedLayer !== layer) {
+                                    (e.currentTarget as HTMLElement).style.backgroundColor = $darkMode ? '#374151' : `color-mix(in srgb, var(--theme-color-primary) 15%, white)`;
+                                }
+                            }}
+                            onmouseout={(e) => {
+                                if (selectedLayer !== layer) {
+                                    (e.currentTarget as HTMLElement).style.backgroundColor = $darkMode ? 'black' : 'white';
+                                }
+                            }}
+                            onclick={() => selectedLayer = layer}
+                        >
+                            {layer}
+                        </button>
+                    {/each}
+                </div>
+            </div>
         {/if}
         <!-- Component for adjust part -->
         
@@ -802,5 +808,21 @@
     :global(html) {
         background-color: theme(--color-gray-50);
         --theme-color-primary: #6366F1; /* Default Indigo, will be overridden */
+    }
+    
+    /* Layer selector fade-in animation */
+    .animate-fade-in {
+        animation: fadeIn 0.3s ease-in-out;
+    }
+    
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
     }
 </style>
