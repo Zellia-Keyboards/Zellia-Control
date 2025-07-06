@@ -76,20 +76,55 @@
         tapTimeout = 150;
     }
 
-    function applyConfiguration(): void {
-        updateConfiguration();
-        console.log('Applying tap-hold configurations:', $globalConfigurations);
+    function deleteKey(keyId: string): void {
+        // Add fade-out animation
+        deletingKeys.add(keyId);
+        deletingKeys = new Set(deletingKeys);
+        
+        setTimeout(() => {
+            resetGlobalConfiguration(keyId);
+            deletingKeys.delete(keyId);
+            deletingKeys = new Set(deletingKeys);
+        }, 500); // Increased to match smoother animation
     }
 
-    function resetAllTapHoldKeys(): void {
-        globalConfigurations.update(configs => {
-            const newConfigs = { ...configs };
-            Object.keys(newConfigs).forEach(keyId => {
-                if (newConfigs[keyId].type === 'tap-hold') {
-                    delete newConfigs[keyId];
-                }
+    function resetAllConfigurations(): void {
+        const keysToDelete = [...configuredTapHoldKeys.map(([keyId]) => keyId)];
+        
+        // Add fade-out animation for all keys
+        keysToDelete.forEach(keyId => {
+            deletingKeys.add(keyId);
+        });
+        deletingKeys = new Set(deletingKeys);
+        
+        setTimeout(() => {
+            keysToDelete.forEach(keyId => {
+                resetGlobalConfiguration(keyId);
             });
-            return newConfigs;        });    }
+            deletingKeys.clear();
+            deletingKeys = new Set(deletingKeys);
+        }, 500); // Increased to match smoother animation
+    }
+
+    function applyConfiguration(): void {
+        if (!CurrentSelected) return;
+        const keyId = `${CurrentSelected[0]},${CurrentSelected[1]}`;
+        
+        // Check if this is a new key being configured
+        const isNewKey = !$globalConfigurations[keyId] || $globalConfigurations[keyId].type !== 'tap-hold';
+        
+        updateConfiguration();
+        
+        // Trigger animation for newly added key
+        if (isNewKey) {
+            newlyAddedKeys.add(keyId);
+            newlyAddedKeys = new Set(newlyAddedKeys);
+            setTimeout(() => {
+                newlyAddedKeys.delete(keyId);
+                newlyAddedKeys = new Set(newlyAddedKeys);
+            }, 600); // Increased to match smoother fade-in animation
+        }
+    }
 
     // Load existing configuration when key selection changes
     $effect(() => {
@@ -130,10 +165,62 @@
         }
     ]);
 
+    // Animation state variables
+    let deletingKeys = $state(new Set<string>());
+    let newlyAddedKeys = $state(new Set<string>());
+    let showConfiguredSection = $state(false);
+    let sectionAnimationPlayed = $state(false);
+    let previousKeyCount = $state(0);
+    let lastAnimationTrigger = $state(0);
+
     // Get configured tap-hold keys count
     const configuredTapHoldKeys = $derived(
         Object.entries($globalConfigurations).filter(([_, config]) => config.type === 'tap-hold')
     );
+
+    // Calculate dynamic height for configured keys section
+    const configuredKeysMaxHeight = $derived(() => {
+        const keyCount = configuredTapHoldKeys.length;
+        if (keyCount === 0) return '200px';
+        
+        // Each key item is roughly 120px (including spacing, padding, and content)
+        // This matches the max-height in the animation
+        const itemHeight = 120;
+        const baseHeight = 80; // Header and container padding
+        const bottomDeadzone = 40; // Extra space at bottom to prevent clipping
+        const calculatedHeight = baseHeight + (keyCount * itemHeight) + bottomDeadzone;
+        
+        // Set reasonable bounds: minimum 200px, maximum 650px
+        const minHeight = 200;
+        const maxHeight = 650; // Increased to accommodate deadzone
+            
+        return `${Math.max(minHeight, Math.min(calculatedHeight, maxHeight))}px`;
+    });
+
+    // Watch for changes in configured keys to trigger animations
+    $effect(() => {
+        const currentCount = configuredTapHoldKeys.length;
+        const currentTime = Date.now();
+        
+        if (currentCount > 0) {
+            if (!showConfiguredSection) {
+                showConfiguredSection = true;
+                // Only play section animation once per appearance  
+                if (!sectionAnimationPlayed || currentTime - lastAnimationTrigger > 1000) {
+                    sectionAnimationPlayed = true;
+                    lastAnimationTrigger = currentTime;
+                }
+            }
+        } else {
+            // Reset states when no keys are configured
+            showConfiguredSection = false;
+            sectionAnimationPlayed = false;
+            deletingKeys.clear();
+            newlyAddedKeys.clear();
+        }
+        
+        previousKeyCount = currentCount;
+    });
 </script>
 
 
@@ -181,7 +268,7 @@
                 </button>
                 <button 
                     class="px-4 py-2 {$darkMode ? 'bg-red-700 hover:bg-red-600' : 'bg-red-600 hover:bg-red-700'} text-white rounded-md transition-colors text-sm font-medium"
-                    onclick={resetAllTapHoldKeys}
+                    onclick={resetAllConfigurations}
                 >
                     {t('advancedkey.resetAllTapHold', currentLanguage)}
                 </button>
@@ -257,7 +344,9 @@
                                     </div>
                                 {/each}
                             </div>
-                        </div>                        <!-- Hold Action Selection -->                        <div class="rounded-lg border p-6" style="background-color: color-mix(in srgb, var(--theme-color-primary) 5%, ${$darkMode ? 'black' : 'white'}); border-color: color-mix(in srgb, var(--theme-color-primary) 25%, ${$darkMode ? 'white' : '#e5e5e5'});">
+                        </div>                        
+                        <!-- Hold Action Selection -->                        
+                         <div class="rounded-lg border p-6" style="background-color: color-mix(in srgb, var(--theme-color-primary) 5%, ${$darkMode ? 'black' : 'white'}); border-color: color-mix(in srgb, var(--theme-color-primary) 25%, ${$darkMode ? 'white' : '#e5e5e5'});">
                             <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'} mb-4">{t('advancedkey.holdAction', currentLanguage)}</h3>
                             <p class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'} mb-4">{t('advancedkey.holdActionDesc', currentLanguage)}</p>
                             
@@ -381,20 +470,38 @@
                         </div>
                         
                         <!-- Configured Keys Summary -->
-                        {#if configuredTapHoldKeys.length > 0}
-                            <div class="rounded-lg border p-6" style="background-color: color-mix(in srgb, var(--theme-color-primary) 5%, ${$darkMode ? 'black' : 'white'}); border-color: color-mix(in srgb, var(--theme-color-primary) 25%, ${$darkMode ? 'white' : '#e5e5e5'});">
+                        {#if showConfiguredSection}
+                            <div 
+                                class="rounded-lg border p-6 {sectionAnimationPlayed ? 'animate-section-fade-in' : ''}" 
+                                style="background-color: color-mix(in srgb, var(--theme-color-primary) 5%, ${$darkMode ? 'black' : 'white'}); border-color: color-mix(in srgb, var(--theme-color-primary) 25%, ${$darkMode ? 'white' : '#e5e5e5'});"
+                            >
                                 <div class="flex items-center justify-between mb-4">
                                     <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'}">{t('advancedkey.configuredTapHold', currentLanguage)}</h3>
                                     <span class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-500'}">{configuredTapHoldKeys.length} {configuredTapHoldKeys.length !== 1 ? t('advancedkey.keysCountPlural', currentLanguage) : t('advancedkey.keysCount', currentLanguage)}</span>
                                 </div>
-                                <div class="space-y-3 max-h-64 overflow-y-auto">
-                                    {#each configuredTapHoldKeys as [keyId, config]}
+                                <div class="space-y-3 mb-6">
+                                    {#each configuredTapHoldKeys as [keyId, config] (keyId)}
                                         {@const [x, y] = keyId.split(',').map(Number)}
                                         {@const keyName = $KeyboardDisplayValues[y]?.[x] || t('common.unknown', currentLanguage)}
                                         {@const tapHoldConfig = config as TapHoldConfiguration}
-                                        <div class="p-3 rounded-lg border" style="background-color: color-mix(in srgb, var(--theme-color-primary) 8%, ${$darkMode ? 'black' : 'white'}); border-color: color-mix(in srgb, var(--theme-color-primary) 25%, ${$darkMode ? 'white' : '#e5e5e5'});">
+                                        {@const isDeleting = deletingKeys.has(keyId)}
+                                        {@const isNewlyAdded = newlyAddedKeys.has(keyId)}
+                                        <div 
+                                            class="p-3 rounded-lg border transform transition-all duration-500 ease-out {isDeleting ? 'animate-fade-out' : ''} {isNewlyAdded ? 'animate-fade-in' : ''}" 
+                                            style="background-color: color-mix(in srgb, var(--theme-color-primary) 8%, ${$darkMode ? 'black' : 'white'}); border-color: color-mix(in srgb, var(--theme-color-primary) 25%, ${$darkMode ? 'white' : '#e5e5e5'});"
+                                        >
                                             <div class="flex items-center justify-between mb-2">
                                                 <span class="font-mono font-bold {$darkMode ? 'text-white' : 'text-gray-900'} text-sm">{keyName}</span>
+                                                <button 
+                                                    class="text-red-500 hover:text-red-700 {$darkMode ? 'hover:bg-red-900' : 'hover:bg-red-50'} rounded p-1 transition-colors"
+                                                    onclick={() => deleteKey(keyId)}
+                                                    title={t('common.delete', currentLanguage)}
+                                                    aria-label={t('common.delete', currentLanguage)}
+                                                >
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                                    </svg>
+                                                </button>
                                             </div>
                                             <div class="text-xs space-y-1">
                                                 <div class="flex justify-between">
@@ -418,7 +525,8 @@
                     </div>
                 </div>
             </div>
-        {:else}<!-- No Key Selected State -->
+        {:else}
+        <!-- No Key Selected State -->
             <div class="flex-1 flex items-center justify-center">
                 <div class="text-center max-w-md mx-auto">
                     <div class="w-24 h-24 {$darkMode ? 'bg-gray-800' : 'bg-gray-100'} rounded-full flex items-center justify-center mx-auto mb-4">
@@ -430,7 +538,8 @@
                     <div class="{$darkMode ? 'bg-gray-900 border-gray-600 text-gray-300' : 'bg-blue-50 border-blue-200 text-blue-700'} border rounded-lg p-4 text-sm">
                         <strong>{t('advancedkey.tip', currentLanguage)}:</strong> {t('advancedkey.tapHoldTip', currentLanguage)}
                     </div>
-                </div>            </div>
+                </div>            
+            </div>
         {/if}
     </div>
 </div>
@@ -456,5 +565,57 @@
         cursor: pointer;
         border: none;
         box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Animation styles */
+    @keyframes fadeIn {
+        0% {
+            opacity: 0;
+            transform: translateY(-20px) scale(0.95);
+        }
+        100% {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+
+    @keyframes fadeOut {
+        0% {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+        50% {
+            opacity: 0.3;
+            transform: translateY(-10px) scale(0.98);
+        }
+        100% {
+            opacity: 0;
+            transform: translateY(-20px) scale(0.95);
+        }
+    }
+
+    @keyframes sectionFadeIn {
+        0% {
+            opacity: 0;
+            transform: translateY(-15px);
+            max-height: 0;
+        }
+        100% {
+            opacity: 1;
+            transform: translateY(0);
+            max-height: 1000px;
+        }
+    }
+
+    .animate-fade-in {
+        animation: fadeIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    }
+
+    .animate-fade-out {
+        animation: fadeOut 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+    }
+
+    .animate-section-fade-in {
+        animation: sectionFadeIn 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
     }
 </style>
