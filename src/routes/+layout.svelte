@@ -598,10 +598,12 @@
                 {#each NAVIGATE as [href, name]}                    
                 <a 
                         {href} 
-                        class="flex items-center gap-3 w-full px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative overflow-hidden {isActive(href) 
+                        class="flex items-center gap-3 w-full px-3 py-2.5 text-sm font-medium rounded-lg relative overflow-hidden {isActive(href) 
                             ? 'text-white shadow-sm'
                             : ($darkMode ? 'text-white hover:bg-gray-900 hover:text-white' : 'text-gray-700')}"
-                        style={isActive(href) ? `background-color: var(--theme-color-primary);` : ''}
+                        style={isActive(href) 
+                            ? `background-color: var(--theme-color-primary); color: white !important; transition: background-color 0.2s ease;` 
+                            : 'transition: background-color 0.2s ease;'}
                         onmousedown={(e) => startLongClick(href, e)}
                         onmouseup={() => endLongClick(href)}
                         onmouseleave={() => endLongClick(href)}
