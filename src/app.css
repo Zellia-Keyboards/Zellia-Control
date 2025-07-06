@@ -14,3 +14,55 @@ select,
 option {
   font-family: 'Noto Sans SC', sans-serif;
 }
+
+/* Smooth theme transition animations */
+:root {
+  --transition-duration: 0.3s;
+  --transition-timing: ease;
+}
+
+html {
+  transition: background-color var(--transition-duration) var(--transition-timing), 
+              color var(--transition-duration) var(--transition-timing);
+}
+
+body {
+  transition: background-color var(--transition-duration) var(--transition-timing), 
+              color var(--transition-duration) var(--transition-timing);
+}
+
+/* Add transitions to all elements that change color on theme switch */
+* {
+  transition-property: background-color, border-color, color, fill, stroke, box-shadow;
+  transition-duration: var(--transition-duration);
+  transition-timing-function: var(--transition-timing);
+}
+
+/* Ensure keyboard components update immediately on theme change */
+.keyboard-component,
+.keyboard-component * {
+  transition-property: background-color, border-color, color, fill, stroke, box-shadow !important;
+  transition-duration: var(--transition-duration) !important;
+  transition-timing-function: var(--transition-timing) !important;
+}
+
+/* Special handling for theme color variables */
+:root {
+  transition: --theme-color-primary var(--transition-duration) var(--transition-timing),
+              --theme-color-hover var(--transition-duration) var(--transition-timing),
+              --theme-color-light var(--transition-duration) var(--transition-timing),
+              --theme-color-dark var(--transition-duration) var(--transition-timing);
+}
+
+/* Disable transitions during page load to prevent flash */
+.no-transition,
+.no-transition * {
+  transition: none !important;
+}
+
+/* Enhance transition for specific elements that need smoother animations */
+[style*="background-color: var(--theme-color-primary)"],
+[style*="color: var(--theme-color-primary)"],
+[style*="border-color: var(--theme-color-primary)"] {
+  transition: all var(--transition-duration) var(--transition-timing);
+}
