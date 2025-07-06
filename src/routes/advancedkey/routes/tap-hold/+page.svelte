@@ -232,14 +232,16 @@
   style="background-color: {$darkMode
     ? `color-mix(in srgb, var(--theme-color-primary) 5%, black)`
     : `color-mix(in srgb, var(--theme-color-primary) 10%, white)`};"
->    <!-- Header -->
+>    
+    <!-- Header -->
     <div class="border-b px-6 py-4" style="background-color: color-mix(in srgb, var(--theme-color-primary) 3%, ${$darkMode ? 'black' : 'white'}); border-color: color-mix(in srgb, var(--theme-color-primary) 20%, ${$darkMode ? 'white' : '#e5e5e5'});">
         <div class="flex items-center justify-between">
             <div class="flex items-center gap-4">
                 <button 
                     class="flex items-center gap-2 {$darkMode ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900'} transition-colors"
                     onclick={goBack}
-                >                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                >                    
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
                     </svg>
                     {t('advancedkey.backToAdvanced', currentLanguage)}
@@ -276,7 +278,8 @@
                 <div class="rounded-lg border p-6 mb-6" style="background-color: color-mix(in srgb, var(--theme-color-primary) 8%, ${$darkMode ? 'black' : 'white'}); border-color: color-mix(in srgb, var(--theme-color-primary) 30%, ${$darkMode ? 'white' : '#e5e5e5'});">
                     <div class="flex items-center justify-between">
                         <div class="flex items-center gap-4">
-                            <div class="flex items-center gap-3">                                <div class="w-12 h-12 rounded-lg flex items-center justify-center border-2"
+                            <div class="flex items-center gap-3">                                
+                                <div class="w-12 h-12 rounded-lg flex items-center justify-center border-2"
                                      style="background-color: color-mix(in srgb, var(--theme-color-primary) 10%, {$darkMode ? 'black' : 'white'});
                                             border-color: var(--theme-color-primary);">
                                     <span class="font-mono font-bold {$darkMode ? 'text-white' : 'text-gray-900'}">{CurrentSelected ? ($KeyboardDisplayValues[CurrentSelected[1]]?.[CurrentSelected[0]] || t('common.unknown', currentLanguage)) : t('advancedkey.noKeySelected', currentLanguage)}</span>
@@ -296,7 +299,9 @@
 
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <!-- Configuration Panel -->
-                    <div class="lg:col-span-2 space-y-6">                        <!-- Tap Action Selection -->                        <div class="rounded-lg border p-6" style="background-color: color-mix(in srgb, var(--theme-color-primary) 5%, ${$darkMode ? 'black' : 'white'}); border-color: color-mix(in srgb, var(--theme-color-primary) 25%, ${$darkMode ? 'white' : '#e5e5e5'});">
+                    <div class="lg:col-span-2 space-y-6">                        
+                        <!-- Tap Action Selection -->                        
+                         <div class="rounded-lg border p-6" style="background-color: color-mix(in srgb, var(--theme-color-primary) 5%, ${$darkMode ? 'black' : 'white'}); border-color: color-mix(in srgb, var(--theme-color-primary) 25%, ${$darkMode ? 'white' : '#e5e5e5'});">
                             <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'} mb-4">{t('advancedkey.tapAction', currentLanguage)}</h3>
                             <p class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'} mb-4">{t('advancedkey.tapActionDesc', currentLanguage)}</p>
                             
@@ -462,7 +467,7 @@
                                     <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'}">{t('advancedkey.configuredTapHold', currentLanguage)}</h3>
                                     <span class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-500'}">{configuredTapHoldKeys.length} {configuredTapHoldKeys.length !== 1 ? t('advancedkey.keysCountPlural', currentLanguage) : t('advancedkey.keysCount', currentLanguage)}</span>
                                 </div>
-                                <div class="space-y-3 mb-6">
+                                <div class="space-y-3 mb-3">
                                     {#each configuredTapHoldKeys as [keyId, config] (keyId)}
                                         {@const [x, y] = keyId.split(',').map(Number)}
                                         {@const keyName = $KeyboardDisplayValues[y]?.[x] || t('common.unknown', currentLanguage)}
@@ -513,12 +518,27 @@
             <div class="flex-1 flex items-center justify-center">
                 <div class="text-center max-w-md mx-auto">
                     <div class="w-24 h-24 {$darkMode ? 'bg-gray-800' : 'bg-gray-100'} rounded-full flex items-center justify-center mx-auto mb-4">
-                        <svg class="w-12 h-12 {$darkMode ? 'text-gray-400' : 'text-gray-400'}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l4-4 4 4m0 6l-4 4-4-4" />
-                        </svg>
-                    </div>                    <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'} mb-2">{t('advancedkey.noKeySelected', currentLanguage)}</h3>
+                        <svg
+                            class="w-12 h-12"
+                            style="color: var(--theme-color-primary);"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                        >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M8 9l4-4 4 4m0 6l-4 4-4-4"
+                        />
+                    </svg>
+                    </div>                    
+                    <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'} mb-2">{t('advancedkey.noKeySelected', currentLanguage)}</h3>
                     <p class="{$darkMode ? 'text-gray-400' : 'text-gray-600'} mb-4">{t('advancedkey.selectKeyToConfig', currentLanguage)}</p>
-                    <div class="{$darkMode ? 'bg-gray-900 border-gray-600 text-gray-300' : 'bg-blue-50 border-blue-200 text-blue-700'} border rounded-lg p-4 text-sm">
+                    <div class="{$darkMode ? 'bg-gray-900 border-gray-600 text-gray-300' : 'bg-blue-50 border-blue-200 text-blue-700'} border rounded-lg p-4 text-sm"
+                         style="background-color: color-mix(in srgb, var(--theme-color-primary) 15%, white);
+                                border-color: color-mix(in srgb, var(--theme-color-primary) 40%, #e5e5e5);
+                                color: color-mix(in srgb, var(--theme-color-primary) 80%, black);">
                         <strong>{t('advancedkey.tip', currentLanguage)}:</strong> {t('advancedkey.tapHoldTip', currentLanguage)}
                     </div>
                 </div>            
