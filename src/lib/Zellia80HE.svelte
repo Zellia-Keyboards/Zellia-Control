@@ -32,7 +32,7 @@
     }
 </script>
 
-<div class="p-4 {$darkMode ? 'bg-neutral-800 border border-neutral-700' : 'bg-gray-100 border border-gray-300'} rounded-xl shadow-md inline-block space-y-0.5">
+<div class="keyboard-component p-4 {$darkMode ? 'bg-neutral-800 border border-neutral-700' : 'bg-gray-100 border border-gray-300'} rounded-xl shadow-md inline-block space-y-0.5">
     {#each KEYBOARD_LAYOUT as row, y}
         <div
             class="flex first:*:[&:nth-child(4n+2)]:ml-3.5 *:nth-15:ml-4 nth-[5]:*:nth-13:ml-18.5 nth-[6]:*:nth-8:ml-4 nth-[2]:mt-4 gap-x-0.5"
