@@ -368,9 +368,9 @@
     {#if !canConfigure}
         <div class="p-6" style="background-color: color-mix(in srgb, var(--theme-color-primary) 5%, {$darkMode ? 'black' : 'white'}); border-color: color-mix(in srgb, var(--theme-color-primary) 25%, {$darkMode ? 'white' : '#e5e5e5'});" >
             <div class="max-w-4xl mx-auto">
-                <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'}  mb-3">Select Two Keys</h3>
+                <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'}  mb-3">{t('advancedkey.selectTwoKeys', currentLanguage)}</h3>
                 <p class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'} mb-4">
-                    Click on two opposing keys in the keyboard layout to configure null bind behavior. Keys will be added automatically.
+                    {t('advancedkey.selectTwoKeysInstructions', currentLanguage)}
                 </p>
                   <!-- Selected Keys Display -->
                 <div class="grid grid-cols-2 gap-4 mb-4">
@@ -540,6 +540,7 @@
                                 </button>
                             </div>
                         </div>
+
 
                         <!-- Bottom Out Point Slider -->
                         {#if bottomOutPoint > 0}
