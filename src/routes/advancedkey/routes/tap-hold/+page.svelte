@@ -66,15 +66,7 @@
         updateGlobalConfiguration(keyId, config);
     }
 
-    function resetConfiguration(): void {
-        if (!CurrentSelected) return;
-        const keyId = `${CurrentSelected[0]},${CurrentSelected[1]}`;
-        resetGlobalConfiguration(keyId);
-        tapAction = 'esc';
-        holdAction = 'ctrl';
-        holdDelay = 200;
-        tapTimeout = 150;
-    }
+
 
     function deleteKey(keyId: string): void {
         // Add fade-out animation
@@ -458,16 +450,7 @@
                                 <p class="mt-3 text-xs">{t('advancedkey.tapHoldDescription', currentLanguage)}</p>
                             </div>                        </div>
                         
-                        <!-- Reset Button -->
-                        <div class="space-y-4">
-                            <button 
-                                class="w-full px-4 py-2 {$darkMode ? 'text-white bg-gray-800 hover:bg-gray-700 border border-white' : 'text-gray-700 bg-gray-100 hover:bg-gray-200'} rounded-md transition-colors text-sm font-medium"
-                                onclick={resetConfiguration}
-                                disabled={!CurrentSelected}
-                            >
-                                {t('advancedkey.resetConfiguration', currentLanguage)}
-                            </button>
-                        </div>
+
                         
                         <!-- Configured Keys Summary -->
                         {#if showConfiguredSection}
@@ -493,13 +476,13 @@
                                             <div class="flex items-center justify-between mb-2">
                                                 <span class="font-mono font-bold {$darkMode ? 'text-white' : 'text-gray-900'} text-sm">{keyName}</span>
                                                 <button 
-                                                    class="text-red-500 hover:text-red-700 {$darkMode ? 'hover:bg-red-900' : 'hover:bg-red-50'} rounded p-1 transition-colors"
+                                                    class="w-8 h-8 bg-red-500 hover:bg-red-600 rounded-lg flex items-center justify-center text-white transition-colors"
                                                     onclick={() => deleteKey(keyId)}
                                                     title={t('common.delete', currentLanguage)}
                                                     aria-label={t('common.delete', currentLanguage)}
                                                 >
-                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
                                                     </svg>
                                                 </button>
                                             </div>
