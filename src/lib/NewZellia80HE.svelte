@@ -20,7 +20,7 @@
 </script>
 
 <div
-    class="p-4 {$darkMode
+    class="keyboard-component p-4 {$darkMode
         ? 'bg-neutral-800 border border-neutral-700'
         : 'bg-gray-100 border border-gray-300'} rounded-xl shadow-md  space-y-0.5 m-auto"
 >

@@ -130,7 +130,8 @@
             </div>
         </div>
     <div class="grid grid-cols-4 gap-6">
-        {#each keyModes as mode}            <div class="group relative w-full">
+        {#each keyModes as mode}            
+        <div class="group relative w-full">
                 <button
                     class="w-full h-full p-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border-2 text-left group-hover:scale-105 flex flex-col"
                     style="background-color: {$darkMode ? 'black' : 'white'}; 

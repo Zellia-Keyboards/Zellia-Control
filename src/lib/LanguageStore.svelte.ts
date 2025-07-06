@@ -528,10 +528,14 @@ export const translations = {
         'remap.numbers': 'Numbers',
         'remap.specialCharacters': 'Special Characters',
         'remap.mouseFunctions': 'Mouse Functions',
-          // Units
+        // Units
         'units.mm': 'mm',
         'units.ms': 'ms',
-    },
+        // new addittion
+        'advancedkey.selectTwoKeysInstructions': 'Click on two opposing keys in the keyboard layout to configure null bind behavior.', 
+        'advancedkey.configuredDynamicKeys': 'Configured Dynamic Keys',
+        'advancedkey.mode': 'Mode',
+      },
     zh: {
         // Navigation
         'nav.performance': '性能',
@@ -1018,6 +1022,10 @@ export const translations = {
         'advancedkey.bottomOutLabel': '触底',
         'units.mm': 'mm',
         'units.ms': 'ms',
+
+        // new addition
+        'advancedkey.selectTwoKeysInstructions': '点击键盘布局中的两个相对按键以配置空绑定行为。',
+        'advancedkey.configuredDynamicKeys': '已配置的动态按键',
     }
 };
 

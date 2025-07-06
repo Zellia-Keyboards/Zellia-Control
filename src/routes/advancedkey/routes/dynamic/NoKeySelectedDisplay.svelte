@@ -14,7 +14,8 @@
     <div class="text-center max-w-md mx-auto">        <div
             class="w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-4"
             style="background-color: {$darkMode ? 'color-mix(in srgb, var(--theme-color-primary) 8%, #1f2937)' : 'color-mix(in srgb, var(--theme-color-primary) 5%, #f3f4f6)'};"
-        >            <svg
+        >            
+        <svg
                 class="w-12 h-12"
                 style="color: var(--theme-color-primary);"
                 fill="none"
@@ -37,11 +38,13 @@
         </h3>
         <p class="{$darkMode ? 'text-gray-400' : 'text-gray-600'} mb-4">
             {t('advancedkey.selectKeyToConfig', currentLanguage)}
-        </p><div
+        </p>
+        <div
             class="border rounded-lg p-4 text-sm"
-            style="background-color: {$darkMode ? 'color-mix(in srgb, var(--theme-color-primary) 8%, #111827)' : 'color-mix(in srgb, var(--theme-color-primary) 5%, #f0f9ff)'};
-                   border-color: {$darkMode ? 'color-mix(in srgb, var(--theme-color-primary) 20%, #4b5563)' : 'color-mix(in srgb, var(--theme-color-primary) 15%, #bfdbfe)'};
-                   color: {$darkMode ? '#d1d5db' : 'color-mix(in srgb, var(--theme-color-primary) 85%, black)'};"        >
+            style="background-color: color-mix(in srgb, var(--theme-color-primary) 15%, white);
+                   border-color: color-mix(in srgb, var(--theme-color-primary) 40%, #e5e5e5);
+                   color: color-mix(in srgb, var(--theme-color-primary) 80%, black);"
+        >
             <strong>{t('advancedkey.tip', currentLanguage)}:</strong> {t('advancedkey.tipDynamic', currentLanguage)}
         </div>
     </div>
