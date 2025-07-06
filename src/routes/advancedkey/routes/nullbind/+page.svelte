@@ -2,7 +2,7 @@
     import {  KeyboardDisplayValues } from "$lib/KeyboardState.svelte";
     import { darkMode } from '$lib/DarkModeStore.svelte';
     import { language, t } from '$lib/LanguageStore.svelte';
-    import { AlertTriangle } from 'lucide-svelte';
+    import { AlertTriangle, Trash2 } from 'lucide-svelte';
     import { 
         globalConfigurations,
         updateGlobalConfiguration, 
@@ -221,6 +221,28 @@
         }, 300); // Match the CSS animation duration
     }
 
+    function deleteNullBindPair(pairKeys: [string, string]): void {
+        const pairId = `${pairKeys[0]}-${pairKeys[1]}`;
+        
+        // Start fade-out animation
+        deletingPairs = new Set([...deletingPairs, pairId]);
+        
+        // Wait for animation to complete, then delete
+        setTimeout(() => {
+            // Find and delete both keys in the pair
+            pairKeys.forEach((keyName) => {
+                const keyPosition = findKeyPosition(keyName);
+                if (keyPosition) {
+                    const keyId = `${keyPosition[0]},${keyPosition[1]}`;
+                    resetGlobalConfiguration(keyId);
+                }
+            });
+            
+            // Remove from deleting state
+            deletingPairs = new Set([...deletingPairs].filter(id => id !== pairId));
+        }, 300); // Match the CSS animation duration
+    }
+
     function applyConfiguration(): void {
         updateConfiguration();
         
@@ -352,7 +374,8 @@
                     <h1 class="text-xl font-semibold {$darkMode ? 'text-white' : 'text-gray-900'}">{t('advancedkey.nullBindTitle', currentLanguage)}</h1>
                     <p class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-500'}">{t('advancedkey.nullBindSubtitle', currentLanguage)}</p>
                 </div>
-            </div>            <div class="flex gap-3">
+            </div>            
+            <div class="flex gap-3">
                 <button 
                     class="px-4 py-2 text-white rounded-md transition-colors text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                     style="background-color: var(--theme-color-primary); 
@@ -740,12 +763,7 @@
             <div class="max-w-7xl mx-auto">                <div class="flex items-center justify-between mb-6">
                     <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'}">{t('advancedkey.configuredNullBindKeys', currentLanguage)}</h3>
                     <div class="flex items-center gap-2">
-                        <span class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-500'}">{configuredNullBindKeys().length} {configuredNullBindKeys().length === 1 ? t('advancedkey.pair', currentLanguage) : t('advancedkey.pairs', currentLanguage)}</span>                        <button 
-                            class="px-4 py-2 {$darkMode ? 'bg-red-700 hover:bg-red-600' : 'bg-red-600 hover:bg-red-700'} text-white rounded-md transition-colors text-sm font-medium"
-                            onclick={resetAllNullBindKeys}
-                        >
-                            {t('advancedkey.resetAll', currentLanguage)}
-                        </button>
+                        <span class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-500'}">{configuredNullBindKeys().length} {configuredNullBindKeys().length === 1 ? t('advancedkey.pair', currentLanguage) : t('advancedkey.pairs', currentLanguage)}</span>
                     </div>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
@@ -756,7 +774,7 @@
                         {@const pairId = `${nullBindConfig.pairedKeys[0]}-${nullBindConfig.pairedKeys[1]}`}
                         {@const isDeleting = deletingPairs.has(pairId)}
                         {@const isNewlyAdded = newlyAddedPairs.has(pairId)}
-                        <div class="group relative overflow-hidden rounded-xl border transition-all duration-300 ease-out hover:shadow-lg {isDeleting ? 'opacity-0 scale-95 pointer-events-none' : isNewlyAdded ? 'opacity-100 scale-100 animate-fade-in' : 'opacity-100 scale-100 hover:scale-[1.02]'}"
+                        <div class="group relative overflow-hidden rounded-xl border transition-all duration-300 ease-out hover:shadow-lg hover:shadow-primary/10 {isDeleting ? 'opacity-0 scale-95 pointer-events-none' : isNewlyAdded ? 'opacity-100 scale-100 animate-fade-in' : 'opacity-100 scale-100 hover:scale-[1.02] hover:-translate-y-1'}"
                              style="background: linear-gradient(135deg, 
                                      color-mix(in srgb, var(--theme-color-primary) 8%, {$darkMode ? '#1f2937' : '#ffffff'}) 0%, 
                                      color-mix(in srgb, var(--theme-color-primary) 3%, {$darkMode ? '#111827' : '#f8fafc'}) 100%);
@@ -765,20 +783,32 @@
                             <!-- Header with key pair -->
                             <div class="p-4 border-b" 
                                  style="border-color: color-mix(in srgb, var(--theme-color-primary) 15%, {$darkMode ? '#374151' : '#e2e8f0'});">
-                                <div class="flex items-center justify-center gap-3">
-                                    <div class="px-3 py-1.5 rounded-lg font-mono font-bold text-sm"
-                                         style="background-color: var(--theme-color-primary); color: white;">
-                                        {nullBindConfig.pairedKeys[0]}
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center justify-center gap-3 flex-1">
+                                        <div class="px-3 py-1.5 rounded-lg font-mono font-bold text-sm"
+                                             style="background-color: var(--theme-color-primary); color: white;">
+                                            {nullBindConfig.pairedKeys[0]}
+                                        </div>
+                                        <div class="flex items-center gap-1" style="color: var(--theme-color-primary);">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
+                                            </svg>
+                                        </div>
+                                        <div class="px-3 py-1.5 rounded-lg font-mono font-bold text-sm"
+                                             style="background-color: var(--theme-color-primary); color: white;">
+                                            {nullBindConfig.pairedKeys[1]}
+                                        </div>
                                     </div>
-                                    <div class="flex items-center gap-1" style="color: var(--theme-color-primary);">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
+                                    <button 
+                                        class="w-8 h-8 bg-red-500 hover:bg-red-600 rounded-lg flex items-center justify-center text-white transition-colors ml-3"
+                                        onclick={() => deleteNullBindPair(nullBindConfig.pairedKeys)}
+                                        title={t('advancedkey.deletePair', currentLanguage)}
+                                        aria-label={t('advancedkey.deletePair', currentLanguage)}
+                                    >
+                                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
                                         </svg>
-                                    </div>
-                                    <div class="px-3 py-1.5 rounded-lg font-mono font-bold text-sm"
-                                         style="background-color: var(--theme-color-primary); color: white;">
-                                        {nullBindConfig.pairedKeys[1]}
-                                    </div>
+                                    </button>
                                 </div>
                             </div>
 
@@ -893,8 +923,23 @@
     
     /* Fade-out animation for deleting pairs */
     .group {
-        transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), 
-                   transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        transform-origin: center;
+    }
+    
+    /* Enhanced hover effects */
+    .group:hover {
+        box-shadow: 
+            0 10px 25px -3px rgba(0, 0, 0, 0.1),
+            0 4px 6px -2px rgba(0, 0, 0, 0.05),
+            0 0 0 1px color-mix(in srgb, var(--theme-color-primary) 25%, transparent);
+    }
+    
+    :global(.dark) .group:hover {
+        box-shadow: 
+            0 10px 25px -3px rgba(0, 0, 0, 0.25),
+            0 4px 6px -2px rgba(0, 0, 0, 0.1),
+            0 0 0 1px color-mix(in srgb, var(--theme-color-primary) 40%, transparent);
     }
     
     /* Ensure smooth animation when pairs are being deleted */
@@ -917,5 +962,10 @@
     
     .animate-fade-in {
         animation: fade-in 0.4s ease-out;
+    }
+
+    /* Smooth bin button transitions */
+    .group button {
+        transition: background-color 0.2s ease-out;
     }
 </style>
