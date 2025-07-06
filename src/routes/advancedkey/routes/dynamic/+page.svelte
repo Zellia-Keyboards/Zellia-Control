@@ -68,6 +68,10 @@
 	let selectedBindingIndex = $state<number | null>(null);
 	let activeTab = $state("bindings");
 
+	// Animation state
+	let configuredSectionVisible = $state(false);
+	let configuredDKSListRef = $state<ConfiguredDKSList | null>(null);
+
 	let uiBitmaps = $derived([
 		...selectedBitmaps.map((b: DKSAction[]) => [...b]),
 	]);
@@ -364,8 +368,19 @@
 		});
 	}
 
+	function deleteDynamicKey(keyId: string): void {
+		resetGlobalConfiguration(keyId);
+	}
+
 	function applyConfiguration(): void {
 		updateConfiguration();
+		
+		// Trigger new key animation if a key is selected
+		if (currentSelected && configuredDKSListRef) {
+			const keyId = `${currentSelected[0]},${currentSelected[1]}`;
+			configuredDKSListRef.addNewKeyAnimation(keyId);
+		}
+		
 		console.log(
 			"Applying dynamic keystroke configurations:",
 			$globalConfigurations,
@@ -471,7 +486,20 @@
 		Object.entries($globalConfigurations).filter(
 			([_, config]) => config.type === "dynamic",
 		) as [string, GlobalDynamicKeystrokeConfiguration][],
-	);	const phaseDescriptions = $derived([
+	);
+
+	// Effect to handle configured section visibility animation
+	$effect(() => {
+		const hasKeys = configuredDynamicKeysList.length > 0;
+		if (hasKeys && !configuredSectionVisible) {
+			// Delay to allow for smooth appearance
+			setTimeout(() => {
+				configuredSectionVisible = true;
+			}, 100);
+		} else if (!hasKeys && configuredSectionVisible) {
+			configuredSectionVisible = false;
+		}
+	});	const phaseDescriptions = $derived([
 		{ name: t('advancedkey.keyPressedPastActuation', currentLanguage), icon: "arrow-down" },
 		{ name: t('advancedkey.keyPressedPastBottomOut', currentLanguage), icon: "arrow-down-line" },
 		{ name: t('advancedkey.keyReleasedPastBottomOut', currentLanguage), icon: "arrow-up-line" },
@@ -781,13 +809,33 @@
 			</div>
 		{:else}
 			<NoKeySelectedDisplay />
-		{/if}		<ConfiguredDKSList
-			configuredDynamicKeys={configuredDynamicKeysList}
-			{KeyboardDisplayValues}
-			{resetAllDynamicKeys}
-		/>
+		{/if}		{#if configuredSectionVisible}
+			<div class="animate-fade-in">
+				<ConfiguredDKSList
+					bind:this={configuredDKSListRef}
+					configuredDynamicKeys={configuredDynamicKeysList}
+					{KeyboardDisplayValues}
+					onDeleteKey={deleteDynamicKey}
+				/>
+			</div>
+		{/if}
 	</div>
 </div>
 
 <style>
+	/* Fade-in animation for the configured section */
+	@keyframes fade-in {
+		0% {
+			opacity: 0;
+			transform: translateY(20px);
+		}
+		100% {
+			opacity: 1;
+			transform: translateY(0);
+		}
+	}
+	
+	.animate-fade-in {
+		animation: fade-in 0.5s ease-out;
+	}
 </style>
