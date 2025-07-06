@@ -58,8 +58,8 @@
 			<span
 				class="text-sm {$darkMode
 					? 'text-gray-400'
-					: 'text-gray-600'}">{t('advancedkey.mode', currentLanguage)}:</span
-			>			<span
+					: 'text-gray-600'}">{t('advancedkey.mode', currentLanguage)}:</span>			
+					<span
 				class="px-3 py-1 rounded-full text-sm font-medium border"
 				style="background-color: color-mix(in srgb, var(--theme-color-primary) 20%, {$darkMode ? 'black' : 'white'});
 				       color: {$darkMode ? 'white' : 'var(--theme-color-primary)'};
