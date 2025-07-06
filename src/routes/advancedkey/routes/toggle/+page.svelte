@@ -21,6 +21,14 @@
     let toggleState = $state(false);
     let CurrentSelected = $state<[number, number] | null>(null);
 
+    // Animation state variables
+    let deletingKeys = $state(new Set<string>());
+    let newlyAddedKeys = $state(new Set<string>());
+    let showConfiguredSection = $state(false);
+    let sectionAnimationPlayed = $state(false);
+    let previousKeyCount = $state(0);
+    let lastAnimationTrigger = $state(0);
+
     function goBack(): void {
         goto('/advancedkey');
     }
@@ -47,30 +55,56 @@
         });
     }
 
-    function resetConfiguration(): void {
-        if (!CurrentSelected) return;
-        const keyId = `${CurrentSelected[0]},${CurrentSelected[1]}`;
-        resetGlobalConfiguration(keyId);
-        selectedToggleAction = 'caps';
-        toggleMode = 'press';
-        toggleState = false;
+    function deleteKey(keyId: string): void {
+        // Add fade-out animation
+        deletingKeys.add(keyId);
+        deletingKeys = new Set(deletingKeys);
+        
+        setTimeout(() => {
+            resetGlobalConfiguration(keyId);
+            deletingKeys.delete(keyId);
+            deletingKeys = new Set(deletingKeys);
+        }, 500); // Match the animation duration
     }
 
     function applyConfiguration(): void {
+        if (!CurrentSelected) return;
+        const keyId = `${CurrentSelected[0]},${CurrentSelected[1]}`;
+        
+        // Check if this is a new key being configured
+        const isNewKey = !$globalConfigurations[keyId] || $globalConfigurations[keyId].type !== 'toggle';
+        
         updateConfiguration();
+        
+        // Trigger animation for newly added key
+        if (isNewKey) {
+            newlyAddedKeys.add(keyId);
+            newlyAddedKeys = new Set(newlyAddedKeys);
+            setTimeout(() => {
+                newlyAddedKeys.delete(keyId);
+                newlyAddedKeys = new Set(newlyAddedKeys);
+            }, 600); // Match the fade-in animation duration
+        }
+        
         console.log('Applying toggle configurations:', $globalConfigurations);
     }
 
     function resetAllToggleKeys(): void {
-        globalConfigurations.update(configs => {
-            const newConfigs = { ...configs };
-            Object.keys(newConfigs).forEach(keyId => {
-                if (newConfigs[keyId].type === 'toggle') {
-                    delete newConfigs[keyId];
-                }
-            });
-            return newConfigs;
+        const keysToDelete = [...configuredToggleKeys.map(([keyId]) => keyId)];
+        
+        // Add fade-out animation for all keys
+        keysToDelete.forEach(keyId => {
+            deletingKeys.add(keyId);
         });
+        deletingKeys = new Set(deletingKeys);
+        
+        setTimeout(() => {
+            keysToDelete.forEach(keyId => {
+                resetGlobalConfiguration(keyId);
+            });
+            deletingKeys.clear();
+            deletingKeys = new Set(deletingKeys);
+        }, 500); // Match the animation duration
     }
 
     // Reactive values
@@ -126,6 +160,31 @@
     const configuredToggleKeys = $derived(
         Object.entries($globalConfigurations).filter(([_, config]) => config.type === 'toggle')
     );
+
+    // Watch for changes in configured keys to trigger animations
+    $effect(() => {
+        const currentCount = configuredToggleKeys.length;
+        const currentTime = Date.now();
+        
+        if (currentCount > 0) {
+            if (!showConfiguredSection) {
+                showConfiguredSection = true;
+                // Only play section animation once per appearance  
+                if (!sectionAnimationPlayed || currentTime - lastAnimationTrigger > 1000) {
+                    sectionAnimationPlayed = true;
+                    lastAnimationTrigger = currentTime;
+                }
+            }
+        } else {
+            // Reset states when no keys are configured
+            showConfiguredSection = false;
+            sectionAnimationPlayed = false;
+            deletingKeys.clear();
+            newlyAddedKeys.clear();
+        }
+        
+        previousKeyCount = currentCount;
+    });
 </script>
 
 <NewZellia80He
@@ -362,43 +421,56 @@
                                     toggleMode === 'press' ? t('advancedkey.whenPressed', currentLanguage) : t('advancedkey.whenReleased', currentLanguage)
                                 )}
                             </p>
-                        </div>                        <!-- Reset Button -->
-                        <div class="space-y-4">
-                            <button 
-                                class="w-full px-4 py-2 {$darkMode ? 'text-white bg-gray-800 hover:bg-gray-700 border border-white' : 'text-gray-700 bg-gray-100 hover:bg-gray-200'} rounded-md transition-colors text-sm font-medium"
-                                onclick={resetConfiguration}
-                                disabled={!CurrentSelected}
-                            >
-                                {t('advancedkey.resetConfiguration', currentLanguage)}
-                            </button>
                         </div>
 
-                        <!-- Configured Keys -->
-                        {#if configuredToggleKeys.length > 0}
-                            <div class="rounded-lg border p-4"
-                                 style="background-color: color-mix(in srgb, var(--theme-color-primary) 8%, {$darkMode ? 'black' : 'white'});
-                                        border-color: color-mix(in srgb, var(--theme-color-primary) 25%, {$darkMode ? 'white' : '#e5e5e5'});">
-                                <div class="flex items-center justify-between mb-3">
-                                    <h4 class="text-base font-medium {$darkMode ? 'text-white' : 'text-gray-900'}">{t('advancedkey.configuredToggle', currentLanguage)}</h4>
-                                    <span class="text-xs px-2 py-1 rounded-full {$darkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-600'}">{configuredToggleKeys.length}</span>
+                        <!-- Configured Keys Summary -->
+                        {#if showConfiguredSection}
+                            <div 
+                                class="rounded-lg border p-6 {sectionAnimationPlayed ? 'animate-section-fade-in' : ''}" 
+                                style="background-color: color-mix(in srgb, var(--theme-color-primary) 5%, ${$darkMode ? 'black' : 'white'}); border-color: color-mix(in srgb, var(--theme-color-primary) 25%, ${$darkMode ? 'white' : '#e5e5e5'});"
+                            >
+                                <div class="flex items-center justify-between mb-4">
+                                    <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'}">{t('advancedkey.configuredToggle', currentLanguage)}</h3>
+                                    <span class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-500'}">{configuredToggleKeys.length} {configuredToggleKeys.length !== 1 ? t('advancedkey.keysCountPlural', currentLanguage) : t('advancedkey.keysCount', currentLanguage)}</span>
                                 </div>
-                                <div class="space-y-2 max-h-40 overflow-y-auto">
-                                    {#each configuredToggleKeys as [keyId, config]}
+                                <div class="space-y-3 mb-6">
+                                    {#each configuredToggleKeys as [keyId, config] (keyId)}
                                         {@const [x, y] = keyId.split(',').map(Number)}
-                                        {@const keyName = $KeyboardDisplayValues[y]?.[x] || 'Unknown'}
-                                        <div class="flex items-center justify-between p-2 rounded border"
-                                             style="background-color: color-mix(in srgb, var(--theme-color-primary) 5%, {$darkMode ? 'black' : 'white'});
-                                                    border-color: color-mix(in srgb, var(--theme-color-primary) 15%, {$darkMode ? 'white' : '#e5e5e5'});">
-                                            <div class="flex items-center gap-2">
-                                                <span class="font-mono text-sm font-bold {$darkMode ? 'text-white' : 'text-gray-900'}">{keyName}</span>
-                                                <div class="w-1.5 h-1.5 rounded-full {config.toggleState ? 'bg-green-500' : 'bg-gray-400'}"></div>
+                                        {@const keyName = $KeyboardDisplayValues[y]?.[x] || t('common.unknown', currentLanguage)}
+                                        {@const isDeleting = deletingKeys.has(keyId)}
+                                        {@const isNewlyAdded = newlyAddedKeys.has(keyId)}
+                                        <div 
+                                            class="p-3 rounded-lg border transform transition-all duration-500 ease-out {isDeleting ? 'animate-fade-out' : ''} {isNewlyAdded ? 'animate-fade-in' : ''}" 
+                                            style="background-color: color-mix(in srgb, var(--theme-color-primary) 8%, ${$darkMode ? 'black' : 'white'}); border-color: color-mix(in srgb, var(--theme-color-primary) 25%, ${$darkMode ? 'white' : '#e5e5e5'});"
+                                        >
+                                            <div class="flex items-center justify-between mb-2">
+                                                <span class="font-mono font-bold {$darkMode ? 'text-white' : 'text-gray-900'} text-sm">{keyName}</span>
+                                                <button 
+                                                    class="w-8 h-8 bg-red-500 hover:bg-red-600 rounded-lg flex items-center justify-center text-white transition-colors"
+                                                    onclick={() => deleteKey(keyId)}
+                                                    title={t('common.delete', currentLanguage)}
+                                                    aria-label={t('common.delete', currentLanguage)}
+                                                >
+                                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
+                                                    </svg>
+                                                </button>
                                             </div>
-                                            <div class="text-right">
-                                                <div class="text-xs font-medium" style="color: var(--theme-color-primary);">
-                                                    {keyActions.find(k => k.id === config.toggleAction)?.name || config.toggleAction}
+                                            <div class="text-xs space-y-1">
+                                                <div class="flex justify-between">
+                                                    <span class="{$darkMode ? 'text-gray-400' : 'text-gray-600'}">{t('advancedkey.action', currentLanguage)}:</span>
+                                                    <span class="font-medium" style="color: var(--theme-color-primary);">{keyActions.find(k => k.id === config.toggleAction)?.name || config.toggleAction}</span>
                                                 </div>
-                                                <div class="text-xs {$darkMode ? 'text-gray-400' : 'text-gray-500'} capitalize">
-                                                    {config.toggleMode}
+                                                <div class="flex justify-between">
+                                                    <span class="{$darkMode ? 'text-gray-400' : 'text-gray-600'}">{t('advancedkey.trigger', currentLanguage)}:</span>
+                                                    <span class="font-medium {$darkMode ? 'text-gray-300' : 'text-gray-700'}">{config.toggleMode === 'press' ? t('advancedkey.onPress', currentLanguage) : t('advancedkey.onRelease', currentLanguage)}</span>
+                                                </div>
+                                                <div class="flex justify-between items-center">
+                                                    <span class="{$darkMode ? 'text-gray-400' : 'text-gray-600'}">{t('advancedkey.state', currentLanguage)}:</span>
+                                                    <div class="flex items-center gap-1">
+                                                        <div class="w-2 h-2 rounded-full {config.toggleState ? 'bg-green-500' : 'bg-gray-400'}"></div>
+                                                        <span class="font-medium {config.toggleState ? 'text-green-600' : ($darkMode ? 'text-gray-400' : 'text-gray-600')}">{config.toggleState ? t('advancedkey.enabled', currentLanguage) : t('advancedkey.disabled', currentLanguage)}</span>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
@@ -413,10 +485,21 @@
             <div class="flex-1 flex items-center justify-center">
                 <div class="text-center max-w-md mx-auto">
                     <div class="w-24 h-24 {$darkMode ? 'bg-gray-800' : 'bg-gray-100'} rounded-full flex items-center justify-center mx-auto mb-4">
-                        <svg class="w-12 h-12 {$darkMode ? 'text-gray-400' : 'text-gray-400'}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l4-4 4 4m0 6l-4 4-4-4" />
-                        </svg>
-                    </div>                    <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'} mb-2">{t('advancedkey.noKeySelected', currentLanguage)}</h3>
+                        <svg
+                            class="w-12 h-12"
+                            style="color: var(--theme-color-primary);"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                        >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M8 9l4-4 4 4m0 6l-4 4-4-4"
+                        />
+                    </div>                    
+                    <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'} mb-2">{t('advancedkey.noKeySelected', currentLanguage)}</h3>
                     <p class="{$darkMode ? 'text-gray-400' : 'text-gray-600'} mb-4">{t('advancedkey.selectKeyToConfig', currentLanguage)}</p><div class="{$darkMode ? 'bg-blue-50 border-blue-200 text-blue-700' : 'bg-blue-50 border-blue-200 text-blue-700'} border rounded-lg p-4 text-sm"
                          style="background-color: color-mix(in srgb, var(--theme-color-primary) 15%, white);
                                 border-color: color-mix(in srgb, var(--theme-color-primary) 40%, #e5e5e5);
@@ -427,3 +510,57 @@
             </div>        {/if}
     </div>
 </div>
+
+<style>
+    /* Animation styles */
+    @keyframes fadeIn {
+        0% {
+            opacity: 0;
+            transform: translateY(-20px) scale(0.95);
+        }
+        100% {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+
+    @keyframes fadeOut {
+        0% {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+        50% {
+            opacity: 0.3;
+            transform: translateY(-10px) scale(0.98);
+        }
+        100% {
+            opacity: 0;
+            transform: translateY(-20px) scale(0.95);
+        }
+    }
+
+    @keyframes sectionFadeIn {
+        0% {
+            opacity: 0;
+            transform: translateY(-15px);
+            max-height: 0;
+        }
+        100% {
+            opacity: 1;
+            transform: translateY(0);
+            max-height: 1000px;
+        }
+    }
+
+    .animate-fade-in {
+        animation: fadeIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    }
+
+    .animate-fade-out {
+        animation: fadeOut 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+    }
+
+    .animate-section-fade-in {
+        animation: sectionFadeIn 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+    }
+</style>
