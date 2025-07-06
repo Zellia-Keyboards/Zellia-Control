@@ -621,7 +621,8 @@
 						{t('advancedkey.dynamicSubtitle', currentLanguage)}
 					</p>
 				</div>
-			</div>			<div class="flex gap-3">
+			</div>			
+			<div class="flex gap-3">
 				<button
 					class="px-4 py-2 {$darkMode ? 'bg-red-700 hover:bg-red-600' : 'bg-red-600 hover:bg-red-700'} text-white rounded-md transition-colors text-sm font-medium"
 					onclick={resetConfiguration}
