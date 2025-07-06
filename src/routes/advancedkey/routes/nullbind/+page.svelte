@@ -73,6 +73,10 @@
     let rtUp = $state(0); // Rapid trigger up
     let continuous = $state(false);
     let CurrentSelected = $state<[number, number] | null>(null);
+    
+    // State for smooth deletion and addition animations
+    let deletingPairs = $state<Set<string>>(new Set());
+    let newlyAddedPairs = $state<Set<string>>(new Set());
 
     // UI state variables for real-time updates
     let uiBottomOutPoint = $state(DEFAULT_BOTTOM_OUT_POINT);
@@ -191,19 +195,52 @@
     }
 
     function resetAllNullBindKeys(): void {
-        globalConfigurations.update(configs => {
-            const newConfigs = { ...configs };
-            Object.keys(newConfigs).forEach(keyId => {
-                if (newConfigs[keyId].type === 'null-bind') {
-                    delete newConfigs[keyId];
-                }
+        // Start fade-out animation for all existing pairs
+        const currentPairs = new Set(
+            configuredNullBindKeys().map(([keyId, config]) => {
+                const nullBindConfig = config as NullBindConfiguration;
+                return `${nullBindConfig.pairedKeys[0]}-${nullBindConfig.pairedKeys[1]}`;
+            })
+        );
+        deletingPairs = currentPairs;
+        
+        // Wait for animation to complete, then reset
+        setTimeout(() => {
+            globalConfigurations.update(configs => {
+                const newConfigs = { ...configs };
+                Object.keys(newConfigs).forEach(keyId => {
+                    if (newConfigs[keyId].type === 'null-bind') {
+                        delete newConfigs[keyId];
+                    }
+                });
+                return newConfigs;
             });
-            return newConfigs;
-        });
+            
+            // Clear the deleting state after reset
+            deletingPairs = new Set();
+        }, 300); // Match the CSS animation duration
     }
 
     function applyConfiguration(): void {
         updateConfiguration();
+        
+        // Add fade-in animation for newly configured pairs
+        if (selectedKeys.length === 2) {
+            // Create both possible pair combinations since pairedKeys are sorted
+            const pairId1 = `${selectedKeys[0]}-${selectedKeys[1]}`;
+            const pairId2 = `${selectedKeys[1]}-${selectedKeys[0]}`;
+            const sortedPairId = [selectedKeys[0], selectedKeys[1]].sort().join('-');
+            
+            newlyAddedPairs = new Set([...newlyAddedPairs, pairId1, pairId2, sortedPairId]);
+            
+            // Remove the fade-in effect after animation completes
+            setTimeout(() => {
+                newlyAddedPairs = new Set([...newlyAddedPairs].filter(id => 
+                    id !== pairId1 && id !== pairId2 && id !== sortedPairId
+                ));
+            }, 500); // Slightly longer than fade-in duration for better visual
+        }
+        
         console.log('Applying null bind configurations:', $globalConfigurations);
     }    // Get configured null bind keys count - only show unique pairs
     const configuredNullBindKeys = $derived(() => {
@@ -339,63 +376,66 @@
                 <div class="grid grid-cols-2 gap-4 mb-4">
                     <div class="p-4 border-2 border-dashed rounded-lg"
                          style="{selectedKeys.length >= 1 
-                             ? 'border-color: #10b981; background-color: #ecfdf5;' 
+                             ? `border-color: var(--theme-color-primary); background-color: color-mix(in srgb, var(--theme-color-primary) 12%, ${$darkMode ? 'black' : 'white'});` 
                              : `border-color: color-mix(in srgb, var(--theme-color-primary) 60%, ${$darkMode ? 'white' : '#e5e5e5'}); 
                                 background-color: color-mix(in srgb, var(--theme-color-primary) 15%, ${$darkMode ? 'black' : 'white'});`
                          }">
                         <div class="text-center">
                             {#if selectedKeys.length >= 1}
-                                <div class="w-12 h-12 bg-green-500 text-white rounded-lg flex items-center justify-center mx-auto mb-2">
+                                <div class="w-12 h-12 text-white rounded-lg flex items-center justify-center mx-auto mb-2"
+                                     style="background-color: var(--theme-color-primary);">
                                     <span class="font-mono font-bold">{selectedKeys[0]}</span>
                                 </div>
-                                <div class="text-sm font-medium text-green-700">First Key</div>
+                                <div class="text-sm font-medium" style="color: var(--theme-color-primary);">{t('advancedkey.firstKey', currentLanguage)}</div>
                                 <button 
                                     class="mt-2 text-xs text-red-600 hover:text-red-700"
                                     onclick={() => removeKey(0)}
                                 >
-                                    Remove
+                                    {t('advancedkey.remove', currentLanguage)}
                                 </button>
                             {:else}
                                 <div class="w-12 h-12 rounded-lg flex items-center justify-center mx-auto mb-2 animate-pulse"
                                      style="background-color: color-mix(in srgb, var(--theme-color-primary) 40%, {$darkMode ? 'black' : 'white'});">
                                     <span style="color: var(--theme-color-primary);">?</span>
                                 </div>
-                                <div class="text-sm" style="color: var(--theme-color-primary);">Click a key to select</div>
+                                <div class="text-sm" style="color: var(--theme-color-primary);">{t('advancedkey.clickKeyToSelect', currentLanguage)}</div>
                             {/if}
                         </div>
                     </div>
                     
                     <div class="p-4 border-2 border-dashed rounded-lg"
                          style="{selectedKeys.length >= 2 
-                             ? 'border-color: #10b981; background-color: #ecfdf5;' 
+                             ? `border-color: var(--theme-color-primary); background-color: color-mix(in srgb, var(--theme-color-primary) 12%, ${$darkMode ? 'black' : 'white'});` 
                              : selectedKeys.length === 1 
-                             ? 'border-color: #f59e0b; background-color: #fffbeb;' 
+                             ? `border-color: var(--theme-color-primary); background-color: color-mix(in srgb, var(--theme-color-primary) 8%, ${$darkMode ? 'black' : 'white'});` 
                              : `border-color: ${$darkMode ? '#4b5563' : '#d1d5db'}; 
                                 background-color: ${$darkMode ? '#1f2937' : '#f9fafb'};`
                          }">
                         <div class="text-center">
                             {#if selectedKeys.length >= 2}
-                                <div class="w-12 h-12 bg-green-500 text-white rounded-lg flex items-center justify-center mx-auto mb-2">
+                                <div class="w-12 h-12 text-white rounded-lg flex items-center justify-center mx-auto mb-2"
+                                     style="background-color: var(--theme-color-primary);">
                                     <span class="font-mono font-bold">{selectedKeys[1]}</span>
                                 </div>
-                                <div class="text-sm font-medium text-green-700">Second Key</div>
+                                <div class="text-sm font-medium" style="color: var(--theme-color-primary);">{t('advancedkey.secondKey', currentLanguage)}</div>
                                 <button 
                                     class="mt-2 text-xs text-red-600 hover:text-red-700"
                                     onclick={() => removeKey(1)}
                                 >
-                                    Remove
+                                    {t('advancedkey.remove', currentLanguage)}
                                 </button>
                             {:else if selectedKeys.length === 1}
-                                <div class="w-12 h-12 bg-orange-300 rounded-lg flex items-center justify-center mx-auto mb-2 animate-pulse">
-                                    <span class="text-orange-700">?</span>
+                                <div class="w-12 h-12 rounded-lg flex items-center justify-center mx-auto mb-2 animate-pulse"
+                                     style="background-color: color-mix(in srgb, var(--theme-color-primary) 40%, {$darkMode ? 'black' : 'white'});">
+                                    <span style="color: var(--theme-color-primary);">?</span>
                                 </div>
-                                <div class="text-sm text-orange-700">Click opposing key</div>
+                                <div class="text-sm" style="color: var(--theme-color-primary);">{t('advancedkey.clickOpposingKey', currentLanguage)}</div>
                             {:else}
                                 <div class="w-12 h-12 rounded-lg flex items-center justify-center mx-auto mb-2"
                                      style="background-color: {$darkMode ? '#4b5563' : '#d1d5db'};">
                                     <span class="{$darkMode ? 'text-gray-400' : 'text-gray-500'}">?</span>
                                 </div>
-                                <div class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-500'}">Second Key</div>
+                                <div class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-500'}">{t('advancedkey.secondKey', currentLanguage)}</div>
                             {/if}
                         </div>
                     </div>
@@ -664,13 +704,13 @@
                                             <div class="p-6 border-2 {$darkMode ? 'border-white' : 'border-gray-300'} rounded-lg">
                                                 <div class="text-2xl font-mono font-bold {$darkMode ? 'text-white' : 'text-gray-900'} mb-2">{selectedKeys[0]}</div>                                                <div class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'}">{t('advancedkey.key1', currentLanguage)}</div>
                                                 {#if behavior === 1}
-                                                    <div class="text-xs text-green-600 mt-1 font-medium">{t('advancedkey.priorityKey', currentLanguage)}</div>
+                                                    <div class="text-xs mt-1 font-medium" style="color: var(--theme-color-primary);">{t('advancedkey.priorityKey', currentLanguage)}</div>
                                                 {/if}
                                             </div>
                                             <div class="p-6 border-2 {$darkMode ? 'border-white' : 'border-gray-300'} rounded-lg">
                                                 <div class="text-2xl font-mono font-bold {$darkMode ? 'text-white' : 'text-gray-900'} mb-2">{selectedKeys[1]}</div>                                                <div class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'}">{t('advancedkey.key2', currentLanguage)}</div>
                                                 {#if behavior === 2}
-                                                    <div class="text-xs text-green-600 mt-1 font-medium">{t('advancedkey.priorityKey', currentLanguage)}</div>
+                                                    <div class="text-xs mt-1 font-medium" style="color: var(--theme-color-primary);">{t('advancedkey.priorityKey', currentLanguage)}</div>
                                                 {/if}
                                             </div>
                                         </div>
@@ -712,7 +752,10 @@
                         {@const [x, y] = keyId.split(',').map(Number)}
                         {@const keyName = $KeyboardDisplayValues[y]?.[x] || 'Unknown'}
                         {@const nullBindConfig = config as NullBindConfiguration}
-                        <div class="group relative overflow-hidden rounded-xl border transition-all duration-200 hover:shadow-lg hover:scale-[1.02]"
+                        {@const pairId = `${nullBindConfig.pairedKeys[0]}-${nullBindConfig.pairedKeys[1]}`}
+                        {@const isDeleting = deletingPairs.has(pairId)}
+                        {@const isNewlyAdded = newlyAddedPairs.has(pairId)}
+                        <div class="group relative overflow-hidden rounded-xl border transition-all duration-300 ease-out hover:shadow-lg {isDeleting ? 'opacity-0 scale-95 pointer-events-none' : isNewlyAdded ? 'opacity-100 scale-100 animate-fade-in' : 'opacity-100 scale-100 hover:scale-[1.02]'}"
                              style="background: linear-gradient(135deg, 
                                      color-mix(in srgb, var(--theme-color-primary) 8%, {$darkMode ? '#1f2937' : '#ffffff'}) 0%, 
                                      color-mix(in srgb, var(--theme-color-primary) 3%, {$darkMode ? '#111827' : '#f8fafc'}) 100%);
@@ -755,12 +798,13 @@
                                 <div class="grid grid-cols-2 gap-3">
                                     <div class="flex items-center gap-2">
                                         <div class="w-3 h-3 rounded-full flex items-center justify-center"
-                                             style="background-color: {nullBindConfig.bottomOutPoint > 0 ? '#10b981' : '#6b7280'};">
+                                             style="background-color: {nullBindConfig.bottomOutPoint > 0 ? 'var(--theme-color-primary)' : '#6b7280'};">
                                             <div class="w-1.5 h-1.5 rounded-full bg-white"></div>
                                         </div>
                                         <div class="flex flex-col">
                                             <span class="text-xs {$darkMode ? 'text-gray-400' : 'text-gray-500'}">{t('advancedkey.bottomOut', currentLanguage)}</span>
-                                            <span class="text-xs font-medium {nullBindConfig.bottomOutPoint > 0 ? 'text-green-600' : ($darkMode ? 'text-gray-400' : 'text-gray-500')}">
+                                            <span class="text-xs font-medium {nullBindConfig.bottomOutPoint > 0 ? ($darkMode ? 'text-white' : 'text-gray-900') : ($darkMode ? 'text-gray-400' : 'text-gray-500')}"
+                                                  style="{nullBindConfig.bottomOutPoint > 0 ? 'color: var(--theme-color-primary);' : ''}">
                                                 {nullBindConfig.bottomOutPoint > 0 ? t('advancedkey.on', currentLanguage) : t('advancedkey.off', currentLanguage)}
                                             </span>
                                         </div>
@@ -768,12 +812,13 @@
                                     
                                     <div class="flex items-center gap-2">
                                         <div class="w-3 h-3 rounded-full flex items-center justify-center"
-                                             style="background-color: {nullBindConfig.rtDown > 0 ? '#10b981' : '#6b7280'};">
+                                             style="background-color: {nullBindConfig.rtDown > 0 ? 'var(--theme-color-primary)' : '#6b7280'};">
                                             <div class="w-1.5 h-1.5 rounded-full bg-white"></div>
                                         </div>
                                         <div class="flex flex-col">
                                             <span class="text-xs {$darkMode ? 'text-gray-400' : 'text-gray-500'}">{t('advancedkey.rapidTrigger', currentLanguage)}</span>
-                                            <span class="text-xs font-medium {nullBindConfig.rtDown > 0 ? 'text-green-600' : ($darkMode ? 'text-gray-400' : 'text-gray-500')}">
+                                            <span class="text-xs font-medium {nullBindConfig.rtDown > 0 ? ($darkMode ? 'text-white' : 'text-gray-900') : ($darkMode ? 'text-gray-400' : 'text-gray-500')}"
+                                                  style="{nullBindConfig.rtDown > 0 ? 'color: var(--theme-color-primary);' : ''}">
                                                 {nullBindConfig.rtDown > 0 ? t('advancedkey.on', currentLanguage) : t('advancedkey.off', currentLanguage)}
                                             </span>
                                         </div>
@@ -843,5 +888,33 @@
     }
     :global(.dark) .slider-thumb::-moz-range-thumb {
         --thumb-color: #ffffff;
+    }
+    
+    /* Fade-out animation for deleting pairs */
+    .group {
+        transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), 
+                   transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    /* Ensure smooth animation when pairs are being deleted */
+    .group.opacity-0 {
+        transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), 
+                   transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    /* Fade-in animation for newly added pairs */
+    @keyframes fade-in {
+        0% {
+            opacity: 0;
+            transform: scale(0.95) translateY(10px);
+        }
+        100% {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+        }
+    }
+    
+    .animate-fade-in {
+        animation: fade-in 0.4s ease-out;
     }
 </style>
