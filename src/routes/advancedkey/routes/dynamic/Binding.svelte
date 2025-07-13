@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { darkMode } from '$lib/DarkModeStore.svelte';
+	import { darkMode, glassmorphismMode } from '$lib/DarkModeStore.svelte';
 	import type { KeyAction } from '$lib/AdvancedKeyShared';
 	import { language, t } from '$lib/LanguageStore.svelte';
 	
@@ -27,7 +27,7 @@
 </script>
 
 <div
-	class="rounded-lg border p-6"
+	class="rounded-lg border p-6 {$glassmorphismMode ? 'glassmorphism-card' : ''}"
 	style="background-color: color-mix(in srgb, var(--theme-color-primary) 5%, ${$darkMode ? 'black' : 'white'});
 		   border-color: {$darkMode ? 'color-mix(in srgb, var(--theme-color-primary) 20%, #374151)' : 'color-mix(in srgb, var(--theme-color-primary) 15%, #e5e7eb)'};"
 >	<h3
@@ -58,7 +58,7 @@
 				</h4>
 				<div class="grid grid-cols-10 gap-2">					{#each category.actions as action}
 						<button
-							class="aspect-square w-15 h-15 text-xs rounded-md border transition-all"							style="{selectedBindingIndex !== null
+							class="aspect-square w-15 h-15 text-xs rounded-md border transition-all {$glassmorphismMode ? 'glassmorphism-button' : ''}"							style="{selectedBindingIndex !== null
 								? `background-color: ${$darkMode ? '#111827' : 'white'}; 
 								   border-color: ${$darkMode ? 'color-mix(in srgb, var(--theme-color-primary) 15%, #4b5563)' : 'color-mix(in srgb, var(--theme-color-primary) 10%, #e5e5e5)'}; 
 								   color: ${$darkMode ? '#d1d5db' : '#374151'};`

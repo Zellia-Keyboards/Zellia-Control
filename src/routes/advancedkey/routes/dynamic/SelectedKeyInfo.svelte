@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { darkMode } from '$lib/DarkModeStore.svelte';
+	import { darkMode, glassmorphismMode } from '$lib/DarkModeStore.svelte';
 	import { language, t } from '$lib/LanguageStore.svelte';
 
 	type Props = {
@@ -17,17 +17,17 @@
 </script>
 
 <div
-	class="rounded-lg border p-6 mb-6"
-	style="background-color: color-mix(in srgb, var(--theme-color-primary) 8%, {$darkMode ? 'black' : 'white'});
-	       border-color: color-mix(in srgb, var(--theme-color-primary) 30%, {$darkMode ? 'white' : '#e5e5e5'});"
+	class="rounded-lg border p-6 mb-6 {glassmorphismMode ? 'glassmorphism-card' : ''}"
+	style="{glassmorphismMode ? '' : `background-color: color-mix(in srgb, var(--theme-color-primary) 8%, ${$darkMode ? 'black' : 'white'});
+	       border-color: color-mix(in srgb, var(--theme-color-primary) 30%, ${$darkMode ? 'white' : '#e5e5e5'});`}"
 >
 	<div class="flex items-center justify-between">
 		<div class="flex items-center gap-4">
 			<div class="flex items-center gap-3">
 				<div
-					class="w-12 h-12 rounded-lg flex items-center justify-center border-2"
-					style="background-color: color-mix(in srgb, var(--theme-color-primary) 15%, {$darkMode ? 'black' : 'white'});
-					       border-color: var(--theme-color-primary);"
+					class="w-12 h-12 rounded-lg flex items-center justify-center border-2 {glassmorphismMode ? 'glassmorphism-button' : ''}"
+					style="{glassmorphismMode ? 'border-color: var(--theme-color-primary);' : `background-color: color-mix(in srgb, var(--theme-color-primary) 15%, ${$darkMode ? 'black' : 'white'});
+					       border-color: var(--theme-color-primary);`}"
 				>
 					<span
 						class="font-mono font-bold {$darkMode

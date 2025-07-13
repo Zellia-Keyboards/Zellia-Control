@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { darkMode } from "$lib/DarkModeStore.svelte";
+  import { darkMode, glassmorphismMode } from "$lib/DarkModeStore.svelte";
   import NewZellia80He from "$lib/NewZellia80HE.svelte";
   import { AlertTriangle } from "lucide-svelte";
   import { language, t } from '$lib/LanguageStore.svelte';
@@ -40,7 +40,7 @@
 </NewZellia80He>
 
 <div
-  class="rounded-2xl shadow p-8 mt-2 mb-4 grow {$darkMode
+  class="rounded-2xl shadow p-8 mt-2 mb-4 grow {$glassmorphismMode ? 'glassmorphism-card' : ''} {$darkMode
     ? 'border border-gray-600 text-white'
     : 'text-black'} h-full flex flex-col"
   style="background-color: {$darkMode
@@ -52,7 +52,7 @@
     </h2>
     <div>
       <button
-        class="px-4 py-2 rounded mr-2 transition-colors duration-200 text-white"
+        class="px-4 py-2 rounded mr-2 transition-colors duration-200 text-white {$glassmorphismMode ? 'glassmorphism-button' : ''}"
         style="background-color: var(--theme-color-primary);"
         onmouseover={(e) =>
           ((e.currentTarget as HTMLElement).style.backgroundColor =
@@ -63,7 +63,7 @@
         {t('performance.selectAllKeys', currentLanguage)}
       </button>
       <button
-        class="{$darkMode
+        class="{$glassmorphismMode ? 'glassmorphism-button' : ''} {$darkMode
           ? 'bg-gray-800 hover:bg-gray-700 text-white border border-white'
           : 'bg-gray-200 hover:bg-gray-300 text-gray-600'} px-4 py-2 rounded transition-colors duration-200"
         >
@@ -71,7 +71,7 @@
       </button>
     </div>
   </div>
-  <div class=" rounded-xl shadow p-6 flex flex-col md:flex-row gap-6 flex-1">    <!-- 1st Box: Actuation Point -->
+  <div class="rounded-xl shadow p-6 flex flex-col md:flex-row gap-6 flex-1 {$glassmorphismMode ? 'glassmorphism-card' : ''}">    <!-- 1st Box: Actuation Point -->
     <div class="flex-1 min-w-[260px] flex flex-col">
       <h3
         class="text-lg font-medium mb-4 {$darkMode

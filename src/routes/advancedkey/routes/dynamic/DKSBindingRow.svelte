@@ -1,6 +1,6 @@
 <script lang="ts">
     import type { Snippet } from "svelte";
-    import { darkMode } from "$lib/DarkModeStore.svelte";
+    import { darkMode, glassmorphismMode } from "$lib/DarkModeStore.svelte";
     import type { DKSAction, KeyAction } from "$lib/AdvancedKeyShared"; // Assuming KeyAction is exported
 
     type Props = {
@@ -29,10 +29,10 @@
 </script>
 
 <div class="flex items-center gap-4">    <button
-        class="w-16 h-16 p-0.5 rounded-lg border-2 text-xs transition-all font-medium"
-        style="border-color: {selectedBindingIndex === bindingIndex ? 'var(--theme-color-primary)' : ($darkMode ? '#4b5563' : '#e5e7eb')};
-               background-color: {selectedBindingIndex === bindingIndex ? ($darkMode ? 'color-mix(in srgb, var(--theme-color-primary) 10%, #1f2937)' : 'color-mix(in srgb, var(--theme-color-primary) 8%, #f9fafb)') : ($darkMode ? 'black' : 'white')};
-               color: {selectedBindingIndex === bindingIndex ? 'var(--theme-color-primary)' : ($darkMode ? 'white' : '#111827')};"        onmouseover={(e) => {
+        class="w-16 h-16 p-0.5 rounded-lg border-2 text-xs transition-all font-medium {glassmorphismMode ? 'glassmorphism-button' : ''}"
+        style="{glassmorphismMode ? `border-color: ${selectedBindingIndex === bindingIndex ? 'var(--theme-color-primary)' : ($darkMode ? '#4b5563' : '#e5e7eb)')};` : `border-color: ${selectedBindingIndex === bindingIndex ? 'var(--theme-color-primary)' : ($darkMode ? '#4b5563' : '#e5e7eb)')};
+               background-color: ${selectedBindingIndex === bindingIndex ? ($darkMode ? 'color-mix(in srgb, var(--theme-color-primary) 10%, #1f2937)' : 'color-mix(in srgb, var(--theme-color-primary) 8%, #f9fafb)') : ($darkMode ? 'black' : 'white')};
+               color: ${selectedBindingIndex === bindingIndex ? 'var(--theme-color-primary)' : ($darkMode ? 'white' : '#111827')};`}"        onmouseover={(e) => {
             if (selectedBindingIndex !== bindingIndex) {
                 (e.currentTarget as HTMLElement).style.backgroundColor = $darkMode ? 'color-mix(in srgb, var(--theme-color-primary) 3%, black)' : 'color-mix(in srgb, var(--theme-color-primary) 2%, #f9fafb)';
             }

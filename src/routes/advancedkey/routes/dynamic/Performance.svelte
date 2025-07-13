@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { darkMode } from "$lib/DarkModeStore.svelte";
+    import { darkMode, glassmorphismMode } from "$lib/DarkModeStore.svelte";
     import { language, t } from '$lib/LanguageStore.svelte';
     import { AlertTriangle } from 'lucide-svelte';
     
@@ -15,7 +15,7 @@
 </script>
 
 <div
-    class="rounded-lg border p-6"
+    class="rounded-lg border p-6 {$glassmorphismMode ? 'glassmorphism-card' : ''}"
     style="background-color: color-mix(in srgb, var(--theme-color-primary) 5%, ${$darkMode ? 'black' : 'white'});
            border-color: {$darkMode ? 'color-mix(in srgb, var(--theme-color-primary) 20%, #374151)' : 'color-mix(in srgb, var(--theme-color-primary) 15%, #e5e7eb)'};"
 >    <h3
@@ -37,7 +37,7 @@
             >
         </div>
           <!-- Warning box for values below 0.3 -->        {#if actuationPoint < 0.3}
-            <div class="mb-2 p-2 border rounded-md text-xs flex items-center gap-2"
+            <div class="mb-2 p-2 border rounded-md text-xs flex items-center gap-2 {$glassmorphismMode ? 'glassmorphism-card' : ''}"
                  style="background-color: {$darkMode ? 'color-mix(in srgb, #f59e0b 15%, #451a03)' : 'color-mix(in srgb, #f59e0b 10%, #fefce8)'};
                         border-color: {$darkMode ? 'color-mix(in srgb, #f59e0b 30%, #78716c)' : 'color-mix(in srgb, #f59e0b 25%, #e7e5e4)'};
                         color: {$darkMode ? '#fbbf24' : '#a16207'};">
@@ -66,7 +66,7 @@
                 max="3.5" 
                 step="0.01" 
                 bind:value={actuationPoint}
-                class="w-20 px-2 py-1 text-xs border rounded"
+                class="w-20 px-2 py-1 text-xs border rounded {$glassmorphismMode ? 'glassmorphism-input' : ''}"
                 style="background-color: {$darkMode ? '#1f2937' : 'white'};
                        border-color: {$darkMode ? 'color-mix(in srgb, var(--theme-color-primary) 20%, #4b5563)' : 'color-mix(in srgb, var(--theme-color-primary) 15%, #d1d5db)'};
                        color: {$darkMode ? 'white' : '#111827'};"
@@ -77,7 +77,7 @@
             {t('advancedkey.actuationPointDesc', currentLanguage)}
         </p>
     </div>    <div
-        class="flex items-start gap-3 p-4 border rounded-lg"
+        class="flex items-start gap-3 p-4 border rounded-lg {$glassmorphismMode ? 'glassmorphism-card' : ''}"
         style="background-color: {$darkMode ? 'color-mix(in srgb, var(--theme-color-primary) 8%, #111827)' : 'color-mix(in srgb, var(--theme-color-primary) 5%, #f0f9ff)'};
                border-color: {$darkMode ? 'color-mix(in srgb, var(--theme-color-primary) 20%, #4b5563)' : 'color-mix(in srgb, var(--theme-color-primary) 15%, #bfdbfe)'};"
     >        <svg

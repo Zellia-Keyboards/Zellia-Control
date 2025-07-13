@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { darkMode } from '$lib/DarkModeStore.svelte';
+	import { darkMode, glassmorphismMode } from '$lib/DarkModeStore.svelte';
 	import type { KeyboardDisplayValues as KeyboardDisplayValuesType } from '$lib/KeyboardState.svelte';
 	import type { globalConfigurations, DynamicKeystrokeConfiguration } from '$lib/AdvancedKeyShared';
 	import { language, t } from '$lib/LanguageStore.svelte';
@@ -55,8 +55,8 @@
 {#if configuredDynamicKeys.length > 0}	
 <div class="max-w-7xl mx-auto mt-6">
 		<div
-			class="rounded-lg border p-6"
-			style="background-color: color-mix(in srgb, var(--theme-color-primary) 5%, ${$darkMode ? 'black' : 'white'}); border-color: ${$darkMode ? 'color-mix(in srgb, var(--theme-color-primary) 20%, #374151)' : 'color-mix(in srgb, var(--theme-color-primary) 15%, #e5e7eb)'};"
+			class="rounded-lg border p-6 {glassmorphismMode ? 'glassmorphism-card' : ''}"
+			style="{glassmorphismMode ? '' : `background-color: color-mix(in srgb, var(--theme-color-primary) 5%, ${$darkMode ? 'black' : 'white'}); border-color: ${$darkMode ? 'color-mix(in srgb, var(--theme-color-primary) 20%, #374151)' : 'color-mix(in srgb, var(--theme-color-primary) 15%, #e5e7eb)'};`}"
 		>			<div class="flex items-center justify-between mb-4">				<h3
 					class="text-lg font-medium {$darkMode
 						? 'text-white'
@@ -82,11 +82,11 @@
 					{@const isNewlyAdded = newlyAddedKeys.has(keyId)}
 					
 					<div
-						class="group relative overflow-hidden transition-all duration-300 ease-out hover:shadow-lg hover:shadow-primary/10 {isDeleting ? 'opacity-0 scale-95 pointer-events-none' : isNewlyAdded ? 'opacity-100 scale-100 animate-fade-in' : 'opacity-100 scale-100 hover:scale-[1.02] hover:-translate-y-1'} p-4 rounded-lg border"
-						style="background: linear-gradient(135deg, 
-								color-mix(in srgb, var(--theme-color-primary) 8%, {$darkMode ? '#1f2937' : '#ffffff'}) 0%, 
-								color-mix(in srgb, var(--theme-color-primary) 3%, {$darkMode ? '#111827' : '#f8fafc'}) 100%);
-							   border-color: color-mix(in srgb, var(--theme-color-primary) 20%, {$darkMode ? '#374151' : '#e2e8f0'});"
+						class="group relative overflow-hidden transition-all duration-300 ease-out hover:shadow-lg hover:shadow-primary/10 {isDeleting ? 'opacity-0 scale-95 pointer-events-none' : isNewlyAdded ? 'opacity-100 scale-100 animate-fade-in' : 'opacity-100 scale-100 hover:scale-[1.02] hover:-translate-y-1'} p-4 rounded-lg border {glassmorphismMode ? 'glassmorphism-card' : ''}"
+						style="{glassmorphismMode ? '' : `background: linear-gradient(135deg, 
+								color-mix(in srgb, var(--theme-color-primary) 8%, ${$darkMode ? '#1f2937' : '#ffffff'}) 0%, 
+								color-mix(in srgb, var(--theme-color-primary) 3%, ${$darkMode ? '#111827' : '#f8fafc'}) 100%);
+							   border-color: color-mix(in srgb, var(--theme-color-primary) 20%, ${$darkMode ? '#374151' : '#e2e8f0'});`}"
 					>
 						<div class="flex items-center justify-between mb-3">							
 							<span
@@ -96,7 +96,7 @@
 							
 							{#if onDeleteKey}
 								<button 
-									class="w-8 h-8 bg-red-500 hover:bg-red-600 rounded-lg flex items-center justify-center text-white transition-colors"
+									class="w-8 h-8 bg-red-500 hover:bg-red-600 rounded-lg flex items-center justify-center text-white transition-colors {glassmorphismMode ? 'glassmorphism-button' : ''}"
 									onclick={() => deleteKey(keyId)}
 									title={t('advancedkey.deleteKey', currentLanguage)}
 									aria-label={t('advancedkey.deleteKey', currentLanguage)}

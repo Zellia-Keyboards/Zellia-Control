@@ -1,4 +1,4 @@
-<script lang="ts">    import { darkMode } from "$lib/DarkModeStore.svelte";
+<script lang="ts">    import { darkMode, glassmorphismMode } from "$lib/DarkModeStore.svelte";
     import NewZellia80He from "$lib/NewZellia80HE.svelte";
     import { Target, Play, RotateCcw, CheckCircle, AlertCircle, Info, X } from 'lucide-svelte';
     import { language, t } from '$lib/LanguageStore.svelte';
@@ -228,7 +228,7 @@
   }
 </style>
 <div
-  class="rounded-2xl shadow p-8 mt-2 mb-4 grow {$darkMode
+  class="rounded-2xl shadow p-8 mt-2 mb-4 grow {$glassmorphismMode ? 'glassmorphism-card' : ''} {$darkMode
     ? 'border border-gray-600 text-white'
     : 'text-black'} h-full flex flex-col"
   style="background-color: {$darkMode

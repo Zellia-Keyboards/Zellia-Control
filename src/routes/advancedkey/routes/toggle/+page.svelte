@@ -1,5 +1,5 @@
 <script lang="ts">    import { goto } from '$app/navigation';
-    import {  KeyboardDisplayValues } from "$lib/KeyboardState.svelte";    import { darkMode } from '$lib/DarkModeStore.svelte';
+    import {  KeyboardDisplayValues } from "$lib/KeyboardState.svelte";    import { darkMode, glassmorphismMode } from '$lib/DarkModeStore.svelte';
     import { language, t, tPlaceholder } from '$lib/LanguageStore.svelte';
     import { 
         globalConfigurations,
@@ -196,14 +196,14 @@
   {#snippet body(x, y)}{/snippet}
 </NewZellia80He>
 <div
-  class="rounded-2xl shadow p-4 mt-2 mb-4 grow {$darkMode
+  class="rounded-2xl shadow p-4 mt-2 mb-4 grow {$glassmorphismMode ? 'glassmorphism-card' : ''} {$darkMode
     ? 'border border-gray-600 text-white'
     : 'text-black'}  flex flex-col"
   style="background-color: {$darkMode
     ? `color-mix(in srgb, var(--theme-color-primary) 5%, black)`
     : `color-mix(in srgb, var(--theme-color-primary) 10%, white)`};"
 >     <!-- Header -->
-    <div class="border-b px-6 py-4" style="background-color: color-mix(in srgb, var(--theme-color-primary) 3%, ${$darkMode ? 'black' : 'white'}); border-color: color-mix(in srgb, var(--theme-color-primary) 20%, ${$darkMode ? 'white' : '#e5e5e5'});">
+    <div class="border-b px-6 py-4 " style="background-color: color-mix(in srgb, var(--theme-color-primary) 3%, ${$darkMode ? 'black' : 'white'}); border-color: color-mix(in srgb, var(--theme-color-primary) 20%, ${$darkMode ? 'white' : '#e5e5e5'});">
         <div class="flex items-center justify-between">
             <div class="flex items-center gap-4">
                 <button 
@@ -218,9 +218,10 @@
                     <h1 class="text-xl font-semibold {$darkMode ? 'text-white' : 'text-gray-900'}">{t('advancedkey.toggleTitle', currentLanguage)}</h1>
                     <p class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-500'}">{t('advancedkey.toggleSubtitle', currentLanguage)}</p>
                 </div>
-            </div>            <div class="flex gap-3">
+            </div>            
+            <div class="flex gap-3">
                 <button 
-                    class="px-4 py-2 text-white rounded-md transition-colors text-sm font-medium disabled:opacity-50"
+                    class="px-4 py-2 text-white rounded-md transition-colors text-sm font-medium disabled:opacity-50 {$glassmorphismMode ? 'glassmorphism-button' : ''}"
                     style="background-color: var(--theme-color-primary); 
                            {!(CurrentSelected) ? '' : 'hover:background-color: color-mix(in srgb, var(--theme-color-primary) 85%, black);'}"
                     onclick={applyConfiguration}
@@ -228,24 +229,26 @@
                 >                    {t('advancedkey.applyConfiguration', currentLanguage)}
                 </button>
                 <button 
-                    class="px-4 py-2 {$darkMode ? 'bg-red-700 hover:bg-red-600' : 'bg-red-600 hover:bg-red-700'} text-white rounded-md transition-colors text-sm font-medium"
+                    class="px-4 py-2 {$glassmorphismMode ? 'glassmorphism-button' : ''} {$darkMode ? 'bg-red-700 hover:bg-red-600' : 'bg-red-600 hover:bg-red-700'} text-white rounded-md transition-colors text-sm font-medium"
                     onclick={resetAllToggleKeys}
                 >
                     {t('advancedkey.resetAllToggle', currentLanguage)}
                 </button>
             </div>
         </div>
-    </div>    <!-- Main Content -->
+    </div>    
+    <!-- Main Content -->
     <div class="flex-1 p-4 sm:p-6">
         {#if CurrentSelected}
-            <div class="max-w-7xl mx-auto">                <!-- Selected Key Info -->
-                <div class="rounded-lg border p-4 sm:p-6 mb-6"
+            <div class="max-w-7xl mx-auto">                
+                <!-- Selected Key Info -->
+                <div class="rounded-lg border p-4 sm:p-6 mb-6 {$glassmorphismMode ? 'glassmorphism-card' : ''}"
                      style="background-color: color-mix(in srgb, var(--theme-color-primary) 8%, {$darkMode ? 'black' : 'white'});
                             border-color: color-mix(in srgb, var(--theme-color-primary) 30%, {$darkMode ? 'white' : '#e5e5e5'});">
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                         <div class="flex items-center gap-4">
                             <div class="flex items-center gap-3">
-                                <div class="w-12 h-12 rounded-lg flex items-center justify-center border-2"
+                                <div class="w-12 h-12 rounded-lg flex items-center justify-center border-2 {$glassmorphismMode ? 'glassmorphism-button' : ''}"
                                      style="background-color: color-mix(in srgb, var(--theme-color-primary) 15%, {$darkMode ? 'black' : 'white'});
                                             border-color: var(--theme-color-primary);">
                                     <span class="font-mono font-bold {$darkMode ? 'text-white' : 'text-gray-900'}">{currentKeyName}</span>
@@ -256,7 +259,8 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="flex items-center gap-3">                            <span class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'}">{t('advancedkey.toggleState', currentLanguage)}:</span>
+                        <div class="flex items-center gap-3">                            
+                            <span class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'}">{t('advancedkey.toggleState', currentLanguage)}:</span>
                             <div class="flex items-center gap-2">
                                 <div class="w-2 h-2 rounded-full {toggleState ? 'bg-green-500' : 'bg-gray-400'}"></div>
                                 <span class="text-sm font-medium {toggleState ? 'text-green-700' : ($darkMode ? 'text-gray-400' : 'text-gray-600')}">
@@ -268,7 +272,7 @@
                 </div>                <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
                     <!-- Configuration Panel -->
                     <div class="xl:col-span-2 space-y-6">                        <!-- Toggle Action Selection -->
-                        <div class="rounded-lg border p-4 sm:p-6"
+                        <div class="rounded-lg border p-4 sm:p-6 {$glassmorphismMode ? 'glassmorphism-card' : ''}"
                              style="background-color: color-mix(in srgb, var(--theme-color-primary) 5%, {$darkMode ? 'black' : 'white'});
                                     border-color: color-mix(in srgb, var(--theme-color-primary) 25%, {$darkMode ? 'white' : '#e5e5e5'});">
                             <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'} mb-4">{t('advancedkey.toggleAction', currentLanguage)}</h3>
@@ -279,7 +283,7 @@
                                         <div class="grid grid-cols-6 sm:grid-cols-8 md:grid-cols-10 lg:grid-cols-12 gap-2">
                                             {#each category.actions as action}
                                                 <button
-                                                    class="aspect-square min-w-12 text-xs rounded-md border transition-all flex items-center justify-center p-1"
+                                                    class="aspect-square min-w-12 text-xs rounded-md border transition-all flex items-center justify-center p-1 {$glassmorphismMode ? 'glassmorphism-button' : ''}"
                                                     style="{selectedToggleAction === action.id 
                                                         ? `background-color: var(--theme-color-primary); color: white; border-color: var(--theme-color-primary);`
                                                         : `background-color: ${$darkMode ? 'black' : 'white'}; 
@@ -303,14 +307,14 @@
                                 {/each}
                             </div>
                         </div>                        <!-- Toggle Mode -->
-                        <div class="rounded-lg border p-4 sm:p-6"
+                        <div class="rounded-lg border p-4 sm:p-6 {$glassmorphismMode ? 'glassmorphism-card' : ''}"
                              style="background-color: color-mix(in srgb, var(--theme-color-primary) 5%, {$darkMode ? 'black' : 'white'});
                                     border-color: color-mix(in srgb, var(--theme-color-primary) 25%, {$darkMode ? 'white' : '#e5e5e5'});">
                             <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'} mb-4">{t('advancedkey.toggleMode', currentLanguage)}</h3>
                             
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <button
-                                    class="p-4 rounded-lg border-2 text-left transition-all"
+                                    class="p-4 rounded-lg border-2 text-left transition-all {$glassmorphismMode ? 'glassmorphism-button' : ''}"
                                     style="{toggleMode === 'press'
                                         ? `border-color: var(--theme-color-primary); background-color: color-mix(in srgb, var(--theme-color-primary) 15%, ${$darkMode ? 'black' : 'white'});`
                                         : `border-color: ${$darkMode ? '#4b5563' : '#e5e5e5'}; background-color: transparent;`
@@ -336,7 +340,7 @@
                                 </button>
                                 
                                 <button
-                                    class="p-4 rounded-lg border-2 text-left transition-all"
+                                    class="p-4 rounded-lg border-2 text-left transition-all {$glassmorphismMode ? 'glassmorphism-button' : ''}"
                                     style="{toggleMode === 'release'
                                         ? `border-color: var(--theme-color-primary); background-color: color-mix(in srgb, var(--theme-color-primary) 15%, ${$darkMode ? 'black' : 'white'});`
                                         : `border-color: ${$darkMode ? '#4b5563' : '#e5e5e5'}; background-color: transparent;`
@@ -362,18 +366,18 @@
                                 </button>
                             </div>
                         </div>                        <!-- State Control -->
-                        <div class="rounded-lg border p-4 sm:p-6"
+                        <div class="rounded-lg border p-4 sm:p-6 {$glassmorphismMode ? 'glassmorphism-card' : ''}"
                              style="background-color: color-mix(in srgb, var(--theme-color-primary) 5%, {$darkMode ? 'black' : 'white'});
                                     border-color: color-mix(in srgb, var(--theme-color-primary) 25%, {$darkMode ? 'white' : '#e5e5e5'});">                            <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'} mb-4">{t('advancedkey.toggleState', currentLanguage)}</h3>
                             
-                            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-lg"
+                            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-lg {$glassmorphismMode ? 'glassmorphism-button' : ''}"
                                  style="background-color: color-mix(in srgb, var(--theme-color-primary) 8%, {$darkMode ? 'black' : 'white'});">
                                 <div class="flex-1">
                                     <div class="font-medium {$darkMode ? 'text-white' : 'text-gray-900'}">{t('advancedkey.toggleState', currentLanguage)}</div>
                                     <div class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'}">{t('advancedkey.toggleStateDesc', currentLanguage)}</div>
                                 </div>                                <div class="flex-shrink-0">
                                     <button
-                                        class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2"
+                                        class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 {$glassmorphismMode ? 'glassmorphism-button' : ''}"
                                         style="background-color: {toggleState ? 'var(--theme-color-primary)' : ($darkMode ? '#4b5563' : '#d1d5db')}; 
                                                focus:ring-color: var(--theme-color-primary);"
                                         onclick={() => toggleState = !toggleState}
@@ -388,7 +392,7 @@
 
                     <!-- Preview Panel -->
                     <div class="space-y-6">                        <!-- Live Preview -->
-                        <div class="rounded-lg border p-4 sm:p-6"
+                        <div class="rounded-lg border p-4 sm:p-6 {$glassmorphismMode ? 'glassmorphism-card' : ''}"
                              style="background-color: color-mix(in srgb, var(--theme-color-primary) 5%, {$darkMode ? 'black' : 'white'});
                                     border-color: color-mix(in srgb, var(--theme-color-primary) 25%, {$darkMode ? 'white' : '#e5e5e5'});">
                             <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'} mb-4">Preview</h3>
@@ -412,9 +416,10 @@
                                 </div>
                             </div>
                         </div>                        <!-- Info Panel -->
-                        <div class="border rounded-lg p-6"
+                        <div class="border rounded-lg p-6 {$glassmorphismMode ? 'glassmorphism-card' : ''}"
                              style="background-color: color-mix(in srgb, var(--theme-color-primary) 12%, {$darkMode ? 'black' : 'white'});
-                                    border-color: color-mix(in srgb, var(--theme-color-primary) 30%, {$darkMode ? 'white' : '#e5e5e5'});">                            <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'} mb-2">{t('advancedkey.howItWorks', currentLanguage)}</h3>
+                                    border-color: color-mix(in srgb, var(--theme-color-primary) 30%, {$darkMode ? 'white' : '#e5e5e5'});">                            
+                                    <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'} mb-2">{t('advancedkey.howItWorks', currentLanguage)}</h3>
                             <p class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'}">
                                 {@html tPlaceholder('advancedkey.toggleDescription', currentLanguage, 
                                     `<strong style="color: var(--theme-color-primary);">${keyActions.find(k => k.id === selectedToggleAction)?.name || selectedToggleAction}</strong>`,
@@ -426,7 +431,7 @@
                         <!-- Configured Keys Summary -->
                         {#if showConfiguredSection}
                             <div 
-                                class="rounded-lg border p-6 {sectionAnimationPlayed ? 'animate-section-fade-in' : ''}" 
+                                class="rounded-lg border p-6 {$glassmorphismMode ? 'glassmorphism-card' : ''} {sectionAnimationPlayed ? 'animate-section-fade-in' : ''}" 
                                 style="background-color: color-mix(in srgb, var(--theme-color-primary) 5%, ${$darkMode ? 'black' : 'white'}); border-color: color-mix(in srgb, var(--theme-color-primary) 25%, ${$darkMode ? 'white' : '#e5e5e5'});"
                             >
                                 <div class="flex items-center justify-between mb-4">
@@ -440,13 +445,13 @@
                                         {@const isDeleting = deletingKeys.has(keyId)}
                                         {@const isNewlyAdded = newlyAddedKeys.has(keyId)}
                                         <div 
-                                            class="p-3 rounded-lg border transform transition-all duration-500 ease-out {isDeleting ? 'animate-fade-out' : ''} {isNewlyAdded ? 'animate-fade-in' : ''}" 
+                                            class="p-3 rounded-lg border transform transition-all duration-500 ease-out {$glassmorphismMode ? 'glassmorphism-card' : ''} {isDeleting ? 'animate-fade-out' : ''} {isNewlyAdded ? 'animate-fade-in' : ''}" 
                                             style="background-color: color-mix(in srgb, var(--theme-color-primary) 8%, ${$darkMode ? 'black' : 'white'}); border-color: color-mix(in srgb, var(--theme-color-primary) 25%, ${$darkMode ? 'white' : '#e5e5e5'});"
                                         >
                                             <div class="flex items-center justify-between mb-2">
                                                 <span class="font-mono font-bold {$darkMode ? 'text-white' : 'text-gray-900'} text-sm">{keyName}</span>
                                                 <button 
-                                                    class="w-8 h-8 bg-red-500 hover:bg-red-600 rounded-lg flex items-center justify-center text-white transition-colors"
+                                                    class="w-8 h-8 bg-red-500 hover:bg-red-600 rounded-lg flex items-center justify-center text-white transition-colors {$glassmorphismMode ? 'glassmorphism-button' : ''}"
                                                     onclick={() => deleteKey(keyId)}
                                                     title={t('common.delete', currentLanguage)}
                                                     aria-label={t('common.delete', currentLanguage)}
@@ -458,7 +463,7 @@
                                             </div>
                                             <div class="text-xs space-y-1">
                                                 <div class="flex justify-between">
-                                                    <span class="{$darkMode ? 'text-gray-400' : 'text-gray-600'}">{t('advancedkey.action', currentLanguage)}:</span>
+                                                    <span class="{$darkMode ? 'text-gray-400' : 'text-gray-600'}">{t('advancedkey.actions', currentLanguage)}:</span>
                                                     <span class="font-medium" style="color: var(--theme-color-primary);">{keyActions.find(k => k.id === config.toggleAction)?.name || config.toggleAction}</span>
                                                 </div>
                                                 <div class="flex justify-between">
@@ -484,23 +489,27 @@
         {:else}            <!-- No Key Selected State -->
             <div class="flex-1 flex items-center justify-center">
                 <div class="text-center max-w-md mx-auto">
-                    <div class="w-24 h-24 {$darkMode ? 'bg-gray-800' : 'bg-gray-100'} rounded-full flex items-center justify-center mx-auto mb-4">
-                        <svg
-                            class="w-12 h-12"
-                            style="color: var(--theme-color-primary);"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                        >
-                        <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="2"
-                            d="M8 9l4-4 4 4m0 6l-4 4-4-4"
-                        />
-                    </div>                    
+                    <div
+            class="w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-4 {glassmorphismMode ? 'glassmorphism-card' : ($darkMode ? 'bg-gray-800' : 'bg-gray-100')}"
+        >            
+        <svg
+            class="w-12 h-12"
+            style="color: var(--theme-color-primary);"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+        >
+            <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M8 9l4-4 4 4m0 6l-4 4-4-4"
+            />
+        </svg>
+        </div>                 
                     <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'} mb-2">{t('advancedkey.noKeySelected', currentLanguage)}</h3>
-                    <p class="{$darkMode ? 'text-gray-400' : 'text-gray-600'} mb-4">{t('advancedkey.selectKeyToConfig', currentLanguage)}</p><div class="{$darkMode ? 'bg-blue-50 border-blue-200 text-blue-700' : 'bg-blue-50 border-blue-200 text-blue-700'} border rounded-lg p-4 text-sm"
+                    <p class="{$darkMode ? 'text-gray-400' : 'text-gray-600'} mb-4">{t('advancedkey.selectKeyToConfig', currentLanguage)}</p>                    
+                    <div class="{$glassmorphismMode ? 'glassmorphism-card' : ''} {$darkMode ? 'bg-blue-50 border-blue-200 text-blue-700' : 'bg-blue-50 border-blue-200 text-blue-700'} border rounded-lg p-4 text-sm"
                          style="background-color: color-mix(in srgb, var(--theme-color-primary) 15%, white);
                                 border-color: color-mix(in srgb, var(--theme-color-primary) 40%, #e5e5e5);
                                 color: color-mix(in srgb, var(--theme-color-primary) 80%, black);">

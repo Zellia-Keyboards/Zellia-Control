@@ -1,7 +1,8 @@
 <script lang="ts">
     import {  KeyboardDisplayValues } from "$lib/KeyboardState.svelte";
-    import { darkMode } from '$lib/DarkModeStore.svelte';
-    import NewZellia80He from "$lib/NewZellia80HE.svelte";    import { language, t } from '$lib/LanguageStore.svelte';
+    import { darkMode, glassmorphismMode } from '$lib/DarkModeStore.svelte';
+    import NewZellia80He from "$lib/NewZellia80HE.svelte";
+    import { language, t } from '$lib/LanguageStore.svelte';
     
     // Helper function for string formatting
     const formatString = (template: string, ...args: (string | number)[]): string => {
@@ -124,7 +125,7 @@
   {/snippet}
 </NewZellia80He>
 <div
-  class="rounded-2xl shadow p-8 mt-2 mb-4 grow {$darkMode
+  class="rounded-2xl shadow p-8 mt-2 mb-4 grow {$glassmorphismMode ? 'glassmorphism-card' : ''} {$darkMode
     ? 'border border-gray-600 text-white'
     : 'text-black'} h-full flex flex-col"
   style="background-color: {$darkMode
@@ -134,15 +135,16 @@
     <div class="flex items-center justify-between -mt-4 mb-4">
         <h2 class="text-2xl font-bold {$darkMode ? 'text-white' : 'text-gray-900'}">{t('lighting.title', currentLanguage)}</h2>        <div class="flex gap-2">
             <button 
-                class="px-4 py-2 rounded transition-colors text-white"
+                class="px-4 py-2 rounded transition-colors text-white {$glassmorphismMode ? 'glassmorphism-button' : ''}"
                 style="background-color: var(--theme-color-primary);"
                 onmouseover={(e) => (e.currentTarget as HTMLElement).style.backgroundColor = 'color-mix(in srgb, var(--theme-color-primary) 85%, black)'}
                 onmouseout={(e) => (e.currentTarget as HTMLElement).style.backgroundColor = 'var(--theme-color-primary)'}
-                onclick={applySettings}            >
+                onclick={applySettings}
+            >
                 {t('lighting.applySettings', currentLanguage)}
             </button>
             <button 
-                class="{$darkMode ? 'bg-gray-800 hover:bg-gray-700 text-white border border-white' : 'bg-gray-200 hover:bg-gray-300 text-gray-600'} px-4 py-2 rounded transition-colors"
+                class="{$glassmorphismMode ? 'glassmorphism-button' : ''} {$darkMode ? 'bg-gray-800 hover:bg-gray-700 text-white border border-white' : 'bg-gray-200 hover:bg-gray-300 text-gray-600'} px-4 py-2 rounded transition-colors"
                 onclick={() => perKeyMode = !perKeyMode}
             >
                 {perKeyMode ? t('lighting.exitPerKeyMode', currentLanguage) : t('lighting.perKeyMode', currentLanguage)}
@@ -150,7 +152,7 @@
         </div>
     </div>
     
-    <div class="rounded-xl shadow p-6 flex flex-col lg:flex-row gap-6 flex-1">
+    <div class="rounded-xl shadow p-6 flex flex-col lg:flex-row gap-6 flex-1 {$glassmorphismMode ? 'glassmorphism-card' : ''}">
         <!-- Effects Panel -->
         <div class="flex-1 min-w-[300px]">
             <div class="grid grid-cols-2 gap-3 mb-6">
@@ -220,11 +222,13 @@
         <!-- Divider -->
         <div class="hidden lg:block w-px {$darkMode ? 'bg-white' : 'bg-gray-200'}"></div>
         
-        <!-- Color Controls Panel -->        <div class="flex-1 min-w-[300px]">
-            <h3 class="text-lg font-medium mb-4 {$darkMode ? 'text-white' : 'text-gray-900'}">{t('lighting.colorSettings', currentLanguage)}</h3>
+        <!-- Color Controls Panel -->        
+         <div class="flex-1 min-w-[300px]">
+            <h3 class="text-lg font-medium mb-4  {$darkMode ? 'text-white' : 'text-gray-900'}">{t('lighting.colorSettings', currentLanguage)}</h3>
               {#if perKeyMode}
                 <!-- Per-Key Color Mode -->
-                <div class="space-y-4">                    <div class="p-3 rounded-lg border"
+                <div class="space-y-4">                    
+                    <div class="p-3 rounded-lg border {$glassmorphismMode ? 'glassmorphism-button' : ''}"
                          style="background-color: color-mix(in srgb, var(--theme-color-primary) 12%, {$darkMode ? 'black' : 'white'});
                                 border-color: color-mix(in srgb, var(--theme-color-primary) 30%, {$darkMode ? 'white' : '#e5e5e5'});">
                         <div class="font-medium {$darkMode ? 'text-white' : 'text-gray-900'}">{t('lighting.perKeyModeActive', currentLanguage)}</div>
@@ -248,8 +252,9 @@
                         </div>
                     </div>
                     
-                    <div class="flex gap-2">                        <button 
-                            class="flex-1 px-3 py-2 rounded transition-colors text-white"
+                    <div class="flex gap-2 ">                        
+                        <button 
+                            class="flex-1 px-3 py-2 rounded transition-colors text-white {$glassmorphismMode ? 'glassmorphism-button' : ''}"
                             style="background-color: var(--theme-color-primary);"
                             onmouseover={(e) => (e.currentTarget as HTMLElement).style.backgroundColor = 'color-mix(in srgb, var(--theme-color-primary) 85%, black)'}
                             onmouseout={(e) => (e.currentTarget as HTMLElement).style.backgroundColor = 'var(--theme-color-primary)'}
@@ -258,13 +263,14 @@
                             {CurrentSelected && selectedKeys.has(`${CurrentSelected[0]},${CurrentSelected[1]}`) ? t('lighting.deselectKey', currentLanguage) : t('lighting.selectKey', currentLanguage)}
                         </button>
                         <button 
-                            class="{$darkMode ? 'bg-gray-800 hover:bg-gray-700 text-white border border-white' : 'bg-gray-600 hover:bg-gray-700 text-white'} px-3 py-2 rounded transition-colors"
+                            class="{$glassmorphismMode ? 'glassmorphism-button' : ''} {$darkMode ? 'bg-gray-800 hover:bg-gray-700 text-white border border-white' : 'bg-gray-600 hover:bg-gray-700 text-white'} px-3 py-2 rounded transition-colors"
                             onclick={clearKeySelection}
                         >
                             {t('lighting.clear', currentLanguage)} ({selectedKeys.size})
                         </button>
-                    </div>                      <button 
-                        class="w-full px-3 py-2 rounded transition-colors text-white"
+                    </div>                      
+                    <button 
+                        class="w-full px-3 py-2 rounded transition-colors text-white {$glassmorphismMode ? 'glassmorphism-button' : ''}"
                         style="background-color: var(--theme-color-primary);"
                         onmouseover={(e) => (e.currentTarget as HTMLElement).style.backgroundColor = 'color-mix(in srgb, var(--theme-color-primary) 85%, black)'}
                         onmouseout={(e) => (e.currentTarget as HTMLElement).style.backgroundColor = 'var(--theme-color-primary)'}
@@ -275,7 +281,8 @@
                     </button>
                 </div>
             {:else}
-                <!-- Effect-based Color Controls -->                {#if selectedEffect === 'static' || selectedEffect === 'breathing' || selectedEffect === 'reactive'}
+                <!-- Effect-based Color Controls -->                
+                 {#if selectedEffect === 'static' || selectedEffect === 'breathing' || selectedEffect === 'reactive'}
                     <div>
                         <label class="block text-sm {$darkMode ? 'text-gray-300' : 'text-gray-600'} mb-2">{t('lighting.color', currentLanguage)}</label>
                         <div class="flex gap-2">
@@ -298,7 +305,8 @@
                                 </div>
                             {/if}
                         {/if}
-                    </div>                {:else if selectedEffect === 'gradient'}
+                    </div>                
+                    {:else if selectedEffect === 'gradient'}
                     <div>
                         <label class="block text-sm {$darkMode ? 'text-gray-300' : 'text-gray-600'} mb-2">{t('lighting.gradientColors', currentLanguage)}</label>
                         <div class="space-y-2">
