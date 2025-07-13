@@ -78,10 +78,12 @@ body {
 
 /* Dark mode glassmorphism */
 .glassmorphism .glassmorphism-sidebar {
+  background: rgba(0, 0, 0, 0.3) !important; /* Firefox fallback */
   background: color-mix(in srgb, var(--theme-color-primary) 8%, rgba(0, 0, 0, 0.3)) !important;
   backdrop-filter: var(--glass-backdrop-blur) !important;
   -webkit-backdrop-filter: var(--glass-backdrop-blur) !important;
   border: none !important;
+  border-right: 1px solid rgba(255, 255, 255, 0.2) !important; /* Firefox fallback */
   border-right: 1px solid color-mix(in srgb, var(--theme-color-primary) 30%, rgba(255, 255, 255, 0.2)) !important;
   box-shadow: var(--glass-shadow) !important;
   /* Fix text blending */
@@ -504,4 +506,58 @@ body {
   text-rendering: optimizeLegibility !important;
   -webkit-font-smoothing: antialiased !important;
   -moz-osx-font-smoothing: grayscale !important;
+}
+
+/* Firefox CSS compatibility fixes - Add fallbacks for color-mix() */
+@supports not (background: color-mix(in srgb, black 50%, white)) {
+  /* Firefox fallbacks for glassmorphism */
+  .glassmorphism .glassmorphism-sidebar {
+    background: rgba(0, 0, 0, 0.4) !important;
+    border-right: 1px solid rgba(255, 255, 255, 0.2) !important;
+  }
+  
+  .glassmorphism:not(.dark) .glassmorphism-sidebar {
+    background: rgba(255, 255, 255, 0.8) !important;
+    border-right: 1px solid rgba(255, 255, 255, 0.6) !important;
+  }
+  
+  .glassmorphism .glassmorphism-card {
+    background: rgba(0, 0, 0, 0.3) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  }
+  
+  .glassmorphism:not(.dark) .glassmorphism-card {
+    background: rgba(255, 255, 255, 0.7) !important;
+    border: 1px solid rgba(255, 255, 255, 0.5) !important;
+  }
+  
+  .glassmorphism .glassmorphism-tab-container {
+    background: rgba(0, 0, 0, 0.25) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  }
+  
+  .glassmorphism:not(.dark) .glassmorphism-tab-container {
+    background: rgba(255, 255, 255, 0.8) !important;
+    border: 1px solid rgba(255, 255, 255, 0.5) !important;
+  }
+  
+  .glassmorphism .glassmorphism-tab {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  }
+  
+  .glassmorphism:not(.dark) .glassmorphism-tab {
+    background: rgba(255, 255, 255, 0.7) !important;
+    border: 1px solid rgba(255, 255, 255, 0.4) !important;
+  }
+  
+  .glassmorphism .glassmorphism-tab.active {
+    background: rgba(255, 255, 255, 0.15) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  }
+  
+  .glassmorphism:not(.dark) .glassmorphism-tab.active {
+    background: rgba(255, 255, 255, 0.6) !important;
+    border: 1px solid rgba(255, 255, 255, 0.4) !important;
+  }
 }

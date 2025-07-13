@@ -1,4 +1,5 @@
-<script lang="ts">    import { darkMode, glassmorphismMode } from "$lib/DarkModeStore.svelte";
+<script lang="ts">
+  import { darkMode, glassmorphismMode } from "$lib/DarkModeStore.svelte";
   import NewZellia80He from "$lib/NewZellia80HE.svelte";
   import { language, t } from "$lib/LanguageStore.svelte";
   import Basic from "./Basic.svelte";
@@ -9,6 +10,7 @@
   import Extension from "./Extension.svelte";
   import { slide } from 'svelte/transition';
   import { cubicOut } from 'svelte/easing';
+  import { getGlassmorphismBackground } from '$lib/colorUtils';
 
   let currentLanguage = $state($language);
 
@@ -103,9 +105,7 @@
   class="rounded-2xl shadow p-8 mt-2 mb- mb- grow {$glassmorphismMode ? 'glassmorphism-card' : ''} {$darkMode
     ? 'border border-gray-600 text-white'
     : 'text-black'} h-full flex flex-col"
-  style="{$glassmorphismMode ? '' : `background-color: ${$darkMode
-    ? `color-mix(in srgb, var(--theme-color-primary) 5%, black)`
-    : `color-mix(in srgb, var(--theme-color-primary) 10%, white)`};`}"
+  style="{$glassmorphismMode ? '' : `background-color: ${getGlassmorphismBackground($darkMode, $darkMode ? 5 : 10)};`}"
 >
   <!-- Tab Navigation -->
   <div class="flex items-center gap-0.5 -mt-4 mb-4 p-0.5 rounded-xl ">
