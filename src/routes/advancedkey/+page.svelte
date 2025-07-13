@@ -1,6 +1,6 @@
 <script lang="ts">
     import { goto } from '$app/navigation';
-    import { darkMode } from '$lib/DarkModeStore.svelte';
+    import { darkMode, glassmorphismMode } from '$lib/DarkModeStore.svelte';
     import NewZellia80He from '$lib/NewZellia80HE.svelte';
     import { Zap, RotateCcw, Settings, Target } from 'lucide-svelte';
     import { language, t } from '$lib/LanguageStore.svelte';
@@ -86,7 +86,7 @@
   {/snippet}
 </NewZellia80He>
 <div
-  class="rounded-2xl shadow p-8 mt-2 mb-4 grow {$darkMode
+  class="rounded-2xl shadow p-8 mt-2 mb-4 grow {$glassmorphismMode ? 'glassmorphism-card' : ''} {$darkMode
     ? 'border border-gray-600 text-white'
     : 'text-black'} h-full flex flex-col"
   style="background-color: {$darkMode
@@ -133,7 +133,7 @@
         {#each keyModes as mode}            
         <div class="group relative w-full">
                 <button
-                    class="w-full h-full p-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border-2 text-left group-hover:scale-105 flex flex-col"
+                    class="w-full h-full p-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border-2 text-left group-hover:scale-105 flex flex-col {$glassmorphismMode ? 'glassmorphism-card' : ''}"
                     style="background-color: {$darkMode ? 'black' : 'white'}; 
                            border-color: {$darkMode ? 'color-mix(in srgb, var(--theme-color-primary) 20%, #374151)' : 'color-mix(in srgb, var(--theme-color-primary) 15%, #e5e7eb)'};
                            --hover-border: var(--theme-color-primary);"

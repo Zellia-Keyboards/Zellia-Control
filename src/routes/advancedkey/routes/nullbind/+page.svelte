@@ -1,6 +1,6 @@
 <script lang="ts">    import { goto } from '$app/navigation';
     import {  KeyboardDisplayValues } from "$lib/KeyboardState.svelte";
-    import { darkMode } from '$lib/DarkModeStore.svelte';
+    import { darkMode, glassmorphismMode } from '$lib/DarkModeStore.svelte';
     import { language, t } from '$lib/LanguageStore.svelte';
     import { AlertTriangle, Trash2 } from 'lucide-svelte';
     import { 
@@ -352,13 +352,14 @@
   {/snippet}
 </NewZellia80He>
 <div
-  class="rounded-2xl shadow p-4 mt-2 mb-4 grow {$darkMode
+  class="rounded-2xl shadow p-4 mt-2 mb-4 grow {$glassmorphismMode ? 'glassmorphism-card' : ''} {$darkMode
     ? 'border border-gray-600 text-white'
     : 'text-black'} flex flex-col"
   style="background-color: {$darkMode
     ? `color-mix(in srgb, var(--theme-color-primary) 5%, black)`
     : `color-mix(in srgb, var(--theme-color-primary) 10%, white)`};"
->     <!-- Header -->
+>     
+<!-- Header -->
     <div class="border-b px-6 py-4" style="background-color: color-mix(in srgb, var(--theme-color-primary) 3%, ${$darkMode ? 'black' : 'white'}); border-color: color-mix(in srgb, var(--theme-color-primary) 20%, ${$darkMode ? 'white' : '#e5e5e5'});">
         <div class="flex items-center justify-between">
             <div class="flex items-center gap-4">
@@ -377,7 +378,7 @@
             </div>            
             <div class="flex gap-3">
                 <button 
-                    class="px-4 py-2 text-white rounded-md transition-colors text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                    class="px-4 py-2 text-white rounded-md transition-colors text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed {$glassmorphismMode ? 'glassmorphism-button' : ''}"
                     style="background-color: var(--theme-color-primary); 
                            {!canConfigure ? '' : 'hover:background-color: color-mix(in srgb, var(--theme-color-primary) 85%, black);'}"
                     onclick={applyConfiguration}
@@ -387,7 +388,8 @@
                 </button>
             </div>
         </div>
-    </div>    <!-- Key Selection Section -->
+    </div>    
+    <!-- Key Selection Section -->
     {#if !canConfigure}
         <div class="p-6" style="background-color: color-mix(in srgb, var(--theme-color-primary) 5%, {$darkMode ? 'black' : 'white'}); border-color: color-mix(in srgb, var(--theme-color-primary) 25%, {$darkMode ? 'white' : '#e5e5e5'});" >
             <div class="max-w-4xl mx-auto">
@@ -397,7 +399,7 @@
                 </p>
                   <!-- Selected Keys Display -->
                 <div class="grid grid-cols-2 gap-4 mb-4">
-                    <div class="p-4 border-2 border-dashed rounded-lg"
+                    <div class="p-4 border-2 border-dashed rounded-lg {$glassmorphismMode ? 'glassmorphism-card' : ''}"
                          style="{selectedKeys.length >= 1 
                              ? `border-color: var(--theme-color-primary); background-color: color-mix(in srgb, var(--theme-color-primary) 12%, ${$darkMode ? 'black' : 'white'});` 
                              : `border-color: color-mix(in srgb, var(--theme-color-primary) 60%, ${$darkMode ? 'white' : '#e5e5e5'}); 
@@ -405,19 +407,19 @@
                          }">
                         <div class="text-center">
                             {#if selectedKeys.length >= 1}
-                                <div class="w-12 h-12 text-white rounded-lg flex items-center justify-center mx-auto mb-2"
+                                <div class="w-12 h-12 text-white rounded-lg flex items-center justify-center mx-auto mb-2 {$glassmorphismMode ? 'glassmorphism-button' : ''}"
                                      style="background-color: var(--theme-color-primary);">
                                     <span class="font-mono font-bold">{selectedKeys[0]}</span>
                                 </div>
                                 <div class="text-sm font-medium" style="color: var(--theme-color-primary);">{t('advancedkey.firstKey', currentLanguage)}</div>
                                 <button 
-                                    class="mt-2 text-xs text-red-600 hover:text-red-700"
+                                    class="mt-2 text-xs text-red-600 hover:text-red-700 {$glassmorphismMode ? 'glassmorphism-button' : ''}"
                                     onclick={() => removeKey(0)}
                                 >
                                     {t('advancedkey.remove', currentLanguage)}
                                 </button>
                             {:else}
-                                <div class="w-12 h-12 rounded-lg flex items-center justify-center mx-auto mb-2 animate-pulse"
+                                <div class="w-12 h-12 rounded-lg flex items-center justify-center mx-auto mb-2 animate-pulse {$glassmorphismMode ? 'glassmorphism-button' : ''}"
                                      style="background-color: color-mix(in srgb, var(--theme-color-primary) 40%, {$darkMode ? 'black' : 'white'});">
                                     <span style="color: var(--theme-color-primary);">?</span>
                                 </div>
@@ -426,7 +428,7 @@
                         </div>
                     </div>
                     
-                    <div class="p-4 border-2 border-dashed rounded-lg"
+                    <div class="p-4 border-2 border-dashed rounded-lg {$glassmorphismMode ? 'glassmorphism-card' : ''}"
                          style="{selectedKeys.length >= 2 
                              ? `border-color: var(--theme-color-primary); background-color: color-mix(in srgb, var(--theme-color-primary) 12%, ${$darkMode ? 'black' : 'white'});` 
                              : selectedKeys.length === 1 
@@ -436,25 +438,25 @@
                          }">
                         <div class="text-center">
                             {#if selectedKeys.length >= 2}
-                                <div class="w-12 h-12 text-white rounded-lg flex items-center justify-center mx-auto mb-2"
+                                <div class="w-12 h-12 text-white rounded-lg flex items-center justify-center mx-auto mb-2 {$glassmorphismMode ? 'glassmorphism-button' : ''}"
                                      style="background-color: var(--theme-color-primary);">
                                     <span class="font-mono font-bold">{selectedKeys[1]}</span>
                                 </div>
                                 <div class="text-sm font-medium" style="color: var(--theme-color-primary);">{t('advancedkey.secondKey', currentLanguage)}</div>
                                 <button 
-                                    class="mt-2 text-xs text-red-600 hover:text-red-700"
+                                    class="mt-2 text-xs text-red-600 hover:text-red-700 {$glassmorphismMode ? 'glassmorphism-button' : ''}"
                                     onclick={() => removeKey(1)}
                                 >
                                     {t('advancedkey.remove', currentLanguage)}
                                 </button>
                             {:else if selectedKeys.length === 1}
-                                <div class="w-12 h-12 rounded-lg flex items-center justify-center mx-auto mb-2 animate-pulse"
+                                <div class="w-12 h-12 rounded-lg flex items-center justify-center mx-auto mb-2 animate-pulse {$glassmorphismMode ? 'glassmorphism-button' : ''}"
                                      style="background-color: color-mix(in srgb, var(--theme-color-primary) 40%, {$darkMode ? 'black' : 'white'});">
                                     <span style="color: var(--theme-color-primary);">?</span>
                                 </div>
                                 <div class="text-sm" style="color: var(--theme-color-primary);">{t('advancedkey.clickOpposingKey', currentLanguage)}</div>
                             {:else}
-                                <div class="w-12 h-12 rounded-lg flex items-center justify-center mx-auto mb-2"
+                                <div class="w-12 h-12 rounded-lg flex items-center justify-center mx-auto mb-2 {$glassmorphismMode ? 'glassmorphism-button' : ''}"
                                      style="background-color: {$darkMode ? '#4b5563' : '#d1d5db'};">
                                     <span class="{$darkMode ? 'text-gray-400' : 'text-gray-500'}">?</span>
                                 </div>
@@ -474,7 +476,7 @@
                 <div class="flex w-full gap-8">
                     <!-- Left Panel - Configuration -->
                     <div class="flex w-72 flex-col gap-4">                        <!-- Selected Keys Info -->
-                        <div class="relative overflow-hidden rounded-lg border"
+                        <div class="relative overflow-hidden rounded-lg border {$glassmorphismMode ? 'glassmorphism-card' : ''}"
                              style="background: linear-gradient(135deg, 
                                      color-mix(in srgb, var(--theme-color-primary) 10%, {$darkMode ? '#1f2937' : '#ffffff'}) 0%, 
                                      color-mix(in srgb, var(--theme-color-primary) 5%, {$darkMode ? '#111827' : '#f8fafc'}) 100%);
@@ -482,7 +484,7 @@
                             <div class="p-4">
                                 <div class="text-sm font-medium {$darkMode ? 'text-white' : 'text-gray-900'} mb-3">{t('advancedkey.selectedKeys', currentLanguage)}</div>
                                 <div class="flex items-center justify-center gap-3">
-                                    <div class="px-3 py-2 rounded-lg font-mono font-bold text-sm"
+                                    <div class="px-3 py-2 rounded-lg font-mono font-bold text-sm {$glassmorphismMode ? 'glassmorphism-button' : ''}"
                                          style="background-color: var(--theme-color-primary); color: white;">
                                         {selectedKeys[0]}
                                     </div>
@@ -491,7 +493,7 @@
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
                                         </svg>
                                     </div>
-                                    <div class="px-3 py-2 rounded-lg font-mono font-bold text-sm"
+                                    <div class="px-3 py-2 rounded-lg font-mono font-bold text-sm {$glassmorphismMode ? 'glassmorphism-button' : ''}"
                                          style="background-color: var(--theme-color-primary); color: white;">
                                         {selectedKeys[1]}
                                     </div>
@@ -509,7 +511,7 @@
                             
                             <div class="mt-3 grid gap-1">                                {#each NULL_BIND_BEHAVIOR_METADATA as behaviorMetadata}
                                     <button
-                                        class="relative flex items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none transition-colors"
+                                        class="relative flex items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none transition-colors {$glassmorphismMode ? 'glassmorphism-button' : ''}"
                                         style="{behavior === behaviorMetadata.behavior
                                             ? `background-color: color-mix(in srgb, var(--theme-color-primary) 15%, ${$darkMode ? 'black' : 'white'}); 
                                                color: var(--theme-color-primary); 
@@ -554,7 +556,7 @@
                                 <div class="flex-1">                                    <div class="text-sm font-medium {$darkMode ? 'text-white' : 'text-gray-900'}">{t('advancedkey.alternativeBottomOutBehavior', currentLanguage)}</div>
                                     <div class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'}">{t('advancedkey.alternativeBottomOutBehaviorDesc', currentLanguage)}</div>
                                 </div>                                <button
-                                    class="relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2"
+                                    class="relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 {$glassmorphismMode ? 'glassmorphism-button' : ''}"
                                     style="background-color: {bottomOutPoint > 0 ? 'var(--theme-color-primary)' : ($darkMode ? '#4b5563' : '#d1d5db')}; 
                                            focus:ring-color: var(--theme-color-primary);"
                                     onclick={() => updateBottomOut(bottomOutPoint === 0)}
@@ -638,13 +640,13 @@
                         <!-- Tab Content -->
                         <div class="flex-1 mt-6">
                             {#if activeTab === 'performance'}
-                                <div class="flex flex-col gap-4 rounded-md border {$darkMode ? 'border-white bg-black' : 'border-gray-200 bg-white'} p-4 shadow-sm">
+                                <div class="flex flex-col gap-4 rounded-md border {$glassmorphismMode ? 'glassmorphism-card' : ($darkMode ? 'border-white bg-black' : 'border-gray-200 bg-white')} p-4 shadow-sm">
                                     <!-- Rapid Trigger Toggle -->
                                     <div class="flex items-center justify-between">
                                         <div class="flex-1">                                            <div class="text-sm font-medium {$darkMode ? 'text-white' : 'text-gray-900'}">{t('advancedkey.rapidTrigger', currentLanguage)}</div>
                                             <div class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'}">{t('advancedkey.rapidTriggerDesc', currentLanguage)}</div>
                                         </div>                                        <button
-                                            class="relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2"
+                                            class="relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 {$glassmorphismMode ? 'glassmorphism-button' : ''}"
                                             style="background-color: {rtDown > 0 ? 'var(--theme-color-primary)' : ($darkMode ? '#4b5563' : '#d1d5db')}; 
                                                    focus:ring-color: var(--theme-color-primary);"
                                             onclick={() => updateRapidTrigger(rtDown === 0)}
@@ -660,7 +662,7 @@
                                             <span class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-500'}">{uiActuationPoint.toFixed(1)}{t('units.mm', currentLanguage)}</span>
                                         </div>
                                           <!-- Warning box for values below 0.3 -->
-                                        {#if uiActuationPoint < 0.3}                                            <div class="mb-2 p-2 {$darkMode ? 'bg-yellow-900 border-yellow-600 text-yellow-200' : 'bg-yellow-50 border-yellow-300 text-yellow-700'} border rounded-md text-xs flex items-center gap-2">
+                                        {#if uiActuationPoint < 0.3}                                            <div class="mb-2 p-2 border rounded-md text-xs flex items-center gap-2 {$glassmorphismMode ? 'glassmorphism-card' : ''} {$darkMode ? 'bg-yellow-900 border-yellow-600 text-yellow-200' : 'bg-yellow-50 border-yellow-300 text-yellow-700'}">
                                                 <AlertTriangle class="w-4 h-4 flex-shrink-0" />
                                                 <span>{t('advancedkey.keySensitivityWarning', currentLanguage)}</span>
                                             </div>
@@ -687,7 +689,7 @@
                                                 step="0.01" 
                                                 bind:value={uiActuationPoint}
                                                 onchange={commitActuationPoint}
-                                                class="w-20 px-2 py-1 text-xs border rounded {$darkMode ? 'bg-gray-800 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'}"
+                                                class="w-20 px-2 py-1 text-xs border rounded {$glassmorphismMode ? 'glassmorphism-input' : ''} {$darkMode ? 'bg-gray-800 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'}"
                                             />
                                             <span class="text-xs {$darkMode ? 'text-gray-400' : 'text-gray-500'}">{t('advancedkey.millimeters', currentLanguage)}</span>
                                         </div>
@@ -719,19 +721,21 @@
                                             </div>
                                         </div>
                                     {/if}
-                                </div>                            {:else if activeTab === 'key-tester'}
-                                <div class="flex flex-col gap-4 rounded-md border {$darkMode ? 'border-white bg-black' : 'border-gray-200 bg-white'} p-4 shadow-sm">
-                                    <div class="text-center">                                        <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'} mb-2">{t('advancedkey.keyTesterTitle', currentLanguage)}</h3>
+                                </div>                            
+                                {:else if activeTab === 'key-tester'}
+                                <div class="flex flex-col gap-4 rounded-md border {$glassmorphismMode ? 'glassmorphism-card' : ($darkMode ? 'border-white bg-black' : 'border-gray-200 bg-white')} p-4 shadow-sm">
+                                    <div class="text-center">                                        
+                                        <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'} mb-2">{t('advancedkey.keyTesterTitle', currentLanguage)}</h3>
                                         <p class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'} mb-4">{t('advancedkey.keyTesterDesc', currentLanguage)}</p>
                                         
                                         <div class="grid grid-cols-2 gap-4 max-w-md mx-auto">
-                                            <div class="p-6 border-2 {$darkMode ? 'border-white' : 'border-gray-300'} rounded-lg">
+                                            <div class="p-6 border-2 rounded-lg {$glassmorphismMode ? 'glassmorphism-card' : ''}" style="border-color: color-mix(in srgb, var(--theme-color-primary) 25%, ${$darkMode ? 'white' : '#e5e5e5'}); background-color: color-mix(in srgb, var(--theme-color-primary) 8%, ${$darkMode ? 'black' : 'white'});">
                                                 <div class="text-2xl font-mono font-bold {$darkMode ? 'text-white' : 'text-gray-900'} mb-2">{selectedKeys[0]}</div>                                                <div class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'}">{t('advancedkey.key1', currentLanguage)}</div>
                                                 {#if behavior === 1}
                                                     <div class="text-xs mt-1 font-medium" style="color: var(--theme-color-primary);">{t('advancedkey.priorityKey', currentLanguage)}</div>
                                                 {/if}
                                             </div>
-                                            <div class="p-6 border-2 {$darkMode ? 'border-white' : 'border-gray-300'} rounded-lg">
+                                            <div class="p-6 border-2 rounded-lg {$glassmorphismMode ? 'glassmorphism-card' : ''}" style="border-color: color-mix(in srgb, var(--theme-color-primary) 25%, ${$darkMode ? 'white' : '#e5e5e5'}); background-color: color-mix(in srgb, var(--theme-color-primary) 8%, ${$darkMode ? 'black' : 'white'});">
                                                 <div class="text-2xl font-mono font-bold {$darkMode ? 'text-white' : 'text-gray-900'} mb-2">{selectedKeys[1]}</div>                                                <div class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'}">{t('advancedkey.key2', currentLanguage)}</div>
                                                 {#if behavior === 2}
                                                     <div class="text-xs mt-1 font-medium" style="color: var(--theme-color-primary);">{t('advancedkey.priorityKey', currentLanguage)}</div>
@@ -739,7 +743,8 @@
                                             </div>
                                         </div>
                                         
-                                        <div class="mt-6 p-4 {$darkMode ? 'bg-gray-800' : 'bg-gray-50'} rounded-lg">                                            <div class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'}">
+                                        <div class="mt-6 p-4 rounded-lg" style="background-color: color-mix(in srgb, var(--theme-color-primary) 8%, {$darkMode ? 'black' : 'white'});">
+                                            <div class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'}">
                                                 {t('advancedkey.currentBehavior', currentLanguage)} <span class="font-medium {$darkMode ? 'text-white' : 'text-gray-900'}">{getBehaviorName(behavior)}</span>
                                             </div>
                                             <div class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'} mt-1">
@@ -759,7 +764,9 @@
         </div>
     {/if}    <!-- Configured Keys Summary -->
     {#if configuredNullBindKeys().length > 0}
-        <div class="{$darkMode ? `color-mix(in srgb, var(--theme-color-primary) 5%, black)` : `color-mix(in srgb, var(--theme-color-primary) 10%, white)`} border-t p-6">
+        <div class="border-t p-6" style="background-color: {$darkMode
+    ? `color-mix(in srgb, var(--theme-color-primary) 5%, black)`
+    : `color-mix(in srgb, var(--theme-color-primary) 10%, white)`};">
             <div class="max-w-7xl mx-auto">                <div class="flex items-center justify-between mb-6">
                     <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'}">{t('advancedkey.configuredNullBindKeys', currentLanguage)}</h3>
                     <div class="flex items-center gap-2">
@@ -785,7 +792,7 @@
                                  style="border-color: color-mix(in srgb, var(--theme-color-primary) 15%, {$darkMode ? '#374151' : '#e2e8f0'});">
                                 <div class="flex items-center justify-between">
                                     <div class="flex items-center justify-center gap-3 flex-1">
-                                        <div class="px-3 py-1.5 rounded-lg font-mono font-bold text-sm"
+                                        <div class="px-3 py-1.5 rounded-lg font-mono font-bold text-sm {$glassmorphismMode ? 'glassmorphism-button' : ''}"
                                              style="background-color: var(--theme-color-primary); color: white;">
                                             {nullBindConfig.pairedKeys[0]}
                                         </div>
@@ -794,13 +801,13 @@
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
                                             </svg>
                                         </div>
-                                        <div class="px-3 py-1.5 rounded-lg font-mono font-bold text-sm"
+                                        <div class="px-3 py-1.5 rounded-lg font-mono font-bold text-sm {$glassmorphismMode ? 'glassmorphism-button' : ''}"
                                              style="background-color: var(--theme-color-primary); color: white;">
                                             {nullBindConfig.pairedKeys[1]}
                                         </div>
                                     </div>
                                     <button 
-                                        class="w-8 h-8 bg-red-500 hover:bg-red-600 rounded-lg flex items-center justify-center text-white transition-colors ml-3"
+                                        class="w-8 h-8 bg-red-500 hover:bg-red-600 rounded-lg flex items-center justify-center text-white transition-colors ml-3 {$glassmorphismMode ? 'glassmorphism-button' : ''}"
                                         onclick={() => deleteNullBindPair(nullBindConfig.pairedKeys)}
                                         title={t('advancedkey.deletePair', currentLanguage)}
                                         aria-label={t('advancedkey.deletePair', currentLanguage)}

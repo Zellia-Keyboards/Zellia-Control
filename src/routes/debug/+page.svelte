@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { darkMode } from '$lib/DarkModeStore.svelte';
+  import { darkMode, glassmorphismMode } from '$lib/DarkModeStore.svelte';
   import { browser } from '$app/environment';
   import { onMount } from 'svelte';
   import NewZellia80He from '$lib/NewZellia80HE.svelte';
@@ -241,7 +241,7 @@
   {/snippet}
 </NewZellia80He>
 <div
-  class="rounded-2xl shadow p-8 mt-2 mb-4 grow {$darkMode
+  class="rounded-2xl shadow p-8 mt-2 mb-4 grow {$glassmorphismMode ? 'glassmorphism-card' : ''} {$darkMode
     ? 'border border-gray-600 text-white'
     : 'text-black'} flex flex-col"
   style="background-color: {$darkMode
@@ -251,8 +251,8 @@
     <h2 class="text-2xl font-bold {$darkMode ? 'text-white' : 'text-gray-900'}">{t('debug.title', currentLanguage)}</h2>
   </div>
   
-  <div class="rounded-xl shadow p-6 space-y-8 flex-1 {$darkMode ? 'border-gray-600' : ''}">    <!-- Key Press Reporting -->
-    <div class="p-5 rounded-lg border {$darkMode ? 'border-gray-600' : 'border-gray-200'}" 
+  <div class="rounded-xl shadow p-6 space-y-8 flex-1  {$darkMode ? 'border-gray-600' : ''}">    <!-- Key Press Reporting -->
+    <div class="p-5 rounded-lg border {$glassmorphismMode ? 'glassmorphism-card' : ''} {$darkMode ? 'border-gray-600' : 'border-gray-200'}" 
          style="background-color: {$darkMode
            ? `color-mix(in srgb, var(--theme-color-primary) 5%, black)`
            : `color-mix(in srgb, var(--theme-color-primary) 10%, white)`};">      <div class="flex items-center justify-between mb-2">
@@ -274,7 +274,7 @@
       </p>
     </div>
       <!-- Reset Configuration -->
-    <div class="p-5 rounded-lg border {$darkMode ? 'border-gray-600' : 'border-gray-200'}" 
+    <div class="p-5 rounded-lg border {$glassmorphismMode ? 'glassmorphism-card' : ''} {$darkMode ? 'border-gray-600' : 'border-gray-200'}" 
          style="background-color: {$darkMode
            ? `color-mix(in srgb, var(--theme-color-primary) 5%, black)`
            : `color-mix(in srgb, var(--theme-color-primary) 10%, white)`};">      <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'} mb-2">{t('debug.reset', currentLanguage)}</h3>
@@ -283,13 +283,13 @@
       </p>
       <button 
         type="button" 
-        class="action-button red"
+        class="action-button red {$glassmorphismMode ? 'glassmorphism-button' : ''}"
         on:click={handleReset}>
         {t('debug.resetButton', currentLanguage)}
       </button>
     </div>
       <!-- Recovery Mode -->
-    <div class="p-5 rounded-lg border {$darkMode ? 'border-gray-600' : 'border-gray-200'}" 
+    <div class="p-5 rounded-lg border {$glassmorphismMode ? 'glassmorphism-card' : ''} {$darkMode ? 'border-gray-600' : 'border-gray-200'}" 
          style="background-color: {$darkMode
            ? `color-mix(in srgb, var(--theme-color-primary) 5%, black)`
            : `color-mix(in srgb, var(--theme-color-primary) 10%, white)`};">      <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'} mb-2">{t('debug.recoveryMode', currentLanguage)}</h3>
@@ -304,26 +304,28 @@
       </button>
     </div>
       <!-- Key Tracking Section -->
-    <div class="p-5 rounded-lg border {$darkMode ? 'border-gray-600' : 'border-gray-200'}" 
+    <div class="p-5 rounded-lg border {$glassmorphismMode ? 'glassmorphism-card' : ''} {$darkMode ? 'border-gray-600' : 'border-gray-200'}" 
          style="background-color: {$darkMode
            ? `color-mix(in srgb, var(--theme-color-primary) 5%, black)`
-           : `color-mix(in srgb, var(--theme-color-primary) 10%, white)`};">      <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'} mb-4">{t('debug.keyTracking', currentLanguage)}</h3>
+           : `color-mix(in srgb, var(--theme-color-primary) 10%, white)`};">      
+           <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'} mb-4">{t('debug.keyTracking', currentLanguage)}</h3>
       <p class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'} mb-4">
         {t('debug.keyTrackingDesc', currentLanguage)}
       </p>
       
-      <div class="flex items-start gap-4 mb-4">
+      <div class="flex items-start gap-4 mb-4 " >
         <!-- Left column: controls -->
-        <div class="flex flex-col gap-3 min-w-[200px]">          <!-- Select Key -->
+        <div class="flex flex-col gap-3 min-w-[200px] ">          
+          <!-- Select Key -->
           <button 
             type="button"
-            class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+            class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors {$glassmorphismMode ? 'glassmorphism-button' : ''}"
             on:click={scrollToKeyboard}>
             {t('debug.selectKey', currentLanguage)}
           </button>
           
           <!-- Selected key display -->
-          <div class="text-sm {$darkMode ? 'text-gray-300' : 'text-gray-700'}">
+          <div class="text-sm  {$darkMode ? 'text-gray-300' : 'text-gray-700'}">
             {selectedKeyName ? `${t('debug.selectedKey', currentLanguage)}: ${selectedKeyName}` : t('debug.noKeySelected', currentLanguage)}
           </div>
           
@@ -331,7 +333,7 @@
           {#if !isTracking}
             <button
               type="button"
-              class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-colors disabled:opacity-50"
+              class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-colors disabled:opacity-50 {$glassmorphismMode ? 'glassmorphism-button' : ''}"
               on:click={startTracking}
               disabled={!selectedKeyName}
             >
@@ -340,7 +342,7 @@
           {:else}
             <button
               type="button"
-              class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
+              class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors {$glassmorphismMode ? 'glassmorphism-button' : ''}"
               on:click={stopTracking}
             >
               {t('debug.stopTracking', currentLanguage)}
@@ -349,14 +351,15 @@
             <!-- Clear button -->
           <button
             type="button"
-            class="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700 transition-colors"
+            class="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700 transition-colors {$glassmorphismMode ? 'glassmorphism-button' : ''}"
             on:click={clearChart}
           >
             {t('debug.clearChart', currentLanguage)}
           </button>
-        </div>        <!-- Right column: chart -->
-        <div class="flex-1 min-h-[400px]">
-          <div class="border {$darkMode ? 'border-gray-600' : 'border-gray-300'} rounded-lg p-4 h-full" 
+        </div>       
+         <!-- Right column: chart -->
+        <div class="flex-1 min-h-[400px] ">
+          <div class="border {$glassmorphismMode ? 'glassmorphism-card' : ''}  {$darkMode ? 'border-gray-600' : 'border-gray-300'} rounded-lg p-4 h-full" 
                style="background-color: {$darkMode
                  ? `color-mix(in srgb, var(--theme-color-primary) 3%, black)`
                  : `color-mix(in srgb, var(--theme-color-primary) 8%, white)`};">

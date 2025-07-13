@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { darkMode } from "$lib/DarkModeStore.svelte";
+    import { darkMode, glassmorphismMode } from "$lib/DarkModeStore.svelte";
     import { language, t } from '$lib/LanguageStore.svelte';
     
     let currentLanguage = $state($language);
@@ -16,9 +16,9 @@
 </script>
 
 <div
-    class="rounded-lg border p-6"
-    style="background-color: color-mix(in srgb, var(--theme-color-primary) 5%, ${$darkMode ? 'black' : 'white'});
-           border-color: {$darkMode ? 'color-mix(in srgb, var(--theme-color-primary) 20%, #374151)' : 'color-mix(in srgb, var(--theme-color-primary) 15%, #e5e7eb)'};"
+    class="rounded-lg border p-6 {glassmorphismMode ? 'glassmorphism-card' : ''}"
+    style="{glassmorphismMode ? '' : `background-color: color-mix(in srgb, var(--theme-color-primary) 5%, ${$darkMode ? 'black' : 'white'});
+           border-color: ${$darkMode ? 'color-mix(in srgb, var(--theme-color-primary) 20%, #374151)' : 'color-mix(in srgb, var(--theme-color-primary) 15%, #e5e7eb)'};`}"
 >    <h3
         class="text-lg font-medium {$darkMode
             ? 'text-white'
@@ -48,9 +48,8 @@
             max="4.0"
             step="0.1"
             bind:value={bottomOutPointValue}
-            class="w-full h-2 rounded-full appearance-none slider-thumb"
-            style="background-color: {$darkMode ? '#374151' : '#d1d5db'};
-                   --thumb-color: var(--theme-color-primary);"
+            class="w-full h-2 rounded-full appearance-none slider-thumb {glassmorphismMode ? 'glassmorphism-input' : ''}"
+            style="background-color: {$darkMode ? '#374151' : '#d1d5db'}; --thumb-color: var(--theme-color-primary);"
         />
         <div
             class="flex justify-between text-xs {$darkMode

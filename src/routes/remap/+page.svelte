@@ -1,5 +1,4 @@
-<script lang="ts">
-  import { darkMode } from "$lib/DarkModeStore.svelte";
+<script lang="ts">    import { darkMode, glassmorphismMode } from "$lib/DarkModeStore.svelte";
   import NewZellia80He from "$lib/NewZellia80HE.svelte";
   import { language, t } from "$lib/LanguageStore.svelte";
   import Basic from "./Basic.svelte";
@@ -8,8 +7,22 @@
   import Layer from "./Layer.svelte";
   import Profile from "./Profile.svelte";
   import Extension from "./Extension.svelte";
+  import { slide } from 'svelte/transition';
+  import { cubicOut } from 'svelte/easing';
 
   let currentLanguage = $state($language);
+
+  // Custom slide transition that moves instead of stretches
+  function slideMove(node: Element, { duration = 400, direction = 1 }) {
+    return {
+      duration,
+      easing: cubicOut,
+      css: (t: number) => {
+        const x = (1 - t) * direction * 100;
+        return `transform: translateX(${x}%); opacity: ${t}`;
+      }
+    };
+  }
 
   const Tabs = [
     {
@@ -51,10 +64,22 @@
   ];
 
   let activeTab = $state(Tabs[0].name);
+  let previousTabIndex = $state(0);
 
   const ActiveTabComponent = $derived(
     Tabs.find((t) => t.name === activeTab)!!.component,
   );
+
+  const currentTabIndex = $derived(
+    Tabs.findIndex((t) => t.name === activeTab)
+  );
+
+  // Function to handle tab change with direction tracking
+  function changeTab(newTabName: string) {
+    const newIndex = Tabs.findIndex((t) => t.name === newTabName);
+    previousTabIndex = currentTabIndex;
+    activeTab = newTabName;
+  }
 
   // Subscribe to language changes
   language.subscribe((value) => {
@@ -75,7 +100,7 @@
 </NewZellia80He>
 
 <div
-  class="rounded-2xl shadow p-8 mt-2 mb- mb- grow {$darkMode
+  class="rounded-2xl shadow p-8 mt-2 mb- mb- grow {$glassmorphismMode ? 'glassmorphism-card' : ''} {$darkMode
     ? 'border border-gray-600 text-white'
     : 'text-black'} h-full flex flex-col"
   style="background-color: {$darkMode
@@ -106,7 +131,7 @@
             }
           }
         }}
-        onclick={() => (activeTab = tab.name)}
+        onclick={() => changeTab(tab.name)}
       >
         {#if tab.icon}
           <div class="flex items-center justify-center" style="fill: currentColor">
@@ -119,8 +144,22 @@
   </div>
 
   <!-- Tab Content -->
-  <div class="flex-1 min-h-0">
-    <ActiveTabComponent />
+  <div class="flex-1 min-h-0 relative overflow-hidden">
+    {#key activeTab}
+      <div 
+        class="absolute inset-0 w-full h-full"
+        in:slideMove={{ 
+          duration: 350, 
+          direction: currentTabIndex > previousTabIndex ? 1 : -1
+        }}
+        out:slideMove={{ 
+          duration: 350, 
+          direction: currentTabIndex > previousTabIndex ? -1 : 1
+        }}
+      >
+        <ActiveTabComponent />
+      </div>
+    {/key}
   </div>
 </div>
 

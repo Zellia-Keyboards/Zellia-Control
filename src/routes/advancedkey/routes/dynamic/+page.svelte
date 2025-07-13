@@ -1,7 +1,7 @@
 <script lang="ts">	import {
 		KeyboardDisplayValues,
 	} from "$lib/KeyboardState.svelte";
-	import { darkMode } from "$lib/DarkModeStore.svelte";
+	import { darkMode, glassmorphismMode } from "$lib/DarkModeStore.svelte";
 	import { language, t } from '$lib/LanguageStore.svelte';
 	import {
 		globalConfigurations,
@@ -521,7 +521,7 @@
 	{@const uiIntervals = getIntervals(uiBitmap)}
 	{#each Array(4) as _, i}
 		<button
-			class="rounded-full border-2"
+			class="rounded-full border-2 {$glassmorphismMode ? 'glassmorphism-button' : ''}"
 			onclick={() => handleNodeClick(bindingIndex, i)}
 			style:width={NODE_SIZE + "px"}
 			style:height={NODE_SIZE + "px"}>+</button
@@ -533,11 +533,9 @@
 		{#if start !== -1 && end > start}
 			<!-- Interval bar (clickable to delete) -->
 			<button
-				class="absolute z-20 rounded-full {$darkMode
-					? 'bg-gray-600 hover:bg-gray-500'
-					: 'bg-blue-500 hover:bg-blue-600'} transition-colors focus-visible:outline-none focus-visible:ring-2 {$darkMode
-					? 'focus-visible:ring-gray-400'
-					: 'focus-visible:ring-blue-300'}"
+				class="absolute z-20 rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 {$glassmorphismMode ? 'glassmorphism-button' : ''} {$darkMode
+					? 'bg-gray-600 hover:bg-gray-500 focus-visible:ring-gray-400'
+					: 'bg-blue-500 hover:bg-blue-600 focus-visible:ring-blue-300'}"
 				style="width: {NODE_SIZE +
 					intervalWidth(
 						interval,
@@ -553,7 +551,7 @@
 			<!-- TAP indicator (single point) -->
 			<!-- svelte-ignore a11y_consider_explicit_label -->
 			<button
-				class="absolute z-20 rounded-full {$darkMode
+				class="absolute z-20 rounded-full {$glassmorphismMode ? 'glassmorphism-button' : ''} {$darkMode
 					? 'bg-gray-500'
 					: 'bg-purple-500'}"
 				style="width: {NODE_SIZE}px; height: {NODE_SIZE}px; top: {NODE_TOP}px; left: {nodeLeft(
@@ -566,9 +564,9 @@
 		<!-- Grip handle for dragging -->
 		<!-- svelte-ignore a11y_consider_explicit_label -->
 		<button
-			class="absolute z-30 flex items-center justify-center rounded-sm border {$darkMode
+			class="absolute z-30 flex items-center justify-center rounded-sm border cursor-ew-resize transition-colors select-none {$glassmorphismMode ? 'glassmorphism-button' : ''} {$darkMode
 				? 'bg-gray-700 hover:bg-gray-600'
-				: 'bg-gray-600 hover:bg-gray-700'} cursor-ew-resize transition-colors select-none"
+				: 'bg-gray-600 hover:bg-gray-700'}"
 			style:width={GRIP_WIDTH + "px"}
 			style:height={GRIP_HEIGHT + "px"}
 			style:left="{nodeLeft(start) +
@@ -596,7 +594,7 @@
 	{#snippet body(x, y)}{/snippet}
 </NewZellia80He>
 <div
-	class="rounded-2xl shadow p-4 mt-2 mb-4 grow {$darkMode
+	class="rounded-2xl shadow p-4 mt-2 mb-4 grow {$glassmorphismMode ? 'glassmorphism-card' : ''} {$darkMode
 		? 'border border-gray-600 text-white'
 		: 'text-black'} h-full flex flex-col"
 	style="background-color: {$darkMode
@@ -652,14 +650,14 @@
 			</div>			
 			<div class="flex gap-3">
 				<button
-					class="px-4 py-2 {$darkMode ? 'bg-red-700 hover:bg-red-600' : 'bg-red-600 hover:bg-red-700'} text-white rounded-md transition-colors text-sm font-medium"
+					class="px-4 py-2 text-white rounded-md transition-colors text-sm font-medium {$glassmorphismMode ? 'glassmorphism-button' : ''} {$darkMode ? 'bg-red-700 hover:bg-red-600' : 'bg-red-600 hover:bg-red-700'}"
 					onclick={resetConfiguration}
 					disabled={!currentSelected}
 				>
 					{t('advancedkey.resetConfiguration', currentLanguage)}
 				</button>
 				<button
-					class="px-4 py-2 rounded-md transition-colors text-sm font-medium text-white"
+					class="px-4 py-2 rounded-md transition-colors text-sm font-medium text-white {$glassmorphismMode ? 'glassmorphism-button' : ''}"
 					style="background-color: var(--theme-color-primary); 
 					       border: 1px solid var(--theme-color-primary);"
 					onclick={applyConfiguration}
@@ -682,7 +680,7 @@
 				<div class="flex gap-8">
 					<div class="w-96 flex flex-col gap-4">
 						<div
-							class="rounded-lg border p-6"
+							class="rounded-lg border p-6 {$glassmorphismMode ? 'glassmorphism-card' : ''}"
 							style="background-color: color-mix(in srgb, var(--theme-color-primary) 5%, {$darkMode
 								? 'black'
 								: 'white'}); border-color: color-mix(in srgb, var(--theme-color-primary) 25%, {$darkMode
