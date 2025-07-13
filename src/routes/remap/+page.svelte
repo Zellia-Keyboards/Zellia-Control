@@ -146,10 +146,10 @@
   </div>
 
   <!-- Tab Content -->
-  <div class="flex-1 ">
+  <div class="flex-1 min-h-0 relative overflow-hidden">
     {#key activeTab}
       <div 
-        class="w-full h-full"
+        class="absolute inset-0 w-full h-full overflow-y-auto "
         in:slideMove={{ 
           duration: 350, 
           direction: currentTabIndex > previousTabIndex ? 1 : -1
