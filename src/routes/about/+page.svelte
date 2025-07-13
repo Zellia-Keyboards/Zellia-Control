@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { darkMode } from '$lib/DarkModeStore.svelte';
+    import { darkMode, glassmorphismMode } from '$lib/DarkModeStore.svelte';
     import { Keyboard, Heart } from 'lucide-svelte';
     import { language, t } from '$lib/LanguageStore.svelte';
     
@@ -23,8 +23,8 @@
         <!-- Main Content -->
         <div class="space-y-8">
             <!-- App Info Section -->
-            <div class="rounded-xl p-6 border"
-                 style="background-color: color-mix(in srgb, var(--theme-color-primary) 5%, {$darkMode ? 'black' : 'white'});
+            <div class="{$glassmorphismMode ? 'glassmorphism-card' : ''} rounded-xl p-6 border transition-all duration-300"
+                 style="background-color: {!$glassmorphismMode ? `color-mix(in srgb, var(--theme-color-primary) 5%, ${$darkMode ? 'black' : 'white'})` : ''};
                         border-color: color-mix(in srgb, var(--theme-color-primary) 25%, {$darkMode ? 'white' : '#e5e5e5'});">
                 <div class="flex items-start gap-6">                    <div class="flex-shrink-0">
                         <div class="w-16 h-16 rounded-lg flex items-center justify-center"
@@ -52,8 +52,8 @@
 
             <!-- Features Grid -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">                <!-- Performance Features -->
-                <div class="rounded-lg border p-6"
-                     style="background-color: color-mix(in srgb, var(--theme-color-primary) 5%, {$darkMode ? 'black' : 'white'});
+                <div class="{$glassmorphismMode ? 'glassmorphism-card' : ''} rounded-lg border p-6 transition-all duration-300"
+                     style="background-color: {!$glassmorphismMode ? `color-mix(in srgb, var(--theme-color-primary) 5%, ${$darkMode ? 'black' : 'white'})` : ''};
                             border-color: color-mix(in srgb, var(--theme-color-primary) 25%, {$darkMode ? 'white' : '#e5e5e5'});">
                     <h4 class="text-lg font-semibold {$darkMode ? 'text-white' : 'text-gray-900'} mb-4">{t('about.performance', currentLanguage)}</h4>
                     <ul class="space-y-2 text-sm {$darkMode ? 'text-gray-300' : 'text-gray-600'}">
@@ -72,8 +72,8 @@
                     </ul>
                 </div>                
                 <!-- Advanced Features -->
-                <div class="rounded-lg border p-6"
-                     style="background-color: color-mix(in srgb, var(--theme-color-primary) 5%, {$darkMode ? 'black' : 'white'});
+                <div class="{$glassmorphismMode ? 'glassmorphism-card' : ''} rounded-lg border p-6 transition-all duration-300"
+                     style="background-color: {!$glassmorphismMode ? `color-mix(in srgb, var(--theme-color-primary) 5%, ${$darkMode ? 'black' : 'white'})` : ''};
                             border-color: color-mix(in srgb, var(--theme-color-primary) 25%, {$darkMode ? 'white' : '#e5e5e5'});">
                     <h4 class="text-lg font-semibold {$darkMode ? 'text-white' : 'text-gray-900'} mb-4">{t('about.advancedKeys', currentLanguage)}</h4>
                     <ul class="space-y-2 text-sm {$darkMode ? 'text-gray-300' : 'text-gray-600'}">
@@ -95,8 +95,8 @@
                         </li>
                     </ul>
                 </div>                <!-- Customization -->
-                <div class="rounded-lg border p-6"
-                     style="background-color: color-mix(in srgb, var(--theme-color-primary) 5%, {$darkMode ? 'black' : 'white'});
+                <div class="{$glassmorphismMode ? 'glassmorphism-card' : ''} rounded-lg border p-6 transition-all duration-300"
+                     style="background-color: {!$glassmorphismMode ? `color-mix(in srgb, var(--theme-color-primary) 5%, ${$darkMode ? 'black' : 'white'})` : ''};
                             border-color: color-mix(in srgb, var(--theme-color-primary) 25%, {$darkMode ? 'white' : '#e5e5e5'});">
                     <h4 class="text-lg font-semibold {$darkMode ? 'text-white' : 'text-gray-900'} mb-4">{t('about.customization', currentLanguage)}</h4>
                     <ul class="space-y-2 text-sm {$darkMode ? 'text-gray-300' : 'text-gray-600'}">
@@ -120,8 +120,8 @@
                 </div>
 
                 <!-- Technical -->
-                <div class="rounded-lg border p-6"
-                     style="background-color: color-mix(in srgb, var(--theme-color-primary) 5%, {$darkMode ? 'black' : 'white'});
+                <div class="{$glassmorphismMode ? 'glassmorphism-card' : ''} rounded-lg border p-6 transition-all duration-300"
+                     style="background-color: {!$glassmorphismMode ? `color-mix(in srgb, var(--theme-color-primary) 5%, ${$darkMode ? 'black' : 'white'})` : ''};
                             border-color: color-mix(in srgb, var(--theme-color-primary) 25%, {$darkMode ? 'white' : '#e5e5e5'});">
                     <h4 class="text-lg font-semibold {$darkMode ? 'text-white' : 'text-gray-900'} mb-4">{t('about.technical', currentLanguage)}</h4>
                     <ul class="space-y-2 text-sm {$darkMode ? 'text-gray-300' : 'text-gray-600'}">
@@ -145,8 +145,8 @@
                 </div>
             </div>
             <!-- GitHub Repository Section -->
-            <div class="rounded-xl p-6 border"
-                 style="background-color: color-mix(in srgb, var(--theme-color-primary) 5%, {$darkMode ? 'black' : 'white'});
+            <div class="{$glassmorphismMode ? 'glassmorphism-card' : ''} rounded-xl p-6 border transition-all duration-300"
+                 style="background-color: {!$glassmorphismMode ? `color-mix(in srgb, var(--theme-color-primary) 5%, ${$darkMode ? 'black' : 'white'})` : ''};
                         border-color: color-mix(in srgb, var(--theme-color-primary) 25%, {$darkMode ? 'white' : '#e5e5e5'});">
                 <div class="flex items-start gap-6">                    <div class="flex-shrink-0">
                         <div class="w-16 h-16 rounded-lg flex items-center justify-center"
@@ -168,10 +168,10 @@
                             <!-- Chinese: GitHub Button + Payment Methods -->
                             <div class="flex flex-col sm:flex-row gap-3">
                                 <button 
-                                    class="flex items-center justify-center gap-2 px-6 py-3.5 rounded-lg font-medium transition-all duration-200 text-white shadow-sm hover:shadow-md"
-                                    style="background-color: var(--theme-color-primary);"
-                                    onmouseover={(e) => (e.currentTarget as HTMLElement).style.backgroundColor = `color-mix(in srgb, var(--theme-color-primary) 85%, black)`}
-                                    onmouseout={(e) => (e.currentTarget as HTMLElement).style.backgroundColor = `var(--theme-color-primary)`}
+                                    class="{$glassmorphismMode ? 'glassmorphism' : ''} flex items-center justify-center gap-2 px-6 py-3.5 rounded-lg font-medium transition-all duration-200 text-white shadow-sm hover:shadow-md"
+                                    style="background-color: {!$glassmorphismMode ? 'var(--theme-color-primary)' : `color-mix(in srgb, var(--theme-color-primary) 70%, transparent)`};"
+                                    onmouseover={(e) => (e.currentTarget as HTMLElement).style.backgroundColor = `color-mix(in srgb, var(--theme-color-primary) ${$glassmorphismMode ? '80%' : '85%'}, ${$glassmorphismMode ? 'transparent' : 'black'})`}
+                                    onmouseout={(e) => (e.currentTarget as HTMLElement).style.backgroundColor = `${!$glassmorphismMode ? 'var(--theme-color-primary)' : `color-mix(in srgb, var(--theme-color-primary) 70%, transparent)`}`}
                                     onclick={() => window.open('https://github.com/Zellia-Keyboards/Zellia-Control  ', '_blank')}
                                 >
                                     <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
@@ -185,8 +185,8 @@
                             <div class="mt-4 grid grid-cols-1 lg:grid-cols-2 gap-4">
 
                                 <!-- Alipay -->
-                                <div class="flex flex-col items-center p-4 rounded-lg border-2"
-                                     style="background-color: color-mix(in srgb, var(--theme-color-primary) 5%, {$darkMode ? 'black' : 'white'}); border-color: #1677ff;">
+                                <div class="{$glassmorphismMode ? 'glassmorphism' : ''} flex flex-col items-center p-4 rounded-lg border-2 transition-all duration-300"
+                                     style="background-color: {!$glassmorphismMode ? `color-mix(in srgb, var(--theme-color-primary) 5%, ${$darkMode ? 'black' : 'white'})` : ''}; border-color: #1677ff;">
                                     <div class="mb-4">
                                         <svg class="w-32 h-8" viewBox="0 0 149.36909 37.663967">
                                             <g transform="translate(13.452402,-84.644208)">
@@ -222,8 +222,8 @@
                                 </div>
 
                                 <!-- WeChat Pay -->
-                                <div class="flex flex-col items-center p-4 rounded-lg border-2"
-                                     style="background-color: color-mix(in srgb, var(--theme-color-primary) 5%, {$darkMode ? 'black' : 'white'}); border-color: #07c160;">
+                                <div class="{$glassmorphismMode ? 'glassmorphism' : ''} flex flex-col items-center p-4 rounded-lg border-2 transition-all duration-300"
+                                     style="background-color: {!$glassmorphismMode ? `color-mix(in srgb, var(--theme-color-primary) 5%, ${$darkMode ? 'black' : 'white'})` : ''}; border-color: #07c160;">
                                     <div class="mb-4">
                                         <svg class="w-32 h-8" viewBox="0 0 715.94 211.02">
                                             <g>
@@ -241,10 +241,10 @@
                             <!-- International: GitHub + Support buttons -->
                             <div class="flex flex-col sm:flex-row gap-3">
                                 <button 
-                                    class="flex items-center justify-center gap-2 px-6 py-3 rounded-lg font-medium transition-all duration-200 text-white shadow-sm hover:shadow-md"
-                                    style="background-color: var(--theme-color-primary);"
-                                    onmouseover={(e) => (e.currentTarget as HTMLElement).style.backgroundColor = `color-mix(in srgb, var(--theme-color-primary) 85%, black)`}
-                                    onmouseout={(e) => (e.currentTarget as HTMLElement).style.backgroundColor = `var(--theme-color-primary)`}
+                                    class="{$glassmorphismMode ? 'glassmorphism' : ''} flex items-center justify-center gap-2 px-6 py-3 rounded-lg font-medium transition-all duration-200 text-white shadow-sm hover:shadow-md"
+                                    style="background-color: {!$glassmorphismMode ? 'var(--theme-color-primary)' : `color-mix(in srgb, var(--theme-color-primary) 70%, transparent)`};"
+                                    onmouseover={(e) => (e.currentTarget as HTMLElement).style.backgroundColor = `color-mix(in srgb, var(--theme-color-primary) ${$glassmorphismMode ? '80%' : '85%'}, ${$glassmorphismMode ? 'transparent' : 'black'})`}
+                                    onmouseout={(e) => (e.currentTarget as HTMLElement).style.backgroundColor = `${!$glassmorphismMode ? 'var(--theme-color-primary)' : `color-mix(in srgb, var(--theme-color-primary) 70%, transparent)`}`}
                                     onclick={() => window.open('https://github.com/Zellia-Keyboards/Zellia-Control  ', '_blank')}
                                 >
                                     <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
@@ -254,13 +254,13 @@
                                 </button>
                                 
                                 <button 
-                                    class="flex items-center justify-center gap-2 px-6 py-3 rounded-lg font-medium transition-all duration-200 border-2 hover:shadow-sm"
-                                    style="border-color: var(--theme-color-primary); color: var(--theme-color-primary); background-color: transparent;"
+                                    class="{$glassmorphismMode ? 'glassmorphism' : ''} flex items-center justify-center gap-2 px-6 py-3 rounded-lg font-medium transition-all duration-200 border-2 hover:shadow-sm"
+                                    style="border-color: var(--theme-color-primary); color: var(--theme-color-primary); background-color: {!$glassmorphismMode ? 'transparent' : `color-mix(in srgb, var(--theme-color-primary) 20%, transparent)`};"
                                     onmouseover={(e) => {
-                                        (e.currentTarget as HTMLElement).style.backgroundColor = `color-mix(in srgb, var(--theme-color-primary) 10%, transparent)`;
+                                        (e.currentTarget as HTMLElement).style.backgroundColor = `color-mix(in srgb, var(--theme-color-primary) ${$glassmorphismMode ? '30%' : '10%'}, transparent)`;
                                     }}
                                     onmouseout={(e) => {
-                                        (e.currentTarget as HTMLElement).style.backgroundColor = `transparent`;
+                                        (e.currentTarget as HTMLElement).style.backgroundColor = `${!$glassmorphismMode ? 'transparent' : `color-mix(in srgb, var(--theme-color-primary) 20%, transparent)`}`;
                                     }}
                                     onclick={() => window.open('https://github.com/sponsors/your-username', '_blank')}
                                 >
@@ -294,8 +294,8 @@
             </div>
 
             <!-- Contact/Links -->
-            <div class="rounded-xl p-6 border text-center"
-                 style="background-color: color-mix(in srgb, var(--theme-color-primary) 5%, {$darkMode ? 'black' : 'white'});
+            <div class="{$glassmorphismMode ? 'glassmorphism-card' : ''} rounded-xl p-6 border text-center transition-all duration-300"
+                 style="background-color: {!$glassmorphismMode ? `color-mix(in srgb, var(--theme-color-primary) 5%, ${$darkMode ? 'black' : 'white'})` : ''};
                         border-color: color-mix(in srgb, var(--theme-color-primary) 25%, {$darkMode ? 'white' : '#e5e5e5'});">
                 <h3 class="text-xl font-bold {$darkMode ? 'text-white' : 'text-gray-900'} mb-4 flex items-center justify-center gap-2">
                     Made with <Heart class="w-5 h-5 text-red-500" /> for the Hall Effect keyboard community
