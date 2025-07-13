@@ -2,9 +2,10 @@
     import "../app.css";
     import Zellia80HE from "../lib/Zellia80HE.svelte";    
     import { KeyboardDisplayValues } from "$lib/KeyboardState.svelte";
-    import { page } from '$app/stores';    import { darkMode, selectedThemeColor, themeColors, type ThemeColorName } from '$lib/DarkModeStore.svelte';
+    import { page } from '$app/stores';    import { darkMode, selectedThemeColor, themeColors, type ThemeColorName, glassmorphismMode } from '$lib/DarkModeStore.svelte';
     import { language, t, type Language } from '$lib/LanguageStore.svelte';
-    import {Palette, Sun, Moon, Globe} from 'lucide-svelte';     
+    import {Palette, Sun, Moon, Globe} from 'lucide-svelte';
+    import { slide, fade } from 'svelte/transition';     
     const NAVIGATE = [
         ["/performance", "nav.performance"],
         ["/remap", "nav.remap"],
@@ -25,9 +26,10 @@
     let currentLanguage = $state<Language>('en');
 
     // Long click animation states
-    let longClickStates = $state<Record<string, { isPressed: boolean; progress: number; timeout?: any; animationFrame?: any; x: number; y: number; completed: boolean; fadeProgress: number; showAnimation: boolean }>>({});
-    let longClickDuration = 800; // milliseconds
+    let longClickStates = $state<Record<string, { isPressed: boolean; progress: number; timeout?: any; animationFrame?: any; x: number; y: number; completed: boolean; fadeProgress: number; showAnimation: boolean; lastCompletedTime?: number }>>({});
+    let longClickDuration = 1000; // milliseconds - increased from 800 to make it more deliberate
     let animationDelay = 300; // milliseconds delay before showing animation
+    let clickBlockDuration = 500; // milliseconds to block regular clicks after long press completion
 
     selectedThemeColor.subscribe(value => {
         currentTheme = value;
@@ -63,7 +65,7 @@
         
         // Initialize state if not exists
         if (!longClickStates[id]) {
-            longClickStates[id] = { isPressed: false, progress: 0, x: 0, y: 0, completed: false, fadeProgress: 1, showAnimation: false };
+            longClickStates[id] = { isPressed: false, progress: 0, x: 0, y: 0, completed: false, fadeProgress: 1, showAnimation: false, lastCompletedTime: undefined };
         }
         
         const state = longClickStates[id];
@@ -144,13 +146,27 @@
 
     function onLongClickComplete(id: string) {
         console.log(`Long click completed for: ${id}`);
-        // Add your long click action here
-        // For example, you could show a context menu, perform a special action, etc.
         
-        // Keep the completed state - it will stay until user releases
+        // Special handling for dark mode button - toggle glassmorphism
+        if (id === 'darkmode') {
+            glassmorphismMode.toggle();
+            console.log('Glassmorphism mode toggled!');
+            
+            // Add pulse effect to dark mode button
+            const button = document.querySelector('[onmousedown*="darkmode"]') as HTMLElement;
+            if (button) {
+                button.classList.add('glassmorphism-toggle-complete');
+                setTimeout(() => {
+                    button.classList.remove('glassmorphism-toggle-complete');
+                }, 600);
+            }
+        }
+        
+        // Keep the completed state and record completion time
         const state = longClickStates[id];
         if (state) {
             state.completed = true;
+            state.lastCompletedTime = Date.now();
         }
     }    // Set page language for accessibility
     $effect(() => {
@@ -170,7 +186,7 @@
      style="background-color: {$darkMode ? `color-mix(in srgb, var(--theme-color-primary) 5%, black)` : `color-mix(in srgb, var(--theme-color-primary) 5%, white)`};">
     <div class="max-w-2xl mx-4">
         <!-- Main Warning Card -->
-        <div class="rounded-xl shadow-lg border p-8 text-center"
+        <div class="rounded-xl shadow-lg border p-8 text-center {$glassmorphismMode ? 'glassmorphism-card' : ''}"
              style="background-color: {$darkMode ? `color-mix(in srgb, var(--theme-color-primary) 8%, black)` : 'white'}; 
                     border-color: {$darkMode ? 'color-mix(in srgb, var(--theme-color-primary) 20%, #374151)' : 'color-mix(in srgb, var(--theme-color-primary) 15%, #e5e7eb)'};
                     color: {$darkMode ? 'white' : '#111827'};">
@@ -192,7 +208,7 @@
             </p>
             
             <!-- Requirements Info -->
-            <div class="border rounded-lg p-4 mb-6"
+            <div class="border rounded-lg p-4 mb-6 {$glassmorphismMode ? 'glassmorphism-card' : ''}"
                  style="background-color: {$darkMode ? `color-mix(in srgb, var(--theme-color-primary) 15%, white)` : `color-mix(in srgb, var(--theme-color-primary) 10%, white)`}; 
                         border-color: {$darkMode ? 'color-mix(in srgb, var(--theme-color-primary) 30%, gray)' : `color-mix(in srgb, var(--theme-color-primary) 20%, white)`};">
                 <div class="flex items-center gap-3"
@@ -236,7 +252,7 @@
      style="background-color: {$darkMode ? `color-mix(in srgb, var(--theme-color-primary) 5%, black)` : `color-mix(in srgb, var(--theme-color-primary) 5%, white)`};">
     <div class="max-w-2xl mx-4">
         <!-- Main Warning Card -->
-        <div class="rounded-xl shadow-lg border p-8 text-center"
+        <div class="rounded-xl shadow-lg border p-8 text-center {$glassmorphismMode ? 'glassmorphism-card' : ''}"
              style="background-color: {$darkMode ? `color-mix(in srgb, var(--theme-color-primary) 8%, black)` : 'white'}; 
                     border-color: {$darkMode ? 'color-mix(in srgb, var(--theme-color-primary) 20%, #374151)' : 'color-mix(in srgb, var(--theme-color-primary) 15%, #e5e7eb)'};
                     color: {$darkMode ? 'white' : '#111827'};">
@@ -419,14 +435,14 @@
             <!-- Action Buttons -->
             <div class="flex gap-3 justify-center">
                 <button 
-                    class="px-6 py-3 rounded-lg font-medium text-white transition-all duration-200 shadow-sm"
+                    class="px-6 py-3 rounded-lg font-medium text-white transition-all duration-200 shadow-sm {$glassmorphismMode ? 'glassmorphism-button' : ''}"
                     style="background-color: var(--theme-color-primary);"
                     onmouseover={(e) => (e.currentTarget as HTMLElement).style.backgroundColor = `color-mix(in srgb, var(--theme-color-primary) 80%, black)`}
                     onmouseout={(e) => (e.currentTarget as HTMLElement).style.backgroundColor = `var(--theme-color-primary)`}
                     onclick={() => window.open('https://www.google.com/chrome/', '_blank')}
                 >Download Chrome</button>
                 <button 
-                    class="px-6 py-3 rounded-lg font-medium border transition-all duration-200"
+                    class="px-6 py-3 rounded-lg font-medium border transition-all duration-200 {$glassmorphismMode ? 'glassmorphism-button' : ''}"
                     style="border-color: {$darkMode ? 'color-mix(in srgb, var(--theme-color-primary) 30%, gray)' : `color-mix(in srgb, var(--theme-color-primary) 20%, white)`}; 
                            background-color: transparent;
                            color: {$darkMode ? 'white' : '#111827'};"
@@ -452,15 +468,15 @@
 <!-- Main Application (hidden on small screens) -->
 <div class="hidden xl:flex h-screen {$darkMode ? 'bg-black' : 'bg-gray-50'}">
     <!-- Sidebar -->
-    <div class="flex flex-col w-52 {$darkMode ? 'bg-black border-gray-600' : 'bg-white border-gray-200'} shadow-lg h-full overflow-y-auto border-r">        
+    <div class="flex flex-col w-52 {$glassmorphismMode ? 'glassmorphism-sidebar' : ($darkMode ? 'bg-black border-gray-600' : 'bg-white border-gray-200')} shadow-xl h-full overflow-y-auto border-r">        
         <!-- Header -->
         <div class="p-4">
-            <h1 class="font-bold text-xl {$darkMode ? 'text-white' : 'text-gray-900'} text-center">{t('common.zellia', currentLanguage)}</h1>
+            <h1 class="font-bold text-xl {$glassmorphismMode ? '' : ($darkMode ? 'text-white' : 'text-gray-900')} text-center">{t('common.zellia', currentLanguage)}</h1>
         </div>          
         <!-- Sync Button -->
         <div class="flex justify-center mb-4 mt-2">
             <button 
-                class="px-18 py-2 rounded-4xl font-bold transition-colors duration-200 shadow w-auto relative overflow-hidden"
+                class="px-18 py-2 rounded-4xl font-bold transition-colors duration-200 shadow w-auto relative overflow-hidden {$glassmorphismMode ? 'glassmorphism-button' : ''}"
                 style="background-color: var(--theme-color-primary); color: white;"
                 onmousedown={(e) => startLongClick('sync', e)}
                 onmouseup={() => endLongClick('sync')}
@@ -500,8 +516,8 @@
         <!-- Profile Section -->
         <div class="px-3 pb-3 border-b {$darkMode ? 'border-gray-600' : 'border-gray-100'}">
             <!-- Profile Dropdown -->
-            <div class="relative mb-2">                <button 
-                    class="flex items-center justify-between w-full px-3 py-2 text-sm font-medium {$darkMode ? 'text-white bg-black border-gray-600 hover:bg-gray-900' : 'text-gray-700 bg-gray-50 border-gray-200 hover:bg-gray-100'} border rounded-lg transition-colors duration-200" 
+            <div class="mb-2">                <button 
+                    class="flex items-center justify-between w-full px-3 py-2 text-sm font-medium {$glassmorphismMode ? 'glassmorphism-button' : ($darkMode ? 'text-white bg-black border-gray-600 hover:bg-gray-900' : 'text-gray-700 bg-gray-50 border-gray-200 hover:bg-gray-100')} border rounded-lg transition-colors duration-200" 
                     onclick={() => showDropdown = !showDropdown}
                 >
                     <span>{t('ui.profiles', currentLanguage)}</span>
@@ -511,15 +527,17 @@
                 </button>
                 
                 {#if showDropdown}
-                    <div class="absolute top-full left-0 right-0 mt-1 {$darkMode ? 'bg-black border-gray-600' : 'bg-white border-gray-200'} border rounded-lg shadow-lg z-10">
-                        <div class="p-3 text-sm {$darkMode ? 'text-gray-300' : 'text-gray-600'}">{t('ui.noProfilesAvailable', currentLanguage)}</div>
+                    <div class="mt-1 {$glassmorphismMode ? 'glassmorphism-card' : ($darkMode ? 'bg-black border-gray-600' : 'bg-white border-gray-200')} border rounded-lg shadow-lg" transition:slide={{ duration: 300, axis: 'y' }}>
+                        <div class="p-3 text-sm {$glassmorphismMode ? '' : ($darkMode ? 'text-gray-300' : 'text-gray-600')}">{t('ui.noProfilesAvailable', currentLanguage)}</div>
                     </div>
                 {/if}
             </div>
+            
               <!-- Import/Export Buttons -->
-            <div class="grid grid-cols-2 gap-2">
+            {#if !showDropdown}
+            <div class="grid grid-cols-2 gap-2" transition:slide={{ duration: 300, axis: 'y' }}>
                 <button 
-                    class="px-3 py-2 text-xs font-medium border rounded-md transition-colors duration-200 text-white border-transparent relative overflow-hidden"
+                    class="px-3 py-2 text-xs font-medium border rounded-md transition-colors duration-200 text-white border-transparent relative overflow-hidden {$glassmorphismMode ? 'glassmorphism-button' : ''}"
                     style="background-color: var(--theme-color-primary);"
                     onmousedown={(e) => startLongClick('import', e)}
                     onmouseup={() => endLongClick('import')}
@@ -555,7 +573,7 @@
                     <span class="relative z-10">{t('ui.import', currentLanguage)}</span>
                 </button>
                 <button 
-                    class="px-3 py-2 text-xs font-medium border rounded-md transition-colors duration-200 text-white border-transparent relative overflow-hidden"
+                    class="px-3 py-2 text-xs font-medium border rounded-md transition-colors duration-200 text-white border-transparent relative overflow-hidden {$glassmorphismMode ? 'glassmorphism-button' : ''}"
                     style="background-color: var(--theme-color-primary);"
                     onmousedown={(e) => startLongClick('export', e)}
                     onmouseup={() => endLongClick('export')}
@@ -591,6 +609,7 @@
                     <span class="relative z-10">{t('ui.export', currentLanguage)}</span>
                 </button>
             </div>
+            {/if}
         </div>
           <!-- Navigation -->
         <div class="flex-1 p-3">
@@ -598,7 +617,7 @@
                 {#each NAVIGATE as [href, name]}                    
                 <a 
                         {href} 
-                        class="flex items-center gap-3 w-full px-3 py-2.5 text-sm font-medium rounded-lg relative overflow-hidden {isActive(href) 
+                        class="flex items-center gap-3 w-full px-3 py-2.5 text-sm font-medium rounded-lg relative overflow-hidden {$glassmorphismMode ? 'glassmorphism-nav-item' + (isActive(href) ? ' active' : '') : ''} {isActive(href) 
                             ? 'text-white shadow-sm'
                             : ($darkMode ? 'text-white hover:bg-gray-900 hover:text-white' : 'text-gray-700')}"
                         style={isActive(href) 
@@ -658,7 +677,7 @@
         <div class="p-3 border-t {$darkMode ? 'border-gray-600' : 'border-gray-200'}">
             <!-- Theme Button -->
             <button 
-                class="flex items-center justify-between w-full px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 {$darkMode ? 'text-white hover:bg-gray-900' : 'text-gray-700 hover:bg-gray-100'}"
+                class="flex items-center justify-between w-full px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 {$glassmorphismMode ? 'glassmorphism-button' : ($darkMode ? 'text-white hover:bg-gray-900' : 'text-gray-700 hover:bg-gray-100')}"
                 onclick={() => showThemeSelector = !showThemeSelector}            >                
                 <div class="flex items-center gap-3">
                     <Palette class="w-4 h-4" />
@@ -671,7 +690,7 @@
             
             <!-- Color Squares (collapsible) -->
             {#if showThemeSelector}
-                <div class="grid grid-cols-4 gap-2 mt-2">
+                <div class="grid grid-cols-4 gap-2 mt-2" transition:slide={{ duration: 300, axis: 'y' }}>
                     {#each Object.entries(themeColors) as [name, color] (name)}
                         <button 
                             title={name.charAt(0).toUpperCase() + name.slice(1)}
@@ -689,7 +708,7 @@
         <div class="p-3 border-t {$darkMode ? 'border-gray-600' : 'border-gray-200'}">
             <!-- Language Button -->
             <button 
-                class="flex items-center justify-between w-full px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 {$darkMode ? 'text-white hover:bg-gray-900' : 'text-gray-700 hover:bg-gray-100'}"
+                class="flex items-center justify-between w-full px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 {$glassmorphismMode ? 'glassmorphism-button' : ($darkMode ? 'text-white hover:bg-gray-900' : 'text-gray-700 hover:bg-gray-100')}"
                 onclick={() => showLanguageSelector = !showLanguageSelector}>
                 <div class="flex items-center gap-3">
                     <Globe class="w-4 h-4" />
@@ -702,15 +721,15 @@
             
             <!-- Language Options (collapsible) -->
             {#if showLanguageSelector}
-                <div class="mt-2 space-y-1">
+                <div class="mt-2 space-y-1" transition:slide={{ duration: 300, axis: 'y' }}>
                     <button 
-                        class="w-full px-3 py-2 text-sm text-left rounded-lg transition-all duration-150 {currentLanguage === 'en' ? `text-white` : ($darkMode ? 'text-gray-300 hover:bg-gray-800' : 'text-gray-700 hover:bg-gray-100')}"
+                        class="w-full px-3 py-2 text-sm text-left rounded-lg transition-all duration-150 {$glassmorphismMode ? 'glassmorphism-button' : ''} {currentLanguage === 'en' ? `text-white` : ($darkMode ? 'text-gray-300 hover:bg-gray-800' : 'text-gray-700 hover:bg-gray-100')}"
                         style={currentLanguage === 'en' ? `background-color: var(--theme-color-primary);` : ''}
                         onclick={() => setLanguage('en')}>
                         {t('common.english', currentLanguage)}
                     </button>
                     <button 
-                        class="w-full px-3 py-2 text-sm text-left rounded-lg transition-all duration-150 {currentLanguage === 'zh' ? `text-white` : ($darkMode ? 'text-gray-300 hover:bg-gray-800' : 'text-gray-700 hover:bg-gray-100')}"
+                        class="w-full px-3 py-2 text-sm text-left rounded-lg transition-all duration-150 {$glassmorphismMode ? 'glassmorphism-button' : ''} {currentLanguage === 'zh' ? `text-white` : ($darkMode ? 'text-gray-300 hover:bg-gray-800' : 'text-gray-700 hover:bg-gray-100')}"
                         style={currentLanguage === 'zh' ? `background-color: var(--theme-color-primary);` : ''}
                         onclick={() => setLanguage('zh')}>
                         {t('common.chinese', currentLanguage)}
@@ -721,14 +740,23 @@
         
         <!-- Dark Mode Toggle at Bottom -->
         <div class="p-3 border-t border-transparent">            <button
-                class="flex items-center gap-3 w-full px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative overflow-hidden {$darkMode ? 'text-white hover:bg-gray-900' : 'text-gray-700 hover:bg-gray-100'}"
+                class="flex items-center gap-3 w-full px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative overflow-hidden {$glassmorphismMode ? 'glassmorphism-button' : ($darkMode ? 'text-white hover:bg-gray-900' : 'text-gray-700 hover:bg-gray-100')}"
                 onmousedown={(e) => startLongClick('darkmode', e)}
                 onmouseup={() => endLongClick('darkmode')}
                 onmouseleave={() => endLongClick('darkmode')}
                 ontouchstart={(e) => startLongClick('darkmode', e)}
                 ontouchend={() => endLongClick('darkmode')}
                 ontouchcancel={() => endLongClick('darkmode')}
-                onclick={() => darkMode.toggle()}>
+                onclick={(e) => {
+                    // Prevent regular click if long press was recently completed
+                    const state = longClickStates['darkmode'];
+                    if (state?.lastCompletedTime && Date.now() - state.lastCompletedTime < clickBlockDuration) {
+                        e.preventDefault();
+                        console.log('Click blocked due to recent long press completion');
+                        return;
+                    }
+                    darkMode.toggle();
+                }}>
                 
                 <!-- Long click circular animation -->
                 {#if longClickStates['darkmode']?.showAnimation && (longClickStates['darkmode']?.isPressed || longClickStates['darkmode']?.completed)}
@@ -765,38 +793,36 @@
         </div>
     </div><!-- Main Content -->    
     <div 
-        class="flex-1 flex flex-col gap-4 px-4 overflow-y-scroll"
-        style="background-color: {$darkMode ? `color-mix(in srgb, var(--theme-color-primary) 5%, black)` : `color-mix(in srgb, var(--theme-color-primary) 5%, white)`};"><!-- Layer selector (hidden on about page) -->
-        {#if $page.url.pathname === '/about' || $page.url.pathname === '/lighting' || $page.url.pathname === '/calibration' || $page.url.pathname === '/debug' || $page.url.pathname === '/settings'}
-            <!-- Spacer to maintain layout consistency -->
-            <div class="flex items-center -mb-3">
-                <div class="flex items-center gap-2 px-4 py-2 h-12"></div>
+        class="flex-1 flex flex-col gap-4 px-4 overflow-y-scroll {$glassmorphismMode ? 'glassmorphism-main' : ''}"
+        style="background-color: {$darkMode ? `color-mix(in srgb, var(--theme-color-primary) 5%, black)` : `color-mix(in srgb, var(--theme-color-primary) 5%, white)`};">
+        <!-- Layer selector (fades out on certain pages) -->
+        <div class="flex items-center -mb-3">
+            <div class="flex items-center gap-2 px-4 py-2 h-12">
+                {#if !($page.url.pathname === '/about' || $page.url.pathname === '/lighting' || $page.url.pathname === '/calibration' || $page.url.pathname === '/debug' || $page.url.pathname === '/settings')}
+                <span class="font-semibold {$glassmorphismMode ? ($darkMode ? 'text-white' : 'text-gray-800') : ($darkMode ? 'text-white' : 'text-gray-700')} mr-2" in:fade={{ duration: 400, delay: 100 }} out:fade={{ duration: 300 }}>Layer:</span>
+                {#each [1, 2, 3, 4] as layer}
+                    <button
+                        class="w-8 h-8 flex items-center justify-center rounded-lg border font-bold text-lg transition-colors duration-200 focus:outline-none {$glassmorphismMode ? 'glassmorphism-button' : ''} {selectedLayer === layer ? 'text-white' : ($darkMode ? 'bg-black text-white border-gray-600 hover:bg-gray-900' : '')}"
+                        style={selectedLayer === layer ? `background-color: var(--theme-color-primary); border-color: color-mix(in srgb, var(--theme-color-primary) 70%, black);` : (selectedLayer !== layer ? `background-color: ${$darkMode ? 'black' : 'white'}; border-color: color-mix(in srgb, var(--theme-color-primary) 30%, ${$darkMode ? 'black' : 'white'}); color: var(--theme-color-primary);` : '')}
+                        onmouseover={(e) => {
+                            if (selectedLayer !== layer) {
+                                (e.currentTarget as HTMLElement).style.backgroundColor = $darkMode ? '#374151' : `color-mix(in srgb, var(--theme-color-primary) 15%, white)`;
+                            }
+                        }}
+                        onmouseout={(e) => {
+                            if (selectedLayer !== layer) {
+                                (e.currentTarget as HTMLElement).style.backgroundColor = $darkMode ? 'black' : 'white';
+                            }
+                        }}
+                        onclick={() => selectedLayer = layer}
+                        in:fade={{ duration: 400, delay: 100 }} out:fade={{ duration: 300 }}
+                    >
+                        {layer}
+                    </button>
+                {/each}
+                {/if}
             </div>
-        {:else}
-            <div class="flex items-center -mb-3 animate-fade-in">
-                <div class="flex items-center gap-2 px-4 py-2">
-                    <span class="font-semibold {$darkMode ? 'text-white' : 'text-gray-700'} mr-2">Layer:</span>                    {#each [1, 2, 3, 4] as layer}
-                        <button
-                            class="w-8 h-8 flex items-center justify-center rounded-lg border font-bold text-lg transition-colors duration-200 focus:outline-none {selectedLayer === layer ? 'text-white' : ($darkMode ? 'bg-black text-white border-gray-600 hover:bg-gray-900' : '')}"
-                            style={selectedLayer === layer ? `background-color: var(--theme-color-primary); border-color: color-mix(in srgb, var(--theme-color-primary) 70%, black);` : (selectedLayer !== layer ? `background-color: ${$darkMode ? 'black' : 'white'}; border-color: color-mix(in srgb, var(--theme-color-primary) 30%, ${$darkMode ? 'black' : 'white'}); color: var(--theme-color-primary);` : '')}
-                            onmouseover={(e) => {
-                                if (selectedLayer !== layer) {
-                                    (e.currentTarget as HTMLElement).style.backgroundColor = $darkMode ? '#374151' : `color-mix(in srgb, var(--theme-color-primary) 15%, white)`;
-                                }
-                            }}
-                            onmouseout={(e) => {
-                                if (selectedLayer !== layer) {
-                                    (e.currentTarget as HTMLElement).style.backgroundColor = $darkMode ? 'black' : 'white';
-                                }
-                            }}
-                            onclick={() => selectedLayer = layer}
-                        >
-                            {layer}
-                        </button>
-                    {/each}
-                </div>
-            </div>
-        {/if}
+        </div>
         <!-- Component for adjust part -->
         
             {@render children()} 
