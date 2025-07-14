@@ -1,190 +1,190 @@
-<script lang="ts">    import { goto } from '$app/navigation';
-    import {  KeyboardDisplayValues } from "$lib/KeyboardState.svelte";    import { darkMode, glassmorphismMode } from '$lib/DarkModeStore.svelte';
-    import { language, t, tPlaceholder } from '$lib/LanguageStore.svelte';
-    import { 
-        globalConfigurations,
-        updateGlobalConfiguration, 
-        resetGlobalConfiguration,
-        keyActions,
-        type KeyConfiguration    } from "$lib/AdvancedKeyShared";
+<script lang="ts">
+  import { goto } from '$app/navigation';
+  import { KeyboardDisplayValues } from '$lib/KeyboardState.svelte';
+  import { darkMode, glassmorphismMode } from '$lib/DarkModeStore.svelte';
+  import { language, t, tPlaceholder } from '$lib/LanguageStore.svelte';
+  import {
+    globalConfigurations,
+    updateGlobalConfiguration,
+    resetGlobalConfiguration,
+    keyActions,
+    type KeyConfiguration,
+  } from '$lib/AdvancedKeyShared';
 
-    let currentLanguage = $state($language);
-    
-    // Subscribe to language changes
-    language.subscribe(value => {
-        currentLanguage = value;
-    });
-    import NewZellia80He from '$lib/NewZellia80HE.svelte';
+  let currentLanguage = $state($language);
 
-    let selectedToggleAction = $state('caps');
-    let toggleMode = $state('press');
-    let toggleState = $state(false);
-    let CurrentSelected = $state<[number, number] | null>(null);
+  // Subscribe to language changes
+  language.subscribe(value => {
+    currentLanguage = value;
+  });
+  import NewZellia80He from '$lib/NewZellia80HE.svelte';
 
-    // Animation state variables
-    let deletingKeys = $state(new Set<string>());
-    let newlyAddedKeys = $state(new Set<string>());
-    let showConfiguredSection = $state(false);
-    let sectionAnimationPlayed = $state(false);
-    let previousKeyCount = $state(0);
-    let lastAnimationTrigger = $state(0);
+  let selectedToggleAction = $state('caps');
+  let toggleMode = $state('press');
+  let toggleState = $state(false);
+  let CurrentSelected = $state<[number, number] | null>(null);
 
-    function goBack(): void {
-        goto('/advancedkey');
-    }
+  // Animation state variables
+  let deletingKeys = $state(new Set<string>());
+  let newlyAddedKeys = $state(new Set<string>());
+  let showConfiguredSection = $state(false);
+  let sectionAnimationPlayed = $state(false);
+  let previousKeyCount = $state(0);
+  let lastAnimationTrigger = $state(0);
 
-    function getCurrentKeyConfiguration(): KeyConfiguration | null {
-        if (!CurrentSelected) return null;
-        const keyId = `${CurrentSelected[0]},${CurrentSelected[1]}`;
-        return $globalConfigurations[keyId] || {
-            type: 'toggle',
-            toggleAction: selectedToggleAction,
-            toggleMode: toggleMode,
-            toggleState: toggleState
-        };
-    }
+  function goBack(): void {
+    goto('/advancedkey');
+  }
 
-    function updateConfiguration(): void {
-        if (!CurrentSelected) return;
-        const keyId = `${CurrentSelected[0]},${CurrentSelected[1]}`;
-        updateGlobalConfiguration(keyId, {
-            type: 'toggle',
-            toggleAction: selectedToggleAction,
-            toggleMode: toggleMode,
-            toggleState: toggleState
-        });
-    }
-
-    function deleteKey(keyId: string): void {
-        // Add fade-out animation
-        deletingKeys.add(keyId);
-        deletingKeys = new Set(deletingKeys);
-        
-        setTimeout(() => {
-            resetGlobalConfiguration(keyId);
-            deletingKeys.delete(keyId);
-            deletingKeys = new Set(deletingKeys);
-        }, 500); // Match the animation duration
-    }
-
-    function applyConfiguration(): void {
-        if (!CurrentSelected) return;
-        const keyId = `${CurrentSelected[0]},${CurrentSelected[1]}`;
-        
-        // Check if this is a new key being configured
-        const isNewKey = !$globalConfigurations[keyId] || $globalConfigurations[keyId].type !== 'toggle';
-        
-        updateConfiguration();
-        
-        // Trigger animation for newly added key
-        if (isNewKey) {
-            newlyAddedKeys.add(keyId);
-            newlyAddedKeys = new Set(newlyAddedKeys);
-            setTimeout(() => {
-                newlyAddedKeys.delete(keyId);
-                newlyAddedKeys = new Set(newlyAddedKeys);
-            }, 600); // Match the fade-in animation duration
-        }
-        
-        console.log('Applying toggle configurations:', $globalConfigurations);
-    }
-
-    function resetAllToggleKeys(): void {
-        const keysToDelete = [...configuredToggleKeys.map(([keyId]) => keyId)];
-        
-        // Add fade-out animation for all keys
-        keysToDelete.forEach(keyId => {
-            deletingKeys.add(keyId);
-        });
-        deletingKeys = new Set(deletingKeys);
-        
-        setTimeout(() => {
-            keysToDelete.forEach(keyId => {
-                resetGlobalConfiguration(keyId);
-            });
-            deletingKeys.clear();
-            deletingKeys = new Set(deletingKeys);
-        }, 500); // Match the animation duration
-    }
-
-    // Reactive values
-    const currentKeyName = $derived(CurrentSelected ? 
-        $KeyboardDisplayValues[CurrentSelected[1]]?.[CurrentSelected[0]] || 'Unknown' : 
-        'No key selected');    // Load existing configuration when key selection changes
-    $effect(() => {
-        if (CurrentSelected) {
-            const keyId = `${CurrentSelected[0]},${CurrentSelected[1]}`;
-            const config = $globalConfigurations[keyId];
-            if (config && config.type === 'toggle') {
-                selectedToggleAction = config.toggleAction || 'caps';
-                toggleMode = config.toggleMode || 'press';
-                toggleState = config.toggleState || false;
-            } else {
-                // Reset to defaults when no configuration exists or switching to a new key
-                selectedToggleAction = 'caps';
-                toggleMode = 'press';
-                toggleState = false;
-            }
-        }
-    });
-
-    // Toggle action categories
-    const toggleCategories = [
-        {
-            name: 'System',
-            actions: keyActions.filter(action => 
-                ['caps', 'num', 'scroll'].includes(action.id)
-            )
-        },
-        {
-            name: 'Modifiers',
-            actions: keyActions.filter(action => 
-                ['ctrl', 'shift', 'alt', 'win'].includes(action.id)
-            )
-        },
-        {
-            name: 'Function',
-            actions: keyActions.filter(action => 
-                action.category === 'Function'
-            ).slice(0, 12)
-        },
-        {
-            name: 'Letters',
-            actions: keyActions.filter(action => 
-                action.category === 'Letter'
-            ).slice(0, 20)
-        }
-    ];
-
-    // Get configured toggle keys count
-    const configuredToggleKeys = $derived(
-        Object.entries($globalConfigurations).filter(([_, config]) => config.type === 'toggle')
+  function getCurrentKeyConfiguration(): KeyConfiguration | null {
+    if (!CurrentSelected) return null;
+    const keyId = `${CurrentSelected[0]},${CurrentSelected[1]}`;
+    return (
+      $globalConfigurations[keyId] || {
+        type: 'toggle',
+        toggleAction: selectedToggleAction,
+        toggleMode: toggleMode,
+        toggleState: toggleState,
+      }
     );
+  }
 
-    // Watch for changes in configured keys to trigger animations
-    $effect(() => {
-        const currentCount = configuredToggleKeys.length;
-        const currentTime = Date.now();
-        
-        if (currentCount > 0) {
-            if (!showConfiguredSection) {
-                showConfiguredSection = true;
-                // Only play section animation once per appearance  
-                if (!sectionAnimationPlayed || currentTime - lastAnimationTrigger > 1000) {
-                    sectionAnimationPlayed = true;
-                    lastAnimationTrigger = currentTime;
-                }
-            }
-        } else {
-            // Reset states when no keys are configured
-            showConfiguredSection = false;
-            sectionAnimationPlayed = false;
-            deletingKeys.clear();
-            newlyAddedKeys.clear();
-        }
-        
-        previousKeyCount = currentCount;
+  function updateConfiguration(): void {
+    if (!CurrentSelected) return;
+    const keyId = `${CurrentSelected[0]},${CurrentSelected[1]}`;
+    updateGlobalConfiguration(keyId, {
+      type: 'toggle',
+      toggleAction: selectedToggleAction,
+      toggleMode: toggleMode,
+      toggleState: toggleState,
     });
+  }
+
+  function deleteKey(keyId: string): void {
+    // Add fade-out animation
+    deletingKeys.add(keyId);
+    deletingKeys = new Set(deletingKeys);
+
+    setTimeout(() => {
+      resetGlobalConfiguration(keyId);
+      deletingKeys.delete(keyId);
+      deletingKeys = new Set(deletingKeys);
+    }, 500); // Match the animation duration
+  }
+
+  function applyConfiguration(): void {
+    if (!CurrentSelected) return;
+    const keyId = `${CurrentSelected[0]},${CurrentSelected[1]}`;
+
+    // Check if this is a new key being configured
+    const isNewKey =
+      !$globalConfigurations[keyId] || $globalConfigurations[keyId].type !== 'toggle';
+
+    updateConfiguration();
+
+    // Trigger animation for newly added key
+    if (isNewKey) {
+      newlyAddedKeys.add(keyId);
+      newlyAddedKeys = new Set(newlyAddedKeys);
+      setTimeout(() => {
+        newlyAddedKeys.delete(keyId);
+        newlyAddedKeys = new Set(newlyAddedKeys);
+      }, 600); // Match the fade-in animation duration
+    }
+
+    console.log('Applying toggle configurations:', $globalConfigurations);
+  }
+
+  function resetAllToggleKeys(): void {
+    const keysToDelete = [...configuredToggleKeys.map(([keyId]) => keyId)];
+
+    // Add fade-out animation for all keys
+    keysToDelete.forEach(keyId => {
+      deletingKeys.add(keyId);
+    });
+    deletingKeys = new Set(deletingKeys);
+
+    setTimeout(() => {
+      keysToDelete.forEach(keyId => {
+        resetGlobalConfiguration(keyId);
+      });
+      deletingKeys.clear();
+      deletingKeys = new Set(deletingKeys);
+    }, 500); // Match the animation duration
+  }
+
+  // Reactive values
+  const currentKeyName = $derived(
+    CurrentSelected
+      ? $KeyboardDisplayValues[CurrentSelected[1]]?.[CurrentSelected[0]] || 'Unknown'
+      : 'No key selected'
+  ); // Load existing configuration when key selection changes
+  $effect(() => {
+    if (CurrentSelected) {
+      const keyId = `${CurrentSelected[0]},${CurrentSelected[1]}`;
+      const config = $globalConfigurations[keyId];
+      if (config && config.type === 'toggle') {
+        selectedToggleAction = config.toggleAction || 'caps';
+        toggleMode = config.toggleMode || 'press';
+        toggleState = config.toggleState || false;
+      } else {
+        // Reset to defaults when no configuration exists or switching to a new key
+        selectedToggleAction = 'caps';
+        toggleMode = 'press';
+        toggleState = false;
+      }
+    }
+  });
+
+  // Toggle action categories
+  const toggleCategories = [
+    {
+      name: 'System',
+      actions: keyActions.filter(action => ['caps', 'num', 'scroll'].includes(action.id)),
+    },
+    {
+      name: 'Modifiers',
+      actions: keyActions.filter(action => ['ctrl', 'shift', 'alt', 'win'].includes(action.id)),
+    },
+    {
+      name: 'Function',
+      actions: keyActions.filter(action => action.category === 'Function').slice(0, 12),
+    },
+    {
+      name: 'Letters',
+      actions: keyActions.filter(action => action.category === 'Letter').slice(0, 20),
+    },
+  ];
+
+  // Get configured toggle keys count
+  const configuredToggleKeys = $derived(
+    Object.entries($globalConfigurations).filter(([_, config]) => config.type === 'toggle')
+  );
+
+  // Watch for changes in configured keys to trigger animations
+  $effect(() => {
+    const currentCount = configuredToggleKeys.length;
+    const currentTime = Date.now();
+
+    if (currentCount > 0) {
+      if (!showConfiguredSection) {
+        showConfiguredSection = true;
+        // Only play section animation once per appearance
+        if (!sectionAnimationPlayed || currentTime - lastAnimationTrigger > 1000) {
+          sectionAnimationPlayed = true;
+          lastAnimationTrigger = currentTime;
+        }
+      }
+    } else {
+      // Reset states when no keys are configured
+      showConfiguredSection = false;
+      sectionAnimationPlayed = false;
+      deletingKeys.clear();
+      newlyAddedKeys.clear();
+    }
+
+    previousKeyCount = currentCount;
+  });
 </script>
 
 <NewZellia80He
@@ -196,380 +196,688 @@
   {#snippet body(x, y)}{/snippet}
 </NewZellia80He>
 <div
-  class="rounded-2xl shadow p-4 mt-2 mb-4 grow {$glassmorphismMode ? 'glassmorphism-card' : ''} {$darkMode
-    ? 'border border-gray-600 text-white'
-    : 'text-black'}  flex flex-col"
+  class="rounded-2xl shadow p-4 mt-2 mb-4 grow {$glassmorphismMode
+    ? 'glassmorphism-card'
+    : ''} {$darkMode ? 'border border-gray-600 text-white' : 'text-black'}  flex flex-col"
   style="background-color: {$darkMode
     ? `color-mix(in srgb, var(--theme-color-primary) 5%, black)`
     : `color-mix(in srgb, var(--theme-color-primary) 10%, white)`};"
->     <!-- Header -->
-    <div class="border-b px-6 py-4 " style="background-color: color-mix(in srgb, var(--theme-color-primary) 3%, ${$darkMode ? 'black' : 'white'}); border-color: color-mix(in srgb, var(--theme-color-primary) 20%, ${$darkMode ? 'white' : '#e5e5e5'});">
-        <div class="flex items-center justify-between">
-            <div class="flex items-center gap-4">
-                <button 
-                    class="flex items-center gap-2 {$darkMode ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900'} transition-colors"
-                    onclick={goBack}
-                >
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-                    </svg>                    {t('advancedkey.backToAdvanced', currentLanguage)}
-                </button>
-                <div>
-                    <h1 class="text-xl font-semibold {$darkMode ? 'text-white' : 'text-gray-900'}">{t('advancedkey.toggleTitle', currentLanguage)}</h1>
-                    <p class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-500'}">{t('advancedkey.toggleSubtitle', currentLanguage)}</p>
-                </div>
-            </div>            
-            <div class="flex gap-3">
-                <button 
-                    class="px-4 py-2 text-white rounded-md transition-colors text-sm font-medium disabled:opacity-50 {$glassmorphismMode ? 'glassmorphism-button' : ''}"
-                    style="background-color: var(--theme-color-primary); 
-                           {!(CurrentSelected) ? '' : 'hover:background-color: color-mix(in srgb, var(--theme-color-primary) 85%, black);'}"
-                    onclick={applyConfiguration}
-                    disabled={!CurrentSelected}
-                >                    {t('advancedkey.applyConfiguration', currentLanguage)}
-                </button>
-                <button 
-                    class="px-4 py-2 {$glassmorphismMode ? 'glassmorphism-button' : ''} {$darkMode ? 'bg-red-700 hover:bg-red-600' : 'bg-red-600 hover:bg-red-700'} text-white rounded-md transition-colors text-sm font-medium"
-                    onclick={resetAllToggleKeys}
-                >
-                    {t('advancedkey.resetAllToggle', currentLanguage)}
-                </button>
-            </div>
-        </div>
-    </div>    
-    <!-- Main Content -->
-    <div class="flex-1 p-4 sm:p-6">
-        {#if CurrentSelected}
-            <div class="max-w-7xl mx-auto">                
-                <!-- Selected Key Info -->
-                <div class="rounded-lg border p-4 sm:p-6 mb-6 {$glassmorphismMode ? 'glassmorphism-card' : ''}"
-                     style="background-color: color-mix(in srgb, var(--theme-color-primary) 8%, {$darkMode ? 'black' : 'white'});
-                            border-color: color-mix(in srgb, var(--theme-color-primary) 30%, {$darkMode ? 'white' : '#e5e5e5'});">
-                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                        <div class="flex items-center gap-4">
-                            <div class="flex items-center gap-3">
-                                <div class="w-12 h-12 rounded-lg flex items-center justify-center border-2 {$glassmorphismMode ? 'glassmorphism-button' : ''}"
-                                     style="background-color: color-mix(in srgb, var(--theme-color-primary) 15%, {$darkMode ? 'black' : 'white'});
-                                            border-color: var(--theme-color-primary);">
-                                    <span class="font-mono font-bold {$darkMode ? 'text-white' : 'text-gray-900'}">{currentKeyName}</span>
-                                </div>
-                                <div>
-                                    <h3 class="font-medium {$darkMode ? 'text-white' : 'text-gray-900'}">Selected Key</h3>
-                                    <p class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-500'}">Position: {CurrentSelected[0]}, {CurrentSelected[1]}</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="flex items-center gap-3">                            
-                            <span class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'}">{t('advancedkey.toggleState', currentLanguage)}:</span>
-                            <div class="flex items-center gap-2">
-                                <div class="w-2 h-2 rounded-full {toggleState ? 'bg-green-500' : 'bg-gray-400'}"></div>
-                                <span class="text-sm font-medium {toggleState ? 'text-green-700' : ($darkMode ? 'text-gray-400' : 'text-gray-600')}">
-                                    {toggleState ? t('advancedkey.enabled', currentLanguage) : t('advancedkey.disabled', currentLanguage)}
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-                </div>                <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
-                    <!-- Configuration Panel -->
-                    <div class="xl:col-span-2 space-y-6">                        <!-- Toggle Action Selection -->
-                        <div class="rounded-lg border p-4 sm:p-6 {$glassmorphismMode ? 'glassmorphism-card' : ''}"
-                             style="background-color: color-mix(in srgb, var(--theme-color-primary) 5%, {$darkMode ? 'black' : 'white'});
-                                    border-color: color-mix(in srgb, var(--theme-color-primary) 25%, {$darkMode ? 'white' : '#e5e5e5'});">
-                            <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'} mb-4">{t('advancedkey.toggleAction', currentLanguage)}</h3>
-                            
-                            <div class="space-y-4">
-                                {#each toggleCategories as category}                                    <div>
-                                        <h4 class="text-sm font-medium {$darkMode ? 'text-white' : 'text-gray-700'} mb-2">{category.name}</h4>
-                                        <div class="grid grid-cols-6 sm:grid-cols-8 md:grid-cols-10 lg:grid-cols-12 gap-2">
-                                            {#each category.actions as action}
-                                                <button
-                                                    class="aspect-square min-w-12 text-xs rounded-md border transition-all flex items-center justify-center p-1 {$glassmorphismMode ? 'glassmorphism-button' : ''}"
-                                                    style="{selectedToggleAction === action.id 
-                                                        ? `background-color: var(--theme-color-primary); color: white; border-color: var(--theme-color-primary);`
-                                                        : `background-color: ${$darkMode ? 'black' : 'white'}; 
-                                                           color: ${$darkMode ? 'white' : '#374151'}; 
-                                                           border-color: ${$darkMode ? 'white' : '#e5e5e5'};`
-                                                    }"
-                                                    onmouseenter={(e) => e.currentTarget.style.backgroundColor = selectedToggleAction === action.id 
-                                                        ? 'color-mix(in srgb, var(--theme-color-primary) 85%, black)' 
-                                                        : ($darkMode ? '#1f2937' : '#f9fafb')}
-                                                    onmouseleave={(e) => e.currentTarget.style.backgroundColor = selectedToggleAction === action.id 
-                                                        ? 'var(--theme-color-primary)' 
-                                                        : ($darkMode ? 'black' : 'white')}
-                                                    onclick={() => selectedToggleAction = action.id}
-                                                    title={action.name}
-                                                >
-                                                    {action.name}
-                                                </button>
-                                            {/each}
-                                        </div>
-                                    </div>
-                                {/each}
-                            </div>
-                        </div>                        <!-- Toggle Mode -->
-                        <div class="rounded-lg border p-4 sm:p-6 {$glassmorphismMode ? 'glassmorphism-card' : ''}"
-                             style="background-color: color-mix(in srgb, var(--theme-color-primary) 5%, {$darkMode ? 'black' : 'white'});
-                                    border-color: color-mix(in srgb, var(--theme-color-primary) 25%, {$darkMode ? 'white' : '#e5e5e5'});">
-                            <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'} mb-4">{t('advancedkey.toggleMode', currentLanguage)}</h3>
-                            
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <button
-                                    class="p-4 rounded-lg border-2 text-left transition-all {$glassmorphismMode ? 'glassmorphism-button' : ''}"
-                                    style="{toggleMode === 'press'
-                                        ? `border-color: var(--theme-color-primary); background-color: color-mix(in srgb, var(--theme-color-primary) 15%, ${$darkMode ? 'black' : 'white'});`
-                                        : `border-color: ${$darkMode ? '#4b5563' : '#e5e5e5'}; background-color: transparent;`
-                                    }"
-                                    onmouseenter={(e) => e.currentTarget.style.borderColor = toggleMode === 'press' 
-                                        ? 'var(--theme-color-primary)' 
-                                        : ($darkMode ? '#6b7280' : '#d1d5db')}
-                                    onmouseleave={(e) => e.currentTarget.style.borderColor = toggleMode === 'press' 
-                                        ? 'var(--theme-color-primary)' 
-                                        : ($darkMode ? '#4b5563' : '#e5e5e5')}
-                                    onclick={() => toggleMode = 'press'}
-                                >
-                                    <div class="flex items-center gap-3 mb-2">
-                                        <div class="w-4 h-4 rounded-full border-2"
-                                             style="border-color: {toggleMode === 'press' ? 'var(--theme-color-primary)' : ($darkMode ? '#9ca3af' : '#d1d5db')}; 
-                                                    background-color: {toggleMode === 'press' ? 'var(--theme-color-primary)' : 'transparent'};">
-                                            {#if toggleMode === 'press'}
-                                                <div class="w-2 h-2 {$darkMode ? 'bg-black' : 'bg-white'} rounded-full m-0.5"></div>
-                                            {/if}
-                                        </div>                                        <span class="font-medium {$darkMode ? 'text-white' : 'text-gray-900'}">{t('advancedkey.onPress', currentLanguage)}</span>
-                                    </div>
-                                    <p class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'}">{t('advancedkey.toggleModeDesc', currentLanguage)}</p>
-                                </button>
-                                
-                                <button
-                                    class="p-4 rounded-lg border-2 text-left transition-all {$glassmorphismMode ? 'glassmorphism-button' : ''}"
-                                    style="{toggleMode === 'release'
-                                        ? `border-color: var(--theme-color-primary); background-color: color-mix(in srgb, var(--theme-color-primary) 15%, ${$darkMode ? 'black' : 'white'});`
-                                        : `border-color: ${$darkMode ? '#4b5563' : '#e5e5e5'}; background-color: transparent;`
-                                    }"
-                                    onmouseenter={(e) => e.currentTarget.style.borderColor = toggleMode === 'release' 
-                                        ? 'var(--theme-color-primary)' 
-                                        : ($darkMode ? '#6b7280' : '#d1d5db')}
-                                    onmouseleave={(e) => e.currentTarget.style.borderColor = toggleMode === 'release' 
-                                        ? 'var(--theme-color-primary)' 
-                                        : ($darkMode ? '#4b5563' : '#e5e5e5')}
-                                    onclick={() => toggleMode = 'release'}
-                                >
-                                    <div class="flex items-center gap-3 mb-2">
-                                        <div class="w-4 h-4 rounded-full border-2"
-                                             style="border-color: {toggleMode === 'release' ? 'var(--theme-color-primary)' : ($darkMode ? '#9ca3af' : '#d1d5db')}; 
-                                                    background-color: {toggleMode === 'release' ? 'var(--theme-color-primary)' : 'transparent'};">
-                                            {#if toggleMode === 'release'}
-                                                <div class="w-2 h-2 {$darkMode ? 'bg-black' : 'bg-white'} rounded-full m-0.5"></div>
-                                            {/if}
-                                        </div>                                        <span class="font-medium {$darkMode ? 'text-white' : 'text-gray-900'}">{t('advancedkey.onRelease', currentLanguage)}</span>
-                                    </div>
-                                    <p class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'}">{t('advancedkey.toggleModeDesc', currentLanguage)}</p>
-                                </button>
-                            </div>
-                        </div>                        <!-- State Control -->
-                        <div class="rounded-lg border p-4 sm:p-6 {$glassmorphismMode ? 'glassmorphism-card' : ''}"
-                             style="background-color: color-mix(in srgb, var(--theme-color-primary) 5%, {$darkMode ? 'black' : 'white'});
-                                    border-color: color-mix(in srgb, var(--theme-color-primary) 25%, {$darkMode ? 'white' : '#e5e5e5'});">                            <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'} mb-4">{t('advancedkey.toggleState', currentLanguage)}</h3>
-                            
-                            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-lg {$glassmorphismMode ? 'glassmorphism-button' : ''}"
-                                 style="background-color: color-mix(in srgb, var(--theme-color-primary) 8%, {$darkMode ? 'black' : 'white'});">
-                                <div class="flex-1">
-                                    <div class="font-medium {$darkMode ? 'text-white' : 'text-gray-900'}">{t('advancedkey.toggleState', currentLanguage)}</div>
-                                    <div class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'}">{t('advancedkey.toggleStateDesc', currentLanguage)}</div>
-                                </div>                                <div class="flex-shrink-0">
-                                    <button
-                                        class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 {$glassmorphismMode ? 'glassmorphism-button' : ''}"
-                                        style="background-color: {toggleState ? 'var(--theme-color-primary)' : ($darkMode ? '#4b5563' : '#d1d5db')}; 
-                                               focus:ring-color: var(--theme-color-primary);"
-                                        onclick={() => toggleState = !toggleState}
-                                        aria-label={toggleState ? 'Set toggle state to inactive' : 'Set toggle state to active'}
-                                    >
-                                        <span class="inline-block h-4 w-4 transform rounded-full {toggleState ? ($darkMode ? 'bg-black' : 'bg-white') : 'bg-white'} transition-transform shadow-sm {toggleState ? 'translate-x-6' : 'translate-x-1'}"></span>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Preview Panel -->
-                    <div class="space-y-6">                        <!-- Live Preview -->
-                        <div class="rounded-lg border p-4 sm:p-6 {$glassmorphismMode ? 'glassmorphism-card' : ''}"
-                             style="background-color: color-mix(in srgb, var(--theme-color-primary) 5%, {$darkMode ? 'black' : 'white'});
-                                    border-color: color-mix(in srgb, var(--theme-color-primary) 25%, {$darkMode ? 'white' : '#e5e5e5'});">
-                            <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'} mb-4">Preview</h3>
-                            
-                            <div class="space-y-3">
-                                <div class="flex justify-between items-center py-2 border-b {$darkMode ? 'border-gray-600' : 'border-gray-100'}">
-                                    <span class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'}">Key</span>
-                                    <span class="font-mono font-medium {$darkMode ? 'text-white' : 'text-gray-900'}">{currentKeyName}</span>
-                                </div>                                <div class="flex justify-between items-center py-2 border-b {$darkMode ? 'border-gray-600' : 'border-gray-100'}">
-                                    <span class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'}">Action</span>
-                                    <span class="font-medium" style="color: var(--theme-color-primary);">{keyActions.find(k => k.id === selectedToggleAction)?.name || selectedToggleAction}</span>
-                                </div>
-                                <div class="flex justify-between items-center py-2 border-b {$darkMode ? 'border-gray-600' : 'border-gray-100'}">
-                                    <span class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'}">Trigger</span>                                    <span class="font-medium {$darkMode ? 'text-white' : 'text-gray-900'}">{toggleMode === 'press' ? t('advancedkey.onPress', currentLanguage) : t('advancedkey.onRelease', currentLanguage)}</span>
-                                </div>
-                                <div class="flex justify-between items-center py-2">
-                                    <span class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'}">{t('advancedkey.toggleState', currentLanguage)}</span>
-                                    <span class="font-medium {toggleState ? 'text-green-600' : ($darkMode ? 'text-gray-400' : 'text-gray-600')}">
-                                        {toggleState ? t('advancedkey.enabled', currentLanguage) : t('advancedkey.disabled', currentLanguage)}
-                                    </span>
-                                </div>
-                            </div>
-                        </div>                        <!-- Info Panel -->
-                        <div class="border rounded-lg p-6 {$glassmorphismMode ? 'glassmorphism-card' : ''}"
-                             style="background-color: color-mix(in srgb, var(--theme-color-primary) 12%, {$darkMode ? 'black' : 'white'});
-                                    border-color: color-mix(in srgb, var(--theme-color-primary) 30%, {$darkMode ? 'white' : '#e5e5e5'});">                            
-                                    <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'} mb-2">{t('advancedkey.howItWorks', currentLanguage)}</h3>
-                            <p class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'}">
-                                {@html tPlaceholder('advancedkey.toggleDescription', currentLanguage, 
-                                    `<strong style="color: var(--theme-color-primary);">${keyActions.find(k => k.id === selectedToggleAction)?.name || selectedToggleAction}</strong>`,
-                                    toggleMode === 'press' ? t('advancedkey.whenPressed', currentLanguage) : t('advancedkey.whenReleased', currentLanguage)
-                                )}
-                            </p>
-                        </div>
-
-                        <!-- Configured Keys Summary -->
-                        {#if showConfiguredSection}
-                            <div 
-                                class="rounded-lg border p-6 {$glassmorphismMode ? 'glassmorphism-card' : ''} {sectionAnimationPlayed ? 'animate-section-fade-in' : ''}" 
-                                style="background-color: color-mix(in srgb, var(--theme-color-primary) 5%, ${$darkMode ? 'black' : 'white'}); border-color: color-mix(in srgb, var(--theme-color-primary) 25%, ${$darkMode ? 'white' : '#e5e5e5'});"
-                            >
-                                <div class="flex items-center justify-between mb-4">
-                                    <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'}">{t('advancedkey.configuredToggle', currentLanguage)}</h3>
-                                    <span class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-500'}">{configuredToggleKeys.length} {configuredToggleKeys.length !== 1 ? t('advancedkey.keysCountPlural', currentLanguage) : t('advancedkey.keysCount', currentLanguage)}</span>
-                                </div>
-                                <div class="space-y-3 mb-6">
-                                    {#each configuredToggleKeys as [keyId, config] (keyId)}
-                                        {@const [x, y] = keyId.split(',').map(Number)}
-                                        {@const keyName = $KeyboardDisplayValues[y]?.[x] || t('common.unknown', currentLanguage)}
-                                        {@const isDeleting = deletingKeys.has(keyId)}
-                                        {@const isNewlyAdded = newlyAddedKeys.has(keyId)}
-                                        <div 
-                                            class="p-3 rounded-lg border transform transition-all duration-500 ease-out {$glassmorphismMode ? 'glassmorphism-card' : ''} {isDeleting ? 'animate-fade-out' : ''} {isNewlyAdded ? 'animate-fade-in' : ''}" 
-                                            style="background-color: color-mix(in srgb, var(--theme-color-primary) 8%, ${$darkMode ? 'black' : 'white'}); border-color: color-mix(in srgb, var(--theme-color-primary) 25%, ${$darkMode ? 'white' : '#e5e5e5'});"
-                                        >
-                                            <div class="flex items-center justify-between mb-2">
-                                                <span class="font-mono font-bold {$darkMode ? 'text-white' : 'text-gray-900'} text-sm">{keyName}</span>
-                                                <button 
-                                                    class="w-8 h-8 bg-red-500 hover:bg-red-600 rounded-lg flex items-center justify-center text-white transition-colors {$glassmorphismMode ? 'glassmorphism-button' : ''}"
-                                                    onclick={() => deleteKey(keyId)}
-                                                    title={t('common.delete', currentLanguage)}
-                                                    aria-label={t('common.delete', currentLanguage)}
-                                                >
-                                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                                        <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
-                                                    </svg>
-                                                </button>
-                                            </div>
-                                            <div class="text-xs space-y-1">
-                                                <div class="flex justify-between">
-                                                    <span class="{$darkMode ? 'text-gray-400' : 'text-gray-600'}">{t('advancedkey.actions', currentLanguage)}:</span>
-                                                    <span class="font-medium" style="color: var(--theme-color-primary);">{keyActions.find(k => k.id === config.toggleAction)?.name || config.toggleAction}</span>
-                                                </div>
-                                                <div class="flex justify-between">
-                                                    <span class="{$darkMode ? 'text-gray-400' : 'text-gray-600'}">{t('advancedkey.trigger', currentLanguage)}:</span>
-                                                    <span class="font-medium {$darkMode ? 'text-gray-300' : 'text-gray-700'}">{config.toggleMode === 'press' ? t('advancedkey.onPress', currentLanguage) : t('advancedkey.onRelease', currentLanguage)}</span>
-                                                </div>
-                                                <div class="flex justify-between items-center">
-                                                    <span class="{$darkMode ? 'text-gray-400' : 'text-gray-600'}">{t('advancedkey.state', currentLanguage)}:</span>
-                                                    <div class="flex items-center gap-1">
-                                                        <div class="w-2 h-2 rounded-full {config.toggleState ? 'bg-green-500' : 'bg-gray-400'}"></div>
-                                                        <span class="font-medium {config.toggleState ? 'text-green-600' : ($darkMode ? 'text-gray-400' : 'text-gray-600')}">{config.toggleState ? t('advancedkey.enabled', currentLanguage) : t('advancedkey.disabled', currentLanguage)}</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    {/each}
-                                </div>
-                            </div>
-                        {/if}
-                    </div>
-                </div>
-            </div>
-        {:else}            <!-- No Key Selected State -->
-            <div class="flex-1 flex items-center justify-center">
-                <div class="text-center max-w-md mx-auto">
-                    <div
-            class="w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-4 {glassmorphismMode ? 'glassmorphism-card' : ($darkMode ? 'bg-gray-800' : 'bg-gray-100')}"
-        >            
-        <svg
-            class="w-12 h-12"
-            style="color: var(--theme-color-primary);"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
+>
+  <!-- Header -->
+  <div
+    class="border-b px-6 py-4"
+    style="background-color: color-mix(in srgb, var(--theme-color-primary) 3%, ${$darkMode
+      ? 'black'
+      : 'white'}); border-color: color-mix(in srgb, var(--theme-color-primary) 20%, ${$darkMode
+      ? 'white'
+      : '#e5e5e5'});"
+  >
+    <div class="flex items-center justify-between">
+      <div class="flex items-center gap-4">
+        <button
+          class="flex items-center gap-2 {$darkMode
+            ? 'text-gray-400 hover:text-white'
+            : 'text-gray-600 hover:text-gray-900'} transition-colors"
+          onclick={goBack}
         >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M15 19l-7-7 7-7"
+            />
+          </svg>
+          {t('advancedkey.backToAdvanced', currentLanguage)}
+        </button>
+        <div>
+          <h1 class="text-xl font-semibold {$darkMode ? 'text-white' : 'text-gray-900'}">
+            {t('advancedkey.toggleTitle', currentLanguage)}
+          </h1>
+          <p class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-500'}">
+            {t('advancedkey.toggleSubtitle', currentLanguage)}
+          </p>
+        </div>
+      </div>
+      <div class="flex gap-3">
+        <button
+          class="px-4 py-2 text-white rounded-md transition-colors text-sm font-medium disabled:opacity-50 {$glassmorphismMode
+            ? 'glassmorphism-button'
+            : ''}"
+          style="background-color: var(--theme-color-primary); 
+                           {!CurrentSelected
+            ? ''
+            : 'hover:background-color: color-mix(in srgb, var(--theme-color-primary) 85%, black);'}"
+          onclick={applyConfiguration}
+          disabled={!CurrentSelected}
+        >
+          {t('advancedkey.applyConfiguration', currentLanguage)}
+        </button>
+        <button
+          class="px-4 py-2 {$glassmorphismMode ? 'glassmorphism-button' : ''} {$darkMode
+            ? 'bg-red-700 hover:bg-red-600'
+            : 'bg-red-600 hover:bg-red-700'} text-white rounded-md transition-colors text-sm font-medium"
+          onclick={resetAllToggleKeys}
+        >
+          {t('advancedkey.resetAllToggle', currentLanguage)}
+        </button>
+      </div>
+    </div>
+  </div>
+  <!-- Main Content -->
+  <div class="flex-1 p-4 sm:p-6">
+    {#if CurrentSelected}
+      <div class="max-w-7xl mx-auto">
+        <!-- Selected Key Info -->
+        <div
+          class="rounded-lg border p-4 sm:p-6 mb-6 {$glassmorphismMode ? 'glassmorphism-card' : ''}"
+          style="background-color: color-mix(in srgb, var(--theme-color-primary) 8%, {$darkMode
+            ? 'black'
+            : 'white'});
+                            border-color: color-mix(in srgb, var(--theme-color-primary) 30%, {$darkMode
+            ? 'white'
+            : '#e5e5e5'});"
+        >
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div class="flex items-center gap-4">
+              <div class="flex items-center gap-3">
+                <div
+                  class="w-12 h-12 rounded-lg flex items-center justify-center border-2 {$glassmorphismMode
+                    ? 'glassmorphism-button'
+                    : ''}"
+                  style="background-color: color-mix(in srgb, var(--theme-color-primary) 15%, {$darkMode
+                    ? 'black'
+                    : 'white'});
+                                            border-color: var(--theme-color-primary);"
+                >
+                  <span class="font-mono font-bold {$darkMode ? 'text-white' : 'text-gray-900'}"
+                    >{currentKeyName}</span
+                  >
+                </div>
+                <div>
+                  <h3 class="font-medium {$darkMode ? 'text-white' : 'text-gray-900'}">
+                    Selected Key
+                  </h3>
+                  <p class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-500'}">
+                    Position: {CurrentSelected[0]}, {CurrentSelected[1]}
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div class="flex items-center gap-3">
+              <span class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'}"
+                >{t('advancedkey.toggleState', currentLanguage)}:</span
+              >
+              <div class="flex items-center gap-2">
+                <div
+                  class="w-2 h-2 rounded-full {toggleState ? 'bg-green-500' : 'bg-gray-400'}"
+                ></div>
+                <span
+                  class="text-sm font-medium {toggleState
+                    ? 'text-green-700'
+                    : $darkMode
+                      ? 'text-gray-400'
+                      : 'text-gray-600'}"
+                >
+                  {toggleState
+                    ? t('advancedkey.enabled', currentLanguage)
+                    : t('advancedkey.disabled', currentLanguage)}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+          <!-- Configuration Panel -->
+          <div class="xl:col-span-2 space-y-6">
+            <!-- Toggle Action Selection -->
+            <div
+              class="rounded-lg border p-4 sm:p-6 {$glassmorphismMode ? 'glassmorphism-card' : ''}"
+              style="background-color: color-mix(in srgb, var(--theme-color-primary) 5%, {$darkMode
+                ? 'black'
+                : 'white'});
+                                    border-color: color-mix(in srgb, var(--theme-color-primary) 25%, {$darkMode
+                ? 'white'
+                : '#e5e5e5'});"
+            >
+              <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'} mb-4">
+                {t('advancedkey.toggleAction', currentLanguage)}
+              </h3>
+
+              <div class="space-y-4">
+                {#each toggleCategories as category}
+                  <div>
+                    <h4
+                      class="text-sm font-medium {$darkMode ? 'text-white' : 'text-gray-700'} mb-2"
+                    >
+                      {category.name}
+                    </h4>
+                    <div
+                      class="grid grid-cols-6 sm:grid-cols-8 md:grid-cols-10 lg:grid-cols-12 gap-2"
+                    >
+                      {#each category.actions as action}
+                        <button
+                          class="aspect-square min-w-12 text-xs rounded-md border transition-all flex items-center justify-center p-1 {$glassmorphismMode
+                            ? 'glassmorphism-button'
+                            : ''}"
+                          style={selectedToggleAction === action.id
+                            ? `background-color: var(--theme-color-primary); color: white; border-color: var(--theme-color-primary);`
+                            : `background-color: ${$darkMode ? 'black' : 'white'}; 
+                                                           color: ${$darkMode ? 'white' : '#374151'}; 
+                                                           border-color: ${$darkMode ? 'white' : '#e5e5e5'};`}
+                          onmouseenter={e =>
+                            (e.currentTarget.style.backgroundColor =
+                              selectedToggleAction === action.id
+                                ? 'color-mix(in srgb, var(--theme-color-primary) 85%, black)'
+                                : $darkMode
+                                  ? '#1f2937'
+                                  : '#f9fafb')}
+                          onmouseleave={e =>
+                            (e.currentTarget.style.backgroundColor =
+                              selectedToggleAction === action.id
+                                ? 'var(--theme-color-primary)'
+                                : $darkMode
+                                  ? 'black'
+                                  : 'white')}
+                          onclick={() => (selectedToggleAction = action.id)}
+                          title={action.name}
+                        >
+                          {action.name}
+                        </button>
+                      {/each}
+                    </div>
+                  </div>
+                {/each}
+              </div>
+            </div>
+            <!-- Toggle Mode -->
+            <div
+              class="rounded-lg border p-4 sm:p-6 {$glassmorphismMode ? 'glassmorphism-card' : ''}"
+              style="background-color: color-mix(in srgb, var(--theme-color-primary) 5%, {$darkMode
+                ? 'black'
+                : 'white'});
+                                    border-color: color-mix(in srgb, var(--theme-color-primary) 25%, {$darkMode
+                ? 'white'
+                : '#e5e5e5'});"
+            >
+              <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'} mb-4">
+                {t('advancedkey.toggleMode', currentLanguage)}
+              </h3>
+
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <button
+                  class="p-4 rounded-lg border-2 text-left transition-all {$glassmorphismMode
+                    ? 'glassmorphism-button'
+                    : ''}"
+                  style={toggleMode === 'press'
+                    ? `border-color: var(--theme-color-primary); background-color: color-mix(in srgb, var(--theme-color-primary) 15%, ${$darkMode ? 'black' : 'white'});`
+                    : `border-color: ${$darkMode ? '#4b5563' : '#e5e5e5'}; background-color: transparent;`}
+                  onmouseenter={e =>
+                    (e.currentTarget.style.borderColor =
+                      toggleMode === 'press'
+                        ? 'var(--theme-color-primary)'
+                        : $darkMode
+                          ? '#6b7280'
+                          : '#d1d5db')}
+                  onmouseleave={e =>
+                    (e.currentTarget.style.borderColor =
+                      toggleMode === 'press'
+                        ? 'var(--theme-color-primary)'
+                        : $darkMode
+                          ? '#4b5563'
+                          : '#e5e5e5')}
+                  onclick={() => (toggleMode = 'press')}
+                >
+                  <div class="flex items-center gap-3 mb-2">
+                    <div
+                      class="w-4 h-4 rounded-full border-2"
+                      style="border-color: {toggleMode === 'press'
+                        ? 'var(--theme-color-primary)'
+                        : $darkMode
+                          ? '#9ca3af'
+                          : '#d1d5db'}; 
+                                                    background-color: {toggleMode === 'press'
+                        ? 'var(--theme-color-primary)'
+                        : 'transparent'};"
+                    >
+                      {#if toggleMode === 'press'}
+                        <div
+                          class="w-2 h-2 {$darkMode ? 'bg-black' : 'bg-white'} rounded-full m-0.5"
+                        ></div>
+                      {/if}
+                    </div>
+                    <span class="font-medium {$darkMode ? 'text-white' : 'text-gray-900'}"
+                      >{t('advancedkey.onPress', currentLanguage)}</span
+                    >
+                  </div>
+                  <p class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'}">
+                    {t('advancedkey.toggleModeDesc', currentLanguage)}
+                  </p>
+                </button>
+
+                <button
+                  class="p-4 rounded-lg border-2 text-left transition-all {$glassmorphismMode
+                    ? 'glassmorphism-button'
+                    : ''}"
+                  style={toggleMode === 'release'
+                    ? `border-color: var(--theme-color-primary); background-color: color-mix(in srgb, var(--theme-color-primary) 15%, ${$darkMode ? 'black' : 'white'});`
+                    : `border-color: ${$darkMode ? '#4b5563' : '#e5e5e5'}; background-color: transparent;`}
+                  onmouseenter={e =>
+                    (e.currentTarget.style.borderColor =
+                      toggleMode === 'release'
+                        ? 'var(--theme-color-primary)'
+                        : $darkMode
+                          ? '#6b7280'
+                          : '#d1d5db')}
+                  onmouseleave={e =>
+                    (e.currentTarget.style.borderColor =
+                      toggleMode === 'release'
+                        ? 'var(--theme-color-primary)'
+                        : $darkMode
+                          ? '#4b5563'
+                          : '#e5e5e5')}
+                  onclick={() => (toggleMode = 'release')}
+                >
+                  <div class="flex items-center gap-3 mb-2">
+                    <div
+                      class="w-4 h-4 rounded-full border-2"
+                      style="border-color: {toggleMode === 'release'
+                        ? 'var(--theme-color-primary)'
+                        : $darkMode
+                          ? '#9ca3af'
+                          : '#d1d5db'}; 
+                                                    background-color: {toggleMode === 'release'
+                        ? 'var(--theme-color-primary)'
+                        : 'transparent'};"
+                    >
+                      {#if toggleMode === 'release'}
+                        <div
+                          class="w-2 h-2 {$darkMode ? 'bg-black' : 'bg-white'} rounded-full m-0.5"
+                        ></div>
+                      {/if}
+                    </div>
+                    <span class="font-medium {$darkMode ? 'text-white' : 'text-gray-900'}"
+                      >{t('advancedkey.onRelease', currentLanguage)}</span
+                    >
+                  </div>
+                  <p class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'}">
+                    {t('advancedkey.toggleModeDesc', currentLanguage)}
+                  </p>
+                </button>
+              </div>
+            </div>
+            <!-- State Control -->
+            <div
+              class="rounded-lg border p-4 sm:p-6 {$glassmorphismMode ? 'glassmorphism-card' : ''}"
+              style="background-color: color-mix(in srgb, var(--theme-color-primary) 5%, {$darkMode
+                ? 'black'
+                : 'white'});
+                                    border-color: color-mix(in srgb, var(--theme-color-primary) 25%, {$darkMode
+                ? 'white'
+                : '#e5e5e5'});"
+            >
+              <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'} mb-4">
+                {t('advancedkey.toggleState', currentLanguage)}
+              </h3>
+
+              <div
+                class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-lg {$glassmorphismMode
+                  ? 'glassmorphism-button'
+                  : ''}"
+                style="background-color: color-mix(in srgb, var(--theme-color-primary) 8%, {$darkMode
+                  ? 'black'
+                  : 'white'});"
+              >
+                <div class="flex-1">
+                  <div class="font-medium {$darkMode ? 'text-white' : 'text-gray-900'}">
+                    {t('advancedkey.toggleState', currentLanguage)}
+                  </div>
+                  <div class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'}">
+                    {t('advancedkey.toggleStateDesc', currentLanguage)}
+                  </div>
+                </div>
+                <div class="flex-shrink-0">
+                  <button
+                    class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 {$glassmorphismMode
+                      ? 'glassmorphism-button'
+                      : ''}"
+                    style="background-color: {toggleState
+                      ? 'var(--theme-color-primary)'
+                      : $darkMode
+                        ? '#4b5563'
+                        : '#d1d5db'}; 
+                                               focus:ring-color: var(--theme-color-primary);"
+                    onclick={() => (toggleState = !toggleState)}
+                    aria-label={toggleState
+                      ? 'Set toggle state to inactive'
+                      : 'Set toggle state to active'}
+                  >
+                    <span
+                      class="inline-block h-4 w-4 transform rounded-full {toggleState
+                        ? $darkMode
+                          ? 'bg-black'
+                          : 'bg-white'
+                        : 'bg-white'} transition-transform shadow-sm {toggleState
+                        ? 'translate-x-6'
+                        : 'translate-x-1'}"
+                    ></span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Preview Panel -->
+          <div class="space-y-6">
+            <!-- Live Preview -->
+            <div
+              class="rounded-lg border p-4 sm:p-6 {$glassmorphismMode ? 'glassmorphism-card' : ''}"
+              style="background-color: color-mix(in srgb, var(--theme-color-primary) 5%, {$darkMode
+                ? 'black'
+                : 'white'});
+                                    border-color: color-mix(in srgb, var(--theme-color-primary) 25%, {$darkMode
+                ? 'white'
+                : '#e5e5e5'});"
+            >
+              <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'} mb-4">
+                Preview
+              </h3>
+
+              <div class="space-y-3">
+                <div
+                  class="flex justify-between items-center py-2 border-b {$darkMode
+                    ? 'border-gray-600'
+                    : 'border-gray-100'}"
+                >
+                  <span class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'}">Key</span>
+                  <span class="font-mono font-medium {$darkMode ? 'text-white' : 'text-gray-900'}"
+                    >{currentKeyName}</span
+                  >
+                </div>
+                <div
+                  class="flex justify-between items-center py-2 border-b {$darkMode
+                    ? 'border-gray-600'
+                    : 'border-gray-100'}"
+                >
+                  <span class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'}">Action</span
+                  >
+                  <span class="font-medium" style="color: var(--theme-color-primary);"
+                    >{keyActions.find(k => k.id === selectedToggleAction)?.name ||
+                      selectedToggleAction}</span
+                  >
+                </div>
+                <div
+                  class="flex justify-between items-center py-2 border-b {$darkMode
+                    ? 'border-gray-600'
+                    : 'border-gray-100'}"
+                >
+                  <span class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'}"
+                    >Trigger</span
+                  >
+                  <span class="font-medium {$darkMode ? 'text-white' : 'text-gray-900'}"
+                    >{toggleMode === 'press'
+                      ? t('advancedkey.onPress', currentLanguage)
+                      : t('advancedkey.onRelease', currentLanguage)}</span
+                  >
+                </div>
+                <div class="flex justify-between items-center py-2">
+                  <span class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'}"
+                    >{t('advancedkey.toggleState', currentLanguage)}</span
+                  >
+                  <span
+                    class="font-medium {toggleState
+                      ? 'text-green-600'
+                      : $darkMode
+                        ? 'text-gray-400'
+                        : 'text-gray-600'}"
+                  >
+                    {toggleState
+                      ? t('advancedkey.enabled', currentLanguage)
+                      : t('advancedkey.disabled', currentLanguage)}
+                  </span>
+                </div>
+              </div>
+            </div>
+            <!-- Info Panel -->
+            <div
+              class="border rounded-lg p-6 {$glassmorphismMode ? 'glassmorphism-card' : ''}"
+              style="background-color: color-mix(in srgb, var(--theme-color-primary) 12%, {$darkMode
+                ? 'black'
+                : 'white'});
+                                    border-color: color-mix(in srgb, var(--theme-color-primary) 30%, {$darkMode
+                ? 'white'
+                : '#e5e5e5'});"
+            >
+              <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'} mb-2">
+                {t('advancedkey.howItWorks', currentLanguage)}
+              </h3>
+              <p class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'}">
+                {@html tPlaceholder(
+                  'advancedkey.toggleDescription',
+                  currentLanguage,
+                  `<strong style="color: var(--theme-color-primary);">${keyActions.find(k => k.id === selectedToggleAction)?.name || selectedToggleAction}</strong>`,
+                  toggleMode === 'press'
+                    ? t('advancedkey.whenPressed', currentLanguage)
+                    : t('advancedkey.whenReleased', currentLanguage)
+                )}
+              </p>
+            </div>
+
+            <!-- Configured Keys Summary -->
+            {#if showConfiguredSection}
+              <div
+                class="rounded-lg border p-6 {$glassmorphismMode
+                  ? 'glassmorphism-card'
+                  : ''} {sectionAnimationPlayed ? 'animate-section-fade-in' : ''}"
+                style="background-color: color-mix(in srgb, var(--theme-color-primary) 5%, ${$darkMode
+                  ? 'black'
+                  : 'white'}); border-color: color-mix(in srgb, var(--theme-color-primary) 25%, ${$darkMode
+                  ? 'white'
+                  : '#e5e5e5'});"
+              >
+                <div class="flex items-center justify-between mb-4">
+                  <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'}">
+                    {t('advancedkey.configuredToggle', currentLanguage)}
+                  </h3>
+                  <span class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-500'}"
+                    >{configuredToggleKeys.length}
+                    {configuredToggleKeys.length !== 1
+                      ? t('advancedkey.keysCountPlural', currentLanguage)
+                      : t('advancedkey.keysCount', currentLanguage)}</span
+                  >
+                </div>
+                <div class="space-y-3 mb-6">
+                  {#each configuredToggleKeys as [keyId, config] (keyId)}
+                    {@const [x, y] = keyId.split(',').map(Number)}
+                    {@const keyName =
+                      $KeyboardDisplayValues[y]?.[x] || t('common.unknown', currentLanguage)}
+                    {@const isDeleting = deletingKeys.has(keyId)}
+                    {@const isNewlyAdded = newlyAddedKeys.has(keyId)}
+                    <div
+                      class="p-3 rounded-lg border transform transition-all duration-500 ease-out {$glassmorphismMode
+                        ? 'glassmorphism-card'
+                        : ''} {isDeleting ? 'animate-fade-out' : ''} {isNewlyAdded
+                        ? 'animate-fade-in'
+                        : ''}"
+                      style="background-color: color-mix(in srgb, var(--theme-color-primary) 8%, ${$darkMode
+                        ? 'black'
+                        : 'white'}); border-color: color-mix(in srgb, var(--theme-color-primary) 25%, ${$darkMode
+                        ? 'white'
+                        : '#e5e5e5'});"
+                    >
+                      <div class="flex items-center justify-between mb-2">
+                        <span
+                          class="font-mono font-bold {$darkMode
+                            ? 'text-white'
+                            : 'text-gray-900'} text-sm">{keyName}</span
+                        >
+                        <button
+                          class="w-8 h-8 bg-red-500 hover:bg-red-600 rounded-lg flex items-center justify-center text-white transition-colors {$glassmorphismMode
+                            ? 'glassmorphism-button'
+                            : ''}"
+                          onclick={() => deleteKey(keyId)}
+                          title={t('common.delete', currentLanguage)}
+                          aria-label={t('common.delete', currentLanguage)}
+                        >
+                          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                            <path
+                              fill-rule="evenodd"
+                              d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
+                              clip-rule="evenodd"
+                            />
+                          </svg>
+                        </button>
+                      </div>
+                      <div class="text-xs space-y-1">
+                        <div class="flex justify-between">
+                          <span class={$darkMode ? 'text-gray-400' : 'text-gray-600'}
+                            >{t('advancedkey.actions', currentLanguage)}:</span
+                          >
+                          <span class="font-medium" style="color: var(--theme-color-primary);"
+                            >{keyActions.find(k => k.id === config.toggleAction)?.name ||
+                              config.toggleAction}</span
+                          >
+                        </div>
+                        <div class="flex justify-between">
+                          <span class={$darkMode ? 'text-gray-400' : 'text-gray-600'}
+                            >{t('advancedkey.trigger', currentLanguage)}:</span
+                          >
+                          <span class="font-medium {$darkMode ? 'text-gray-300' : 'text-gray-700'}"
+                            >{config.toggleMode === 'press'
+                              ? t('advancedkey.onPress', currentLanguage)
+                              : t('advancedkey.onRelease', currentLanguage)}</span
+                          >
+                        </div>
+                        <div class="flex justify-between items-center">
+                          <span class={$darkMode ? 'text-gray-400' : 'text-gray-600'}
+                            >{t('advancedkey.state', currentLanguage)}:</span
+                          >
+                          <div class="flex items-center gap-1">
+                            <div
+                              class="w-2 h-2 rounded-full {config.toggleState
+                                ? 'bg-green-500'
+                                : 'bg-gray-400'}"
+                            ></div>
+                            <span
+                              class="font-medium {config.toggleState
+                                ? 'text-green-600'
+                                : $darkMode
+                                  ? 'text-gray-400'
+                                  : 'text-gray-600'}"
+                              >{config.toggleState
+                                ? t('advancedkey.enabled', currentLanguage)
+                                : t('advancedkey.disabled', currentLanguage)}</span
+                            >
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  {/each}
+                </div>
+              </div>
+            {/if}
+          </div>
+        </div>
+      </div>
+    {:else}
+      <!-- No Key Selected State -->
+      <div class="flex-1 flex items-center justify-center">
+        <div class="text-center max-w-md mx-auto">
+          <div
+            class="w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-4 {glassmorphismMode
+              ? 'glassmorphism-card'
+              : $darkMode
+                ? 'bg-gray-800'
+                : 'bg-gray-100'}"
+          >
+            <svg
+              class="w-12 h-12"
+              style="color: var(--theme-color-primary);"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
                 stroke-linecap="round"
                 stroke-linejoin="round"
                 stroke-width="2"
                 d="M8 9l4-4 4 4m0 6l-4 4-4-4"
-            />
-        </svg>
-        </div>                 
-                    <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'} mb-2">{t('advancedkey.noKeySelected', currentLanguage)}</h3>
-                    <p class="{$darkMode ? 'text-gray-400' : 'text-gray-600'} mb-4">{t('advancedkey.selectKeyToConfig', currentLanguage)}</p>                    
-                    <div class="{$glassmorphismMode ? 'glassmorphism-card' : ''} {$darkMode ? 'bg-blue-50 border-blue-200 text-blue-700' : 'bg-blue-50 border-blue-200 text-blue-700'} border rounded-lg p-4 text-sm"
-                         style="background-color: color-mix(in srgb, var(--theme-color-primary) 15%, white);
+              />
+            </svg>
+          </div>
+          <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'} mb-2">
+            {t('advancedkey.noKeySelected', currentLanguage)}
+          </h3>
+          <p class="{$darkMode ? 'text-gray-400' : 'text-gray-600'} mb-4">
+            {t('advancedkey.selectKeyToConfig', currentLanguage)}
+          </p>
+          <div
+            class="{$glassmorphismMode ? 'glassmorphism-card' : ''} {$darkMode
+              ? 'bg-blue-50 border-blue-200 text-blue-700'
+              : 'bg-blue-50 border-blue-200 text-blue-700'} border rounded-lg p-4 text-sm"
+            style="background-color: color-mix(in srgb, var(--theme-color-primary) 15%, white);
                                 border-color: color-mix(in srgb, var(--theme-color-primary) 40%, #e5e5e5);
-                                color: color-mix(in srgb, var(--theme-color-primary) 80%, black);">
-                        <strong>{t('advancedkey.tip', currentLanguage)}:</strong> {t('advancedkey.toggleTip', currentLanguage)}
-                    </div>
-                </div>
-            </div>        {/if}
-    </div>
+                                color: color-mix(in srgb, var(--theme-color-primary) 80%, black);"
+          >
+            <strong>{t('advancedkey.tip', currentLanguage)}:</strong>
+            {t('advancedkey.toggleTip', currentLanguage)}
+          </div>
+        </div>
+      </div>
+    {/if}
+  </div>
 </div>
 
 <style>
-    /* Animation styles */
-    @keyframes fadeIn {
-        0% {
-            opacity: 0;
-            transform: translateY(-20px) scale(0.95);
-        }
-        100% {
-            opacity: 1;
-            transform: translateY(0) scale(1);
-        }
+  /* Animation styles */
+  @keyframes fadeIn {
+    0% {
+      opacity: 0;
+      transform: translateY(-20px) scale(0.95);
     }
+    100% {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
 
-    @keyframes fadeOut {
-        0% {
-            opacity: 1;
-            transform: translateY(0) scale(1);
-        }
-        50% {
-            opacity: 0.3;
-            transform: translateY(-10px) scale(0.98);
-        }
-        100% {
-            opacity: 0;
-            transform: translateY(-20px) scale(0.95);
-        }
+  @keyframes fadeOut {
+    0% {
+      opacity: 1;
+      transform: translateY(0) scale(1);
     }
+    50% {
+      opacity: 0.3;
+      transform: translateY(-10px) scale(0.98);
+    }
+    100% {
+      opacity: 0;
+      transform: translateY(-20px) scale(0.95);
+    }
+  }
 
-    @keyframes sectionFadeIn {
-        0% {
-            opacity: 0;
-            transform: translateY(-15px);
-            max-height: 0;
-        }
-        100% {
-            opacity: 1;
-            transform: translateY(0);
-            max-height: 1000px;
-        }
+  @keyframes sectionFadeIn {
+    0% {
+      opacity: 0;
+      transform: translateY(-15px);
+      max-height: 0;
     }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+      max-height: 1000px;
+    }
+  }
 
-    .animate-fade-in {
-        animation: fadeIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-    }
+  .animate-fade-in {
+    animation: fadeIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  }
 
-    .animate-fade-out {
-        animation: fadeOut 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
-    }
+  .animate-fade-out {
+    animation: fadeOut 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+  }
 
-    .animate-section-fade-in {
-        animation: sectionFadeIn 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
-    }
+  .animate-section-fade-in {
+    animation: sectionFadeIn 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+  }
 </style>

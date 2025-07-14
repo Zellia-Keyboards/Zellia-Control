@@ -22,13 +22,15 @@ option {
 }
 
 html {
-  transition: background-color var(--transition-duration) var(--transition-timing), 
-              color var(--transition-duration) var(--transition-timing);
+  transition:
+    background-color var(--transition-duration) var(--transition-timing),
+    color var(--transition-duration) var(--transition-timing);
 }
 
 body {
-  transition: background-color var(--transition-duration) var(--transition-timing), 
-              color var(--transition-duration) var(--transition-timing);
+  transition:
+    background-color var(--transition-duration) var(--transition-timing),
+    color var(--transition-duration) var(--transition-timing);
 }
 
 /* Add transitions to all elements that change color on theme switch */
@@ -48,10 +50,11 @@ body {
 
 /* Special handling for theme color variables */
 :root {
-  transition: --theme-color-primary var(--transition-duration) var(--transition-timing),
-              --theme-color-hover var(--transition-duration) var(--transition-timing),
-              --theme-color-light var(--transition-duration) var(--transition-timing),
-              --theme-color-dark var(--transition-duration) var(--transition-timing);
+  transition:
+    --theme-color-primary var(--transition-duration) var(--transition-timing),
+    --theme-color-hover var(--transition-duration) var(--transition-timing),
+    --theme-color-light var(--transition-duration) var(--transition-timing),
+    --theme-color-dark var(--transition-duration) var(--transition-timing);
 }
 
 /* Disable transitions during page load to prevent flash */
@@ -61,9 +64,9 @@ body {
 }
 
 /* Enhance transition for specific elements that need smoother animations */
-[style*="background-color: var(--theme-color-primary)"],
-[style*="color: var(--theme-color-primary)"],
-[style*="border-color: var(--theme-color-primary)"] {
+[style*='background-color: var(--theme-color-primary)'],
+[style*='color: var(--theme-color-primary)'],
+[style*='border-color: var(--theme-color-primary)'] {
   transition: all var(--transition-duration) var(--transition-timing);
 }
 
@@ -82,7 +85,8 @@ body {
   backdrop-filter: var(--glass-backdrop-blur) !important;
   -webkit-backdrop-filter: var(--glass-backdrop-blur) !important;
   border: none !important;
-  border-right: 1px solid color-mix(in srgb, var(--theme-color-primary) 30%, rgba(255, 255, 255, 0.2)) !important;
+  border-right: 1px solid
+    color-mix(in srgb, var(--theme-color-primary) 30%, rgba(255, 255, 255, 0.2)) !important;
   box-shadow: var(--glass-shadow) !important;
   /* Fix text blending */
   color: rgba(255, 255, 255, 0.95) !important;
@@ -94,14 +98,20 @@ body {
   backdrop-filter: saturate(180%) blur(15px) !important;
   -webkit-backdrop-filter: saturate(180%) blur(15px) !important;
   border: 1px solid color-mix(in srgb, var(--theme-color-primary) 12%, rgba(255, 255, 255, 0.08)) !important;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+  box-shadow:
+    0 4px 16px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
   /* Fix text blending */
   color: rgba(255, 255, 255, 0.92) !important;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4) !important;
 }
 
 .glassmorphism .glassmorphism-nav-item {
-  background: color-mix(in srgb, var(--theme-color-primary) 3%, rgba(255, 255, 255, 0.04)) !important;
+  background: color-mix(
+    in srgb,
+    var(--theme-color-primary) 3%,
+    rgba(255, 255, 255, 0.04)
+  ) !important;
   backdrop-filter: saturate(180%) blur(12px) !important;
   -webkit-backdrop-filter: saturate(180%) blur(12px) !important;
   border: 1px solid color-mix(in srgb, var(--theme-color-primary) 8%, rgba(255, 255, 255, 0.06)) !important;
@@ -111,7 +121,11 @@ body {
 }
 
 .glassmorphism .glassmorphism-nav-item:hover {
-  background: color-mix(in srgb, var(--theme-color-primary) 8%, rgba(255, 255, 255, 0.08)) !important;
+  background: color-mix(
+    in srgb,
+    var(--theme-color-primary) 8%,
+    rgba(255, 255, 255, 0.08)
+  ) !important;
   border: 1px solid color-mix(in srgb, var(--theme-color-primary) 15%, rgba(255, 255, 255, 0.12)) !important;
   /* Enhanced text contrast on hover */
   color: rgba(255, 255, 255, 0.95) !important;
@@ -123,14 +137,18 @@ body {
   /* Strong text contrast for active items */
   color: white !important;
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6) !important;
-  box-shadow: 
-    0 4px 16px rgba(0, 0, 0, 0.1), 
+  box-shadow:
+    0 4px 16px rgba(0, 0, 0, 0.1),
     inset 0 1px 0 rgba(255, 255, 255, 0.08),
     0 0 20px color-mix(in srgb, var(--theme-color-primary) 20%, transparent) !important;
 }
 
 .glassmorphism .glassmorphism-button {
-  background: color-mix(in srgb, var(--theme-color-primary) 6%, rgba(255, 255, 255, 0.06)) !important;
+  background: color-mix(
+    in srgb,
+    var(--theme-color-primary) 6%,
+    rgba(255, 255, 255, 0.06)
+  ) !important;
   backdrop-filter: saturate(180%) blur(12px) !important;
   -webkit-backdrop-filter: saturate(180%) blur(12px) !important;
   border: 1px solid color-mix(in srgb, var(--theme-color-primary) 12%, rgba(255, 255, 255, 0.1)) !important;
@@ -140,7 +158,11 @@ body {
 }
 
 .glassmorphism .glassmorphism-button:hover {
-  background: color-mix(in srgb, var(--theme-color-primary) 10%, rgba(255, 255, 255, 0.1)) !important;
+  background: color-mix(
+    in srgb,
+    var(--theme-color-primary) 10%,
+    rgba(255, 255, 255, 0.1)
+  ) !important;
   border: 1px solid color-mix(in srgb, var(--theme-color-primary) 18%, rgba(255, 255, 255, 0.15)) !important;
   /* Enhanced text contrast on hover */
   color: rgba(255, 255, 255, 0.95) !important;
@@ -154,26 +176,43 @@ body {
 
 /* Light mode glassmorphism with theme colors */
 .glassmorphism:not(.dark) .glassmorphism-sidebar {
-  background: color-mix(in srgb, var(--theme-color-primary) 12%, rgba(255, 255, 255, 0.7)) !important;
+  background: color-mix(
+    in srgb,
+    var(--theme-color-primary) 12%,
+    rgba(255, 255, 255, 0.7)
+  ) !important;
   border: none !important;
-  border-right: 1px solid color-mix(in srgb, var(--theme-color-primary) 20%, rgba(255, 255, 255, 0.5)) !important;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.8) !important;
+  border-right: 1px solid
+    color-mix(in srgb, var(--theme-color-primary) 20%, rgba(255, 255, 255, 0.5)) !important;
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8) !important;
   /* Fix text blending for light mode - keep consistent text color */
   color: rgba(0, 0, 0, 0.85) !important;
   text-shadow: 0 1px 0 rgba(255, 255, 255, 0.8) !important;
 }
 
 .glassmorphism:not(.dark) .glassmorphism-card {
-  background: color-mix(in srgb, var(--theme-color-primary) 8%, rgba(255, 255, 255, 0.6)) !important;
+  background: color-mix(
+    in srgb,
+    var(--theme-color-primary) 8%,
+    rgba(255, 255, 255, 0.6)
+  ) !important;
   border: 1px solid color-mix(in srgb, var(--theme-color-primary) 15%, rgba(255, 255, 255, 0.4)) !important;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.9) !important;
+  box-shadow:
+    0 4px 16px rgba(0, 0, 0, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9) !important;
   /* Fix text blending for light mode - keep consistent text color */
   color: rgba(0, 0, 0, 0.8) !important;
   text-shadow: 0 1px 0 rgba(255, 255, 255, 0.7) !important;
 }
 
 .glassmorphism:not(.dark) .glassmorphism-nav-item {
-  background: color-mix(in srgb, var(--theme-color-primary) 6%, rgba(255, 255, 255, 0.5)) !important;
+  background: color-mix(
+    in srgb,
+    var(--theme-color-primary) 6%,
+    rgba(255, 255, 255, 0.5)
+  ) !important;
   border: 1px solid color-mix(in srgb, var(--theme-color-primary) 12%, rgba(255, 255, 255, 0.3)) !important;
   /* Keep black text in light mode */
   color: rgba(0, 0, 0, 0.85) !important;
@@ -181,14 +220,22 @@ body {
 }
 
 .glassmorphism:not(.dark) .glassmorphism-nav-item:hover {
-  background: color-mix(in srgb, var(--theme-color-primary) 10%, rgba(255, 255, 255, 0.6)) !important;
+  background: color-mix(
+    in srgb,
+    var(--theme-color-primary) 10%,
+    rgba(255, 255, 255, 0.6)
+  ) !important;
   border: 1px solid color-mix(in srgb, var(--theme-color-primary) 18%, rgba(255, 255, 255, 0.4)) !important;
   /* Keep black text on hover in light mode */
   color: rgba(0, 0, 0, 0.85) !important;
 }
 
 .glassmorphism:not(.dark) .glassmorphism-nav-item.active {
-  background: color-mix(in srgb, var(--theme-color-primary) 20%, rgba(255, 255, 255, 0.4)) !important;
+  background: color-mix(
+    in srgb,
+    var(--theme-color-primary) 20%,
+    rgba(255, 255, 255, 0.4)
+  ) !important;
   border: 1px solid color-mix(in srgb, var(--theme-color-primary) 30%, rgba(255, 255, 255, 0.3)) !important;
   /* Keep black text when active in light mode */
   color: rgba(0, 0, 0, 0.85) !important;
@@ -196,7 +243,11 @@ body {
 }
 
 .glassmorphism:not(.dark) .glassmorphism-button {
-  background: color-mix(in srgb, var(--theme-color-primary) 8%, rgba(255, 255, 255, 0.5)) !important;
+  background: color-mix(
+    in srgb,
+    var(--theme-color-primary) 8%,
+    rgba(255, 255, 255, 0.5)
+  ) !important;
   border: 1px solid color-mix(in srgb, var(--theme-color-primary) 15%, rgba(255, 255, 255, 0.3)) !important;
   /* Fix text blending for light mode - keep consistent text color */
   color: rgba(0, 0, 0, 0.8) !important;
@@ -204,14 +255,22 @@ body {
 }
 
 .glassmorphism:not(.dark) .glassmorphism-button:hover {
-  background: color-mix(in srgb, var(--theme-color-primary) 12%, rgba(255, 255, 255, 0.6)) !important;
+  background: color-mix(
+    in srgb,
+    var(--theme-color-primary) 12%,
+    rgba(255, 255, 255, 0.6)
+  ) !important;
   border: 1px solid color-mix(in srgb, var(--theme-color-primary) 20%, rgba(255, 255, 255, 0.4)) !important;
   /* Keep consistent text color on hover in light mode */
   color: rgba(0, 0, 0, 0.8) !important;
 }
 
 .glassmorphism:not(.dark) .glassmorphism-main {
-  background: color-mix(in srgb, var(--theme-color-primary) 4%, rgba(255, 255, 255, 0.3)) !important;
+  background: color-mix(
+    in srgb,
+    var(--theme-color-primary) 4%,
+    rgba(255, 255, 255, 0.3)
+  ) !important;
 }
 
 /* Text readability improvements for glassmorphism */
@@ -222,7 +281,12 @@ body {
   text-rendering: optimizeLegibility !important;
 }
 
-.glassmorphism h1, .glassmorphism h2, .glassmorphism h3, .glassmorphism h4, .glassmorphism h5, .glassmorphism h6 {
+.glassmorphism h1,
+.glassmorphism h2,
+.glassmorphism h3,
+.glassmorphism h4,
+.glassmorphism h5,
+.glassmorphism h6 {
   font-weight: 600 !important;
 }
 
@@ -267,15 +331,15 @@ body {
 
 /* Add subtle glow effect to active elements in glassmorphism */
 .glassmorphism .glassmorphism-nav-item.active {
-  box-shadow: 
-    0 4px 16px rgba(0, 0, 0, 0.1), 
+  box-shadow:
+    0 4px 16px rgba(0, 0, 0, 0.1),
     inset 0 1px 0 rgba(255, 255, 255, 0.08),
     0 0 20px color-mix(in srgb, var(--theme-color-primary) 20%, transparent) !important;
 }
 
 .glassmorphism:not(.dark) .glassmorphism-nav-item.active {
-  box-shadow: 
-    0 4px 16px rgba(0, 0, 0, 0.05), 
+  box-shadow:
+    0 4px 16px rgba(0, 0, 0, 0.05),
     inset 0 1px 0 rgba(255, 255, 255, 0.9),
     0 0 20px color-mix(in srgb, var(--theme-color-primary) 15%, transparent) !important;
 }
@@ -345,13 +409,17 @@ body {
   backdrop-filter: saturate(180%) blur(15px) !important;
   -webkit-backdrop-filter: saturate(180%) blur(15px) !important;
   border: 1px solid color-mix(in srgb, var(--theme-color-primary) 8%, rgba(255, 255, 255, 0.08)) !important;
-  box-shadow: 
-    0 4px 16px rgba(0, 0, 0, 0.1), 
+  box-shadow:
+    0 4px 16px rgba(0, 0, 0, 0.1),
     inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
 }
 
 .glassmorphism .glassmorphism-tab {
-  background: color-mix(in srgb, var(--theme-color-primary) 2%, rgba(255, 255, 255, 0.04)) !important;
+  background: color-mix(
+    in srgb,
+    var(--theme-color-primary) 2%,
+    rgba(255, 255, 255, 0.04)
+  ) !important;
   backdrop-filter: saturate(180%) blur(12px) !important;
   -webkit-backdrop-filter: saturate(180%) blur(12px) !important;
   border: 1px solid color-mix(in srgb, var(--theme-color-primary) 5%, rgba(255, 255, 255, 0.06)) !important;
@@ -361,22 +429,30 @@ body {
 }
 
 .glassmorphism .glassmorphism-tab:hover {
-  background: color-mix(in srgb, var(--theme-color-primary) 6%, rgba(255, 255, 255, 0.08)) !important;
+  background: color-mix(
+    in srgb,
+    var(--theme-color-primary) 6%,
+    rgba(255, 255, 255, 0.08)
+  ) !important;
   border: 1px solid color-mix(in srgb, var(--theme-color-primary) 12%, rgba(255, 255, 255, 0.12)) !important;
   color: rgba(255, 255, 255, 0.95) !important;
   transform: translateY(-1px) !important;
-  box-shadow: 
-    0 6px 20px rgba(0, 0, 0, 0.15), 
+  box-shadow:
+    0 6px 20px rgba(0, 0, 0, 0.15),
     inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
 }
 
 .glassmorphism .glassmorphism-tab.active {
-  background: color-mix(in srgb, var(--theme-color-primary) 15%, rgba(255, 255, 255, 0.1)) !important;
+  background: color-mix(
+    in srgb,
+    var(--theme-color-primary) 15%,
+    rgba(255, 255, 255, 0.1)
+  ) !important;
   border: 1px solid color-mix(in srgb, var(--theme-color-primary) 25%, rgba(255, 255, 255, 0.15)) !important;
   color: white !important;
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5) !important;
-  box-shadow: 
-    0 8px 25px rgba(0, 0, 0, 0.2), 
+  box-shadow:
+    0 8px 25px rgba(0, 0, 0, 0.2),
     inset 0 1px 0 rgba(255, 255, 255, 0.12),
     0 0 25px color-mix(in srgb, var(--theme-color-primary) 25%, transparent) !important;
 }
@@ -386,52 +462,72 @@ body {
   backdrop-filter: saturate(180%) blur(20px) !important;
   -webkit-backdrop-filter: saturate(180%) blur(20px) !important;
   border: 1px solid color-mix(in srgb, var(--theme-color-primary) 6%, rgba(255, 255, 255, 0.06)) !important;
-  box-shadow: 
-    0 8px 32px rgba(0, 0, 0, 0.12), 
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.12),
     inset 0 1px 0 rgba(255, 255, 255, 0.04) !important;
 }
 
 /* Light mode remap tab glassmorphism */
 .glassmorphism:not(.dark) .glassmorphism-tab-container {
-  background: color-mix(in srgb, var(--theme-color-primary) 6%, rgba(255, 255, 255, 0.7)) !important;
+  background: color-mix(
+    in srgb,
+    var(--theme-color-primary) 6%,
+    rgba(255, 255, 255, 0.7)
+  ) !important;
   border: 1px solid color-mix(in srgb, var(--theme-color-primary) 12%, rgba(255, 255, 255, 0.4)) !important;
-  box-shadow: 
-    0 4px 16px rgba(0, 0, 0, 0.05), 
+  box-shadow:
+    0 4px 16px rgba(0, 0, 0, 0.05),
     inset 0 1px 0 rgba(255, 255, 255, 0.9) !important;
 }
 
 .glassmorphism:not(.dark) .glassmorphism-tab {
-  background: color-mix(in srgb, var(--theme-color-primary) 4%, rgba(255, 255, 255, 0.6)) !important;
+  background: color-mix(
+    in srgb,
+    var(--theme-color-primary) 4%,
+    rgba(255, 255, 255, 0.6)
+  ) !important;
   border: 1px solid color-mix(in srgb, var(--theme-color-primary) 8%, rgba(255, 255, 255, 0.3)) !important;
   color: rgba(0, 0, 0, 0.8) !important;
   text-shadow: 0 1px 0 rgba(255, 255, 255, 0.6) !important;
 }
 
 .glassmorphism:not(.dark) .glassmorphism-tab:hover {
-  background: color-mix(in srgb, var(--theme-color-primary) 8%, rgba(255, 255, 255, 0.7)) !important;
+  background: color-mix(
+    in srgb,
+    var(--theme-color-primary) 8%,
+    rgba(255, 255, 255, 0.7)
+  ) !important;
   border: 1px solid color-mix(in srgb, var(--theme-color-primary) 15%, rgba(255, 255, 255, 0.4)) !important;
   color: rgba(0, 0, 0, 0.85) !important;
-  box-shadow: 
-    0 6px 20px rgba(0, 0, 0, 0.08), 
+  box-shadow:
+    0 6px 20px rgba(0, 0, 0, 0.08),
     inset 0 1px 0 rgba(255, 255, 255, 0.9) !important;
 }
 
 .glassmorphism:not(.dark) .glassmorphism-tab.active {
-  background: color-mix(in srgb, var(--theme-color-primary) 18%, rgba(255, 255, 255, 0.5)) !important;
+  background: color-mix(
+    in srgb,
+    var(--theme-color-primary) 18%,
+    rgba(255, 255, 255, 0.5)
+  ) !important;
   border: 1px solid color-mix(in srgb, var(--theme-color-primary) 25%, rgba(255, 255, 255, 0.3)) !important;
   color: rgba(0, 0, 0, 0.9) !important;
   text-shadow: 0 1px 0 rgba(255, 255, 255, 0.7) !important;
-  box-shadow: 
-    0 8px 25px rgba(0, 0, 0, 0.1), 
+  box-shadow:
+    0 8px 25px rgba(0, 0, 0, 0.1),
     inset 0 1px 0 rgba(255, 255, 255, 0.9),
     0 0 25px color-mix(in srgb, var(--theme-color-primary) 20%, transparent) !important;
 }
 
 .glassmorphism:not(.dark) .glassmorphism-tab-content {
-  background: color-mix(in srgb, var(--theme-color-primary) 4%, rgba(255, 255, 255, 0.6)) !important;
+  background: color-mix(
+    in srgb,
+    var(--theme-color-primary) 4%,
+    rgba(255, 255, 255, 0.6)
+  ) !important;
   border: 1px solid color-mix(in srgb, var(--theme-color-primary) 8%, rgba(255, 255, 255, 0.3)) !important;
-  box-shadow: 
-    0 8px 32px rgba(0, 0, 0, 0.06), 
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.06),
     inset 0 1px 0 rgba(255, 255, 255, 0.9) !important;
 }
 
@@ -484,15 +580,15 @@ body {
 /* Enhanced glassmorphism tab container spacing and visual hierarchy */
 .glassmorphism .glassmorphism-tab-container {
   padding: 0.375rem !important;
-  box-shadow: 
-    0 4px 16px rgba(0, 0, 0, 0.1), 
+  box-shadow:
+    0 4px 16px rgba(0, 0, 0, 0.1),
     inset 0 1px 0 rgba(255, 255, 255, 0.05),
     0 1px 3px rgba(0, 0, 0, 0.1) !important;
 }
 
 .glassmorphism:not(.dark) .glassmorphism-tab-container {
-  box-shadow: 
-    0 4px 16px rgba(0, 0, 0, 0.05), 
+  box-shadow:
+    0 4px 16px rgba(0, 0, 0, 0.05),
     inset 0 1px 0 rgba(255, 255, 255, 0.9),
     0 1px 3px rgba(0, 0, 0, 0.05) !important;
 }
