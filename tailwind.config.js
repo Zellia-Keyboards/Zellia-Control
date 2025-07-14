@@ -4,11 +4,10 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        'sans': ['Noto Sans SC', 'sans-serif'],
-        'mono': ['Noto Sans SC', 'monospace'],
+        sans: ['Noto Sans SC', 'sans-serif'],
+        mono: ['Noto Sans SC', 'monospace'],
       },
     },
   },
   plugins: [],
-}
-
+};

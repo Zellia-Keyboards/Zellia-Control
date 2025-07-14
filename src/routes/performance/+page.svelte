@@ -1,7 +1,7 @@
 <script lang="ts">
-  import { darkMode, glassmorphismMode } from "$lib/DarkModeStore.svelte";
-  import NewZellia80He from "$lib/NewZellia80HE.svelte";
-  import { AlertTriangle } from "lucide-svelte";
+  import { darkMode, glassmorphismMode } from '$lib/DarkModeStore.svelte';
+  import NewZellia80He from '$lib/NewZellia80HE.svelte';
+  import { AlertTriangle } from 'lucide-svelte';
   import { language, t } from '$lib/LanguageStore.svelte';
 
   let currentLanguage = $state($language);
@@ -40,44 +40,48 @@
 </NewZellia80He>
 
 <div
-  class="rounded-2xl shadow p-8 mt-2 mb-4 grow {$glassmorphismMode ? 'glassmorphism-card' : ''} {$darkMode
-    ? 'border border-gray-600 text-white'
-    : 'text-black'} h-full flex flex-col"
+  class="rounded-2xl shadow p-8 mt-2 mb-4 grow {$glassmorphismMode
+    ? 'glassmorphism-card'
+    : ''} {$darkMode ? 'border border-gray-600 text-white' : 'text-black'} h-full flex flex-col"
   style="background-color: {$darkMode
     ? `color-mix(in srgb, var(--theme-color-primary) 5%, black)`
     : `color-mix(in srgb, var(--theme-color-primary) 10%, white)`};"
->  <div class="flex items-center justify-between -mt-4 mb-2">
+>
+  <div class="flex items-center justify-between -mt-4 mb-2">
     <h2 class="text-2xl font-bold {$darkMode ? 'text-white' : 'text-gray-900'}">
       {t('performance.title', currentLanguage)}
     </h2>
     <div>
       <button
-        class="px-4 py-2 rounded mr-2 transition-colors duration-200 text-white {$glassmorphismMode ? 'glassmorphism-button' : ''}"
+        class="px-4 py-2 rounded mr-2 transition-colors duration-200 text-white {$glassmorphismMode
+          ? 'glassmorphism-button'
+          : ''}"
         style="background-color: var(--theme-color-primary);"
-        onmouseover={(e) =>
+        onmouseover={e =>
           ((e.currentTarget as HTMLElement).style.backgroundColor =
-            "color-mix(in srgb, var(--theme-color-primary) 85%, black)")}
-        onmouseout={(e) =>
-          ((e.currentTarget as HTMLElement).style.backgroundColor =
-            "var(--theme-color-primary)")}>
+            'color-mix(in srgb, var(--theme-color-primary) 85%, black)')}
+        onmouseout={e =>
+          ((e.currentTarget as HTMLElement).style.backgroundColor = 'var(--theme-color-primary)')}
+      >
         {t('performance.selectAllKeys', currentLanguage)}
       </button>
       <button
         class="{$glassmorphismMode ? 'glassmorphism-button' : ''} {$darkMode
           ? 'bg-gray-800 hover:bg-gray-700 text-white border border-white'
           : 'bg-gray-200 hover:bg-gray-300 text-gray-600'} px-4 py-2 rounded transition-colors duration-200"
-        >
+      >
         {t('performance.discardSelection', currentLanguage)}
       </button>
     </div>
   </div>
-  <div class="rounded-xl shadow p-6 flex flex-col md:flex-row gap-6 flex-1 {$glassmorphismMode ? 'glassmorphism-card' : ''}">    <!-- 1st Box: Actuation Point -->
+  <div
+    class="rounded-xl shadow p-6 flex flex-col md:flex-row gap-6 flex-1 {$glassmorphismMode
+      ? 'glassmorphism-card'
+      : ''}"
+  >
+    <!-- 1st Box: Actuation Point -->
     <div class="flex-1 min-w-[260px] flex flex-col">
-      <h3
-        class="text-lg font-medium mb-4 {$darkMode
-          ? 'text-white'
-          : 'text-gray-900'}"
-      >
+      <h3 class="text-lg font-medium mb-4 {$darkMode ? 'text-white' : 'text-gray-900'}">
         {t('performance.actuationPoint', currentLanguage)}
       </h3>
       <p class="text-sm {$darkMode ? 'text-gray-300' : 'text-gray-600'} mb-4">
@@ -120,8 +124,7 @@
 
           <!-- Dual input: Text input -->
           <div class="flex items-center gap-2 mb-2">
-            <span
-              class="text-xs {$darkMode ? 'text-gray-400' : 'text-gray-500'}"
+            <span class="text-xs {$darkMode ? 'text-gray-400' : 'text-gray-500'}"
               >{t('performance.directInput', currentLanguage)}:</span
             >
             <input
@@ -134,11 +137,9 @@
                 ? 'bg-gray-800 border-gray-600 text-white'
                 : 'bg-white border-gray-300 text-gray-900'}"
             />
-            <span
-              class="text-xs {$darkMode ? 'text-gray-400' : 'text-gray-500'}"
-              >mm</span
-            >
-          </div>          <div
+            <span class="text-xs {$darkMode ? 'text-gray-400' : 'text-gray-500'}">mm</span>
+          </div>
+          <div
             class="flex justify-between text-sm {$darkMode
               ? 'text-gray-400'
               : 'text-gray-500'} mb-1"
@@ -148,26 +149,20 @@
           </div>
         </div>
         <!-- Keys selected indicator -->
-        <div
-          class="mt-4 {$darkMode ? 'text-white' : 'text-gray-900'} font-medium"
-        >
-          {keysSelected} {t('performance.keysSelected', currentLanguage)}
+        <div class="mt-4 {$darkMode ? 'text-white' : 'text-gray-900'} font-medium">
+          {keysSelected}
+          {t('performance.keysSelected', currentLanguage)}
         </div>
       </div>
     </div>
 
     <!-- Divider for desktop -->
-    <div
-      class="hidden md:block w-px {$darkMode ? 'bg-white' : 'bg-gray-200'} mx-2"
-    ></div>
+    <div class="hidden md:block w-px {$darkMode ? 'bg-white' : 'bg-gray-200'} mx-2"></div>
 
     <!-- 2nd Box: Rapid Trigger Toggles (moved from 3rd position) -->
     <div class="flex-1 min-w-[260px] flex flex-col">
-      <div class="flex items-center justify-between mb-4">        <h3
-          class="text-lg font-medium {$darkMode
-            ? 'text-white'
-            : 'text-gray-900'}"
-        >
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'}">
           {t('performance.enableRapidTrigger', currentLanguage)}
         </h3>
         <button
@@ -186,7 +181,8 @@
             class:translate-x-1={!rapidTriggerEnabled}
           ></span>
         </button>
-      </div>      <p class="text-sm {$darkMode ? 'text-gray-300' : 'text-gray-600'} mb-4">
+      </div>
+      <p class="text-sm {$darkMode ? 'text-gray-300' : 'text-gray-600'} mb-4">
         {t('performance.rapidTriggerDesc', currentLanguage)}
       </p>
       <div class="flex-1">
@@ -195,11 +191,8 @@
             class="flex items-center justify-between mb-4 border-t {$darkMode
               ? 'border-white'
               : 'border-gray-200'} pt-4"
-          >            <h4
-              class="text-lg font-medium {$darkMode
-                ? 'text-white'
-                : 'text-gray-900'}"
-            >
+          >
+            <h4 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'}">
               {t('performance.enableContinuousRapidTrigger', currentLanguage)}
             </h4>
             <button
@@ -210,9 +203,7 @@
                 : $darkMode
                   ? '#4b5563'
                   : '#d1d5db'};"
-              onclick={() =>
-                (continuousRapidTriggerEnabled =
-                  !continuousRapidTriggerEnabled)}
+              onclick={() => (continuousRapidTriggerEnabled = !continuousRapidTriggerEnabled)}
             >
               <span
                 class="inline-block w-4 h-4 transform rounded-full bg-white transition-transform shadow"
@@ -220,7 +211,8 @@
                 class:translate-x-1={!continuousRapidTriggerEnabled}
               ></span>
             </button>
-          </div>          <p class="text-sm {$darkMode ? 'text-gray-300' : 'text-gray-600'}">
+          </div>
+          <p class="text-sm {$darkMode ? 'text-gray-300' : 'text-gray-600'}">
             {t('performance.continuousRapidTriggerFullDesc', currentLanguage)}
           </p>
         {/if}
@@ -228,17 +220,12 @@
     </div>
 
     <!-- Divider for desktop -->
-    <div
-      class="hidden md:block w-px {$darkMode ? 'bg-white' : 'bg-gray-200'} mx-2"
-    ></div>
+    <div class="hidden md:block w-px {$darkMode ? 'bg-white' : 'bg-gray-200'} mx-2"></div>
 
     <!-- 3rd Box: Sensitivity Slider & Toggle (moved from 2nd position) -->
     <div class="flex-1 min-w-[260px] flex flex-col">
-      <div class="flex items-center justify-between mb-4">        <h3
-          class="text-lg font-medium {$darkMode
-            ? 'text-white'
-            : 'text-gray-900'}"
-        >
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'}">
           {t('performance.rapidTriggerSensitivity', currentLanguage)}
         </h3>
         <div class="flex items-center gap-2">
@@ -262,7 +249,8 @@
             ></span>
           </button>
         </div>
-      </div>      <p class="text-sm {$darkMode ? 'text-gray-300' : 'text-gray-600'} mb-4">
+      </div>
+      <p class="text-sm {$darkMode ? 'text-gray-300' : 'text-gray-600'} mb-4">
         {t('performance.adjustSensitivity', currentLanguage)}
       </p>
       <div class="flex-1">
@@ -284,7 +272,8 @@
               bind:value={pressSensitivity}
               class="w-full h-2 rounded-full {$darkMode
                 ? 'bg-gray-700'
-                : 'bg-gray-300'} appearance-none slider-thumb"            />
+                : 'bg-gray-300'} appearance-none slider-thumb"
+            />
             <div
               class="flex justify-between text-sm {$darkMode
                 ? 'text-gray-400'
@@ -311,7 +300,8 @@
               bind:value={releaseSensitivity}
               class="w-full h-2 rounded-full {$darkMode
                 ? 'bg-gray-700'
-                : 'bg-gray-300'} appearance-none slider-thumb"            />
+                : 'bg-gray-300'} appearance-none slider-thumb"
+            />
             <div
               class="flex justify-between text-sm {$darkMode
                 ? 'text-gray-400'
@@ -341,7 +331,8 @@
                 ? 'bg-gray-700'
                 : 'bg-gray-300'} appearance-none slider-thumb"
             />
-            <div              class="flex justify-between text-sm {$darkMode
+            <div
+              class="flex justify-between text-sm {$darkMode
                 ? 'text-gray-400'
                 : 'text-gray-500'} mt-1"
             >
