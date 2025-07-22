@@ -18,7 +18,7 @@
     keyslot: Snippet<[string]>;
   }
 
-  let {  keyslot }: Props = $props();
+  let { keyslot }: Props = $props();
 </script>
 
 <div class="flex flex-wrap gap-2">

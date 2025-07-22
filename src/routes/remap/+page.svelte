@@ -10,7 +10,6 @@
   import Extension from './Extension.svelte';
   import { cubicOut } from 'svelte/easing';
 
-
   // Custom slide transition that moves instead of stretches
   function slideMove(node: Element, { duration = 400, direction = 1 }) {
     return {

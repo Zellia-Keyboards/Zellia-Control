@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { Snippet } from "svelte";
+  import type { Snippet } from 'svelte';
 
   const KeyboardSlotContent = [
     [
@@ -159,7 +159,7 @@
     keyslot: Snippet<[string]>;
   }
 
-  let {  keyslot }: Props = $props();
+  let { keyslot }: Props = $props();
 </script>
 
 <!-- FIXME: standardize spacing -->
@@ -235,7 +235,7 @@
   </div>
 </div>
 
-<div class="flex gap-2 mt-8 *:nth-[4n+5]:ml-8 *:size-14 ">
+<div class="flex gap-2 mt-8 *:nth-[4n+5]:ml-8 *:size-14">
   {#each KeyboardSlotContent[8] as key}
     {@render keyslot(key)}
   {/each}
