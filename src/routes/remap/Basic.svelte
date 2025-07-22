@@ -191,7 +191,7 @@
   </div>
   <div
     class="flex *:not-first:ml-2 mt-2
-                *:first:w-25 *:last:w-34"
+                *:first:w-25 *:last:w-37"
   >
     {#each KeyboardSlotContent[3] as key}
       {@render keyslot(key)}
@@ -199,7 +199,7 @@
   </div>
   <div
     class="flex *:not-first:ml-2 mt-2
-                *:first:w-32 [&>*:nth-last-child(2)]:w-43 *:last:ml-24"
+                *:first:w-35 [&>*:nth-last-child(2)]:w-43 *:last:ml-24"
   >
     {#each KeyboardSlotContent[4] as key}
       {@render keyslot(key)}
