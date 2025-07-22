@@ -1,4 +1,6 @@
 <script lang="ts">
+  import type { Snippet } from "svelte";
+
   const KeyboardSlotContent = [
     [
       'Esc',
@@ -152,14 +154,15 @@
       'F24',
     ],
   ];
+
+  interface Props {
+    keyslot: Snippet<[string]>;
+  }
+
+  let {  keyslot }: Props = $props();
 </script>
 
-{#snippet keyslot(content: string)}
-  <button class="size-14 text-wrap text-sm border whitespace-pre-line rounded-lg">
-    {content}
-  </button>
-{/snippet}
-
+<!-- FIXME: standardize spacing -->
 <div class="space-y-2">
   <div
     class="flex *:not-first:ml-2
@@ -188,7 +191,7 @@
   </div>
   <div
     class="flex *:not-first:ml-2 mt-2
-                *:first:w-25 *:last:w-37"
+                *:first:w-25 *:last:w-34"
   >
     {#each KeyboardSlotContent[3] as key}
       {@render keyslot(key)}
@@ -196,7 +199,7 @@
   </div>
   <div
     class="flex *:not-first:ml-2 mt-2
-                *:first:w-32 [&>*:nth-last-child(2)]:w-46 *:last:ml-24"
+                *:first:w-32 [&>*:nth-last-child(2)]:w-43 *:last:ml-24"
   >
     {#each KeyboardSlotContent[4] as key}
       {@render keyslot(key)}
@@ -214,7 +217,7 @@
 </div>
 
 <!-- TODO: Fix text wrapping -->
-<div class="flex mt-8 gap-32">
+<div class="flex mt-8 gap-12">
   <div
     class="grid grid-cols-5 grid-rows-5 gap-2 **:tracking-wide *:nth-[n+8]:nth-last-[7n+3]:row-span-2 *:nth-[n+8]:nth-last-[7n+3]:h-full *:nth-[n+8]:nth-last-[7n+3]:w-full *:nth-[17]:col-span-2 *:nth-[17]:h-full *:nth-[17]:w-full *:nth-[n+10]:nth-last-[n+7]:row-start-3 *:nth-[n+13]:nth-last-[n+3]:row-start-4 *:nth-last-[-n+3]:row-start-5"
   >
@@ -232,7 +235,7 @@
   </div>
 </div>
 
-<div class="flex gap-2 mt-8 *:nth-[4n+5]:ml-8 *:size-14 *:border-2 *:border-white">
+<div class="flex gap-2 mt-8 *:nth-[4n+5]:ml-8 *:size-14 ">
   {#each KeyboardSlotContent[8] as key}
     {@render keyslot(key)}
   {/each}

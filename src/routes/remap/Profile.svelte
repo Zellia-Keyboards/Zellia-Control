@@ -1,12 +1,14 @@
 <script lang="ts">
-  const AvailableKeys = ['PF(1)', 'PF(2)', 'PF(3)', 'PF(4)', '↔ PF', '↔ PF1', '→ PF', '← PF'];
-</script>
+  import type { Snippet } from "svelte";
 
-{#snippet keyslot(content: string)}
-  <button class="size-14 text-wrap text-sm border overflow-auto whitespace-pre-line rounded-lg">
-    {content}
-  </button>
-{/snippet}
+  const AvailableKeys = ['PF(1)', 'PF(2)', 'PF(3)', 'PF(4)', '↔ PF', '↔ PF1', '→ PF', '← PF'];
+
+  interface Props {
+    keyslot: Snippet<[string]>;
+  }
+
+  let {  keyslot }: Props = $props();
+</script>
 
 <div class="flex flex-wrap gap-2">
   {#each AvailableKeys as key}

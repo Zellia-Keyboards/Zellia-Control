@@ -4,14 +4,11 @@
   import { language, t } from '$lib/LanguageStore.svelte';
   import Basic from './Basic.svelte';
   import System from './System.svelte';
-  import type { Component } from 'svelte';
+  import type { Component, Snippet } from 'svelte';
   import Layer from './Layer.svelte';
   import Profile from './Profile.svelte';
   import Extension from './Extension.svelte';
-  import { slide } from 'svelte/transition';
   import { cubicOut } from 'svelte/easing';
-
-  let currentLanguage = $state($language);
 
   // Custom slide transition that moves instead of stretches
   function slideMove(node: Element, { duration = 400, direction = 1 }) {
@@ -28,7 +25,7 @@
   const Tabs = [
     {
       name: 'Basic',
-      component: Basic as Component,
+      component: Basic as Component<{ keyslot: Snippet<[string]> }>,
       icon: `<svg width="22" height="22" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
         <polygon points="263.75,145.68 43.5,365.92 43.5,466.5 152.04,466.5 368.31,250.23"/>
         <path d="M458.07,139.61l-83.7-83.69c-5.76-5.76-15.1-5.76-20.86,0l-67.13,67.13l104.56,104.55l67.13-67.13 C463.83,154.71,463.83,145.37,458.07,139.61z"/>
@@ -78,21 +75,31 @@
     activeTab = newTabName;
   }
 
-  // Subscribe to language changes
-  language.subscribe(value => {
-    currentLanguage = value;
-  });
+  let selectedKeys = $state<[number, number][]>([]);
+
   $inspect(ActiveTabComponent, 'ActiveTabComponent');
+  $inspect(selectedKeys, 'selectedKeys');
 </script>
 
 <NewZellia80He
   currentSelectedKey={null}
   onClick={(x, y, event) => {
-    console.log(`Key clicked at (${x}, ${y})`, event);
+    console.log(`Clicked key at (${x}, ${y})`, event);
+    let i = selectedKeys.findIndex(key => key[0] === x && key[1] === y);
+    if (i !== -1) {
+      selectedKeys.splice(i, 1);
+    } else {
+      selectedKeys.push([x, y]);
+    }
   }}
 >
   {#snippet body(x, y)}
-    <span class="text-white w-full h-full rounded-lg hover:border">a</span>
+    <span
+      class="hover:scale-90 transition-all duration-300 h-14 {$darkMode
+        ? 'bg-black border-gray-700'
+        : 'bg-gray-50 border-gray-400'} data-[selected=true]:bg-gray-500 data-[selected=true]:border-gray-700 data-[selected=true]:border-4 border rounded-lg flex flex-col items-center justify-center hover:cursor-pointer gap-1 font-sans text-white"
+      data-selected={selectedKeys.findIndex(key => key[0] === x && key[1] === y) !== -1}>a</span
+    >
   {/snippet}
 </NewZellia80He>
 
@@ -169,7 +176,19 @@
           direction: currentTabIndex > previousTabIndex ? -1 : 1,
         }}
       >
-        <ActiveTabComponent />
+        <ActiveTabComponent>
+          {#snippet keyslot(content: string)}
+            <button
+              onclick={_ => {
+                console.log(`Clicked key: ${content}`, _);
+                // Handle click event for the active tab
+              }}
+              class="size-14 text-wrap text-sm border whitespace-pre-line rounded-lg overflow-auto truncate"
+            >
+              {content}
+            </button>
+          {/snippet}
+        </ActiveTabComponent>
       </div>
     {/key}
   </div>

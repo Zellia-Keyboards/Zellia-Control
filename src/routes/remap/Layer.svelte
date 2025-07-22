@@ -1,4 +1,6 @@
 <script lang="ts">
+  import type { Snippet } from 'svelte';
+
   const AvailableKeys = [
     'MQ(1)',
     'MQ(2)',
@@ -12,15 +14,12 @@
     'TG(2)',
     'TG(3)',
   ];
-</script>
+  interface Props {
+    keyslot: Snippet<[string]>;
+  }
 
-{#snippet keyslot(content: string)}
-  <button
-    class="size-14 text-wrap text-sm border whitespace-pre-line rounded-lg overflow-auto truncate"
-  >
-    {content}
-  </button>
-{/snippet}
+  let {  keyslot }: Props = $props();
+</script>
 
 <div class="flex flex-wrap gap-2">
   {#each AvailableKeys as key}

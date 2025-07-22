@@ -30,9 +30,7 @@
     >
       {#each row as width, x}
         <button
-          class="h-14 {$darkMode
-            ? 'bg-black border-gray-700 hover:bg-gray-800'
-            : 'bg-gray-50 border-gray-400 hover:bg-gray-100'} border rounded-lg flex flex-col items-center justify-center hover:cursor-pointer gap-1 font-sans"
+          class="group"
           style:width={y === 5 && x === 3 ? '400px' : `${width * 3.5}rem`}
           onclick={_ => {
             currentSelectedKey = [x, y];
