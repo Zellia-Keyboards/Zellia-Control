@@ -10,6 +10,7 @@
   import Extension from './Extension.svelte';
   import { cubicOut } from 'svelte/easing';
 
+
   // Custom slide transition that moves instead of stretches
   function slideMove(node: Element, { duration = 400, direction = 1 }) {
     return {
@@ -22,6 +23,7 @@
     };
   }
 
+  // TODO: optimize the usage on icon SVGs for better readability
   const Tabs = [
     {
       name: 'Basic',
@@ -70,7 +72,6 @@
 
   // Function to handle tab change with direction tracking
   function changeTab(newTabName: string) {
-    const newIndex = Tabs.findIndex(t => t.name === newTabName);
     previousTabIndex = currentTabIndex;
     activeTab = newTabName;
   }
@@ -81,6 +82,9 @@
   $inspect(selectedKeys, 'selectedKeys');
 </script>
 
+<!-- TODO: Drag select -->
+<!-- TODO: Select ALL by ^A -->
+<!-- TODO: Deselect ALL by ^esc -->
 <NewZellia80He
   currentSelectedKey={null}
   onClick={(x, y, event) => {
@@ -94,6 +98,7 @@
   }}
 >
   {#snippet body(x, y)}
+    <!-- FIXME: need a better color scheme  -->
     <span
       class="hover:scale-90 transition-all duration-300 h-14 {$darkMode
         ? 'bg-black border-gray-700'
@@ -118,6 +123,7 @@
   <!-- Tab Navigation -->
   <div class="flex items-center gap-0.5 -mt-4 mb-4 p-0.5 rounded-xl">
     {#each Tabs as tab}
+      <!-- FIXME: wtf are these classes -->
       <button
         class="flex-1 text-xl font-medium px-2.5 py-2.5 rounded-lg transition-all duration-200 flex items-center justify-center gap-2
                {$glassmorphismMode
@@ -181,7 +187,7 @@
             <button
               onclick={_ => {
                 console.log(`Clicked key: ${content}`, _);
-                // Handle click event for the active tab
+                // TODO: set the key by content (it might be a keycode in future)
               }}
               class="size-14 text-wrap text-sm border whitespace-pre-line rounded-lg overflow-auto truncate"
             >
