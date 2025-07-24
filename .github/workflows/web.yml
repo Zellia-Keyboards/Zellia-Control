@@ -1,0 +1,87 @@
+name: Build and Deploy Website
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch: # Manual trigger
+
+env:
+  NODE_VERSION: '20'
+  YARN_VERSION: '1.22.22'
+
+jobs:
+  build:
+    name: Build Website
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'yarn'
+
+      - name: Setup Yarn
+        run: |
+          corepack enable
+          yarn set version ${{ env.YARN_VERSION }}
+
+      - name: Install dependencies
+        run: yarn install
+
+      - name: Build website
+        run: yarn build
+        env:
+          NODE_ENV: production
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: website-build
+          path: build/
+          compression-level: 9
+
+# FIXME: Set environment variables for deployment
+#   deploy:
+#     name: Deploy Website
+#     runs-on: ubuntu-latest
+#     needs: build
+#     if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    
+#     steps:
+#       - name: Download build artifacts
+#         uses: actions/download-artifact@v4
+#         with:
+#           name: website-build
+#           path: build/
+
+#       - name: Setup SSH key
+#         uses: webfactory/ssh-agent@v0.9.0
+#         with:
+#           ssh-private-key: ${{ secrets.DEPLOY_SSH_KEY }}
+
+#       - name: Deploy to server
+#         run: |
+#           # Add server to known hosts
+#           ssh-keyscan -H ${{ secrets.DEPLOY_HOST }} >> ~/.ssh/known_hosts
+          
+#           # TODO: Replace with actual rsync deployment command
+#           # Example rsync command (customize as needed):
+#           # rsync -avz --delete build/ ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:${{ secrets.DEPLOY_PATH }}
+          
+#           echo "Deployment placeholder - configure rsync command above"
+#           echo "Available secrets to configure:"
+#           echo "- DEPLOY_SSH_KEY: SSH private key for deployment"
+#           echo "- DEPLOY_HOST: Target server hostname/IP"
+#           echo "- DEPLOY_USER: SSH username for deployment"
+#           echo "- DEPLOY_PATH: Target directory path on server"
+#           echo ""
+#           echo "Build artifacts are ready in ./build/ directory"
+#           ls -la build/
