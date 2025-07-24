@@ -84,17 +84,13 @@ jobs:
       - name: Install dependencies
         run: yarn install
 
-      - name: Build frontend
-        run: yarn build
-        env:
-          NODE_ENV: production
-
       - name: Build Tauri application
         run: yarn tauri build
         # TODO: placeholder for signed build
-        # env:
-        #   TAURI_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
-        #   TAURI_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
+        env:
+          NODE_ENV: production
+          # TAURI_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
+          # TAURI_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
 
       - name: Prepare artifacts (Linux)
         if: matrix.platform == 'linux'
