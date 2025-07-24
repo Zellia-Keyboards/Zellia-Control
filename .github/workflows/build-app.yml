@@ -4,11 +4,15 @@ on:
   push:
     branches:
       - main
-    tags:
-      - 'v*'
+    paths:
+      - 'src/**'
+      - 'src-tauri/**'
   pull_request:
     branches:
       - main
+    paths:
+      - 'src/**'
+      - 'src-tauri/**'
   workflow_dispatch: # Manual trigger
 
 env:
