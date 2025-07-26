@@ -9,6 +9,8 @@
   import Profile from './Profile.svelte';
   import Extension from './Extension.svelte';
   import { cubicOut } from 'svelte/easing';
+  import { X } from 'lucide-svelte';
+  import { dev } from '$app/environment';
 
   // Custom slide transition that moves instead of stretches
   function slideMove(node: Element, { duration = 400, direction = 1 }) {
@@ -77,6 +79,15 @@
 
   let selectedKeys = $state<[number, number][]>([]);
 
+  let storedKeys = $state<string[][]>([
+    ['a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a'],
+    ['a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a'],
+    ['a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a'],
+    ['a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a'],
+    ['a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a'],
+    ['a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a'],
+  ]);
+
   $inspect(ActiveTabComponent, 'ActiveTabComponent');
   $inspect(selectedKeys, 'selectedKeys');
 </script>
@@ -102,7 +113,8 @@
       class="hover:scale-90 transition-all duration-300 h-14 {$darkMode
         ? 'bg-black border-gray-700'
         : 'bg-gray-50 border-gray-400'} data-[selected=true]:bg-gray-500 data-[selected=true]:border-gray-700 data-[selected=true]:border-4 border rounded-lg flex flex-col items-center justify-center hover:cursor-pointer gap-1 font-sans text-white"
-      data-selected={selectedKeys.findIndex(key => key[0] === x && key[1] === y) !== -1}>a</span
+      data-selected={selectedKeys.findIndex(key => key[0] === x && key[1] === y) !== -1}
+      >{storedKeys[y][x]}</span
     >
   {/snippet}
 </NewZellia80He>
@@ -185,8 +197,15 @@
           {#snippet keyslot(content: string)}
             <button
               onclick={_ => {
-                console.log(`Clicked key: ${content}`, _);
+                dev ? console.log(`Clicked key: ${content}`, _) : null;
                 // TODO: set the key by content (it might be a keycode in future)
+                selectedKeys.forEach(([x, y]) => {
+                  dev ? console.log(`Setting key at (${x}, ${y}) to content: ${content}`) : null;
+                  // Here you would set the key content in your keymap
+                  // For example, you might call a function like:
+                  storedKeys[y][x] = content;
+                });
+                selectedKeys = []; // Clear selection after setting
               }}
               class="size-14 text-wrap text-sm border whitespace-pre-line rounded-lg overflow-auto truncate"
             >
