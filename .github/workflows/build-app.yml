@@ -76,6 +76,19 @@ jobs:
             file \
             libxdo-dev
 
+      - name: Install UPX (Linux)
+        if: matrix.platform == 'linux'
+        run: |
+          wget https://github.com/upx/upx/releases/download/v4.2.4/upx-4.2.4-amd64_linux.tar.xz
+          tar -xJf upx-4.2.4-amd64_linux.tar.xz
+          sudo mv upx-4.2.4-amd64_linux/upx /usr/local/bin/upx
+          sudo chmod +x /usr/local/bin/upx
+
+      - name: Install UPX (Windows)
+        if: matrix.platform == 'windows'
+        run: |
+          choco install upx
+
       - name: Setup Yarn
         run: |
           corepack enable
@@ -91,6 +104,16 @@ jobs:
           NODE_ENV: production
           # TAURI_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
           # TAURI_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
+
+      - name: Compress executable with UPX (Linux)
+        if: matrix.platform == 'linux'
+        run: |
+          upx --best --ultra-brute --lzma src-tauri/target/release/zellia-control
+
+      - name: Compress executable with UPX (Windows)
+        if: matrix.platform == 'windows'
+        run: |
+          upx --best --ultra-brute --lzma src-tauri/target/release/zellia-control.exe
 
       - name: Prepare artifacts (Linux)
         if: matrix.platform == 'linux'
