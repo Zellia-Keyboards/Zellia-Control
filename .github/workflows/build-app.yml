@@ -19,6 +19,7 @@ env:
   NODE_VERSION: '20'
   YARN_VERSION: '1.22.22'
   RUST_VERSION: 'stable'
+  UPX_VERSION: '5.0.2'
 
 jobs:
   build:
@@ -79,9 +80,9 @@ jobs:
       - name: Install UPX (Linux)
         if: matrix.platform == 'linux'
         run: |
-          wget https://github.com/upx/upx/releases/download/v4.2.4/upx-4.2.4-amd64_linux.tar.xz
-          tar -xJf upx-4.2.4-amd64_linux.tar.xz
-          sudo mv upx-4.2.4-amd64_linux/upx /usr/local/bin/upx
+          wget https://github.com/upx/upx/releases/download/v${{env.UPX_VERSION}}/upx-${{env.UPX_VERSION}}-amd64_linux.tar.xz
+          tar -xJf upx-${{env.UPX_VERSION}}-amd64_linux.tar.xz
+          sudo mv upx-${{env.UPX_VERSION}}-amd64_linux/upx /usr/local/bin/upx
           sudo chmod +x /usr/local/bin/upx
 
       - name: Install UPX (Windows)
