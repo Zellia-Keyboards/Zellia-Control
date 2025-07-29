@@ -110,7 +110,7 @@
   {#snippet body(x, y)}
     <!-- FIXME: need a better color scheme  -->
     <span
-      class="hover:scale-90 transition-all duration-300 h-14 {$darkMode
+      class="hover:scale-90 transition-all duration-300 h-14 truncate {$darkMode
         ? 'bg-black border-gray-700'
         : 'bg-gray-50 border-gray-400'} data-[selected=true]:bg-gray-500 data-[selected=true]:border-gray-700 data-[selected=true]:border-4 border rounded-lg flex flex-col items-center justify-center hover:cursor-pointer gap-1 font-sans text-white"
       data-selected={selectedKeys.findIndex(key => key[0] === x && key[1] === y) !== -1}
