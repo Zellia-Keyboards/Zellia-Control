@@ -33,21 +33,6 @@ body {
     color var(--transition-duration) var(--transition-timing);
 }
 
-/* Add transitions to all elements that change color on theme switch */
-* {
-  transition-property: background-color, border-color, color, fill, stroke, box-shadow;
-  transition-duration: var(--transition-duration);
-  transition-timing-function: var(--transition-timing);
-}
-
-/* Ensure keyboard components update immediately on theme change */
-.keyboard-component,
-.keyboard-component * {
-  transition-property: background-color, border-color, color, fill, stroke, box-shadow !important;
-  transition-duration: var(--transition-duration) !important;
-  transition-timing-function: var(--transition-timing) !important;
-}
-
 /* Special handling for theme color variables */
 :root {
   transition:

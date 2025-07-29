@@ -20,7 +20,7 @@
 </script>
 
 <div
-  class="keyboard-component p-4 {$darkMode
+  class="p-4 {$darkMode
     ? 'bg-neutral-800 border border-neutral-700'
     : 'bg-gray-100 border border-gray-300'} rounded-xl shadow-md space-y-0.5 m-auto"
 >
@@ -30,7 +30,7 @@
     >
       {#each row as width, x}
         <button
-          class="group"
+          class="group scale-100 hover:scale-95 transition-all duration-300"
           style:width={y === 5 && x === 3 ? '400px' : `${width * 3.5}rem`}
           onclick={_ => {
             currentSelectedKey = [x, y];
