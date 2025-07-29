@@ -19,7 +19,6 @@ env:
 
 jobs:
   build:
-    environment: "configurator.zellia.cn"
     name: Build Website
     runs-on: ubuntu-latest
     
@@ -54,6 +53,7 @@ jobs:
           compression-level: 9
 
   deploy:
+    environment: "configurator.zellia.cn"
     name: Deploy Website
     runs-on: ubuntu-latest
     needs: build
@@ -65,7 +65,7 @@ jobs:
         with:
           name: website-build
           path: build/
-          
+
       - name: Deploy to server
         uses: Burnett01/rsync-deployments@7.0.2
         with:
