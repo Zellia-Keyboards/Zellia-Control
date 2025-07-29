@@ -19,6 +19,7 @@ env:
 
 jobs:
   build:
+    environment: "configurator.zellia.cn"
     name: Build Website
     runs-on: ubuntu-latest
     
@@ -52,40 +53,26 @@ jobs:
           path: build/
           compression-level: 9
 
-# FIXME: Set environment variables for deployment
-#   deploy:
-#     name: Deploy Website
-#     runs-on: ubuntu-latest
-#     needs: build
-#     if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+  deploy:
+    name: Deploy Website
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
     
-#     steps:
-#       - name: Download build artifacts
-#         uses: actions/download-artifact@v4
-#         with:
-#           name: website-build
-#           path: build/
-
-#       - name: Setup SSH key
-#         uses: webfactory/ssh-agent@v0.9.0
-#         with:
-#           ssh-private-key: ${{ secrets.DEPLOY_SSH_KEY }}
-
-#       - name: Deploy to server
-#         run: |
-#           # Add server to known hosts
-#           ssh-keyscan -H ${{ secrets.DEPLOY_HOST }} >> ~/.ssh/known_hosts
+    steps:
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: website-build
+          path: build/
           
-#           # TODO: Replace with actual rsync deployment command
-#           # Example rsync command (customize as needed):
-#           # rsync -avz --delete build/ ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:${{ secrets.DEPLOY_PATH }}
-          
-#           echo "Deployment placeholder - configure rsync command above"
-#           echo "Available secrets to configure:"
-#           echo "- DEPLOY_SSH_KEY: SSH private key for deployment"
-#           echo "- DEPLOY_HOST: Target server hostname/IP"
-#           echo "- DEPLOY_USER: SSH username for deployment"
-#           echo "- DEPLOY_PATH: Target directory path on server"
-#           echo ""
-#           echo "Build artifacts are ready in ./build/ directory"
-#           ls -la build/
+      - name: Deploy to server
+        uses: Burnett01/rsync-deployments@7.0.2
+        with:
+          switches: '-avz --delete'
+          path: 'build/'
+          remote_path: ${{ secrets.DEPLOY_PATH }}
+          remote_host: ${{ secrets.DEPLOY_HOST }}
+          remote_user: ${{ secrets.DEPLOY_USER }}
+          remote_port: ${{ secrets.DEPLOY_PORT }} 
+          remote_key: ${{ secrets.DEPLOY_SSH_KEY }}
