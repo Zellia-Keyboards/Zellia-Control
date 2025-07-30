@@ -426,7 +426,7 @@
       <button
         class="absolute z-20 rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 {$glassmorphismMode
           ? 'glassmorphism-button'
-          : ''} {'bg-blue-500 hover:bg-blue-600 focus-visible:ring-blue-300 dark:bg-gray-600 hover:bg-gray-500 focus-visible:ring-gray-400'}"
+          : ''} {'bg-primary-500 hover:bg-primary-600 focus-visible:ring-primary-300 dark:bg-gray-600 '}"
         style="width: {NODE_SIZE +
           intervalWidth(interval)}px; height: {NODE_SIZE}px; top: {NODE_TOP}px; left: {nodeLeft(
           start

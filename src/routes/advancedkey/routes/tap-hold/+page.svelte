@@ -218,9 +218,7 @@
 >
   {#snippet body(x, y)}
     <div
-      class="hover:scale-90 transition-all duration-300 h-14 {$darkMode
-        ? 'bg-black border-gray-700'
-        : 'bg-gray-50 border-gray-400'} data-[selected=true]:bg-gray-500 data-[selected=true]:border-gray-700 data-[selected=true]:border-4 border rounded-lg flex flex-col items-center justify-center hover:cursor-pointer gap-1 font-sans text-white"
+      class="hover:scale-90 transition-all duration-300 h-14 bg-gray-50 dark:bg-black border-gray-400 dark:border-gray-700 data-[selected=true]:bg-gray-500 data-[selected=true]:border-gray-700 data-[selected=true]:border-4 border rounded-lg flex flex-col items-center justify-center hover:cursor-pointer gap-1 font-sans text-white"
     ></div>{/snippet}
 </NewZellia80He>
 <div
@@ -232,9 +230,7 @@
   <div
     class="border-b px-6 py-4 {$glassmorphismMode
       ? ''
-      : $darkMode
-        ? 'bg-primary-950 border-primary-800'
-        : 'bg-primary-25 border-primary-200'}"
+      : 'bg-primary-25 dark:bg-primary-950 border-primary-200 dark:border-primary-800'}"
   >
     <div class="flex items-center justify-between">
       <div class="flex items-center gap-4">
@@ -276,7 +272,7 @@
         <button
           class="px-4 py-2 {$glassmorphismMode
             ? 'glassmorphism-button'
-            : ''} {'bg-red-600 hover:bg-red-700 dark:bg-red-700 hover:bg-red-600'} text-white rounded-md transition-colors text-sm font-medium"
+            : ''} bg-red-600 hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-600 text-white rounded-md transition-colors text-sm font-medium"
           onclick={resetAllConfigurations}
         >
           {t('advancedkey.resetAllTapHold', currentLanguage)}
@@ -293,9 +289,7 @@
         <div
           class="rounded-lg border p-6 mb-6 {$glassmorphismMode
             ? 'glassmorphism-card'
-            : $darkMode
-              ? 'bg-primary-900 border-primary-700'
-              : 'bg-primary-100 border-primary-300'}"
+            : 'bg-primary-100 dark:bg-primary-900 border-primary-300 dark:border-primary-700'}"
         >
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-4">
@@ -303,9 +297,7 @@
                 <div
                   class="w-12 h-12 rounded-lg flex items-center justify-center border-2 {$glassmorphismMode
                     ? 'glassmorphism-button'
-                    : $darkMode
-                      ? 'bg-primary-800 border-primary-600'
-                      : 'bg-primary-200 border-primary-500'}"
+                    : 'bg-primary-200 dark:bg-primary-800 border-primary-500 dark:border-primary-600'}"
                 >
                   <span class="font-mono font-bold text-gray-900 dark:text-white"
                     >{CurrentSelected
@@ -345,9 +337,7 @@
             <div
               class="rounded-lg border p-6 {$glassmorphismMode
                 ? 'glassmorphism-card'
-                : $darkMode
-                  ? 'bg-primary-950 border-primary-800'
-                  : 'bg-primary-50 border-primary-300'}"
+                : 'bg-primary-50 dark:bg-primary-950 border-primary-300 dark:border-primary-800'}"
             >
               <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">
                 {t('advancedkey.tapAction', currentLanguage)}
@@ -359,11 +349,7 @@
               <div class="space-y-4">
                 {#each actionCategories as category}
                   <div>
-                    <h4
-                      class="text-sm font-medium {$darkMode
-                        ? 'text-gray-300'
-                        : 'text-gray-700'} mb-2"
-                    >
+                    <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       {category.name}
                     </h4>
                     <div class="grid grid-cols-10 gap-2">
@@ -389,9 +375,7 @@
             <div
               class="rounded-lg border p-6 {$glassmorphismMode
                 ? 'glassmorphism-card'
-                : $darkMode
-                  ? 'bg-primary-950 border-primary-800'
-                  : 'bg-primary-50 border-primary-300'}"
+                : 'bg-primary-50 dark:bg-primary-950 border-primary-300 dark:border-primary-800'}"
             >
               <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">
                 {t('advancedkey.holdAction', currentLanguage)}
@@ -403,11 +387,7 @@
               <div class="space-y-4">
                 {#each actionCategories as category}
                   <div>
-                    <h4
-                      class="text-sm font-medium {$darkMode
-                        ? 'text-gray-300'
-                        : 'text-gray-700'} mb-2"
-                    >
+                    <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       {category.name}
                     </h4>
                     <div class="grid grid-cols-10 gap-2">
@@ -433,9 +413,7 @@
             <div
               class="rounded-lg border p-6 {$glassmorphismMode
                 ? 'glassmorphism-card'
-                : $darkMode
-                  ? 'bg-primary-950 border-primary-800'
-                  : 'bg-primary-50 border-primary-300'}"
+                : 'bg-primary-50 dark:bg-primary-950 border-primary-300 dark:border-primary-800'}"
             >
               <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">
                 {t('advancedkey.tapAction', currentLanguage)} & {t(
@@ -462,9 +440,7 @@
                     max="1000"
                     step="50"
                     bind:value={holdDelay}
-                    class="w-full h-2 rounded-full {$darkMode
-                      ? 'bg-gray-700'
-                      : 'bg-gray-300'} appearance-none slider-thumb"
+                    class="w-full h-2 rounded-full bg-gray-300 dark:bg-gray-700 appearance-none slider-thumb"
                     style="--thumb-color: var(--theme-color-primary)"
                   />
                   <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
@@ -489,9 +465,7 @@
                     max="500"
                     step="25"
                     bind:value={tapTimeout}
-                    class="w-full h-2 rounded-full {$darkMode
-                      ? 'bg-gray-700'
-                      : 'bg-gray-300'} appearance-none slider-thumb"
+                    class="w-full h-2 rounded-full bg-gray-300 dark:bg-gray-700 appearance-none slider-thumb"
                     style="--thumb-color: var(--theme-color-primary)"
                   />
                   <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
@@ -508,17 +482,13 @@
             <div
               class="rounded-lg border p-6 {$glassmorphismMode
                 ? 'glassmorphism-card'
-                : $darkMode
-                  ? 'bg-primary-950 border-primary-800'
-                  : 'bg-primary-50 border-primary-300'}"
+                : 'bg-primary-50 dark:bg-primary-950 border-primary-300 dark:border-primary-800'}"
             >
               <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Preview</h3>
 
               <div class="space-y-3">
                 <div
-                  class="flex justify-between items-center py-2 {$darkMode
-                    ? 'border-gray-700'
-                    : 'border-gray-100'} border-b"
+                  class="flex justify-between items-center py-2 border-gray-100 dark:border-gray-700 border-b"
                 >
                   <span class="text-sm text-gray-600 dark:text-gray-400">Key</span>
                   <span class="font-mono font-medium text-gray-900 dark:text-white"
@@ -529,9 +499,7 @@
                   >
                 </div>
                 <div
-                  class="flex justify-between items-center py-2 {$darkMode
-                    ? 'border-gray-700'
-                    : 'border-gray-100'} border-b"
+                  class="flex justify-between items-center py-2 border-gray-100 dark:border-gray-700 border-b"
                 >
                   <span class="text-sm text-gray-600 dark:text-gray-400">Tap</span>
                   <span class="font-medium text-primary-500"
@@ -539,9 +507,7 @@
                   >
                 </div>
                 <div
-                  class="flex justify-between items-center py-2 {$darkMode
-                    ? 'border-gray-700'
-                    : 'border-gray-100'} border-b"
+                  class="flex justify-between items-center py-2 border-gray-100 dark:border-gray-700 border-b"
                 >
                   <span class="text-sm text-gray-600 dark:text-gray-400">Hold</span>
                   <span class="font-medium text-green-500"
@@ -558,9 +524,7 @@
             <div
               class="border rounded-lg p-6 {$glassmorphismMode
                 ? 'glassmorphism-card'
-                : $darkMode
-                  ? 'bg-primary-900 border-primary-700'
-                  : 'bg-primary-200 border-primary-400'}"
+                : 'bg-primary-200 dark:bg-primary-900 border-primary-400 dark:border-primary-700'}"
             >
               <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">
                 {t('advancedkey.howItWorks', currentLanguage)}
@@ -583,9 +547,7 @@
               <div
                 class="rounded-lg border p-6 {$glassmorphismMode
                   ? 'glassmorphism-card'
-                  : $darkMode
-                    ? 'bg-primary-950 border-primary-800'
-                    : 'bg-primary-50 border-primary-300'} {sectionAnimationPlayed
+                  : 'bg-primary-50 dark:bg-primary-950 border-primary-300 dark:border-primary-800'} {sectionAnimationPlayed
                   ? 'animate-section-fade-in'
                   : ''}"
               >
@@ -611,17 +573,13 @@
                     <div
                       class="p-3 rounded-lg border transform transition-all duration-500 ease-out {$glassmorphismMode
                         ? 'glassmorphism-card'
-                        : $darkMode
-                          ? 'bg-primary-900 border-primary-700'
-                          : 'bg-primary-100 border-primary-300'} {isDeleting
+                        : 'bg-primary-100 dark:bg-primary-900 border-primary-300 dark:border-primary-700'} {isDeleting
                         ? 'animate-fade-out'
                         : ''} {isNewlyAdded ? 'animate-fade-in' : ''}"
                     >
                       <div class="flex items-center justify-between mb-2">
-                        <span
-                          class="font-mono font-bold {$darkMode
-                            ? 'text-white'
-                            : 'text-gray-900'} text-sm">{keyName}</span
+                        <span class="font-mono font-bold text-gray-900 dark:text-white text-sm"
+                          >{keyName}</span
                         >
                         <button
                           class="w-8 h-8 bg-red-500 hover:bg-red-600 rounded-lg flex items-center justify-center text-white transition-colors {$glassmorphismMode
@@ -711,9 +669,7 @@
           <div
             class="{$glassmorphismMode
               ? 'glassmorphism-card'
-              : $darkMode
-                ? 'bg-primary-900 border-primary-600 text-primary-300'
-                : 'bg-primary-100 border-primary-400 text-primary-700'} border rounded-lg p-4 text-sm"
+              : 'bg-primary-100 dark:bg-primary-900 border-primary-400 dark:border-primary-600 text-primary-700 dark:text-primary-300'} border rounded-lg p-4 text-sm"
           >
             <strong>{t('advancedkey.tip', currentLanguage)}:</strong>
             {t('advancedkey.tapHoldTip', currentLanguage)}

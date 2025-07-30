@@ -18,57 +18,29 @@ export type ThemeColorName = keyof typeof themeColors;
 
 // Initialize dark mode as default (true)
 const createDarkModeStore = () => {
-  // Default to dark mode
-  const defaultValue = true;
-
-  // Get stored value from localStorage if in browser, otherwise use default
+  // Get stored value from localStorage if in browser, otherwise use OS preference
   const storedValue = browser ? localStorage.getItem('darkMode') : null;
-  const initial = storedValue !== null ? storedValue === 'true' : defaultValue;
+  const osPrefersDark = browser ? window.matchMedia('(prefers-color-scheme: dark)').matches : false;
+  const defaultValue = storedValue !== null ? storedValue === 'true' : osPrefersDark;
 
-  const { subscribe, set, update } = writable<boolean>(initial);
-
+  if (defaultValue) {
+    // If dark mode is enabled, add the dark class to the document root
+    document.documentElement.classList.add('dark');
+  } else {
+    // If dark mode is not enabled, ensure the dark class is removed
+    document.documentElement.classList.remove('dark');
+  }
   return {
-    subscribe,
-    toggle: () =>
-      update(n => {
-        const newValue = !n;
-        if (browser) {
-          // Add a small delay to make the transition feel more deliberate
-          document.body.style.pointerEvents = 'none';
-
-          // Apply the transition
-          localStorage.setItem('darkMode', newValue.toString());
-
-          // Apply dark class to document root for Tailwind CSS dark mode
-          if (newValue) {
-            document.documentElement.classList.add('dark');
-          } else {
-            document.documentElement.classList.remove('dark');
-          }
-
-          // Force a repaint to ensure immediate theme application
-          document.documentElement.offsetHeight;
-
-          // Re-enable pointer events after transition
-          setTimeout(() => {
-            if (document.body) {
-              document.body.style.pointerEvents = '';
-            }
-          }, 300); // Match the CSS transition duration
-        }
-        return newValue;
-      }),
-    set: (value: boolean) => {
-      if (browser) {
-        localStorage.setItem('darkMode', value.toString());
-        // Apply dark class to document root for Tailwind CSS dark mode
-        if (value) {
-          document.documentElement.classList.add('dark');
-        } else {
-          document.documentElement.classList.remove('dark');
-        }
+    toggle: () => {
+      const isDark = document.documentElement.classList.contains('dark');
+      if (isDark) {
+        document.documentElement.classList.remove('dark');
+      } else {
+        document.documentElement.classList.add('dark');
       }
-      set(value);
+      if (browser) {
+        localStorage.setItem('darkMode', (!isDark).toString());
+      }
     },
   };
 };
@@ -92,19 +64,7 @@ const createThemeColorStore = () => {
         const selectedColor = themeColors[colorName];
 
         // Apply the new theme colors
-        document.documentElement.style.setProperty('--theme-color-primary', selectedColor);
-        document.documentElement.style.setProperty(
-          '--theme-color-hover',
-          `color-mix(in srgb, ${selectedColor} 80%, black)`
-        );
-        document.documentElement.style.setProperty(
-          '--theme-color-light',
-          `color-mix(in srgb, ${selectedColor} 10%, white)`
-        );
-        document.documentElement.style.setProperty(
-          '--theme-color-dark',
-          `color-mix(in srgb, ${selectedColor} 15%, black)`
-        );
+        document.documentElement.style.setProperty('--color-primary', selectedColor);
 
         // Force a repaint to ensure immediate theme color application
         document.documentElement.offsetHeight;
@@ -175,19 +135,7 @@ if (browser) {
   const currentThemeName = storedTheme && themeColors[storedTheme] ? storedTheme : 'indigo';
   if (themeColors[currentThemeName]) {
     const selectedColor = themeColors[currentThemeName];
-    document.documentElement.style.setProperty('--theme-color-primary', selectedColor);
-    document.documentElement.style.setProperty(
-      '--theme-color-hover',
-      `color-mix(in srgb, ${selectedColor} 80%, black)`
-    );
-    document.documentElement.style.setProperty(
-      '--theme-color-light',
-      `color-mix(in srgb, ${selectedColor} 10%, white)`
-    );
-    document.documentElement.style.setProperty(
-      '--theme-color-dark',
-      `color-mix(in srgb, ${selectedColor} 15%, black)`
-    );
+    document.documentElement.style.setProperty('--color-primary', selectedColor);
   }
 
   // Re-enable transitions after a brief delay to prevent flash

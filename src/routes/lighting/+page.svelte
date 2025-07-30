@@ -160,15 +160,12 @@
     ></div>{/snippet}
 </NewZellia80He>
 <div
-  class="rounded-2xl shadow p-8 mt-2 mb-4 grow bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-600 text-black dark:text-white h-full flex flex-col {$glassmorphismMode
+  class="rounded-2xl shadow p-8 mt-2 mb-4 grow bg-gray-50 dark:bg-black border border-gray-200 dark:border-gray-600 text-black dark:text-white h-full flex flex-col {$glassmorphismMode
     ? 'glassmorphism-card'
     : ''}"
-  style={$glassmorphismMode
-    ? ''
-    : `background-color: color-mix(in srgb, var(--theme-color-primary) ${document?.documentElement?.classList.contains('dark') ? '5%' : '10%'}, ${document?.documentElement?.classList.contains('dark') ? 'black' : 'white'});`}
 >
   <div class="flex items-center justify-between -mt-4 mb-4">
-    <h2 class="text-2xl font-bold text-gray-900 dark:text-white">
+    <h2 class="text-2xl font-bold text-black dark:text-white">
       {t('lighting.title', currentLanguage)}
     </h2>
     <div class="flex gap-2">
@@ -210,7 +207,7 @@
               : `border-color: ${'#e5e5e5 dark:#4b5563'}; background-color: transparent;`}
             onclick={() => (selectedEffect = effect.id)}
           >
-            <div class="font-medium text-gray-900 dark:text-white">
+            <div class="font-medium text-black dark:text-white">
               {effect.name}
             </div>
             <div class="text-sm text-gray-600 dark:text-gray-300">
@@ -262,7 +259,7 @@
             >
             <select
               bind:value={direction}
-              class="w-full p-2 border border-gray-300 dark:border-white bg-white dark:bg-black text-gray-900 dark:text-white rounded-lg"
+              class="w-full p-2 border border-gray-300 dark:border-white bg-white dark:bg-black text-black dark:text-white rounded-lg"
             >
               {#each directions as dir}
                 <option value={dir.id}>{dir.name}</option>
@@ -278,7 +275,7 @@
 
     <!-- Color Controls Panel -->
     <div class="flex-1 min-w-[300px]">
-      <h3 class="text-lg font-medium mb-4 text-gray-900 dark:text-white">
+      <h3 class="text-lg font-medium mb-4 text-black dark:text-white">
         {t('lighting.colorSettings', currentLanguage)}
       </h3>
       {#if perKeyMode}
@@ -289,7 +286,7 @@
               ? 'glassmorphism-button'
               : ''}"
           >
-            <div class="font-medium text-gray-900 dark:text-white">
+            <div class="font-medium text-black dark:text-white">
               {t('lighting.perKeyModeActive', currentLanguage)}
             </div>
             <div class="text-sm" style="color: var(--theme-color-primary);">
@@ -310,7 +307,7 @@
               <input
                 type="text"
                 bind:value={keyColor}
-                class="flex-1 p-2 border border-gray-300 dark:border-white bg-white dark:bg-black text-gray-900 dark:text-white rounded-lg font-mono"
+                class="flex-1 p-2 border border-gray-300 dark:border-white bg-white dark:bg-black text-black dark:text-white rounded-lg font-mono"
                 placeholder="#ffffff"
               />
             </div>
@@ -365,7 +362,7 @@
               <input
                 type="text"
                 bind:value={staticColor}
-                class="flex-1 p-2 border {'border-gray-300 bg-white text-gray-900 dark:border-white bg-black text-white'} rounded-lg font-mono"
+                class="flex-1 p-2 border border-gray-300 dark:border-white bg-white dark:bg-black text-black dark:text-white rounded-lg font-mono"
                 placeholder="#ff0000"
               />
             </div>
@@ -394,7 +391,7 @@
                   <input
                     type="text"
                     bind:value={gradientColors[index]}
-                    class="flex-1 p-1 border {'border-gray-300 bg-white text-gray-900 dark:border-white bg-black text-white'} rounded text-sm font-mono"
+                    class="flex-1 p-1 border border-gray-300 dark:border-white bg-white dark:bg-black text-black dark:text-white rounded text-sm font-mono"
                   />
                   {#if gradientColors.length > 2}
                     <button
@@ -406,7 +403,7 @@
               {/each}
             </div>
             <button
-              class="mt-2 w-full {'bg-gray-200 hover:bg-gray-300 text-gray-700 dark:bg-gray-800 hover:bg-gray-700 text-white border border-white'} px-3 py-2 rounded transition-colors"
+              class="mt-2 w-full bg-gray-200 hover:bg-gray-300 text-gray-700 dark:bg-gray-800 dark:hover:bg-gray-700 dark:text-white border border-white px-3 py-2 rounded transition-colors"
               onclick={addGradientColor}
             >
               {t('lighting.addColor', currentLanguage)}

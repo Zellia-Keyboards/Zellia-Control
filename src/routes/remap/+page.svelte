@@ -118,12 +118,9 @@
 </NewZellia80He>
 
 <div
-  class="rounded-2xl shadow p-8 mt-2 mb- mb- grow bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-600 text-black dark:text-white h-full flex flex-col {$glassmorphismMode
-    ? 'glassmorphism-card'
-    : ''}"
-  style={$glassmorphismMode
-    ? ''
-    : `background-color: color-mix(in srgb, var(--theme-color-primary) ${document?.documentElement?.classList.contains('dark') ? '5%' : '10%'}, ${document?.documentElement?.classList.contains('dark') ? 'black' : 'white'});`}
+  class="rounded-2xl shadow p-8 mt-2 mb- mb- grow border border-gray-200 dark:border-gray-600 text-black dark:text-white h-full flex flex-col {$glassmorphismMode
+    ? 'glassmorphism-card bg-gray-50 dark:bg-gray-900'
+    : 'bg-[color-mix(in_srgb,var(--theme-color-primary)_10%,white)] dark:bg-[color-mix(in_srgb,var(--theme-color-primary)_5%,black)]'}"
 >
   <!-- Tab Navigation -->
   <div class="flex items-center gap-0.5 -mt-4 mb-4 p-0.5 rounded-xl">
