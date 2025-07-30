@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { darkMode, glassmorphismMode } from '$lib/DarkModeStore.svelte';
+  import { glassmorphismMode } from '$lib/DarkModeStore.svelte';
   import type { KeyAction } from '$lib/AdvancedKeyShared';
   import { language, t } from '$lib/LanguageStore.svelte';
 
@@ -31,26 +31,22 @@
 </script>
 
 <div
-  class="rounded-lg border p-6 {$glassmorphismMode ? 'glassmorphism-card' : ''}"
-  style="background-color: color-mix(in srgb, var(--theme-color-primary) 5%, ${$darkMode
-    ? 'black'
-    : 'white'});
-		   border-color: {$darkMode
-    ? 'color-mix(in srgb, var(--theme-color-primary) 20%, #374151)'
-    : 'color-mix(in srgb, var(--theme-color-primary) 15%, #e5e7eb)'};"
+  class="rounded-lg border p-6 bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 {$glassmorphismMode
+    ? 'glassmorphism-card'
+    : ''}"
 >
-  <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'} mb-4">
+  <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">
     {t('advancedkey.keycodeSelectionTitle', currentLanguage)}
   </h3>
   {#if selectedBindingIndex !== null}
-    <p class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'} mb-4">
+    <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
       {t('advancedkey.selectKeycodeForBinding', currentLanguage).replace(
         '{0}',
         String(selectedBindingIndex + 1)
       )}
     </p>
   {:else}
-    <p class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'} mb-4">
+    <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
       {t('advancedkey.clickOnBinding', currentLanguage)}
     </p>
   {/if}
@@ -58,7 +54,7 @@
   <div class="space-y-4">
     {#each actionCategories as category}
       <div>
-        <h4 class="text-sm font-medium {$darkMode ? 'text-gray-300' : 'text-gray-700'} mb-2">
+        <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
           {category.name}
         </h4>
         <div class="grid grid-cols-10 gap-2">
@@ -68,30 +64,27 @@
                 ? 'glassmorphism-button'
                 : ''}"
               style={selectedBindingIndex !== null
-                ? `background-color: ${$darkMode ? '#111827' : 'white'}; 
-								   border-color: ${$darkMode ? 'color-mix(in srgb, var(--theme-color-primary) 15%, #4b5563)' : 'color-mix(in srgb, var(--theme-color-primary) 10%, #e5e5e5)'}; 
-								   color: ${$darkMode ? '#d1d5db' : '#374151'};`
-                : `background-color: color-mix(in srgb, var(--theme-color-primary) 3%, ${$darkMode ? 'black' : '#f3f4f6'}); 
-								   border-color: color-mix(in srgb, var(--theme-color-primary) 8%, ${$darkMode ? '#374151' : '#e5e5e5'}); 
-								   color: color-mix(in srgb, var(--theme-color-primary) 15%, ${$darkMode ? '#6b7280' : '#9ca3af'});
+                ? `background-color: ${'white dark:#111827'}; 
+								   border-color: ${'color-mix(in srgb, var(--theme-color-primary) 10%, #e5e5e5) dark:color-mix(in srgb, var(--theme-color-primary) 15%, #4b5563)'}; 
+								   color: ${'#374151 dark:#d1d5db'};`
+                : `background-color: color-mix(in srgb, var(--theme-color-primary) 3%, ${'#f3f4f6 dark:black'}); 
+								   border-color: color-mix(in srgb, var(--theme-color-primary) 8%, ${'#e5e5e5 dark:#374151'}); 
+								   color: color-mix(in srgb, var(--theme-color-primary) 15%, ${'#9ca3af dark:#6b7280'});
 								   cursor: not-allowed;`}
               onmouseover={e => {
                 if (selectedBindingIndex !== null) {
                   (e.currentTarget as HTMLElement).style.backgroundColor =
-                    `color-mix(in srgb, var(--theme-color-primary) 15%, ${$darkMode ? 'black' : 'white'})`;
+                    `color-mix(in srgb, var(--theme-color-primary) 15%, ${'white dark:black'})`;
                   (e.currentTarget as HTMLElement).style.borderColor = 'var(--theme-color-primary)';
                   (e.currentTarget as HTMLElement).style.color = 'var(--theme-color-primary)';
                 }
               }}
               onmouseout={e => {
                 if (selectedBindingIndex !== null) {
-                  (e.currentTarget as HTMLElement).style.backgroundColor = $darkMode
-                    ? '#111827'
-                    : 'white';
-                  (e.currentTarget as HTMLElement).style.borderColor = $darkMode
-                    ? 'color-mix(in srgb, var(--theme-color-primary) 15%, #4b5563)'
-                    : 'color-mix(in srgb, var(--theme-color-primary) 10%, #e5e5e5)';
-                  (e.currentTarget as HTMLElement).style.color = $darkMode ? '#d1d5db' : '#374151';
+                  (e.currentTarget as HTMLElement).style.backgroundColor = 'white dark:#111827';
+                  (e.currentTarget as HTMLElement).style.borderColor =
+                    'color-mix(in srgb, var(--theme-color-primary) 10%, #e5e5e5) dark:color-mix(in srgb, var(--theme-color-primary) 15%, #4b5563)';
+                  (e.currentTarget as HTMLElement).style.color = '#374151 dark:#d1d5db';
                 }
               }}
               onclick={() => selectKeycode(action.id)}

@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { darkMode, glassmorphismMode } from '$lib/DarkModeStore.svelte';
   import { browser } from '$app/environment';
   import { onMount } from 'svelte';
   import NewZellia80He from '$lib/NewZellia80HE.svelte';
@@ -104,6 +103,28 @@
     chart.update('none');
   }
 
+  function updateChartColors() {
+    if (!chart) return;
+
+    const computedStyle = getComputedStyle(document.documentElement);
+    const textColor = computedStyle.getPropertyValue('--chart-text-color').trim() || '#6b7280';
+    const gridColor = computedStyle.getPropertyValue('--chart-grid-color').trim() || '#e5e7eb';
+
+    // Update chart colors
+    if (chart.options.scales?.x) {
+      chart.options.scales.x.title.color = textColor;
+      chart.options.scales.x.ticks.color = textColor;
+      chart.options.scales.x.grid.color = gridColor;
+    }
+    if (chart.options.scales?.y) {
+      chart.options.scales.y.title.color = textColor;
+      chart.options.scales.y.ticks.color = textColor;
+      chart.options.scales.y.grid.color = gridColor;
+    }
+
+    chart.update('none');
+  }
+
   function initChart() {
     if (!browser || !chartCanvas) return;
 
@@ -117,6 +138,11 @@
 
       const ctx = chartCanvas.getContext('2d');
       if (!ctx) return;
+
+      // Get CSS custom properties for theming
+      const computedStyle = getComputedStyle(document.documentElement);
+      const textColor = computedStyle.getPropertyValue('--chart-text-color').trim() || '#6b7280';
+      const gridColor = computedStyle.getPropertyValue('--chart-grid-color').trim() || '#e5e7eb';
 
       chart = new Chart.default(ctx, {
         type: 'line',
@@ -147,13 +173,13 @@
               title: {
                 display: true,
                 text: t('debug.timeLabel', currentLanguage),
-                color: $darkMode ? '#9ca3af' : '#6b7280',
+                color: textColor,
               },
               ticks: {
-                color: $darkMode ? '#9ca3af' : '#6b7280',
+                color: textColor,
               },
               grid: {
-                color: $darkMode ? '#374151' : '#e5e7eb',
+                color: gridColor,
               },
             },
             y: {
@@ -163,16 +189,16 @@
               title: {
                 display: true,
                 text: t('debug.distanceLabel', currentLanguage),
-                color: $darkMode ? '#9ca3af' : '#6b7280',
+                color: textColor,
               },
               ticks: {
-                color: $darkMode ? '#9ca3af' : '#6b7280',
+                color: textColor,
                 callback: function (value) {
                   return (value as number).toFixed(1) + t('units.mm', currentLanguage);
                 },
               },
               grid: {
-                color: $darkMode ? '#374151' : '#e5e7eb',
+                color: gridColor,
               },
             },
           },
@@ -216,8 +242,24 @@
   }
 
   onMount(() => {
+    let themeObserver: MutationObserver | null = null;
+
     if (browser) {
       setTimeout(initChart, 100);
+
+      // Set up theme observer to update chart colors when dark mode changes
+      themeObserver = new MutationObserver(mutations => {
+        mutations.forEach(mutation => {
+          if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+            setTimeout(updateChartColors, 50);
+          }
+        });
+      });
+
+      themeObserver.observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ['class'],
+      });
     }
 
     return () => {
@@ -226,6 +268,9 @@
       }
       if (trackingInterval) {
         clearInterval(trackingInterval);
+      }
+      if (themeObserver) {
+        themeObserver.disconnect();
       }
     };
   });
@@ -239,37 +284,25 @@
 >
   {#snippet body(x, y)}
     <div
-      class="hover:scale-90 transition-all duration-300 h-14 {$darkMode
-        ? 'bg-black border-gray-700'
-        : 'bg-gray-50 border-gray-400'} data-[selected=true]:bg-gray-500 data-[selected=true]:border-gray-700 data-[selected=true]:border-4 border rounded-lg flex flex-col items-center justify-center hover:cursor-pointer gap-1 font-sans text-white"
+      class="hover:scale-90 transition-all duration-300 h-14 bg-gray-50 dark:bg-black border-gray-400 dark:border-gray-700 data-[selected=true]:bg-gray-500 data-[selected=true]:border-gray-700 data-[selected=true]:border-4 border rounded-lg flex flex-col items-center justify-center hover:cursor-pointer gap-1 font-sans text-white"
     ></div>{/snippet}
 </NewZellia80He>
 <div
-  class="rounded-2xl shadow p-8 mt-2 mb-4 grow {$glassmorphismMode
-    ? 'glassmorphism-card'
-    : ''} {$darkMode ? 'border border-gray-600 text-white' : 'text-black'} flex flex-col"
-  style="background-color: {$darkMode
-    ? `color-mix(in srgb, var(--theme-color-primary) 5%, black)`
-    : `color-mix(in srgb, var(--theme-color-primary) 10%, white)`};"
+  class="rounded-2xl shadow p-8 mt-2 mb-4 grow glassmorphism-card text-black dark:text-white border-0 dark:border dark:border-gray-600 flex flex-col bg-primary-50 dark:bg-black"
 >
   <div class="flex items-center justify-between -mt-4 mb-2">
-    <h2 class="text-2xl font-bold {$darkMode ? 'text-white' : 'text-gray-900'}">
+    <h2 class="text-2xl font-bold text-gray-900 dark:text-white">
       {t('debug.title', currentLanguage)}
     </h2>
   </div>
 
-  <div class="rounded-xl shadow p-6 space-y-8 flex-1 {$darkMode ? 'border-gray-600' : ''}">
+  <div class="rounded-xl shadow p-6 space-y-8 flex-1 border border-gray-200 dark:border-gray-600">
     <!-- Key Press Reporting -->
     <div
-      class="p-5 rounded-lg border {$glassmorphismMode ? 'glassmorphism-card' : ''} {$darkMode
-        ? 'border-gray-600'
-        : 'border-gray-200'}"
-      style="background-color: {$darkMode
-        ? `color-mix(in srgb, var(--theme-color-primary) 5%, black)`
-        : `color-mix(in srgb, var(--theme-color-primary) 10%, white)`};"
+      class="p-5 rounded-lg border glassmorphism-card border-gray-200 dark:border-gray-600 bg-primary-50 dark:bg-black"
     >
       <div class="flex items-center justify-between mb-2">
-        <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'}">
+        <h3 class="text-lg font-medium text-gray-900 dark:text-white">
           {t('debug.keyPressReporting', currentLanguage)}
         </h3>
         <button
@@ -286,28 +319,23 @@
           ></span>
         </button>
       </div>
-      <p class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'}">
+      <p class="text-sm text-gray-600 dark:text-gray-400">
         {t('debug.keyPressReportingDesc', currentLanguage)}
       </p>
     </div>
     <!-- Reset Configuration -->
     <div
-      class="p-5 rounded-lg border {$glassmorphismMode ? 'glassmorphism-card' : ''} {$darkMode
-        ? 'border-gray-600'
-        : 'border-gray-200'}"
-      style="background-color: {$darkMode
-        ? `color-mix(in srgb, var(--theme-color-primary) 5%, black)`
-        : `color-mix(in srgb, var(--theme-color-primary) 10%, white)`};"
+      class="p-5 rounded-lg border glassmorphism-card border-gray-200 dark:border-gray-600 bg-primary-50 dark:bg-black"
     >
-      <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'} mb-2">
+      <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">
         {t('debug.reset', currentLanguage)}
       </h3>
-      <p class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'} mb-4">
+      <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
         {t('debug.resetDesc', currentLanguage)}
       </p>
       <button
         type="button"
-        class="action-button red {$glassmorphismMode ? 'glassmorphism-button' : ''}"
+        class="inline-block min-w-[120px] text-white border-none rounded-md px-4 py-2 font-semibold transition-colors duration-200 bg-red-700 hover:bg-red-600 hover:opacity-90 glassmorphism-button"
         on:click={handleReset}
       >
         {t('debug.resetButton', currentLanguage)}
@@ -315,36 +343,30 @@
     </div>
     <!-- Recovery Mode -->
     <div
-      class="p-5 rounded-lg border {$glassmorphismMode ? 'glassmorphism-card' : ''} {$darkMode
-        ? 'border-gray-600'
-        : 'border-gray-200'}"
-      style="background-color: {$darkMode
-        ? `color-mix(in srgb, var(--theme-color-primary) 5%, black)`
-        : `color-mix(in srgb, var(--theme-color-primary) 10%, white)`};"
+      class="p-5 rounded-lg border glassmorphism-card border-gray-200 dark:border-gray-600 bg-primary-50 dark:bg-black"
     >
-      <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'} mb-2">
+      <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">
         {t('debug.recoveryMode', currentLanguage)}
       </h3>
-      <p class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'} mb-4">
+      <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
         {t('debug.recoveryModeDesc', currentLanguage)}
       </p>
-      <button type="button" class="action-button purple" on:click={handleRebootRecovery}>
+      <button
+        type="button"
+        class="inline-block min-w-[120px] text-white border-none rounded-md px-4 py-2 font-semibold transition-colors duration-200 bg-purple-600 hover:bg-purple-500 hover:opacity-90"
+        on:click={handleRebootRecovery}
+      >
         {t('debug.recoveryModeButton', currentLanguage)}
       </button>
     </div>
     <!-- Key Tracking Section -->
     <div
-      class="p-5 rounded-lg border {$glassmorphismMode ? 'glassmorphism-card' : ''} {$darkMode
-        ? 'border-gray-600'
-        : 'border-gray-200'}"
-      style="background-color: {$darkMode
-        ? `color-mix(in srgb, var(--theme-color-primary) 5%, black)`
-        : `color-mix(in srgb, var(--theme-color-primary) 10%, white)`};"
+      class="p-5 rounded-lg border glassmorphism-card border-gray-200 dark:border-gray-600 bg-primary-50 dark:bg-black"
     >
-      <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'} mb-4">
+      <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">
         {t('debug.keyTracking', currentLanguage)}
       </h3>
-      <p class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'} mb-4">
+      <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
         {t('debug.keyTrackingDesc', currentLanguage)}
       </p>
 
@@ -354,16 +376,14 @@
           <!-- Select Key -->
           <button
             type="button"
-            class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors {$glassmorphismMode
-              ? 'glassmorphism-button'
-              : ''}"
+            class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors glassmorphism-button"
             on:click={scrollToKeyboard}
           >
             {t('debug.selectKey', currentLanguage)}
           </button>
 
           <!-- Selected key display -->
-          <div class="text-sm {$darkMode ? 'text-gray-300' : 'text-gray-700'}">
+          <div class="text-sm text-gray-700 dark:text-gray-300">
             {selectedKeyName
               ? `${t('debug.selectedKey', currentLanguage)}: ${selectedKeyName}`
               : t('debug.noKeySelected', currentLanguage)}
@@ -373,9 +393,7 @@
           {#if !isTracking}
             <button
               type="button"
-              class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-colors disabled:opacity-50 {$glassmorphismMode
-                ? 'glassmorphism-button'
-                : ''}"
+              class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-colors disabled:opacity-50 glassmorphism-button"
               on:click={startTracking}
               disabled={!selectedKeyName}
             >
@@ -384,9 +402,7 @@
           {:else}
             <button
               type="button"
-              class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors {$glassmorphismMode
-                ? 'glassmorphism-button'
-                : ''}"
+              class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors glassmorphism-button"
               on:click={stopTracking}
             >
               {t('debug.stopTracking', currentLanguage)}
@@ -395,9 +411,7 @@
           <!-- Clear button -->
           <button
             type="button"
-            class="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700 transition-colors {$glassmorphismMode
-              ? 'glassmorphism-button'
-              : ''}"
+            class="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700 transition-colors glassmorphism-button"
             on:click={clearChart}
           >
             {t('debug.clearChart', currentLanguage)}
@@ -406,12 +420,7 @@
         <!-- Right column: chart -->
         <div class="flex-1 min-h-[400px]">
           <div
-            class="border {$glassmorphismMode ? 'glassmorphism-card' : ''}  {$darkMode
-              ? 'border-gray-600'
-              : 'border-gray-300'} rounded-lg p-4 h-full"
-            style="background-color: {$darkMode
-              ? `color-mix(in srgb, var(--theme-color-primary) 3%, black)`
-              : `color-mix(in srgb, var(--theme-color-primary) 8%, white)`};"
+            class="border glassmorphism-card border-gray-300 dark:border-gray-600 rounded-lg p-4 h-full bg-primary-25 dark:bg-primary-975"
           >
             <canvas bind:this={chartCanvas} class="w-full h-full"></canvas>
           </div>
@@ -419,7 +428,7 @@
       </div>
 
       <!-- Chart controls -->
-      <div class="flex items-center gap-2 text-xs {$darkMode ? 'text-gray-400' : 'text-gray-600'}">
+      <div class="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400">
         <span>💡 Tip: Use mouse wheel to zoom horizontally, drag to pan</span>
       </div>
     </div>
@@ -427,34 +436,13 @@
 </div>
 
 <style>
-  .action-button {
-    display: inline-block;
-    min-width: 120px;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    padding: 8px 16px;
-    font-weight: 600;
-    transition: background-color 0.2s;
+  :global(:root) {
+    --chart-text-color: #6b7280; /* gray-500 */
+    --chart-grid-color: #e5e7eb; /* gray-200 */
   }
 
-  .action-button:hover {
-    opacity: 0.9;
-  }
-
-  .action-button.red {
-    background-color: #b91c1c;
-  }
-
-  .action-button.red:hover {
-    background-color: #dc2626;
-  }
-
-  .action-button.purple {
-    background-color: #7c3aed;
-  }
-
-  .action-button.purple:hover {
-    background-color: #8b5cf6;
+  :global(.dark) {
+    --chart-text-color: #9ca3af; /* gray-400 */
+    --chart-grid-color: #374151; /* gray-700 */
   }
 </style>

@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { darkMode } from '$lib/DarkModeStore.svelte';
   import type { Snippet } from 'svelte';
 
   const KEYBOARD_LAYOUT = [
@@ -20,9 +19,7 @@
 </script>
 
 <div
-  class="p-4 {$darkMode
-    ? 'bg-neutral-800 border border-neutral-700'
-    : 'bg-gray-100 border border-gray-300'} rounded-xl shadow-md space-y-0.5 m-auto"
+  class="p-4 bg-gray-100 dark:bg-neutral-800 border border-gray-300 dark:border-neutral-700 rounded-xl shadow-md space-y-0.5 m-auto"
 >
   {#each KEYBOARD_LAYOUT as row, y}
     <div

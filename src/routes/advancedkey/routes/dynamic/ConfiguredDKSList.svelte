@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { darkMode, glassmorphismMode } from '$lib/DarkModeStore.svelte';
+  import { glassmorphismMode } from '$lib/DarkModeStore.svelte';
   import type { KeyboardDisplayValues as KeyboardDisplayValuesType } from '$lib/KeyboardState.svelte';
   import type { globalConfigurations, DynamicKeystrokeConfiguration } from '$lib/AdvancedKeyShared';
   import { language, t } from '$lib/LanguageStore.svelte';
@@ -58,14 +58,14 @@
       class="rounded-lg border p-6 {glassmorphismMode ? 'glassmorphism-card' : ''}"
       style={glassmorphismMode
         ? ''
-        : `background-color: color-mix(in srgb, var(--theme-color-primary) 5%, ${$darkMode ? 'black' : 'white'}); border-color: ${$darkMode ? 'color-mix(in srgb, var(--theme-color-primary) 20%, #374151)' : 'color-mix(in srgb, var(--theme-color-primary) 15%, #e5e7eb)'};`}
+        : `background-color: color-mix(in srgb, var(--theme-color-primary) 5%, ${'white dark:black'}); border-color: ${'color-mix(in srgb, var(--theme-color-primary) 15%, #e5e7eb) dark:color-mix(in srgb, var(--theme-color-primary) 20%, #374151)'};`}
     >
       <div class="flex items-center justify-between mb-4">
-        <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'}">
+        <h3 class="text-lg font-medium text-gray-900 dark:text-white">
           {t('advancedkey.configuredDynamicKeys', currentLanguage)}
         </h3>
         <div class="flex items-center gap-2">
-          <span class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-500'}"
+          <span class="text-sm text-gray-500 dark:text-gray-400"
             >{configuredDynamicKeys.length}
             {configuredDynamicKeys.length !== 1
               ? t('advancedkey.keysCountPlural', currentLanguage)
@@ -91,9 +91,9 @@
             style={glassmorphismMode
               ? ''
               : `background: linear-gradient(135deg, 
-								color-mix(in srgb, var(--theme-color-primary) 8%, ${$darkMode ? '#1f2937' : '#ffffff'}) 0%, 
-								color-mix(in srgb, var(--theme-color-primary) 3%, ${$darkMode ? '#111827' : '#f8fafc'}) 100%);
-							   border-color: color-mix(in srgb, var(--theme-color-primary) 20%, ${$darkMode ? '#374151' : '#e2e8f0'});`}
+								color-mix(in srgb, var(--theme-color-primary) 8%, ${'#ffffff dark:#1f2937'}) 0%, 
+								color-mix(in srgb, var(--theme-color-primary) 3%, ${'#f8fafc dark:#111827'}) 100%);
+							   border-color: color-mix(in srgb, var(--theme-color-primary) 20%, ${'#e2e8f0 dark:#374151'});`}
           >
             <div class="flex items-center justify-between mb-3">
               <span class="font-mono font-bold" style="color: var(--theme-color-primary);"
@@ -121,18 +121,16 @@
             </div>
             <div class="text-sm space-y-2">
               <div class="flex items-center justify-between">
-                <span class={$darkMode ? 'text-gray-400' : 'text-gray-600'}
+                <span class="text-gray-600" dark:text-gray-400
                   >{t('advancedkey.bindingsLabel', currentLanguage)}:</span
                 >
-                <span class={$darkMode ? 'text-gray-300' : 'text-gray-700'}
-                  >{config.keycodes.length}</span
-                >
+                <span class={'text-gray-700 dark:text-gray-300'}>{config.keycodes.length}</span>
               </div>
               <div class="flex items-center justify-between">
-                <span class={$darkMode ? 'text-gray-400' : 'text-gray-600'}
+                <span class="text-gray-600" dark:text-gray-400
                   >{t('advancedkey.bottomOutLabel', currentLanguage)}:</span
                 >
-                <span class={$darkMode ? 'text-gray-300' : 'text-gray-700'}
+                <span class={'text-gray-700 dark:text-gray-300'}
                   >{config.bottomOutPoint.toFixed(1)}mm</span
                 >
               </div>

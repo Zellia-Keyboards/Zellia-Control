@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { darkMode, glassmorphismMode } from '$lib/DarkModeStore.svelte';
+  import { glassmorphismMode } from '$lib/DarkModeStore.svelte';
   import { language, t } from '$lib/LanguageStore.svelte';
   import { AlertTriangle } from 'lucide-svelte';
 
@@ -15,27 +15,21 @@
 </script>
 
 <div
-  class="rounded-lg border p-6 {$glassmorphismMode ? 'glassmorphism-card' : ''}"
-  style="background-color: color-mix(in srgb, var(--theme-color-primary) 5%, ${$darkMode
-    ? 'black'
-    : 'white'});
-           border-color: {$darkMode
-    ? 'color-mix(in srgb, var(--theme-color-primary) 20%, #374151)'
-    : 'color-mix(in srgb, var(--theme-color-primary) 15%, #e5e7eb)'};"
+  class="rounded-lg border p-6 bg-white dark:bg-black border-gray-200 dark:border-gray-700 {$glassmorphismMode
+    ? 'glassmorphism-card'
+    : ''}"
 >
-  <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'} mb-4">
+  <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">
     {t('advancedkey.performanceSettings', currentLanguage)}
   </h3>
   <div class="mb-6">
     <div class="flex justify-between items-center mb-2">
       <label
         for="actuation-point-slider"
-        class="text-sm font-medium {$darkMode ? 'text-gray-300' : 'text-gray-700'}"
+        class="text-sm font-medium text-gray-700 dark:text-gray-300"
         >{t('advancedkey.actuationPoint', currentLanguage)}</label
       >
-      <span class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-500'}"
-        >{actuationPoint.toFixed(2)}mm</span
-      >
+      <span class="text-sm text-gray-500 dark:text-gray-400">{actuationPoint.toFixed(2)}mm</span>
     </div>
     <!-- Warning box for values below 0.3 -->
     {#if actuationPoint < 0.3}
@@ -43,13 +37,9 @@
         class="mb-2 p-2 border rounded-md text-xs flex items-center gap-2 {$glassmorphismMode
           ? 'glassmorphism-card'
           : ''}"
-        style="background-color: {$darkMode
-          ? 'color-mix(in srgb, #f59e0b 15%, #451a03)'
-          : 'color-mix(in srgb, #f59e0b 10%, #fefce8)'};
-                        border-color: {$darkMode
-          ? 'color-mix(in srgb, #f59e0b 30%, #78716c)'
-          : 'color-mix(in srgb, #f59e0b 25%, #e7e5e4)'};
-                        color: {$darkMode ? '#fbbf24' : '#a16207'};"
+        style="background-color: {'color-mix(in srgb, #f59e0b 10%, #fefce8) dark:color-mix(in srgb, #f59e0b 15%, #451a03)'};
+                        border-color: {'color-mix(in srgb, #f59e0b 25%, #e7e5e4) dark:color-mix(in srgb, #f59e0b 30%, #78716c)'};
+                        color: {'#a16207 dark:#fbbf24'};"
       >
         <AlertTriangle class="w-4 h-4 flex-shrink-0" />
         <span>{t('advancedkey.sensitivityWarning', currentLanguage)}</span>
@@ -64,13 +54,13 @@
       step="0.01"
       bind:value={actuationPoint}
       class="w-full h-2 rounded-full appearance-none slider-thumb mb-2"
-      style="background-color: {$darkMode ? '#374151' : '#d1d5db'};
+      style="background-color: {'#d1d5db dark:#374151'};
                    --thumb-color: var(--theme-color-primary);"
     />
 
     <!-- Dual input: Text input -->
     <div class="flex items-center gap-2 mb-2">
-      <span class="text-xs {$darkMode ? 'text-gray-400' : 'text-gray-500'}"
+      <span class="text-xs text-gray-500 dark:text-gray-400"
         >{t('performance.directInput', currentLanguage)}:</span
       >
       <input
@@ -82,15 +72,13 @@
         class="w-20 px-2 py-1 text-xs border rounded {$glassmorphismMode
           ? 'glassmorphism-input'
           : ''}"
-        style="background-color: {$darkMode ? '#1f2937' : 'white'};
-                       border-color: {$darkMode
-          ? 'color-mix(in srgb, var(--theme-color-primary) 20%, #4b5563)'
-          : 'color-mix(in srgb, var(--theme-color-primary) 15%, #d1d5db)'};
-                       color: {$darkMode ? 'white' : '#111827'};"
+        style="background-color: {'white dark:#1f2937'};
+                       border-color: {'color-mix(in srgb, var(--theme-color-primary) 15%, #d1d5db) dark:color-mix(in srgb, var(--theme-color-primary) 20%, #4b5563)'};
+                       color: {'#111827 dark:white'};"
       />
-      <span class="text-xs {$darkMode ? 'text-gray-400' : 'text-gray-500'}">mm</span>
+      <span class="text-xs text-gray-500 dark:text-gray-400">mm</span>
     </div>
-    <p class="text-xs {$darkMode ? 'text-gray-400' : 'text-gray-500'} mt-1">
+    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
       {t('advancedkey.actuationPointDesc', currentLanguage)}
     </p>
   </div>
@@ -98,12 +86,8 @@
     class="flex items-start gap-3 p-4 border rounded-lg {$glassmorphismMode
       ? 'glassmorphism-card'
       : ''}"
-    style="background-color: {$darkMode
-      ? 'color-mix(in srgb, var(--theme-color-primary) 8%, #111827)'
-      : 'color-mix(in srgb, var(--theme-color-primary) 5%, #f0f9ff)'};
-               border-color: {$darkMode
-      ? 'color-mix(in srgb, var(--theme-color-primary) 20%, #4b5563)'
-      : 'color-mix(in srgb, var(--theme-color-primary) 15%, #bfdbfe)'};"
+    style="background-color: {'color-mix(in srgb, var(--theme-color-primary) 5%, #f0f9ff) dark:color-mix(in srgb, var(--theme-color-primary) 8%, #111827)'};
+               border-color: {'color-mix(in srgb, var(--theme-color-primary) 15%, #bfdbfe) dark:color-mix(in srgb, var(--theme-color-primary) 20%, #4b5563)'};"
   >
     <svg
       class="w-5 h-5 mt-0.5"
@@ -122,17 +106,13 @@
     <div>
       <p
         class="text-sm font-medium"
-        style="color: {$darkMode
-          ? 'white'
-          : 'color-mix(in srgb, var(--theme-color-primary) 85%, black)'};"
+        style="color: {'color-mix(in srgb, var(--theme-color-primary) 85%, black) dark:white'};"
       >
         {t('advancedkey.rapidTriggerDisabled', currentLanguage)}
       </p>
       <p
         class="text-sm"
-        style="color: {$darkMode
-          ? '#d1d5db'
-          : 'color-mix(in srgb, var(--theme-color-primary) 75%, black)'};"
+        style="color: {'color-mix(in srgb, var(--theme-color-primary) 75%, black) dark:#d1d5db'};"
       >
         {t('advancedkey.rapidTriggerDisabledDesc', currentLanguage)}
       </p>

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { darkMode, glassmorphismMode } from '$lib/DarkModeStore.svelte';
+  import { glassmorphismMode } from '$lib/DarkModeStore.svelte';
   import NewZellia80He from '$lib/NewZellia80HE.svelte';
   import { AlertTriangle } from 'lucide-svelte';
   import { language, t } from '$lib/LanguageStore.svelte';
@@ -36,9 +36,7 @@
 >
   {#snippet body(x, y)}
     <p
-      class="hover:scale-90 transition-all duration-300 h-14 {$darkMode
-        ? 'bg-black border-gray-700'
-        : 'bg-gray-50 border-gray-400'} data-[selected=true]:bg-gray-500 data-[selected=true]:border-gray-700 data-[selected=true]:border-4 border rounded-lg flex flex-col items-center justify-center hover:cursor-pointer gap-1 font-sans text-white"
+      class="hover:scale-90 transition-all duration-300 h-14 bg-gray-50 dark:bg-black border border-gray-400 dark:border-gray-700 data-[selected=true]:bg-gray-500 data-[selected=true]:border-gray-700 data-[selected=true]:border-4 rounded-lg flex flex-col items-center justify-center hover:cursor-pointer gap-1 font-sans text-white"
     >
       {ACTUATION_POINT[y][x]}
     </p>
@@ -46,15 +44,12 @@
 </NewZellia80He>
 
 <div
-  class="rounded-2xl shadow p-8 mt-2 mb-4 grow {$glassmorphismMode
+  class="rounded-2xl shadow p-8 mt-2 mb-4 grow bg-primary-100 dark:bg-black border border-transparent dark:border-gray-600 text-black dark:text-white h-full flex flex-col {$glassmorphismMode
     ? 'glassmorphism-card'
-    : ''} {$darkMode ? 'border border-gray-600 text-white' : 'text-black'} h-full flex flex-col"
-  style="background-color: {$darkMode
-    ? `color-mix(in srgb, var(--theme-color-primary) 5%, black)`
-    : `color-mix(in srgb, var(--theme-color-primary) 10%, white)`};"
+    : ''}"
 >
   <div class="flex items-center justify-between -mt-4 mb-2">
-    <h2 class="text-2xl font-bold {$darkMode ? 'text-white' : 'text-gray-900'}">
+    <h2 class="text-2xl font-bold text-gray-900 dark:text-white">
       {t('performance.title', currentLanguage)}
     </h2>
     <div>
@@ -72,9 +67,9 @@
         {t('performance.selectAllKeys', currentLanguage)}
       </button>
       <button
-        class="{$glassmorphismMode ? 'glassmorphism-button' : ''} {$darkMode
-          ? 'bg-gray-800 hover:bg-gray-700 text-white border border-white'
-          : 'bg-gray-200 hover:bg-gray-300 text-gray-600'} px-4 py-2 rounded transition-colors duration-200"
+        class="{$glassmorphismMode
+          ? 'glassmorphism-button'
+          : ''} bg-gray-200 hover:bg-gray-300 text-gray-600 dark:bg-gray-800 dark:hover:bg-gray-700 dark:text-white dark:border dark:border-white px-4 py-2 rounded transition-colors duration-200"
       >
         {t('performance.discardSelection', currentLanguage)}
       </button>
@@ -87,19 +82,15 @@
   >
     <!-- 1st Box: Actuation Point -->
     <div class="flex-1 min-w-[260px] flex flex-col">
-      <h3 class="text-lg font-medium mb-4 {$darkMode ? 'text-white' : 'text-gray-900'}">
+      <h3 class="text-lg font-medium mb-4 text-gray-900 dark:text-white">
         {t('performance.actuationPoint', currentLanguage)}
       </h3>
-      <p class="text-sm {$darkMode ? 'text-gray-300' : 'text-gray-600'} mb-4">
+      <p class="text-sm text-gray-600 dark:text-gray-300 mb-4">
         {t('performance.actuationPointDesc', currentLanguage)}
       </p>
       <div class="mb-2 flex-1">
         <div class="relative">
-          <div
-            class="flex justify-between text-sm {$darkMode
-              ? 'text-gray-400'
-              : 'text-gray-500'} mb-1"
-          >
+          <div class="flex justify-between text-sm {'text-gray-500 dark:text-gray-400'} mb-1">
             <div>{t('performance.actuationPointLabel', currentLanguage)}</div>
             <div>{actuationPoint.toFixed(2)} {t('units.mm', currentLanguage)}</div>
           </div>
@@ -107,9 +98,7 @@
           <!-- Warning box for values below 0.3 -->
           {#if actuationPoint < 0.3}
             <div
-              class="mb-2 p-2 {$darkMode
-                ? 'bg-yellow-900 border-yellow-600 text-yellow-200'
-                : 'bg-yellow-50 border-yellow-300 text-yellow-700'} border rounded-md text-xs flex items-center gap-2"
+              class="mb-2 p-2 {'bg-yellow-50 border-yellow-300 text-yellow-700 dark:bg-yellow-900 border-yellow-600 text-yellow-200'} border rounded-md text-xs flex items-center gap-2"
             >
               <AlertTriangle size={14} />
               {t('performance.sensitivityWarning', currentLanguage)}
@@ -123,14 +112,12 @@
             max="4"
             step="0.01"
             bind:value={actuationPoint}
-            class="w-full h-2 rounded-full {$darkMode
-              ? 'bg-gray-700'
-              : 'bg-gray-300'} appearance-none slider-thumb mb-2"
+            class="w-full h-2 rounded-full {'bg-gray-300 dark:bg-gray-700'} appearance-none slider-thumb mb-2"
           />
 
           <!-- Dual input: Text input -->
           <div class="flex items-center gap-2 mb-2">
-            <span class="text-xs {$darkMode ? 'text-gray-400' : 'text-gray-500'}"
+            <span class="text-xs text-gray-500 dark:text-gray-400"
               >{t('performance.directInput', currentLanguage)}:</span
             >
             <input
@@ -139,23 +126,17 @@
               max="4"
               step="0.01"
               bind:value={actuationPoint}
-              class="w-20 px-2 py-1 text-xs border rounded {$darkMode
-                ? 'bg-gray-800 border-gray-600 text-white'
-                : 'bg-white border-gray-300 text-gray-900'}"
+              class="w-20 px-2 py-1 text-xs border rounded dark:bg-gray-800 dark:border-gray-600 dark:text-white bg-white border-gray-300 text-gray-900"
             />
-            <span class="text-xs {$darkMode ? 'text-gray-400' : 'text-gray-500'}">mm</span>
+            <span class="text-xs text-gray-500 dark:text-gray-400">mm</span>
           </div>
-          <div
-            class="flex justify-between text-sm {$darkMode
-              ? 'text-gray-400'
-              : 'text-gray-500'} mb-1"
-          >
+          <div class="flex justify-between text-sm {'text-gray-500 dark:text-gray-400'} mb-1">
             <div>{t('performance.high', currentLanguage)}</div>
             <div>{t('performance.low', currentLanguage)}</div>
           </div>
         </div>
         <!-- Keys selected indicator -->
-        <div class="mt-4 {$darkMode ? 'text-white' : 'text-gray-900'} font-medium">
+        <div class="mt-4 text-gray-900 dark:text-white font-medium">
           {keysSelected}
           {t('performance.keysSelected', currentLanguage)}
         </div>
@@ -163,12 +144,12 @@
     </div>
 
     <!-- Divider for desktop -->
-    <div class="hidden md:block w-px {$darkMode ? 'bg-white' : 'bg-gray-200'} mx-2"></div>
+    <div class="hidden md:block w-px bg-gray-200 dark:bg-white mx-2"></div>
 
     <!-- 2nd Box: Rapid Trigger Toggles (moved from 3rd position) -->
     <div class="flex-1 min-w-[260px] flex flex-col">
       <div class="flex items-center justify-between mb-4">
-        <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'}">
+        <h3 class="text-lg font-medium text-gray-900 dark:text-white">
           {t('performance.enableRapidTrigger', currentLanguage)}
         </h3>
         <button
@@ -176,9 +157,7 @@
           aria-label="Rapid Trigger Toggle"
           style="background-color: {rapidTriggerEnabled
             ? 'var(--theme-color-primary)'
-            : $darkMode
-              ? '#4b5563'
-              : '#d1d5db'};"
+            : '#d1d5db dark:#4b5563'};"
           onclick={() => (rapidTriggerEnabled = !rapidTriggerEnabled)}
         >
           <span
@@ -188,17 +167,15 @@
           ></span>
         </button>
       </div>
-      <p class="text-sm {$darkMode ? 'text-gray-300' : 'text-gray-600'} mb-4">
+      <p class="text-sm text-gray-600 dark:text-gray-300 mb-4">
         {t('performance.rapidTriggerDesc', currentLanguage)}
       </p>
       <div class="flex-1">
         {#if rapidTriggerEnabled}
           <div
-            class="flex items-center justify-between mb-4 border-t {$darkMode
-              ? 'border-white'
-              : 'border-gray-200'} pt-4"
+            class="flex items-center justify-between mb-4 border-t dark:border-white border-gray-200 pt-4"
           >
-            <h4 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'}">
+            <h4 class="text-lg font-medium text-gray-900 dark:text-white">
               {t('performance.enableContinuousRapidTrigger', currentLanguage)}
             </h4>
             <button
@@ -206,9 +183,7 @@
               aria-label="Continuous Rapid Trigger Toggle"
               style="background-color: {continuousRapidTriggerEnabled
                 ? 'var(--theme-color-primary)'
-                : $darkMode
-                  ? '#4b5563'
-                  : '#d1d5db'};"
+                : '#d1d5db dark:#4b5563'};"
               onclick={() => (continuousRapidTriggerEnabled = !continuousRapidTriggerEnabled)}
             >
               <span
@@ -218,7 +193,7 @@
               ></span>
             </button>
           </div>
-          <p class="text-sm {$darkMode ? 'text-gray-300' : 'text-gray-600'}">
+          <p class="text-sm text-gray-600 dark:text-gray-300">
             {t('performance.continuousRapidTriggerFullDesc', currentLanguage)}
           </p>
         {/if}
@@ -226,26 +201,22 @@
     </div>
 
     <!-- Divider for desktop -->
-    <div class="hidden md:block w-px {$darkMode ? 'bg-white' : 'bg-gray-200'} mx-2"></div>
+    <div class="hidden md:block w-px bg-gray-200 dark:bg-white mx-2"></div>
 
     <!-- 3rd Box: Sensitivity Slider & Toggle (moved from 2nd position) -->
     <div class="flex-1 min-w-[260px] flex flex-col">
       <div class="flex items-center justify-between mb-4">
-        <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'}">
+        <h3 class="text-lg font-medium text-gray-900 dark:text-white">
           {t('performance.rapidTriggerSensitivity', currentLanguage)}
         </h3>
         <div class="flex items-center gap-2">
-          <span class="text-xs {$darkMode ? 'text-gray-400' : 'text-gray-500'}"
-            >Separate Press/Release</span
-          >
+          <span class="text-xs text-gray-500 dark:text-gray-400">Separate Press/Release</span>
           <button
             class="relative inline-flex items-center h-5 rounded-full w-10 transition-colors focus:outline-none"
             aria-label="Separate Sensitivity Toggle"
             style="background-color: {separateSensitivity
               ? 'var(--theme-color-primary)'
-              : $darkMode
-                ? '#4b5563'
-                : '#d1d5db'};"
+              : '#d1d5db dark:#4b5563'};"
             onclick={() => (separateSensitivity = !separateSensitivity)}
           >
             <span
@@ -256,17 +227,13 @@
           </button>
         </div>
       </div>
-      <p class="text-sm {$darkMode ? 'text-gray-300' : 'text-gray-600'} mb-4">
+      <p class="text-sm text-gray-600 dark:text-gray-300 mb-4">
         {t('performance.adjustSensitivity', currentLanguage)}
       </p>
       <div class="flex-1">
         {#if separateSensitivity}
           <div class="mb-4">
-            <div
-              class="flex justify-between text-sm {$darkMode
-                ? 'text-gray-400'
-                : 'text-gray-500'} mb-1"
-            >
+            <div class="flex justify-between text-sm dark:text-gray-400 text-gray-500 mb-1">
               <div>{t('performance.pressSensitivityLabel', currentLanguage)}</div>
               <div>{pressSensitivity.toFixed(2)} mm</div>
             </div>
@@ -276,25 +243,15 @@
               max="2"
               step="0.01"
               bind:value={pressSensitivity}
-              class="w-full h-2 rounded-full {$darkMode
-                ? 'bg-gray-700'
-                : 'bg-gray-300'} appearance-none slider-thumb"
+              class="w-full h-2 rounded-full {'bg-gray-300 dark:bg-gray-700'} appearance-none slider-thumb"
             />
-            <div
-              class="flex justify-between text-sm {$darkMode
-                ? 'text-gray-400'
-                : 'text-gray-500'} mt-1"
-            >
+            <div class="flex justify-between text-sm dark:text-gray-400 text-gray-500 mt-1">
               <div>{t('performance.high', currentLanguage)}</div>
               <div>{t('performance.low', currentLanguage)}</div>
             </div>
           </div>
           <div>
-            <div
-              class="flex justify-between text-sm {$darkMode
-                ? 'text-gray-400'
-                : 'text-gray-500'} mb-1"
-            >
+            <div class="flex justify-between text-sm dark:text-gray-400 text-gray-500 mb-1">
               <div>{t('performance.releaseSensitivityLabel', currentLanguage)}</div>
               <div>{releaseSensitivity.toFixed(2)} mm</div>
             </div>
@@ -304,26 +261,16 @@
               max="2"
               step="0.01"
               bind:value={releaseSensitivity}
-              class="w-full h-2 rounded-full {$darkMode
-                ? 'bg-gray-700'
-                : 'bg-gray-300'} appearance-none slider-thumb"
+              class="w-full h-2 rounded-full {'bg-gray-300 dark:bg-gray-700'} appearance-none slider-thumb"
             />
-            <div
-              class="flex justify-between text-sm {$darkMode
-                ? 'text-gray-400'
-                : 'text-gray-500'} mt-1"
-            >
+            <div class="flex justify-between text-sm dark:text-gray-400 text-gray-500 mt-1">
               <div>{t('performance.high', currentLanguage)}</div>
               <div>{t('performance.low', currentLanguage)}</div>
             </div>
           </div>
         {:else}
           <div>
-            <div
-              class="flex justify-between text-sm {$darkMode
-                ? 'text-gray-400'
-                : 'text-gray-500'} mb-1"
-            >
+            <div class="flex justify-between text-sm dark:text-gray-400 text-gray-500 mb-1">
               <div>{t('performance.sensitivityLabel', currentLanguage)}</div>
               <div>{sensitivityValue.toFixed(2)} mm</div>
             </div>
@@ -333,15 +280,9 @@
               max="2"
               step="0.01"
               bind:value={sensitivityValue}
-              class="w-full h-2 rounded-full {$darkMode
-                ? 'bg-gray-700'
-                : 'bg-gray-300'} appearance-none slider-thumb"
+              class="w-full h-2 rounded-full {'bg-gray-300 dark:bg-gray-700'} appearance-none slider-thumb"
             />
-            <div
-              class="flex justify-between text-sm {$darkMode
-                ? 'text-gray-400'
-                : 'text-gray-500'} mt-1"
-            >
+            <div class="flex justify-between text-sm dark:text-gray-400 text-gray-500 mt-1">
               <div>{t('performance.high', currentLanguage)}</div>
               <div>{t('performance.low', currentLanguage)}</div>
             </div>

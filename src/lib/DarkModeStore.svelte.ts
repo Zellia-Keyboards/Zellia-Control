@@ -1,4 +1,4 @@
-// Dark mode store for global state management
+// Dark mode store for global state management with Tailwind CSS integration
 import { writable } from 'svelte/store';
 import { browser } from '$app/environment';
 
@@ -39,7 +39,7 @@ const createDarkModeStore = () => {
           // Apply the transition
           localStorage.setItem('darkMode', newValue.toString());
 
-          // Apply dark class to document root with animation
+          // Apply dark class to document root for Tailwind CSS dark mode
           if (newValue) {
             document.documentElement.classList.add('dark');
           } else {
@@ -61,7 +61,7 @@ const createDarkModeStore = () => {
     set: (value: boolean) => {
       if (browser) {
         localStorage.setItem('darkMode', value.toString());
-        // Apply dark class to document root
+        // Apply dark class to document root for Tailwind CSS dark mode
         if (value) {
           document.documentElement.classList.add('dark');
         } else {
@@ -167,6 +167,7 @@ if (browser) {
   const storedDarkMode = localStorage.getItem('darkMode');
   const isDark = storedDarkMode !== null ? storedDarkMode === 'true' : true; // Default to dark
   if (isDark) {
+    // Add Tailwind's dark class for dark mode
     document.documentElement.classList.add('dark');
   }
 

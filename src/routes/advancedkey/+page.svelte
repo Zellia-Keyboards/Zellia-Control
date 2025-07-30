@@ -1,6 +1,6 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import { darkMode, glassmorphismMode } from '$lib/DarkModeStore.svelte';
+  import { glassmorphismMode } from '$lib/DarkModeStore.svelte';
   import NewZellia80He from '$lib/NewZellia80HE.svelte';
   import { Zap, RotateCcw, Settings, Target } from 'lucide-svelte';
   import { language, t } from '$lib/LanguageStore.svelte';
@@ -83,25 +83,21 @@
 >
   {#snippet body(x, y)}
     <div
-      class="hover:scale-90 transition-all duration-300 h-14 {$darkMode
-        ? 'bg-black border-gray-700'
-        : 'bg-gray-50 border-gray-400'} data-[selected=true]:bg-gray-500 data-[selected=true]:border-gray-700 data-[selected=true]:border-4 border rounded-lg flex flex-col items-center justify-center hover:cursor-pointer gap-1 font-sans text-white"
-    ></div>{/snippet}
+      class="hover:scale-90 transition-all duration-300 h-14 bg-gray-50 border-gray-400 dark:bg-black dark:border-gray-700 data-[selected=true]:bg-gray-500 data-[selected=true]:border-gray-700 data-[selected=true]:border-4 border rounded-lg flex flex-col items-center justify-center hover:cursor-pointer gap-1 font-sans text-white"
+    ></div>
+  {/snippet}
 </NewZellia80He>
 <div
   class="rounded-2xl shadow p-8 mt-2 mb-4 grow {$glassmorphismMode
     ? 'glassmorphism-card'
-    : ''} {$darkMode ? 'border border-gray-600 text-white' : 'text-black'} h-full flex flex-col"
-  style="background-color: {$darkMode
-    ? `color-mix(in srgb, var(--theme-color-primary) 5%, black)`
-    : `color-mix(in srgb, var(--theme-color-primary) 10%, white)`};"
+    : ''} text-black bg-primary-100 dark:bg-black dark:text-white border-0 dark:border dark:border-gray-600 h-full flex flex-col"
 >
   <div class="flex items-center justify-between mb-6">
     <div>
-      <h2 class="text-3xl font-bold {$darkMode ? 'text-white' : 'text-gray-900'}">
+      <h2 class="text-3xl font-bold text-gray-900 dark:text-white">
         {t('advancedkey.title', currentLanguage)}
       </h2>
-      <p class="{$darkMode ? 'text-gray-300' : 'text-gray-600'} mt-2">
+      <p class="text-gray-600 dark:text-gray-300 mt-2">
         {t('advancedkey.subtitle', currentLanguage)}
       </p>
     </div>
@@ -109,14 +105,10 @@
   <!-- Getting Started Section -->
   <div
     class=" rounded-xl p-6 border mb-4"
-    style="background: {$darkMode
-      ? 'color-mix(in srgb, var(--theme-color-primary) 8%, #111827)'
-      : 'color-mix(in srgb, var(--theme-color-primary) 5%, #f9fafb)'};
-                    border-color: {$darkMode
-      ? 'color-mix(in srgb, var(--theme-color-primary) 15%, #374151)'
-      : 'color-mix(in srgb, var(--theme-color-primary) 10%, #e5e7eb)'};"
+    style="background: {'color-mix(in srgb, var(--theme-color-primary) 5%, #f9fafb) dark:color-mix(in srgb, var(--theme-color-primary) 8%, #111827)'};
+                    border-color: {'color-mix(in srgb, var(--theme-color-primary) 10%, #e5e7eb) dark:color-mix(in srgb, var(--theme-color-primary) 15%, #374151)'};"
   >
-    <h3 class="text-lg font-semibold {$darkMode ? 'text-white' : 'text-gray-900'} mb-3">
+    <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">
       {t('advancedkey.gettingStarted', currentLanguage)}
     </h3>
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
@@ -128,10 +120,10 @@
           1
         </div>
         <div>
-          <div class="font-medium {$darkMode ? 'text-white' : 'text-gray-900'}">
+          <div class="font-medium text-gray-900 dark:text-white">
             {t('advancedkey.step1Title', currentLanguage)}
           </div>
-          <div class={$darkMode ? 'text-gray-300' : 'text-gray-600'}>
+          <div class="text-gray-600 dark:text-gray-300">
             {t('advancedkey.step1Desc', currentLanguage)}
           </div>
         </div>
@@ -144,10 +136,10 @@
           2
         </div>
         <div>
-          <div class="font-medium {$darkMode ? 'text-white' : 'text-gray-900'}">
+          <div class="font-medium text-gray-900 dark:text-white">
             {t('advancedkey.step2Title', currentLanguage)}
           </div>
-          <div class={$darkMode ? 'text-gray-300' : 'text-gray-600'}>
+          <div class="text-gray-600 dark:text-gray-300">
             {t('advancedkey.step2Desc', currentLanguage)}
           </div>
         </div>
@@ -160,10 +152,10 @@
           3
         </div>
         <div>
-          <div class="font-medium {$darkMode ? 'text-white' : 'text-gray-900'}">
+          <div class="font-medium text-gray-900 dark:text-white">
             {t('advancedkey.step3Title', currentLanguage)}
           </div>
-          <div class={$darkMode ? 'text-gray-300' : 'text-gray-600'}>
+          <div class="text-gray-600 dark:text-gray-300">
             {t('advancedkey.step3Desc', currentLanguage)}
           </div>
         </div>
@@ -174,20 +166,9 @@
     {#each keyModes as mode}
       <div class="group relative w-full">
         <button
-          class="w-full h-full p-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border-2 text-left group-hover:scale-105 flex flex-col {$glassmorphismMode
+          class="w-full h-full p-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border-2 text-left group-hover:scale-105 flex flex-col bg-white dark:bg-black border-gray-300 dark:border-gray-600 hover:border-primary-500 {$glassmorphismMode
             ? 'glassmorphism-card'
             : ''}"
-          style="background-color: {$darkMode ? 'black' : 'white'}; 
-                           border-color: {$darkMode
-            ? 'color-mix(in srgb, var(--theme-color-primary) 20%, #374151)'
-            : 'color-mix(in srgb, var(--theme-color-primary) 15%, #e5e7eb)'};
-                           --hover-border: var(--theme-color-primary);"
-          onmouseover={e =>
-            ((e.currentTarget as HTMLElement).style.borderColor = 'var(--theme-color-primary)')}
-          onmouseout={e =>
-            ((e.currentTarget as HTMLElement).style.borderColor = $darkMode
-              ? 'color-mix(in srgb, var(--theme-color-primary) 20%, #374151)'
-              : 'color-mix(in srgb, var(--theme-color-primary) 15%, #e5e7eb)')}
           onclick={() => navigateToMode(mode.path)}
         >
           <!-- Mode Header -->
@@ -201,43 +182,25 @@
             </div>
             <div class="flex-1">
               <h3
-                class="text-xl font-bold transition-colors"
-                style="color: {$darkMode ? 'white' : '#111827'};"
-                onmouseover={e =>
-                  ((e.currentTarget as HTMLElement).style.color = 'var(--theme-color-primary)')}
-                onmouseout={e =>
-                  ((e.currentTarget as HTMLElement).style.color = $darkMode ? 'white' : '#111827')}
+                class="text-xl font-bold transition-colors text-gray-900 dark:text-white hover:text-primary-500"
               >
                 {mode.name}
               </h3>
-              <p class="text-sm {$darkMode ? 'text-gray-300' : 'text-gray-600'} mt-1">
+              <p class="text-sm text-gray-600 dark:text-gray-300 mt-1">
                 {mode.description}
               </p>
             </div>
           </div>
           <div class="space-y-2 flex-1">
             {#each mode.features as feature}
-              <div
-                class="flex items-center gap-2 text-sm {$darkMode
-                  ? 'text-gray-300'
-                  : 'text-gray-700'}"
-              >
-                <div
-                  class="w-1.5 h-1.5 rounded-full"
-                  style="background-color: var(--theme-color-primary);"
-                ></div>
+              <div class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+                <div class="w-1.5 h-1.5 rounded-full bg-primary-500"></div>
                 <span>{feature}</span>
               </div>
             {/each}
           </div>
           <!-- Action Arrow -->
-          <div
-            class="absolute top-6 right-6 text-gray-400 transition-colors"
-            style="transition: color 0.3s ease;"
-            onmouseover={e =>
-              ((e.currentTarget as HTMLElement).style.color = 'var(--theme-color-primary)')}
-            onmouseout={e => ((e.currentTarget as HTMLElement).style.color = '#9ca3af')}
-          >
+          <div class="absolute top-6 right-6 text-gray-400 transition-colors duration-300 ease-in">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"
               ></path>
@@ -247,7 +210,7 @@
       </div>
     {/each}
   </div>
-  <div class="mt-4 text-center {$darkMode ? 'text-gray-300' : 'text-gray-600'}">
+  <div class="mt-4 text-center text-gray-600 dark:text-gray-300">
     <p class="text-sm">
       {t('advancedkey.infoDesc', currentLanguage)}
     </p>

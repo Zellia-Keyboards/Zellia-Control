@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { darkMode, glassmorphismMode } from '$lib/DarkModeStore.svelte';
+  import { glassmorphismMode } from '$lib/DarkModeStore.svelte';
   import { language, t } from '$lib/LanguageStore.svelte';
 
   interface Props {
@@ -17,41 +17,31 @@
 </script>
 
 <div
-  class="rounded-lg border p-6 {$glassmorphismMode ? 'glassmorphism-card' : ''}"
-  style="background-color: color-mix(in srgb, var(--theme-color-primary) 5%, ${$darkMode
-    ? 'black'
-    : 'white'});
-           border-color: {$darkMode
-    ? 'color-mix(in srgb, var(--theme-color-primary) 20%, #374151)'
-    : 'color-mix(in srgb, var(--theme-color-primary) 15%, #e5e7eb)'};"
+  class="rounded-lg border p-6 bg-primary-50 dark:bg-primary-900 border-primary-200 dark:border-primary-700 {$glassmorphismMode
+    ? 'glassmorphism-card'
+    : ''}"
 >
-  <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'} mb-4">
+  <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">
     {t('advancedkey.keyTester', currentLanguage)}
   </h3>
-  <p class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'} mb-6">
+  <p class="text-sm text-gray-600 dark:text-gray-400 mb-6">
     {t('advancedkey.testDynamicDesc', currentLanguage)}
   </p>
   <div
-    class="border-2 border-dashed rounded-lg p-8 text-center {$glassmorphismMode
+    class="border-2 border-dashed rounded-lg p-8 text-center border-primary-300 dark:border-primary-600 {$glassmorphismMode
       ? 'glassmorphism-card'
       : ''}"
-    style="border-color: {$darkMode
-      ? 'color-mix(in srgb, var(--theme-color-primary) 25%, #4b5563)'
-      : 'color-mix(in srgb, var(--theme-color-primary) 20%, #d1d5db)'};"
   >
     <div
-      class="w-20 h-20 rounded-lg flex items-center justify-center mx-auto mb-4 {$glassmorphismMode
+      class="w-20 h-20 rounded-lg flex items-center justify-center mx-auto mb-4 bg-primary-100 dark:bg-primary-800 {$glassmorphismMode
         ? 'glassmorphism-button'
         : ''}"
-      style="background-color: {$darkMode
-        ? 'color-mix(in srgb, var(--theme-color-primary) 8%, #1f2937)'
-        : 'color-mix(in srgb, var(--theme-color-primary) 5%, #f3f4f6)'};"
     >
-      <span class="font-mono font-bold" style="color: var(--theme-color-primary);"
+      <span class="font-mono font-bold text-primary-600 dark:text-primary-400"
         >{currentKeyName}</span
       >
     </div>
-    <p class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-500'}">
+    <p class="text-sm text-gray-500 dark:text-gray-400">
       {t('advancedkey.testKeyBehavior', currentLanguage)}
     </p>
   </div>

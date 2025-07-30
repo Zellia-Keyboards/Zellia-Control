@@ -1,6 +1,6 @@
 <script lang="ts">
   import { KeyboardDisplayValues } from '$lib/KeyboardState.svelte';
-  import { darkMode, glassmorphismMode } from '$lib/DarkModeStore.svelte';
+  import { glassmorphismMode } from '$lib/DarkModeStore.svelte';
   import NewZellia80He from '$lib/NewZellia80HE.svelte';
   import { language, t } from '$lib/LanguageStore.svelte';
 
@@ -156,21 +156,19 @@
 >
   {#snippet body(x, y)}
     <div
-      class="hover:scale-90 transition-all duration-300 h-14 {$darkMode
-        ? 'bg-black border-gray-700'
-        : 'bg-gray-50 border-gray-400'} data-[selected=true]:bg-gray-500 data-[selected=true]:border-gray-700 data-[selected=true]:border-4 border rounded-lg flex flex-col items-center justify-center hover:cursor-pointer gap-1 font-sans text-white"
+      class="hover:scale-90 transition-all duration-300 h-14 border bg-gray-50 border-gray-400 dark:bg-black borde dark:border-gray-700 data-[selected=true]:bg-gray-500 data-[selected=true]:border-gray-700 data-[selected=true]:border-4 rounded-lg flex flex-col items-center justify-center hover:cursor-pointer gap-1 font-sans text-white"
     ></div>{/snippet}
 </NewZellia80He>
 <div
-  class="rounded-2xl shadow p-8 mt-2 mb-4 grow {$glassmorphismMode
+  class="rounded-2xl shadow p-8 mt-2 mb-4 grow bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-600 text-black dark:text-white h-full flex flex-col {$glassmorphismMode
     ? 'glassmorphism-card'
-    : ''} {$darkMode ? 'border border-gray-600 text-white' : 'text-black'} h-full flex flex-col"
-  style="background-color: {$darkMode
-    ? `color-mix(in srgb, var(--theme-color-primary) 5%, black)`
-    : `color-mix(in srgb, var(--theme-color-primary) 10%, white)`};"
+    : ''}"
+  style={$glassmorphismMode
+    ? ''
+    : `background-color: color-mix(in srgb, var(--theme-color-primary) ${document?.documentElement?.classList.contains('dark') ? '5%' : '10%'}, ${document?.documentElement?.classList.contains('dark') ? 'black' : 'white'});`}
 >
   <div class="flex items-center justify-between -mt-4 mb-4">
-    <h2 class="text-2xl font-bold {$darkMode ? 'text-white' : 'text-gray-900'}">
+    <h2 class="text-2xl font-bold text-gray-900 dark:text-white">
       {t('lighting.title', currentLanguage)}
     </h2>
     <div class="flex gap-2">
@@ -179,19 +177,14 @@
           ? 'glassmorphism-button'
           : ''}"
         style="background-color: var(--theme-color-primary);"
-        onmouseover={e =>
-          ((e.currentTarget as HTMLElement).style.backgroundColor =
-            'color-mix(in srgb, var(--theme-color-primary) 85%, black)')}
-        onmouseout={e =>
-          ((e.currentTarget as HTMLElement).style.backgroundColor = 'var(--theme-color-primary)')}
         onclick={applySettings}
       >
         {t('lighting.applySettings', currentLanguage)}
       </button>
       <button
-        class="{$glassmorphismMode ? 'glassmorphism-button' : ''} {$darkMode
-          ? 'bg-gray-800 hover:bg-gray-700 text-white border border-white'
-          : 'bg-gray-200 hover:bg-gray-300 text-gray-600'} px-4 py-2 rounded transition-colors"
+        class="bg-gray-800 dark:bg-gray-800 hover:bg-gray-700 dark:hover:bg-gray-700 text-white border border-white dark:border-white px-4 py-2 rounded transition-colors {$glassmorphismMode
+          ? 'glassmorphism-button'
+          : ''}"
         onclick={() => (perKeyMode = !perKeyMode)}
       >
         {perKeyMode
@@ -213,23 +206,14 @@
           <button
             class="p-3 rounded-lg border-2 text-left transition-all duration-200"
             style={selectedEffect === effect.id
-              ? `border-color: var(--theme-color-primary); background-color: color-mix(in srgb, var(--theme-color-primary) 15%, ${$darkMode ? 'black' : 'white'});`
-              : `border-color: ${$darkMode ? '#4b5563' : '#e5e5e5'}; background-color: transparent;`}
-            onmouseover={e =>
-              ((e.currentTarget as HTMLElement).style.borderColor = 'var(--theme-color-primary)')}
-            onmouseout={e =>
-              ((e.currentTarget as HTMLElement).style.borderColor =
-                selectedEffect === effect.id
-                  ? 'var(--theme-color-primary)'
-                  : $darkMode
-                    ? '#4b5563'
-                    : '#e5e5e5')}
+              ? `border-color: var(--theme-color-primary); background-color: color-mix(in srgb, var(--theme-color-primary) 15%, var(--tw-prose-body));`
+              : `border-color: ${'#e5e5e5 dark:#4b5563'}; background-color: transparent;`}
             onclick={() => (selectedEffect = effect.id)}
           >
-            <div class="font-medium {$darkMode ? 'text-white' : 'text-gray-900'}">
+            <div class="font-medium text-gray-900 dark:text-white">
               {effect.name}
             </div>
-            <div class="text-sm {$darkMode ? 'text-gray-300' : 'text-gray-600'}">
+            <div class="text-sm text-gray-600 dark:text-gray-300">
               {effect.description}
             </div>
           </button>
@@ -240,11 +224,7 @@
       <div class="space-y-4">
         <!-- Brightness -->
         <div>
-          <div
-            class="flex justify-between text-sm {$darkMode
-              ? 'text-gray-300'
-              : 'text-gray-600'} mb-2"
-          >
+          <div class="flex justify-between text-sm text-gray-600 dark:text-gray-300 mb-2">
             <span>{t('lighting.brightness', currentLanguage)}</span>
             <span>{brightness}%</span>
           </div>
@@ -253,20 +233,14 @@
             min="0"
             max="100"
             bind:value={brightness}
-            class="w-full h-2 rounded-full {$darkMode
-              ? 'bg-gray-700'
-              : 'bg-gray-300'} appearance-none slider-thumb"
+            class="w-full h-2 rounded-full bg-gray-300 dark:bg-gray-700 appearance-none slider-thumb"
           />
         </div>
 
         <!-- Speed (for animated effects) -->
         {#if ['breathing', 'wave', 'rainbow', 'spectrum'].includes(selectedEffect)}
           <div>
-            <div
-              class="flex justify-between text-sm {$darkMode
-                ? 'text-gray-300'
-                : 'text-gray-600'} mb-2"
-            >
+            <div class="flex justify-between text-sm text-gray-600 dark:text-gray-300 mb-2">
               <span>{t('lighting.speed', currentLanguage)}</span>
               <span>{speed}%</span>
             </div>
@@ -275,9 +249,7 @@
               min="1"
               max="100"
               bind:value={speed}
-              class="w-full h-2 rounded-full {$darkMode
-                ? 'bg-gray-700'
-                : 'bg-gray-300'} appearance-none slider-thumb"
+              class="w-full h-2 rounded-full bg-gray-300 dark:bg-gray-700 appearance-none slider-thumb"
             />
           </div>
         {/if}
@@ -285,14 +257,12 @@
         <!-- Direction (for directional effects) -->
         {#if ['wave', 'gradient', 'spectrum'].includes(selectedEffect)}
           <div>
-            <label class="block text-sm {$darkMode ? 'text-gray-300' : 'text-gray-600'} mb-2"
+            <label class="block text-sm text-gray-600 dark:text-gray-300 mb-2"
               >{t('lighting.direction', currentLanguage)}</label
             >
             <select
               bind:value={direction}
-              class="w-full p-2 border {$darkMode
-                ? 'border-white bg-black text-white'
-                : 'border-gray-300 bg-white text-gray-900'} rounded-lg"
+              class="w-full p-2 border border-gray-300 dark:border-white bg-white dark:bg-black text-gray-900 dark:text-white rounded-lg"
             >
               {#each directions as dir}
                 <option value={dir.id}>{dir.name}</option>
@@ -304,26 +274,22 @@
     </div>
 
     <!-- Divider -->
-    <div class="hidden lg:block w-px {$darkMode ? 'bg-white' : 'bg-gray-200'}"></div>
+    <div class="hidden lg:block w-px bg-gray-200 dark:bg-white"></div>
 
     <!-- Color Controls Panel -->
     <div class="flex-1 min-w-[300px]">
-      <h3 class="text-lg font-medium mb-4 {$darkMode ? 'text-white' : 'text-gray-900'}">
+      <h3 class="text-lg font-medium mb-4 text-gray-900 dark:text-white">
         {t('lighting.colorSettings', currentLanguage)}
       </h3>
       {#if perKeyMode}
         <!-- Per-Key Color Mode -->
         <div class="space-y-4">
           <div
-            class="p-3 rounded-lg border {$glassmorphismMode ? 'glassmorphism-button' : ''}"
-            style="background-color: color-mix(in srgb, var(--theme-color-primary) 12%, {$darkMode
-              ? 'black'
-              : 'white'});
-                                border-color: color-mix(in srgb, var(--theme-color-primary) 30%, {$darkMode
-              ? 'white'
-              : '#e5e5e5'});"
+            class="p-3 rounded-lg border dark:bg-black bg-white dark:border-white border-[#e5e5e5] {$glassmorphismMode
+              ? 'glassmorphism-button'
+              : ''}"
           >
-            <div class="font-medium {$darkMode ? 'text-white' : 'text-gray-900'}">
+            <div class="font-medium text-gray-900 dark:text-white">
               {t('lighting.perKeyModeActive', currentLanguage)}
             </div>
             <div class="text-sm" style="color: var(--theme-color-primary);">
@@ -332,21 +298,19 @@
           </div>
 
           <div>
-            <label class="block text-sm {$darkMode ? 'text-gray-300' : 'text-gray-600'} mb-2"
+            <label class="block text-sm text-gray-600 dark:text-gray-300 mb-2"
               >{t('lighting.keyColor', currentLanguage)}</label
             >
             <div class="flex gap-2">
               <input
                 type="color"
                 bind:value={keyColor}
-                class="w-12 h-10 rounded border {$darkMode ? 'border-white' : 'border-gray-300'}"
+                class="w-12 h-10 rounded border border-gray-300 dark:border-white"
               />
               <input
                 type="text"
                 bind:value={keyColor}
-                class="flex-1 p-2 border {$darkMode
-                  ? 'border-white bg-black text-white'
-                  : 'border-gray-300 bg-white text-gray-900'} rounded-lg font-mono"
+                class="flex-1 p-2 border border-gray-300 dark:border-white bg-white dark:bg-black text-gray-900 dark:text-white rounded-lg font-mono"
                 placeholder="#ffffff"
               />
             </div>
@@ -354,16 +318,10 @@
 
           <div class="flex gap-2">
             <button
-              class="flex-1 px-3 py-2 rounded transition-colors text-white {$glassmorphismMode
+              class="flex-1 px-3 py-2 rounded transition-colors text-white bg-primary {$glassmorphismMode
                 ? 'glassmorphism-button'
                 : ''}"
               style="background-color: var(--theme-color-primary);"
-              onmouseover={e =>
-                ((e.currentTarget as HTMLElement).style.backgroundColor =
-                  'color-mix(in srgb, var(--theme-color-primary) 85%, black)')}
-              onmouseout={e =>
-                ((e.currentTarget as HTMLElement).style.backgroundColor =
-                  'var(--theme-color-primary)')}
               onclick={toggleKeySelection}
               disabled={!CurrentSelected}
             >
@@ -372,9 +330,9 @@
                 : t('lighting.selectKey', currentLanguage)}
             </button>
             <button
-              class="{$glassmorphismMode ? 'glassmorphism-button' : ''} {$darkMode
-                ? 'bg-gray-800 hover:bg-gray-700 text-white border border-white'
-                : 'bg-gray-600 hover:bg-gray-700 text-white'} px-3 py-2 rounded transition-colors"
+              class="{$glassmorphismMode
+                ? 'glassmorphism-button'
+                : ''} bg-gray-600 hover:bg-gray-700 text-white dark:bg-gray-800 border border-white px-3 py-2 rounded transition-colors"
               onclick={clearKeySelection}
             >
               {t('lighting.clear', currentLanguage)} ({selectedKeys.size})
@@ -385,12 +343,6 @@
               ? 'glassmorphism-button'
               : ''}"
             style="background-color: var(--theme-color-primary);"
-            onmouseover={e =>
-              ((e.currentTarget as HTMLElement).style.backgroundColor =
-                'color-mix(in srgb, var(--theme-color-primary) 85%, black)')}
-            onmouseout={e =>
-              ((e.currentTarget as HTMLElement).style.backgroundColor =
-                'var(--theme-color-primary)')}
             onclick={applyToSelectedKeys}
             disabled={selectedKeys.size === 0}
           >
@@ -401,28 +353,26 @@
         <!-- Effect-based Color Controls -->
         {#if selectedEffect === 'static' || selectedEffect === 'breathing' || selectedEffect === 'reactive'}
           <div>
-            <label class="block text-sm {$darkMode ? 'text-gray-300' : 'text-gray-600'} mb-2"
-              >{t('lighting.color', currentLanguage)}</label
+            <spam class="block text-sm text-gray-600 dark:text-gray-300 mb-2"
+              >{t('lighting.color', currentLanguage)}</spam
             >
             <div class="flex gap-2">
               <input
                 type="color"
                 bind:value={staticColor}
-                class="w-12 h-10 rounded border {$darkMode ? 'border-white' : 'border-gray-300'}"
+                class="w-12 h-10 rounded border border-gray-300 dark:border-white"
               />
               <input
                 type="text"
                 bind:value={staticColor}
-                class="flex-1 p-2 border {$darkMode
-                  ? 'border-white bg-black text-white'
-                  : 'border-gray-300 bg-white text-gray-900'} rounded-lg font-mono"
+                class="flex-1 p-2 border {'border-gray-300 bg-white text-gray-900 dark:border-white bg-black text-white'} rounded-lg font-mono"
                 placeholder="#ff0000"
               />
             </div>
             {#if hexToRgb(staticColor)}
               {@const rgb = hexToRgb(staticColor)}
               {#if rgb}
-                <div class="text-xs {$darkMode ? 'text-gray-400' : 'text-gray-600'}">
+                <div class="text-xs text-gray-600 dark:text-gray-400">
                   {formatString(t('lighting.rgbValues', currentLanguage), rgb.r, rgb.g, rgb.b)}
                 </div>
               {/if}
@@ -430,7 +380,7 @@
           </div>
         {:else if selectedEffect === 'gradient'}
           <div>
-            <label class="block text-sm {$darkMode ? 'text-gray-300' : 'text-gray-600'} mb-2"
+            <label class="block text-sm text-gray-600 dark:text-gray-300 mb-2"
               >{t('lighting.gradientColors', currentLanguage)}</label
             >
             <div class="space-y-2">
@@ -439,14 +389,12 @@
                   <input
                     type="color"
                     bind:value={gradientColors[index]}
-                    class="w-10 h-8 rounded border {$darkMode ? 'border-white' : 'border-gray-300'}"
+                    class="w-10 h-8 rounded border border-gray-300 dark:border-white"
                   />
                   <input
                     type="text"
                     bind:value={gradientColors[index]}
-                    class="flex-1 p-1 border {$darkMode
-                      ? 'border-white bg-black text-white'
-                      : 'border-gray-300 bg-white text-gray-900'} rounded text-sm font-mono"
+                    class="flex-1 p-1 border {'border-gray-300 bg-white text-gray-900 dark:border-white bg-black text-white'} rounded text-sm font-mono"
                   />
                   {#if gradientColors.length > 2}
                     <button
@@ -458,17 +406,15 @@
               {/each}
             </div>
             <button
-              class="mt-2 w-full {$darkMode
-                ? 'bg-gray-800 hover:bg-gray-700 text-white border border-white'
-                : 'bg-gray-200 hover:bg-gray-300 text-gray-700'} px-3 py-2 rounded transition-colors"
+              class="mt-2 w-full {'bg-gray-200 hover:bg-gray-300 text-gray-700 dark:bg-gray-800 hover:bg-gray-700 text-white border border-white'} px-3 py-2 rounded transition-colors"
               onclick={addGradientColor}
             >
               {t('lighting.addColor', currentLanguage)}
             </button>
           </div>
         {:else}
-          <div class="p-4 {$darkMode ? 'bg-gray-800' : 'bg-gray-50'} rounded-lg text-center">
-            <div class={$darkMode ? 'text-gray-300' : 'text-gray-600'}>
+          <div class="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg text-center">
+            <div class="text-gray-600 dark:text-gray-300">
               {selectedEffect === 'rainbow' || selectedEffect === 'spectrum'
                 ? t('lighting.automaticColors', currentLanguage)
                 : t('lighting.noColorSettings', currentLanguage)}
@@ -478,27 +424,23 @@
       {/if}
       <!-- Preview -->
       <div class="mt-6">
-        <label class="block text-sm {$darkMode ? 'text-gray-300' : 'text-gray-600'} mb-2"
+        <label class="block text-sm text-gray-600 dark:text-gray-300 mb-2"
           >{t('lighting.preview', currentLanguage)}</label
         >
         <div
-          class="h-16 rounded-lg border {$darkMode
-            ? 'border-white'
-            : 'border-gray-300'} flex items-center justify-center"
+          class="h-16 rounded-lg border {'border-gray-300 dark:border-white'} flex items-center justify-center"
           style:background={selectedEffect === 'static'
             ? staticColor
             : selectedEffect === 'gradient'
               ? `linear-gradient(90deg, ${gradientColors.join(', ')})`
-              : $darkMode
-                ? '#374151'
-                : '#f3f4f6'}
+              : '#f3f4f6 dark:#374151'}
         >
           {#if selectedEffect === 'rainbow' || selectedEffect === 'spectrum'}
-            <div class="text-sm {$darkMode ? 'text-gray-300' : 'text-gray-600'}">
+            <div class="text-sm text-gray-600 dark:text-gray-300">
               {t('lighting.animatedEffect', currentLanguage)}
             </div>
           {:else if selectedEffect === 'reactive' || selectedEffect === 'ripple'}
-            <div class="text-sm {$darkMode ? 'text-gray-300' : 'text-gray-600'}">
+            <div class="text-sm text-gray-600 dark:text-gray-300">
               {t('lighting.reactiveEffect', currentLanguage)}
             </div>
           {/if}

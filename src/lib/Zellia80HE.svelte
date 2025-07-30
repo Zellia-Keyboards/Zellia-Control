@@ -1,6 +1,4 @@
 <script lang="ts">
-  import { darkMode } from '$lib/DarkModeStore.svelte';
-
   const KEYBOARD_LAYOUT = [
     [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
     [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1],
@@ -33,9 +31,7 @@
 </script>
 
 <div
-  class="keyboard-component p-4 {$darkMode
-    ? 'bg-neutral-800 border border-neutral-700'
-    : 'bg-gray-100 border border-gray-300'} rounded-xl shadow-md inline-block space-y-0.5"
+  class="keyboard-component p-4 bg-gray-100 dark:bg-neutral-800 border border-gray-300 dark:border-neutral-700 rounded-xl shadow-md inline-block space-y-0.5"
 >
   {#each KEYBOARD_LAYOUT as row, y}
     <div
@@ -45,16 +41,14 @@
         {@const keyText = values.at(y)?.at(x)?.toString() ?? 'null'}
         {@const formatted = formatKeyText(keyText)}
         <button
-          class="h-14 {$darkMode
-            ? 'bg-black border-gray-700 hover:bg-gray-800'
-            : 'bg-gray-50 border-gray-400 hover:bg-gray-100'} border rounded-lg flex flex-col items-center justify-center hover:cursor-pointer gap-1 font-sans"
+          class="h-14 bg-gray-50 dark:bg-black border border-gray-400 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg flex flex-col items-center justify-center hover:cursor-pointer gap-1 font-sans"
           style:width={y === 5 && x === 3 ? '400px' : `${width * 3.5}rem`}
           onclick={_ => onClick(x, y, _)}
         >
-          <div class="key-bottom text-xs {$darkMode ? 'text-gray-300' : 'text-gray-800'}">
+          <div class="key-bottom text-xs text-gray-800 dark:text-gray-300">
             {formatted.bottom}
           </div>
-          <div class="key-top text-sm font-bold {$darkMode ? 'text-white' : 'text-black'}">
+          <div class="key-top text-sm font-bold text-black dark:text-white">
             {formatted.top}
           </div>
         </button>

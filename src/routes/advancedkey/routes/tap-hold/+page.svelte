@@ -226,26 +226,20 @@
 <div
   class="rounded-2xl shadow p-4 mt-2 mb-4 grow {$glassmorphismMode
     ? 'glassmorphism-card'
-    : ''}  {$darkMode ? 'border border-gray-600 text-white' : 'text-black'} flex flex-col"
-  style="background-color: {$darkMode
-    ? `color-mix(in srgb, var(--theme-color-primary) 5%, black)`
-    : `color-mix(in srgb, var(--theme-color-primary) 10%, white)`};"
+    : ''} bg-primary-50 dark:bg-black text-black dark:text-white border-0 dark:border dark:border-gray-600 flex flex-col"
 >
   <!-- Header -->
   <div
-    class="border-b px-6 py-4"
-    style="background-color: color-mix(in srgb, var(--theme-color-primary) 3%, ${$darkMode
-      ? 'black'
-      : 'white'}); border-color: color-mix(in srgb, var(--theme-color-primary) 20%, ${$darkMode
-      ? 'white'
-      : '#e5e5e5'});"
+    class="border-b px-6 py-4 {$glassmorphismMode
+      ? ''
+      : $darkMode
+        ? 'bg-primary-950 border-primary-800'
+        : 'bg-primary-25 border-primary-200'}"
   >
     <div class="flex items-center justify-between">
       <div class="flex items-center gap-4">
         <button
-          class="flex items-center gap-2 {$darkMode
-            ? 'text-gray-400 hover:text-white'
-            : 'text-gray-600 hover:text-gray-900'} transition-colors"
+          class="flex items-center gap-2 {'text-gray-600 hover:text-gray-900 dark:text-gray-400 '} transition-colors"
           onclick={goBack}
         >
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -259,10 +253,10 @@
           {t('advancedkey.backToAdvanced', currentLanguage)}
         </button>
         <div>
-          <h1 class="text-xl font-semibold {$darkMode ? 'text-white' : 'text-gray-900'}">
+          <h1 class="text-xl font-semibold text-gray-900 dark:text-white">
             {t('advancedkey.tapHoldTitle', currentLanguage)}
           </h1>
-          <p class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-500'}">
+          <p class="text-sm text-gray-500 dark:text-gray-400">
             {t('advancedkey.tapHoldSubtitle', currentLanguage)}
           </p>
         </div>
@@ -271,20 +265,18 @@
         <button
           class="px-4 py-2 text-white rounded-md transition-colors text-sm font-medium disabled:opacity-50 {$glassmorphismMode
             ? 'glassmorphism-button'
-            : ''}"
-          style="background-color: var(--theme-color-primary); 
-                           {!CurrentSelected
-            ? ''
-            : 'hover:background-color: color-mix(in srgb, var(--theme-color-primary) 85%, black);'}"
+            : CurrentSelected
+              ? 'bg-primary-500 hover:bg-primary-600'
+              : 'bg-primary-500'}"
           onclick={applyConfiguration}
           disabled={!CurrentSelected}
         >
           {t('advancedkey.applyConfiguration', currentLanguage)}
         </button>
         <button
-          class="px-4 py-2 {$glassmorphismMode ? 'glassmorphism-button' : ''} {$darkMode
-            ? 'bg-red-700 hover:bg-red-600'
-            : 'bg-red-600 hover:bg-red-700'} text-white rounded-md transition-colors text-sm font-medium"
+          class="px-4 py-2 {$glassmorphismMode
+            ? 'glassmorphism-button'
+            : ''} {'bg-red-600 hover:bg-red-700 dark:bg-red-700 hover:bg-red-600'} text-white rounded-md transition-colors text-sm font-medium"
           onclick={resetAllConfigurations}
         >
           {t('advancedkey.resetAllTapHold', currentLanguage)}
@@ -299,12 +291,11 @@
       <div class="max-w-6xl mx-auto">
         <!-- Selected Key Info -->
         <div
-          class="rounded-lg border p-6 mb-6 {$glassmorphismMode ? 'glassmorphism-card' : ''}"
-          style="background-color: color-mix(in srgb, var(--theme-color-primary) 8%, ${$darkMode
-            ? 'black'
-            : 'white'}); border-color: color-mix(in srgb, var(--theme-color-primary) 30%, ${$darkMode
-            ? 'white'
-            : '#e5e5e5'});"
+          class="rounded-lg border p-6 mb-6 {$glassmorphismMode
+            ? 'glassmorphism-card'
+            : $darkMode
+              ? 'bg-primary-900 border-primary-700'
+              : 'bg-primary-100 border-primary-300'}"
         >
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-4">
@@ -312,13 +303,11 @@
                 <div
                   class="w-12 h-12 rounded-lg flex items-center justify-center border-2 {$glassmorphismMode
                     ? 'glassmorphism-button'
-                    : ''}"
-                  style="background-color: color-mix(in srgb, var(--theme-color-primary) 10%, {$darkMode
-                    ? 'black'
-                    : 'white'});
-                                            border-color: var(--theme-color-primary);"
+                    : $darkMode
+                      ? 'bg-primary-800 border-primary-600'
+                      : 'bg-primary-200 border-primary-500'}"
                 >
-                  <span class="font-mono font-bold {$darkMode ? 'text-white' : 'text-gray-900'}"
+                  <span class="font-mono font-bold text-gray-900 dark:text-white"
                     >{CurrentSelected
                       ? $KeyboardDisplayValues[CurrentSelected[1]]?.[CurrentSelected[0]] ||
                         t('common.unknown', currentLanguage)
@@ -326,23 +315,22 @@
                   >
                 </div>
                 <div>
-                  <h3 class="font-medium {$darkMode ? 'text-white' : 'text-gray-900'}">
+                  <h3 class="font-medium text-gray-900 dark:text-white">
                     {t('advancedkey.selectedKey', currentLanguage)}
                   </h3>
-                  <p class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-500'}">
+                  <p class="text-sm text-gray-500 dark:text-gray-400">
                     {t('advancedkey.position', currentLanguage)}: {CurrentSelected[0]}, {CurrentSelected[1]}
                   </p>
                 </div>
               </div>
             </div>
             <div class="flex items-center gap-3">
-              <span class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'}"
+              <span class="text-sm text-gray-600 dark:text-gray-400"
                 >{t('advancedkey.mode', currentLanguage)}:</span
               ><span
                 class="px-3 py-1 rounded-full text-sm font-medium text-white {$glassmorphismMode
                   ? 'glassmorphism-button'
-                  : ''}"
-                style="background-color: var(--theme-color-primary);"
+                  : 'bg-primary-500'}"
               >
                 {t('advancedkey.tapHold', currentLanguage)}
               </span>
@@ -355,17 +343,16 @@
           <div class="lg:col-span-2 space-y-6">
             <!-- Tap Action Selection -->
             <div
-              class="rounded-lg border p-6 {$glassmorphismMode ? 'glassmorphism-card' : ''}"
-              style="background-color: color-mix(in srgb, var(--theme-color-primary) 5%, ${$darkMode
-                ? 'black'
-                : 'white'}); border-color: color-mix(in srgb, var(--theme-color-primary) 25%, ${$darkMode
-                ? 'white'
-                : '#e5e5e5'});"
+              class="rounded-lg border p-6 {$glassmorphismMode
+                ? 'glassmorphism-card'
+                : $darkMode
+                  ? 'bg-primary-950 border-primary-800'
+                  : 'bg-primary-50 border-primary-300'}"
             >
-              <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'} mb-4">
+              <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">
                 {t('advancedkey.tapAction', currentLanguage)}
               </h3>
-              <p class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'} mb-4">
+              <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
                 {t('advancedkey.tapActionDesc', currentLanguage)}
               </p>
 
@@ -384,33 +371,9 @@
                         <button
                           class="aspect-square w-15 h-15 text-xs rounded-md border transition-all {$glassmorphismMode
                             ? 'glassmorphism-button'
-                            : ''}"
-                          style={tapAction === action.id
-                            ? `background-color: var(--theme-color-primary); 
-                                                           border-color: var(--theme-color-primary); 
-                                                           color: white;`
-                            : `background-color: ${$darkMode ? '#111827' : 'white'}; 
-                                                           border-color: ${$darkMode ? '#374151' : '#e5e7eb'}; 
-                                                           color: ${$darkMode ? '#d1d5db' : '#374151'};`}
-                          onmouseover={e => {
-                            if (tapAction !== action.id) {
-                              (e.currentTarget as HTMLElement).style.backgroundColor = $darkMode
-                                ? '#374151'
-                                : `color-mix(in srgb, var(--theme-color-primary) 10%, white)`;
-                              (e.currentTarget as HTMLElement).style.borderColor =
-                                `color-mix(in srgb, var(--theme-color-primary) 50%, ${$darkMode ? '#374151' : '#e5e7eb'})`;
-                            }
-                          }}
-                          onmouseout={e => {
-                            if (tapAction !== action.id) {
-                              (e.currentTarget as HTMLElement).style.backgroundColor = $darkMode
-                                ? '#111827'
-                                : 'white';
-                              (e.currentTarget as HTMLElement).style.borderColor = $darkMode
-                                ? '#374151'
-                                : '#e5e7eb';
-                            }
-                          }}
+                            : tapAction === action.id
+                              ? 'bg-primary-500 border-primary-500 text-white'
+                              : 'bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-primary-100 hover:border-primary-400 dark:hover:bg-gray-700'}"
                           onclick={() => (tapAction = action.id)}
                           title={action.name}
                         >
@@ -424,17 +387,16 @@
             </div>
             <!-- Hold Action Selection -->
             <div
-              class="rounded-lg border p-6 {$glassmorphismMode ? 'glassmorphism-card' : ''}"
-              style="background-color: color-mix(in srgb, var(--theme-color-primary) 5%, ${$darkMode
-                ? 'black'
-                : 'white'}); border-color: color-mix(in srgb, var(--theme-color-primary) 25%, ${$darkMode
-                ? 'white'
-                : '#e5e5e5'});"
+              class="rounded-lg border p-6 {$glassmorphismMode
+                ? 'glassmorphism-card'
+                : $darkMode
+                  ? 'bg-primary-950 border-primary-800'
+                  : 'bg-primary-50 border-primary-300'}"
             >
-              <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'} mb-4">
+              <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">
                 {t('advancedkey.holdAction', currentLanguage)}
               </h3>
-              <p class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'} mb-4">
+              <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
                 {t('advancedkey.holdActionDesc', currentLanguage)}
               </p>
 
@@ -453,33 +415,9 @@
                         <button
                           class="aspect-square w-15 h-15 text-xs rounded-md border transition-all {$glassmorphismMode
                             ? 'glassmorphism-button'
-                            : ''}"
-                          style={holdAction === action.id
-                            ? `background-color: color-mix(in srgb, var(--theme-color-primary) 80%, green); 
-                                                           border-color: color-mix(in srgb, var(--theme-color-primary) 80%, green); 
-                                                           color: white;`
-                            : `background-color: ${$darkMode ? '#111827' : 'white'}; 
-                                                           border-color: ${$darkMode ? '#374151' : '#e5e7eb'}; 
-                                                           color: ${$darkMode ? '#d1d5db' : '#374151'};`}
-                          onmouseover={e => {
-                            if (holdAction !== action.id) {
-                              (e.currentTarget as HTMLElement).style.backgroundColor = $darkMode
-                                ? '#374151'
-                                : `color-mix(in srgb, var(--theme-color-primary) 10%, white)`;
-                              (e.currentTarget as HTMLElement).style.borderColor =
-                                `color-mix(in srgb, var(--theme-color-primary) 50%, ${$darkMode ? '#374151' : '#e5e7eb'})`;
-                            }
-                          }}
-                          onmouseout={e => {
-                            if (holdAction !== action.id) {
-                              (e.currentTarget as HTMLElement).style.backgroundColor = $darkMode
-                                ? '#111827'
-                                : 'white';
-                              (e.currentTarget as HTMLElement).style.borderColor = $darkMode
-                                ? '#374151'
-                                : '#e5e7eb';
-                            }
-                          }}
+                            : holdAction === action.id
+                              ? 'bg-green-500 border-green-500 text-white'
+                              : 'bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-primary-100 hover:border-primary-400 dark:hover:bg-gray-700'}"
                           onclick={() => (holdAction = action.id)}
                           title={action.name}
                         >
@@ -493,14 +431,13 @@
             </div>
             <!-- Timing Configuration -->
             <div
-              class="rounded-lg border p-6 {$glassmorphismMode ? 'glassmorphism-card' : ''}"
-              style="background-color: color-mix(in srgb, var(--theme-color-primary) 5%, ${$darkMode
-                ? 'black'
-                : 'white'}); border-color: color-mix(in srgb, var(--theme-color-primary) 25%, ${$darkMode
-                ? 'white'
-                : '#e5e5e5'});"
+              class="rounded-lg border p-6 {$glassmorphismMode
+                ? 'glassmorphism-card'
+                : $darkMode
+                  ? 'bg-primary-950 border-primary-800'
+                  : 'bg-primary-50 border-primary-300'}"
             >
-              <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'} mb-4">
+              <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">
                 {t('advancedkey.tapAction', currentLanguage)} & {t(
                   'advancedkey.holdAction',
                   currentLanguage
@@ -514,12 +451,9 @@
                   <div class="flex justify-between items-center mb-2">
                     <label
                       for="hold-delay-slider"
-                      class="text-sm font-medium {$darkMode ? 'text-gray-300' : 'text-gray-700'}"
-                      >Hold Delay</label
+                      class="text-sm font-medium text-gray-700 dark:text-gray-300">Hold Delay</label
                     >
-                    <span class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-500'}"
-                      >{holdDelay}ms</span
-                    >
+                    <span class="text-sm text-gray-500 dark:text-gray-400">{holdDelay}ms</span>
                   </div>
                   <input
                     id="hold-delay-slider"
@@ -533,7 +467,7 @@
                       : 'bg-gray-300'} appearance-none slider-thumb"
                     style="--thumb-color: var(--theme-color-primary)"
                   />
-                  <p class="text-xs {$darkMode ? 'text-gray-400' : 'text-gray-500'} mt-1">
+                  <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
                     Time before hold action triggers
                   </p>
                 </div>
@@ -543,12 +477,10 @@
                   <div class="flex justify-between items-center mb-2">
                     <label
                       for="tap-timeout-slider"
-                      class="text-sm font-medium {$darkMode ? 'text-gray-300' : 'text-gray-700'}"
+                      class="text-sm font-medium text-gray-700 dark:text-gray-300"
                       >Tap Timeout</label
                     >
-                    <span class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-500'}"
-                      >{tapTimeout}ms</span
-                    >
+                    <span class="text-sm text-gray-500 dark:text-gray-400">{tapTimeout}ms</span>
                   </div>
                   <input
                     id="tap-timeout-slider"
@@ -562,7 +494,7 @@
                       : 'bg-gray-300'} appearance-none slider-thumb"
                     style="--thumb-color: var(--theme-color-primary)"
                   />
-                  <p class="text-xs {$darkMode ? 'text-gray-400' : 'text-gray-500'} mt-1">
+                  <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
                     Maximum time for a tap to register
                   </p>
                 </div>
@@ -574,16 +506,13 @@
           <div class="lg:col-span-1 space-y-6">
             <!-- Live Preview -->
             <div
-              class="rounded-lg border p-6 {$glassmorphismMode ? 'glassmorphism-card' : ''}"
-              style="background-color: color-mix(in srgb, var(--theme-color-primary) 5%, ${$darkMode
-                ? 'black'
-                : 'white'}); border-color: color-mix(in srgb, var(--theme-color-primary) 25%, ${$darkMode
-                ? 'white'
-                : '#e5e5e5'});"
+              class="rounded-lg border p-6 {$glassmorphismMode
+                ? 'glassmorphism-card'
+                : $darkMode
+                  ? 'bg-primary-950 border-primary-800'
+                  : 'bg-primary-50 border-primary-300'}"
             >
-              <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'} mb-4">
-                Preview
-              </h3>
+              <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Preview</h3>
 
               <div class="space-y-3">
                 <div
@@ -591,8 +520,8 @@
                     ? 'border-gray-700'
                     : 'border-gray-100'} border-b"
                 >
-                  <span class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'}">Key</span>
-                  <span class="font-mono font-medium {$darkMode ? 'text-white' : 'text-gray-900'}"
+                  <span class="text-sm text-gray-600 dark:text-gray-400">Key</span>
+                  <span class="font-mono font-medium text-gray-900 dark:text-white"
                     >{CurrentSelected
                       ? $KeyboardDisplayValues[CurrentSelected[1]]?.[CurrentSelected[0]] ||
                         t('common.unknown', currentLanguage)
@@ -604,8 +533,8 @@
                     ? 'border-gray-700'
                     : 'border-gray-100'} border-b"
                 >
-                  <span class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'}">Tap</span>
-                  <span class="font-medium" style="color: var(--theme-color-primary);"
+                  <span class="text-sm text-gray-600 dark:text-gray-400">Tap</span>
+                  <span class="font-medium text-primary-500"
                     >{keyActions.find(k => k.id === tapAction)?.name || tapAction}</span
                   >
                 </div>
@@ -614,34 +543,29 @@
                     ? 'border-gray-700'
                     : 'border-gray-100'} border-b"
                 >
-                  <span class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'}">Hold</span>
-                  <span
-                    class="font-medium"
-                    style="color: color-mix(in srgb, var(--theme-color-primary) 80%, green);"
+                  <span class="text-sm text-gray-600 dark:text-gray-400">Hold</span>
+                  <span class="font-medium text-green-500"
                     >{keyActions.find(k => k.id === holdAction)?.name || holdAction}</span
                   >
                 </div>
                 <div class="flex justify-between items-center py-2">
-                  <span class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'}">Delay</span>
-                  <span class="font-medium {$darkMode ? 'text-white' : 'text-gray-900'}"
-                    >{holdDelay}ms</span
-                  >
+                  <span class="text-sm text-gray-600 dark:text-gray-400">Delay</span>
+                  <span class="font-medium text-gray-900 dark:text-white">{holdDelay}ms</span>
                 </div>
               </div>
             </div>
             <!-- Info Panel -->
             <div
-              class="border rounded-lg p-6 {$glassmorphismMode ? 'glassmorphism-card' : ''}"
-              style="background-color: color-mix(in srgb, var(--theme-color-primary) 12%, ${$darkMode
-                ? 'black'
-                : 'white'}); border-color: color-mix(in srgb, var(--theme-color-primary) 30%, ${$darkMode
-                ? 'white'
-                : '#e5e5e5'});"
+              class="border rounded-lg p-6 {$glassmorphismMode
+                ? 'glassmorphism-card'
+                : $darkMode
+                  ? 'bg-primary-900 border-primary-700'
+                  : 'bg-primary-200 border-primary-400'}"
             >
-              <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'} mb-2">
+              <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">
                 {t('advancedkey.howItWorks', currentLanguage)}
               </h3>
-              <div class="text-sm {$darkMode ? 'text-gray-300' : 'text-gray-800'} space-y-2">
+              <div class="text-sm text-gray-800 dark:text-gray-300 space-y-2">
                 <p>
                   • {tPlaceholder('advancedkey.quickTap', currentLanguage, tapTimeout.toString())}:
                   <strong>{keyActions.find(k => k.id === tapAction)?.name || tapAction}</strong>
@@ -659,18 +583,17 @@
               <div
                 class="rounded-lg border p-6 {$glassmorphismMode
                   ? 'glassmorphism-card'
-                  : ''} {sectionAnimationPlayed ? 'animate-section-fade-in' : ''}"
-                style="background-color: color-mix(in srgb, var(--theme-color-primary) 5%, ${$darkMode
-                  ? 'black'
-                  : 'white'}); border-color: color-mix(in srgb, var(--theme-color-primary) 25%, ${$darkMode
-                  ? 'white'
-                  : '#e5e5e5'});"
+                  : $darkMode
+                    ? 'bg-primary-950 border-primary-800'
+                    : 'bg-primary-50 border-primary-300'} {sectionAnimationPlayed
+                  ? 'animate-section-fade-in'
+                  : ''}"
               >
                 <div class="flex items-center justify-between mb-4">
-                  <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'}">
+                  <h3 class="text-lg font-medium text-gray-900 dark:text-white">
                     {t('advancedkey.configuredTapHold', currentLanguage)}
                   </h3>
-                  <span class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-500'}"
+                  <span class="text-sm text-gray-500 dark:text-gray-400"
                     >{configuredTapHoldKeys.length}
                     {configuredTapHoldKeys.length !== 1
                       ? t('advancedkey.keysCountPlural', currentLanguage)
@@ -688,14 +611,11 @@
                     <div
                       class="p-3 rounded-lg border transform transition-all duration-500 ease-out {$glassmorphismMode
                         ? 'glassmorphism-card'
-                        : ''} {isDeleting ? 'animate-fade-out' : ''} {isNewlyAdded
-                        ? 'animate-fade-in'
-                        : ''}"
-                      style="background-color: color-mix(in srgb, var(--theme-color-primary) 8%, ${$darkMode
-                        ? 'black'
-                        : 'white'}); border-color: color-mix(in srgb, var(--theme-color-primary) 25%, ${$darkMode
-                        ? 'white'
-                        : '#e5e5e5'});"
+                        : $darkMode
+                          ? 'bg-primary-900 border-primary-700'
+                          : 'bg-primary-100 border-primary-300'} {isDeleting
+                        ? 'animate-fade-out'
+                        : ''} {isNewlyAdded ? 'animate-fade-in' : ''}"
                     >
                       <div class="flex items-center justify-between mb-2">
                         <span
@@ -722,30 +642,28 @@
                       </div>
                       <div class="text-xs space-y-1">
                         <div class="flex justify-between">
-                          <span class={$darkMode ? 'text-gray-400' : 'text-gray-600'}
+                          <span class="text-gray-600 dark:text-gray-400"
                             >{t('advancedkey.tap', currentLanguage)}:</span
                           >
-                          <span class="font-medium" style="color: var(--theme-color-primary);"
+                          <span class="font-medium text-primary-500"
                             >{keyActions.find(k => k.id === tapHoldConfig.tapAction)?.name ||
                               tapHoldConfig.tapAction}</span
                           >
                         </div>
                         <div class="flex justify-between">
-                          <span class={$darkMode ? 'text-gray-400' : 'text-gray-600'}
+                          <span class="text-gray-600 dark:text-gray-400"
                             >{t('advancedkey.hold', currentLanguage)}:</span
                           >
-                          <span
-                            class="font-medium"
-                            style="color: color-mix(in srgb, var(--theme-color-primary) 80%, green);"
+                          <span class="font-medium text-green-500"
                             >{keyActions.find(k => k.id === tapHoldConfig.holdAction)?.name ||
                               tapHoldConfig.holdAction}</span
                           >
                         </div>
                         <div class="flex justify-between">
-                          <span class={$darkMode ? 'text-gray-400' : 'text-gray-600'}
+                          <span class="text-gray-600 dark:text-gray-400"
                             >{t('advancedkey.holdDelay', currentLanguage)}:</span
                           >
-                          <span class={$darkMode ? 'text-gray-300' : 'text-gray-700'}
+                          <span class="text-gray-700 dark:text-gray-300"
                             >{tapHoldConfig.holdDelay}{t(
                               'advancedkey.milliseconds',
                               currentLanguage
@@ -768,13 +686,10 @@
           <div
             class="w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-4 {glassmorphismMode
               ? 'glassmorphism-card'
-              : $darkMode
-                ? 'bg-gray-800'
-                : 'bg-gray-100'}"
+              : 'bg-gray-100 dark:bg-gray-800'}"
           >
             <svg
-              class="w-12 h-12"
-              style="color: var(--theme-color-primary);"
+              class="w-12 h-12 text-primary-500"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -787,19 +702,18 @@
               />
             </svg>
           </div>
-          <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'} mb-2">
+          <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">
             {t('advancedkey.noKeySelected', currentLanguage)}
           </h3>
-          <p class="{$darkMode ? 'text-gray-400' : 'text-gray-600'} mb-4">
+          <p class="text-gray-600 dark:text-gray-400 mb-4">
             {t('advancedkey.selectKeyToConfig', currentLanguage)}
           </p>
           <div
-            class="{$glassmorphismMode ? 'glassmorphism-card' : ''} {$darkMode
-              ? 'bg-gray-900 border-gray-600 text-gray-300'
-              : 'bg-blue-50 border-blue-200 text-blue-700'} border rounded-lg p-4 text-sm"
-            style="background-color: color-mix(in srgb, var(--theme-color-primary) 15%, white);
-                                border-color: color-mix(in srgb, var(--theme-color-primary) 40%, #e5e5e5);
-                                color: color-mix(in srgb, var(--theme-color-primary) 80%, black);"
+            class="{$glassmorphismMode
+              ? 'glassmorphism-card'
+              : $darkMode
+                ? 'bg-primary-900 border-primary-600 text-primary-300'
+                : 'bg-primary-100 border-primary-400 text-primary-700'} border rounded-lg p-4 text-sm"
           >
             <strong>{t('advancedkey.tip', currentLanguage)}:</strong>
             {t('advancedkey.tapHoldTip', currentLanguage)}

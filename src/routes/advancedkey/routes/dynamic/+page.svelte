@@ -1,6 +1,6 @@
 <script lang="ts">
   import { KeyboardDisplayValues } from '$lib/KeyboardState.svelte';
-  import { darkMode, glassmorphismMode } from '$lib/DarkModeStore.svelte';
+  import { glassmorphismMode } from '$lib/DarkModeStore.svelte';
   import { language, t } from '$lib/LanguageStore.svelte';
   import {
     globalConfigurations,
@@ -426,9 +426,7 @@
       <button
         class="absolute z-20 rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 {$glassmorphismMode
           ? 'glassmorphism-button'
-          : ''} {$darkMode
-          ? 'bg-gray-600 hover:bg-gray-500 focus-visible:ring-gray-400'
-          : 'bg-blue-500 hover:bg-blue-600 focus-visible:ring-blue-300'}"
+          : ''} {'bg-blue-500 hover:bg-blue-600 focus-visible:ring-blue-300 dark:bg-gray-600 hover:bg-gray-500 focus-visible:ring-gray-400'}"
         style="width: {NODE_SIZE +
           intervalWidth(interval)}px; height: {NODE_SIZE}px; top: {NODE_TOP}px; left: {nodeLeft(
           start
@@ -444,7 +442,7 @@
       <button
         class="absolute z-20 rounded-full {$glassmorphismMode
           ? 'glassmorphism-button'
-          : ''} {$darkMode ? 'bg-gray-500' : 'bg-purple-500'}"
+          : ''} bg-purple-500 dark:bg-gray-500"
         style="width: {NODE_SIZE}px; height: {NODE_SIZE}px; top: {NODE_TOP}px; left: {nodeLeft(
           start
         )}px;"
@@ -457,7 +455,7 @@
     <button
       class="absolute z-30 flex items-center justify-center rounded-sm border cursor-ew-resize transition-colors select-none {$glassmorphismMode
         ? 'glassmorphism-button'
-        : ''} {$darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-600 hover:bg-gray-700'}"
+        : ''} bg-gray-600 hover:bg-gray-700 dark:bg-gray-700 hover:bg-gray-600"
       style:width={GRIP_WIDTH + 'px'}
       style:height={GRIP_HEIGHT + 'px'}
       style:left="{nodeLeft(start) + GRIP_OFFSET + intervalWidth(interval)}px"
@@ -482,34 +480,20 @@
 >
   {#snippet body(x, y)}
     <div
-      class="hover:scale-90 transition-all duration-300 h-14 {$darkMode
-        ? 'bg-black border-gray-700'
-        : 'bg-gray-50 border-gray-400'} data-[selected=true]:bg-gray-500 data-[selected=true]:border-gray-700 data-[selected=true]:border-4 border rounded-lg flex flex-col items-center justify-center hover:cursor-pointer gap-1 font-sans text-white"
+      class="hover:scale-90 transition-all duration-300 h-14 dark:bg-black dark:border-gray-700 bg-gray-50 border-gray-400 data-[selected=true]:bg-gray-500 data-[selected=true]:border-gray-700 data-[selected=true]:border-4 border rounded-lg flex flex-col items-center justify-center hover:cursor-pointer gap-1 font-sans text-white"
     ></div>{/snippet}
 </NewZellia80He>
 <div
   class="rounded-2xl shadow p-4 mt-2 mb-4 grow {$glassmorphismMode
     ? 'glassmorphism-card'
-    : ''} {$darkMode ? 'border border-gray-600 text-white' : 'text-black'} h-full flex flex-col"
-  style="background-color: {$darkMode
-    ? `color-mix(in srgb, var(--theme-color-primary) 5%, black)`
-    : `color-mix(in srgb, var(--theme-color-primary) 10%, white)`};"
+    : ''} text-black dark:text-white border-0 dark:border dark:border-gray-600 h-full flex flex-col bg-primary-100 dark:bg-black"
 >
   <!-- Header -->
-  <div
-    class="border-b px-6 py-4"
-    style="background-color: color-mix(in srgb, var(--theme-color-primary) 3%, ${$darkMode
-      ? 'black'
-      : 'white'}); border-color: color-mix(in srgb, var(--theme-color-primary) 20%, ${$darkMode
-      ? 'white'
-      : '#e5e5e5'});"
-  >
+  <div class="border-b px-6 py-4 bg-white dark:bg-black dark:border-white border-[#e5e5e5]">
     <div class="flex items-center justify-between">
       <div class="flex items-center gap-4">
         <a
-          class="flex items-center gap-2 {$darkMode
-            ? 'text-gray-400 hover:text-white'
-            : 'text-gray-600 hover:text-gray-900'} transition-colors"
+          class="flex items-center gap-2 {'text-gray-600 dark:hover:text-gray-900 dark:text-gray-400 hover:text-white'} transition-colors"
           href="/advancedkey"
         >
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -523,10 +507,10 @@
           {t('ui.back', currentLanguage)}
         </a>
         <div>
-          <h1 class="text-xl font-semibold {$darkMode ? 'text-white' : 'text-gray-900'}">
+          <h1 class="text-xl font-semibold text-gray-900 dark:text-white">
             {t('advancedkey.dynamicTitle', currentLanguage)}
           </h1>
-          <p class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-500'}">
+          <p class="text-sm text-gray-500 dark:text-gray-400">
             {t('advancedkey.dynamicSubtitle', currentLanguage)}
           </p>
         </div>
@@ -535,7 +519,7 @@
         <button
           class="px-4 py-2 text-white rounded-md transition-colors text-sm font-medium {$glassmorphismMode
             ? 'glassmorphism-button'
-            : ''} {$darkMode ? 'bg-red-700 hover:bg-red-600' : 'bg-red-600 hover:bg-red-700'}"
+            : ''} bg-red-600 hover:bg-red-700 dark:bg-red-700 hover:bg-red-600"
           onclick={resetConfiguration}
           disabled={!currentSelected}
         >
@@ -564,26 +548,19 @@
         <div class="flex gap-8">
           <div class="w-96 flex flex-col gap-4">
             <div
-              class="rounded-lg border p-6 {$glassmorphismMode ? 'glassmorphism-card' : ''}"
-              style="background-color: color-mix(in srgb, var(--theme-color-primary) 5%, {$darkMode
-                ? 'black'
-                : 'white'}); border-color: color-mix(in srgb, var(--theme-color-primary) 25%, {$darkMode
-                ? 'white'
-                : '#e5e5e5'});"
+              class="rounded-lg border p-6 bg-primary-50 dark:bg-black dark:border-primary-200 border-[#e5e5e5] {$glassmorphismMode
+                ? 'glassmorphism-card'
+                : ''}"
             >
-              <h3 class="text-lg font-medium {$darkMode ? 'text-white' : 'text-gray-900'} mb-2">
+              <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">
                 {t('advancedkey.configureDKSBindings', currentLanguage)}
               </h3>
-              <p class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'} mb-4">
+              <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
                 {t('advancedkey.dksBindingInstructions', currentLanguage)}
               </p>
 
               <div class="flex items-center gap-4 mb-3">
-                <div
-                  class="w-16 text-center text-sm font-semibold {$darkMode
-                    ? 'text-white'
-                    : 'text-gray-900'}"
-                >
+                <div class="w-16 text-center text-sm font-semibold dark:text-white text-gray-900">
                   Bindings
                 </div>
                 <div class="relative h-4" style="width: {SLIDER_WIDTH}px;">
@@ -595,7 +572,7 @@
                     >
                       {#if phase.icon === 'arrow-down'}
                         <svg
-                          class="w-4 h-4 {$darkMode ? 'text-gray-300' : 'text-gray-700'}"
+                          class="w-4 h-4 text-gray-700 dark:text-gray-300"
                           fill="none"
                           stroke="currentColor"
                           viewBox="0 0 24 24"
@@ -610,7 +587,7 @@
                       {:else if phase.icon === 'arrow-down-line'}
                         <div class="flex flex-col items-center">
                           <svg
-                            class="w-4 h-4 {$darkMode ? 'text-gray-300' : 'text-gray-700'}"
+                            class="w-4 h-4 text-gray-700 dark:text-gray-300"
                             fill="none"
                             stroke="currentColor"
                             viewBox="0 0 24 24"
@@ -622,17 +599,13 @@
                               d="M19 14l-7 7m0 0l-7-7m7 7V3"
                             />
                           </svg>
-                          <div
-                            class="w-6 h-0.5 {$darkMode ? 'bg-gray-300' : 'bg-gray-700'} mt-1"
-                          ></div>
+                          <div class="w-6 h-0.5 bg-gray-700 dark:bg-gray-300 mt-1"></div>
                         </div>
                       {:else if phase.icon === 'arrow-up-line'}
                         <div class="flex flex-col items-center">
-                          <div
-                            class="w-6 h-0.5 {$darkMode ? 'bg-gray-300' : 'bg-gray-700'} mb-1"
-                          ></div>
+                          <div class="w-6 h-0.5 bg-gray-700 dark:bg-gray-300 mb-1"></div>
                           <svg
-                            class="w-4 h-4 {$darkMode ? 'text-gray-300' : 'text-gray-700'}"
+                            class="w-4 h-4 text-gray-700 dark:text-gray-300"
                             fill="none"
                             stroke="currentColor"
                             viewBox="0 0 24 24"
@@ -647,7 +620,7 @@
                         </div>
                       {:else if phase.icon === 'arrow-up'}
                         <svg
-                          class="w-4 h-4 {$darkMode ? 'text-gray-300' : 'text-gray-700'}"
+                          class="w-4 h-4 text-gray-700 dark:text-gray-300"
                           fill="none"
                           stroke="currentColor"
                           viewBox="0 0 24 24"
@@ -684,18 +657,13 @@
           </div>
 
           <div class="flex-1 flex flex-col">
-            <div
-              class="flex border-b mb-6"
-              style="border-color: color-mix(in srgb, var(--theme-color-primary) 25%, {$darkMode
-                ? 'white'
-                : '#e5e5e5'});"
-            >
+            <div class="flex border-b mb-6 dark:border-primary-200 border-[#e5e5e5]">
               {#each [['bindings', t('advancedkey.bindings', currentLanguage)], ['performance', t('advancedkey.performance', currentLanguage)], ['key-tester', t('advancedkey.keyTester', currentLanguage)]] as [value, label]}
                 <button
                   class="px-4 py-2 text-sm font-medium border-b-2 transition-colors"
                   style={activeTab === value
                     ? `border-color: var(--theme-color-primary); color: var(--theme-color-primary);`
-                    : `border-color: transparent; color: ${$darkMode ? '#9ca3af' : '#6b7280'};`}
+                    : `border-color: transparent; color: ${'#6b7280 dark:#9ca3af'};`}
                   onclick={() => (activeTab = value)}
                 >
                   {label}

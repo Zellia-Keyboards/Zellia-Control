@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { darkMode, glassmorphismMode } from '$lib/DarkModeStore.svelte';
+  import { glassmorphismMode } from '$lib/DarkModeStore.svelte';
   import { language, t } from '$lib/LanguageStore.svelte';
 
   type Props = {
@@ -20,8 +20,8 @@
   class="rounded-lg border p-6 mb-6 {glassmorphismMode ? 'glassmorphism-card' : ''}"
   style={glassmorphismMode
     ? ''
-    : `background-color: color-mix(in srgb, var(--theme-color-primary) 8%, ${$darkMode ? 'black' : 'white'});
-	       border-color: color-mix(in srgb, var(--theme-color-primary) 30%, ${$darkMode ? 'white' : '#e5e5e5'});`}
+    : `background-color: color-mix(in srgb, var(--theme-color-primary) 8%, ${'white dark:black'});
+	       border-color: color-mix(in srgb, var(--theme-color-primary) 30%, ${'#e5e5e5 dark:white'});`}
 >
   <div class="flex items-center justify-between">
     <div class="flex items-center gap-4">
@@ -32,19 +32,17 @@
             : ''}"
           style={glassmorphismMode
             ? 'border-color: var(--theme-color-primary);'
-            : `background-color: color-mix(in srgb, var(--theme-color-primary) 15%, ${$darkMode ? 'black' : 'white'});
+            : `background-color: color-mix(in srgb, var(--theme-color-primary) 15%, ${'white dark:black'});
 					       border-color: var(--theme-color-primary);`}
         >
-          <span class="font-mono font-bold {$darkMode ? 'text-white' : 'text-gray-900'}"
-            >{currentKeyName}</span
-          >
+          <span class="font-mono font-bold text-gray-900 dark:text-white">{currentKeyName}</span>
         </div>
         <div>
-          <h3 class="font-medium {$darkMode ? 'text-white' : 'text-gray-900'}">
+          <h3 class="font-medium text-gray-900 dark:text-white">
             {t('advancedkey.selectedKey', currentLanguage)}
           </h3>
           {#if currentSelectedCoords}
-            <p class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-500'}">
+            <p class="text-sm text-gray-500 dark:text-gray-400">
               {t('advancedkey.position', currentLanguage)}: {currentSelectedCoords[0]}, {currentSelectedCoords[1]}
             </p>
           {/if}
@@ -52,18 +50,11 @@
       </div>
     </div>
     <div class="flex items-center gap-3">
-      <span class="text-sm {$darkMode ? 'text-gray-400' : 'text-gray-600'}"
+      <span class="text-sm text-gray-600 dark:text-gray-400"
         >{t('advancedkey.mode', currentLanguage)}:</span
       >
       <span
-        class="px-3 py-1 rounded-full text-sm font-medium border"
-        style="background-color: color-mix(in srgb, var(--theme-color-primary) 20%, {$darkMode
-          ? 'black'
-          : 'white'});
-				       color: {$darkMode ? 'white' : 'var(--theme-color-primary)'};
-				       border-color: color-mix(in srgb, var(--theme-color-primary) 40%, {$darkMode
-          ? 'white'
-          : '#e5e5e5'});"
+        class="px-3 py-1 rounded-full text-sm font-medium border bg-primary-200 dark:bg-black dark:text-white text-primary dark:border-white/40"
       >
         {t('advancedkey.dynamicKeystroke', currentLanguage)}
       </span>

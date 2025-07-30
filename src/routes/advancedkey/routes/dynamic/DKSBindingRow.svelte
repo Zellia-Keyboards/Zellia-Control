@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { Snippet } from 'svelte';
-  import { darkMode, glassmorphismMode } from '$lib/DarkModeStore.svelte';
+  import { glassmorphismMode } from '$lib/DarkModeStore.svelte';
   import type { DKSAction, KeyAction } from '$lib/AdvancedKeyShared'; // Assuming KeyAction is exported
 
   type Props = {
@@ -34,20 +34,19 @@
       ? 'glassmorphism-button'
       : ''}"
     style={glassmorphismMode
-      ? `border-color: ${selectedBindingIndex === bindingIndex ? 'var(--theme-color-primary)' : $darkMode ? '#4b5563' : '#e5e7eb)'};`
-      : `border-color: ${selectedBindingIndex === bindingIndex ? 'var(--theme-color-primary)' : $darkMode ? '#4b5563' : '#e5e7eb)'};
-               background-color: ${selectedBindingIndex === bindingIndex ? ($darkMode ? 'color-mix(in srgb, var(--theme-color-primary) 10%, #1f2937)' : 'color-mix(in srgb, var(--theme-color-primary) 8%, #f9fafb)') : $darkMode ? 'black' : 'white'};
-               color: ${selectedBindingIndex === bindingIndex ? 'var(--theme-color-primary)' : $darkMode ? 'white' : '#111827'};`}
+      ? `border-color: ${selectedBindingIndex === bindingIndex ? 'var(--theme-color-primary)' : '#e5e7eb) dark:#4b5563'};`
+      : `border-color: ${selectedBindingIndex === bindingIndex ? 'var(--theme-color-primary)' : '#e5e7eb) dark:#4b5563'};
+               background-color: ${selectedBindingIndex === bindingIndex ? 'color-mix(in srgb, var(--theme-color-primary) 8%, #f9fafb) dark:color-mix(in srgb, var(--theme-color-primary) 10%, #1f2937)' : 'white dark:black'};
+               color: ${selectedBindingIndex === bindingIndex ? 'var(--theme-color-primary)' : '#111827 dark:white'};`}
     onmouseover={e => {
       if (selectedBindingIndex !== bindingIndex) {
-        (e.currentTarget as HTMLElement).style.backgroundColor = $darkMode
-          ? 'color-mix(in srgb, var(--theme-color-primary) 3%, black)'
-          : 'color-mix(in srgb, var(--theme-color-primary) 2%, #f9fafb)';
+        (e.currentTarget as HTMLElement).style.backgroundColor =
+          'color-mix(in srgb, var(--theme-color-primary) 2%, #f9fafb) dark:color-mix(in srgb, var(--theme-color-primary) 3%, black)';
       }
     }}
     onmouseout={e => {
       if (selectedBindingIndex !== bindingIndex) {
-        (e.currentTarget as HTMLElement).style.backgroundColor = $darkMode ? 'black' : 'white';
+        (e.currentTarget as HTMLElement).style.backgroundColor = 'white dark:black';
       }
     }}
     onclick={() => onSelectBinding(bindingIndex)}

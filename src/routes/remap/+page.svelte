@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { darkMode, glassmorphismMode } from '$lib/DarkModeStore.svelte';
+  import { glassmorphismMode, darkMode } from '$lib/DarkModeStore.svelte';
   import NewZellia80He from '$lib/NewZellia80HE.svelte';
   import { language, t } from '$lib/LanguageStore.svelte';
   import Basic from './Basic.svelte';
@@ -110,9 +110,7 @@
   {#snippet body(x, y)}
     <!-- FIXME: need a better color scheme  -->
     <span
-      class="hover:scale-90 transition-all duration-300 h-14 truncate {$darkMode
-        ? 'bg-black border-gray-700'
-        : 'bg-gray-50 border-gray-400'} data-[selected=true]:bg-gray-500 data-[selected=true]:border-gray-700 data-[selected=true]:border-4 border rounded-lg flex flex-col items-center justify-center hover:cursor-pointer gap-1 font-sans text-white"
+      class="hover:scale-90 transition-all duration-300 h-14 truncate bg-gray-50 dark:bg-black border border-gray-400 dark:border-gray-700 data-[selected=true]:bg-gray-500 data-[selected=true]:border-gray-700 data-[selected=true]:border-4 rounded-lg flex flex-col items-center justify-center hover:cursor-pointer gap-1 font-sans text-white"
       data-selected={selectedKeys.findIndex(key => key[0] === x && key[1] === y) !== -1}
       >{storedKeys[y][x]}</span
     >
@@ -120,16 +118,12 @@
 </NewZellia80He>
 
 <div
-  class="rounded-2xl shadow p-8 mt-2 mb- mb- grow {$glassmorphismMode
+  class="rounded-2xl shadow p-8 mt-2 mb- mb- grow bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-600 text-black dark:text-white h-full flex flex-col {$glassmorphismMode
     ? 'glassmorphism-card'
-    : ''} {$darkMode ? 'border border-gray-600 text-white' : 'text-black'} h-full flex flex-col"
+    : ''}"
   style={$glassmorphismMode
     ? ''
-    : `background-color: ${
-        $darkMode
-          ? `color-mix(in srgb, var(--theme-color-primary) 5%, black)`
-          : `color-mix(in srgb, var(--theme-color-primary) 10%, white)`
-      };`}
+    : `background-color: color-mix(in srgb, var(--theme-color-primary) ${document?.documentElement?.classList.contains('dark') ? '5%' : '10%'}, ${document?.documentElement?.classList.contains('dark') ? 'black' : 'white'});`}
 >
   <!-- Tab Navigation -->
   <div class="flex items-center gap-0.5 -mt-4 mb-4 p-0.5 rounded-xl">
@@ -142,31 +136,12 @@
           : ''}
                {!$glassmorphismMode && activeTab === tab.name
           ? 'text-white shadow-sm'
-          : !$glassmorphismMode &&
-            ($darkMode
-              ? 'text-gray-300 hover:text-white hover:bg-gray-800'
-              : 'text-gray-600 hover:text-gray-900 hover:bg-white')}"
+          : !$glassmorphismMode
+            ? 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-white dark:hover:bg-gray-800'
+            : ''}"
         style={!$glassmorphismMode && activeTab === tab.name
           ? `background-color: var(--theme-color-primary);`
           : ''}
-        onmouseover={e => {
-          if (!$glassmorphismMode && activeTab !== tab.name) {
-            (e.currentTarget as HTMLElement).style.backgroundColor = $darkMode
-              ? '#374151'
-              : 'white';
-            if (!$darkMode) {
-              (e.currentTarget as HTMLElement).style.color = `var(--theme-color-primary)`;
-            }
-          }
-        }}
-        onmouseout={e => {
-          if (!$glassmorphismMode && activeTab !== tab.name) {
-            (e.currentTarget as HTMLElement).style.backgroundColor = '';
-            if (!$darkMode) {
-              (e.currentTarget as HTMLElement).style.color = '';
-            }
-          }
-        }}
         onclick={() => changeTab(tab.name)}
       >
         {#if tab.icon}

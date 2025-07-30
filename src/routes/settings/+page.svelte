@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { darkMode, glassmorphismMode } from '$lib/DarkModeStore.svelte';
+  import { glassmorphismMode } from '$lib/DarkModeStore.svelte';
   import NewZellia80He from '$lib/NewZellia80HE.svelte';
   import { RotateCcw, Download, Trash2, Info } from 'lucide-svelte';
   import { language, t } from '$lib/LanguageStore.svelte';
@@ -71,31 +71,27 @@
 </script>
 
 <NewZellia80He
+  currentSelectedKey={null}
   onClick={(x, y, event) => {
     console.log(`Key clicked at (${x}, ${y})`, event);
   }}
 >
   {#snippet body(x, y)}
     <div
-      class="hover:scale-90 transition-all duration-300 h-14 {$darkMode
-        ? 'bg-black border-gray-700'
-        : 'bg-gray-50 border-gray-400'} data-[selected=true]:bg-gray-500 data-[selected=true]:border-gray-700 data-[selected=true]:border-4 border rounded-lg flex flex-col items-center justify-center hover:cursor-pointer gap-1 font-sans text-white"
+      class="hover:scale-90 transition-all duration-300 h-14 bg-gray-50 dark:bg-black border border-gray-400 dark:border-gray-700 data-[selected=true]:bg-gray-500 data-[selected=true]:border-gray-700 data-[selected=true]:border-4 rounded-lg flex flex-col items-center justify-center hover:cursor-pointer gap-1 font-sans text-white"
     ></div>{/snippet}
 </NewZellia80He>
 <div
-  class="rounded-2xl shadow p-8 mt-2 mb-4 grow {$glassmorphismMode
+  class="rounded-2xl shadow p-8 mt-2 mb-4 grow bg-primary-50 dark:bg-black border border-gray-200 dark:border-gray-600 text-black dark:text-white h-full flex flex-col {$glassmorphismMode
     ? 'glassmorphism-card'
-    : ''} {$darkMode ? 'border border-gray-600 text-white' : 'text-black'} h-full flex flex-col"
-  style="background-color: {$darkMode
-    ? `color-mix(in srgb, var(--theme-color-primary) 5%, black)`
-    : `color-mix(in srgb, var(--theme-color-primary) 10%, white)`};"
+    : ''}"
 >
   <div class="flex items-center justify-between mb-6">
     <div>
-      <h2 class="text-3xl font-bold {$darkMode ? 'text-white' : 'text-gray-900'}">
+      <h2 class="text-3xl font-bold text-gray-900 dark:text-white">
         {t('settings.title', currentLanguage)}
       </h2>
-      <p class="{$darkMode ? 'text-gray-300' : 'text-gray-600'} mt-2">
+      <p class="text-gray-600 dark:text-gray-300 mt-2">
         {t('settings.subtitle', currentLanguage)}
       </p>
     </div>
@@ -103,51 +99,35 @@
 
   <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
     {#each settingsOptions as option}
+      {@const IconComponent = option.icon}
       <div class="group relative w-full">
         <button
-          class="w-full h-full p-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border-2 text-left group-hover:scale-105 flex flex-col {$glassmorphismMode
+          class="bg-white dark:bg-black w-full h-full p-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border-2 text-left group-hover:scale-105 flex flex-col {$glassmorphismMode
             ? 'glassmorphism-card'
-            : ''}"
-          style="background-color: {$darkMode ? 'black' : 'white'}; 
-                 border-color: {$darkMode
-            ? 'color-mix(in srgb, var(--theme-color-primary) 20%, #374151)'
-            : 'color-mix(in srgb, var(--theme-color-primary) 15%, #e5e7eb)'};
-                 --hover-border: {option.type === 'danger'
-            ? '#dc2626'
-            : 'var(--theme-color-primary)'};"
-          onmouseover={e =>
-            ((e.currentTarget as HTMLElement).style.borderColor =
-              option.type === 'danger' ? '#dc2626' : 'var(--theme-color-primary)')}
-          onmouseout={e =>
-            ((e.currentTarget as HTMLElement).style.borderColor = $darkMode
-              ? 'color-mix(in srgb, var(--theme-color-primary) 20%, #374151)'
-              : 'color-mix(in srgb, var(--theme-color-primary) 15%, #e5e7eb)')}
+            : ''} {option.type === 'danger'
+            ? 'hover:border-red-600 focus:border-red-600'
+            : 'hover:border-primary-500 focus:border-primary-500 dark:hover:border-primary-400 dark:focus:border-primary-400'} border-gray-300 dark:border-gray-600"
           onclick={() => option.action()}
         >
           <!-- Option Header -->
           <div class="flex items-center gap-4 mb-4">
             <div class="flex items-center justify-center w-10 h-10">
-              <svelte:component
-                this={option.icon}
-                class="w-8 h-8"
-                style="color: {option.type === 'danger'
-                  ? '#dc2626'
-                  : 'var(--theme-color-primary)'};"
+              <IconComponent
+                class="w-8 h-8 {option.type === 'danger'
+                  ? 'text-red-600'
+                  : 'text-primary-500 dark:text-primary-400'}"
               />
             </div>
             <div class="flex-1">
               <h3
-                class="text-xl font-bold transition-colors"
-                style="color: {$darkMode ? 'white' : '#111827'};"
-                onmouseover={e =>
-                  ((e.currentTarget as HTMLElement).style.color =
-                    option.type === 'danger' ? '#dc2626' : 'var(--theme-color-primary)')}
-                onmouseout={e =>
-                  ((e.currentTarget as HTMLElement).style.color = $darkMode ? 'white' : '#111827')}
+                class="text-xl font-bold text-gray-800 dark:text-white transition-colors {option.type ===
+                'danger'
+                  ? 'group-hover:text-red-600'
+                  : 'group-hover:text-primary-500 dark:group-hover:text-primary-400'}"
               >
                 {t(option.nameKey, currentLanguage)}
               </h3>
-              <p class="text-sm {$darkMode ? 'text-gray-300' : 'text-gray-600'} mt-1">
+              <p class="text-sm text-gray-600 dark:text-gray-300 mt-1">
                 {t(option.descriptionKey, currentLanguage)}
               </p>
             </div>
@@ -155,16 +135,11 @@
 
           <div class="space-y-2 flex-1">
             {#each option.featureKeys as featureKey}
-              <div
-                class="flex items-center gap-2 text-sm {$darkMode
-                  ? 'text-gray-300'
-                  : 'text-gray-700'}"
-              >
+              <div class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
                 <div
-                  class="w-1.5 h-1.5 rounded-full"
-                  style="background-color: {option.type === 'danger'
-                    ? '#dc2626'
-                    : 'var(--theme-color-primary)'};"
+                  class="w-1.5 h-1.5 rounded-full {option.type === 'danger'
+                    ? 'bg-red-600'
+                    : 'bg-primary-500 dark:bg-black'}"
                 ></div>
                 <span>{t(featureKey, currentLanguage)}</span>
               </div>
@@ -172,15 +147,12 @@
           </div>
           <!-- Action Arrow -->
           <div
-            class="absolute top-6 right-6 text-gray-400 transition-colors"
-            style="transition: color 0.3s ease;"
-            onmouseover={e => {
-              (e.currentTarget as HTMLElement).style.color =
-                option.type === 'danger' ? '#dc2626' : 'var(--theme-color-primary)';
-            }}
-            onmouseout={e => {
-              (e.currentTarget as HTMLElement).style.color = '#9ca3af';
-            }}
+            class="absolute top-6 right-6 text-gray-400 transition-colors pointer-events-none {option.type ===
+            'danger'
+              ? 'group-hover:text-red-600'
+              : 'group-hover:text-primary-500 dark:group-hover:text-primary-400'}"
+            role="presentation"
+            aria-hidden="true"
           >
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
@@ -197,55 +169,9 @@
   </div>
 
   <!-- Info Section -->
-  <div class="mt-4 text-center {$darkMode ? 'text-gray-300' : 'text-gray-600'}">
+  <div class="mt-4 text-center text-gray-600 dark:text-gray-300">
     <p class="text-sm">
       {t('calibration.deviceSettingsDesc', currentLanguage)}
     </p>
   </div>
 </div>
-
-<style>
-  .action-button {
-    display: inline-block;
-    min-width: 120px;
-    background-color: #000;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    padding: 8px 16px;
-    font-weight: 600;
-    transition: background-color 0.2s;
-  }
-
-  .action-button:hover {
-    background-color: #333;
-  }
-
-  .action-button.dark {
-    background-color: white;
-    color: black;
-    border: 1px solid white;
-  }
-
-  .action-button.dark:hover {
-    background-color: #f3f4f6;
-  }
-
-  .action-button.red {
-    background-color: #b91c1c;
-  }
-
-  .action-button.red:hover {
-    background-color: #dc2626;
-  }
-
-  .action-button.red.dark {
-    background-color: #dc2626;
-    color: white;
-    border: 1px solid #dc2626;
-  }
-
-  .action-button.red.dark:hover {
-    background-color: #b91c1c;
-  }
-</style>
