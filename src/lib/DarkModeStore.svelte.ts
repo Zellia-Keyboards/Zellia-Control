@@ -78,41 +78,28 @@ export const selectedThemeColor = createThemeColorStore();
 
 // Create a store for glassmorphism mode
 const createGlassmorphismStore = () => {
-  const defaultValue = false;
-  const storedValue = browser ? localStorage.getItem('glassmorphismMode') : null;
-  const initial = storedValue !== null ? storedValue === 'true' : defaultValue;
-
+  // Always enable glassmorphism mode by default
+  const initial = true;
   const { subscribe, set, update } = writable<boolean>(initial);
+
+  if (browser) {
+    document.documentElement.classList.add('glassmorphism');
+    localStorage.setItem('glassmorphismMode', 'true');
+  }
 
   return {
     subscribe,
-    toggle: () =>
-      update(n => {
-        const newValue = !n;
-        if (browser) {
-          localStorage.setItem('glassmorphismMode', newValue.toString());
-          // Apply glassmorphism class to document root
-          if (newValue) {
-            document.documentElement.classList.add('glassmorphism');
-          } else {
-            document.documentElement.classList.remove('glassmorphism');
-          }
-          // Force a repaint to ensure immediate application
-          document.documentElement.offsetHeight;
-        }
-        return newValue;
-      }),
+    toggle: () => {
+      // Prevent disabling glassmorphism
+      return true;
+    },
     set: (value: boolean) => {
+      // Prevent disabling glassmorphism
+      set(true);
       if (browser) {
-        localStorage.setItem('glassmorphismMode', value.toString());
-        // Apply glassmorphism class to document root
-        if (value) {
-          document.documentElement.classList.add('glassmorphism');
-        } else {
-          document.documentElement.classList.remove('glassmorphism');
-        }
+        document.documentElement.classList.add('glassmorphism');
+        localStorage.setItem('glassmorphismMode', 'true');
       }
-      set(value);
     },
   };
 };
@@ -143,10 +130,7 @@ if (browser) {
     document.documentElement.classList.remove('no-transition');
   }, 100);
 
-  // Initialize glassmorphism mode
-  const storedGlassmorphism = localStorage.getItem('glassmorphismMode');
-  const isGlassmorphism = storedGlassmorphism !== null ? storedGlassmorphism === 'true' : false;
-  if (isGlassmorphism) {
-    document.documentElement.classList.add('glassmorphism');
-  }
+  // Always enable glassmorphism mode
+  document.documentElement.classList.add('glassmorphism');
+  localStorage.setItem('glassmorphismMode', 'true');
 }
