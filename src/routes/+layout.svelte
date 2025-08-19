@@ -535,7 +535,7 @@
     </div>
 
     <!-- Language Selector -->
-    <div class="p-3 border-t border-gray-200 dark:border-gray-600">
+    <div class="p-3">
       <!-- Language Button -->
       <button
         class="flex items-center justify-between w-full px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 {$glassmorphismMode
@@ -587,7 +587,7 @@
     </div>
 
     <!-- Dark Mode Toggle at Bottom -->
-    <div class="p-3 border-t border-transparent">
+    <div class="p-3 border-transparent">
       <button
         class="flex items-center gap-3 w-full px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative overflow-hidden {$glassmorphismMode
           ? 'glassmorphism-button'
