@@ -114,8 +114,7 @@
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
       <div class="flex items-start gap-3">
         <div
-          class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white"
-          style="background-color: var(--theme-color-primary);"
+          class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white bg-primary"
         >
           1
         </div>
@@ -130,8 +129,7 @@
       </div>
       <div class="flex items-start gap-3">
         <div
-          class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white"
-          style="background-color: var(--theme-color-primary);"
+          class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white bg-primary"
         >
           2
         </div>
@@ -146,8 +144,7 @@
       </div>
       <div class="flex items-start gap-3">
         <div
-          class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white"
-          style="background-color: var(--theme-color-primary);"
+          class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white bg-primary"
         >
           3
         </div>
@@ -176,8 +173,7 @@
             <div class="flex items-center justify-center w-10 h-10">
               <svelte:component
                 this={mode.icon}
-                class="w-8 h-8"
-                style="color: var(--theme-color-primary);"
+                class="w-8 h-8 text-primary"
               />
             </div>
             <div class="flex-1">

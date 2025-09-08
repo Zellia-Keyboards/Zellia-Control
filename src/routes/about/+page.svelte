@@ -231,7 +231,7 @@
                 <div
                   class="{$glassmorphismMode
                     ? 'glassmorphism'
-                    : 'bg-white dark:bg-black'} flex flex-col items-center p-4 rounded-lg border-2 border-primary-500 transition-all duration-300"
+                    : 'bg-white dark:bg-black'} flex flex-col items-center p-4 rounded-lg border-2 border-blue-500 transition-all duration-300"
                 >
                   <div class="mb-4">
                     <svg class="w-32 h-8" viewBox="0 0 149.36909 37.663967">
