@@ -54,7 +54,7 @@
     </h2>
     <div>
       <button
-        class="px-4 py-2 rounded mr-2 transition-colors duration-200 text-white {$glassmorphismMode
+        class="px-4 py-2 rounded mr-1 transition-colors duration-200 text-white {$glassmorphismMode
           ? 'glassmorphism-button'
           : ''}"
         style="background-color: var(--theme-color-primary);"

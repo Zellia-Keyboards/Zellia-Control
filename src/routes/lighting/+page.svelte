@@ -164,7 +164,7 @@
     ? 'glassmorphism-card'
     : ''}"
 >
-  <div class="flex items-center justify-between -mt-4 mb-4">
+  <div class="flex items-center justify-between -mt-4 mb-2">
     <h2 class="text-2xl font-bold text-black dark:text-white">
       {t('lighting.title', currentLanguage)}
     </h2>
@@ -201,10 +201,8 @@
       <div class="grid grid-cols-2 gap-3 mb-6">
         {#each effects as effect}
           <button
-            class="p-3 rounded-lg border-2 text-left transition-all duration-200"
-            style={selectedEffect === effect.id
-              ? `border-color: var(--theme-color-primary); background-color: color-mix(in srgb, var(--theme-color-primary) 15%, var(--tw-prose-body));`
-              : `border-color: ${'#e5e5e5 dark:#4b5563'}; background-color: transparent;`}
+            class="p-3 rounded-lg border-2 text-left transition-all duration-200 border-[#e5e5e5] bg-transparent dark:border-[#4b5563] data-[activate=true]:border-primary data-[activate=true]:bg-primary-800"
+            data-activate={selectedEffect === effect.id}
             onclick={() => (selectedEffect = effect.id)}
           >
             <div class="font-medium text-black dark:text-white">
