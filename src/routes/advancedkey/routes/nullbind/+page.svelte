@@ -901,7 +901,7 @@
                       </div>
                     </div>
 
-                    <div class="mt-6 p-4 bg-primary-100 rounded-lg">
+                    <div class="mt-6 p-4 glassmorphism-card rounded-lg">
                       <div class="text-sm text-gray-600 dark:text-gray-400">
                         {t('advancedkey.currentBehavior', currentLanguage)}
                         <span class="font-medium text-gray-900 dark:text-white"
