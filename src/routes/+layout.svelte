@@ -21,6 +21,7 @@
     ['/debug', 'nav.debug'],
     ['/settings', 'nav.settings'],
     ['/about', 'nav.about'],
+    ['/update', 'nav.update'],
   ];
   let { children } = $props();
   let selectedLayer = $state(1);
@@ -317,45 +318,6 @@
       >
         {t('common.zellia', currentLanguage)}
       </h1>
-    </div>
-    <!-- Sync Button -->
-    <div class="flex justify-center mb-4 mt-2">
-      <button
-        class="px-18 py-2 rounded-4xl font-bold transition-colors duration-200 shadow w-auto relative overflow-hidden bg-primary-500 text-white hover:bg-primary-600 {$glassmorphismMode
-          ? 'glassmorphism-button'
-          : ''}"
-        onmousedown={e => startLongClick('sync', e)}
-        onmouseup={() => endLongClick('sync')}
-        onmouseleave={() => endLongClick('sync')}
-        ontouchstart={e => startLongClick('sync', e)}
-        ontouchend={() => endLongClick('sync')}
-        ontouchcancel={() => endLongClick('sync')}
-      >
-        <!-- Long click circular animation -->
-        {#if longClickStates['sync']?.showAnimation && (longClickStates['sync']?.isPressed || longClickStates['sync']?.completed)}
-          <div class="absolute inset-0 rounded-4xl overflow-hidden pointer-events-none">
-            <div
-              class="absolute rounded-full transition-all duration-75"
-              style="
-                            left: {longClickStates['sync'].x}px; 
-                            top: {longClickStates['sync'].y}px;
-                            width: {longClickStates['sync'].progress * 300}px;
-                            height: {longClickStates['sync'].progress * 300}px;
-                            margin-left: -{longClickStates['sync'].progress * 150}px;
-                            margin-top: -{longClickStates['sync'].progress * 150}px;
-                            background-color: color-mix(in srgb, white {longClickStates['sync']
-                .completed
-                ? '30%'
-                : '15%'}, transparent);
-                            opacity: {longClickStates['sync'].fadeProgress};
-                            transition: background-color 0.3s ease;
-                        "
-            ></div>
-          </div>
-        {/if}
-
-        <span class="relative z-10">{t('ui.sync', currentLanguage)}</span>
-      </button>
     </div>
 
     <!-- Profile Section -->

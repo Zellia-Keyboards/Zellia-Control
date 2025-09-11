@@ -43,6 +43,7 @@ export const translations = {
     'nav.debug': 'Debug',
     'nav.settings': 'Settings',
     'nav.about': 'About',
+    'nav.update': 'Update',
     // UI Elements
     'ui.sync': 'Sync',
     'ui.profiles': 'Profiles',
@@ -54,6 +55,7 @@ export const translations = {
     'ui.darkMode': 'Dark Mode',
     'ui.language': 'Language',
     'ui.layer': 'Layer',
+    'ui.update': 'Update',
     // Common
     'common.zellia': 'Zellia Control',
     'common.english': 'English',
@@ -600,6 +602,7 @@ export const translations = {
     'nav.debug': '调试',
     'nav.settings': '设置',
     'nav.about': '关于',
+    'nav.update': '更新',
 
     // UI Elements
     'ui.sync': '同步',
@@ -612,6 +615,7 @@ export const translations = {
     'ui.darkMode': '深色模式',
     'ui.language': '语言',
     'ui.layer': '层级',
+    'ui.update': '更新',
     // Common
     'common.zellia': 'Zellia 控制',
     'common.english': 'English',
