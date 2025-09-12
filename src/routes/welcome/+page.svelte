@@ -148,11 +148,7 @@
                 onclick={() => handleDemoMode('zellia60he')}
               >
                 <div class="flex items-center gap-3">
-                  <div class="w-8 h-8 bg-purple-100 dark:bg-purple-900 rounded-lg flex items-center justify-center">
-                    <svg class="w-4 h-4 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4z"/>
-                    </svg>
-                  </div>
+                  
                   <div>
                     <div class="font-medium text-gray-900 dark:text-white">Zellia 60HE</div>
                     <div class="text-sm text-gray-500 dark:text-gray-400">{t('demo.zellia60.description', currentLanguage)}</div>
@@ -165,11 +161,7 @@
                 onclick={() => handleDemoMode('zellia80he')}
               >
                 <div class="flex items-center gap-3">
-                  <div class="w-8 h-8 bg-green-100 dark:bg-green-900 rounded-lg flex items-center justify-center">
-                    <svg class="w-4 h-4 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2z"/>
-                    </svg>
-                  </div>
+                  
                   <div>
                     <div class="font-medium text-gray-900 dark:text-white">Zellia 80HE</div>
                     <div class="text-sm text-gray-500 dark:text-gray-400">{t('demo.zellia80.description', currentLanguage)}</div>
@@ -180,13 +172,6 @@
           </div>
         {/if}
       </div>
-    </div>
-
-    <!-- Footer -->
-    <div class="text-center">
-      <p class="text-xs text-gray-500 dark:text-gray-400">
-        {t('welcome.poweredBy', currentLanguage)}
-      </p>
     </div>
   </div>
 </div>
