@@ -55,6 +55,13 @@
   let animationDelay = 300; // milliseconds delay before showing animation
   let clickBlockDuration = 500; // milliseconds to block regular clicks after long press completion
 
+  // Derived variable to determine when to show layer selector
+  let shouldShowLayerSelector = $derived(() => {
+    const path = $page.url.pathname;
+    const showPagesForLayerSelector = ['/performance', '/remap', '/advancedkey'];
+    return !showPagesForLayerSelector.some(page => path === page || path.startsWith(page + '/'));
+  });
+
   selectedThemeColor.subscribe(value => {
     currentTheme = value;
   });
@@ -617,13 +624,12 @@
     <!-- Layer selector (fades out on certain pages) -->
     <div class="flex items-center -mb-3">
       <div class="flex items-center gap-2 px-4 py-2 h-12">
-        {#if !($page.url.pathname === '/about' || $page.url.pathname === '/lighting' || $page.url.pathname === '/calibration' || $page.url.pathname === '/debug' || $page.url.pathname === '/settings')}
+        {#if !shouldShowLayerSelector()}
           <span
             class="font-semibold text-gray-900 dark:text-white mr-2 {$glassmorphismMode
               ? 'text-gray-800 dark:text-white'
               : ''}"
-            in:fade={{ duration: 400, delay: 100 }}
-            out:fade={{ duration: 300 }}>Layer:</span
+            >Layer:</span
           >
           {#each [1, 2, 3, 4] as layer}
             <button
@@ -645,8 +651,6 @@
                 }
               }}
               onclick={() => (selectedLayer = layer)}
-              in:fade={{ duration: 400, delay: 100 }}
-              out:fade={{ duration: 300 }}
             >
               {layer}
             </button>
