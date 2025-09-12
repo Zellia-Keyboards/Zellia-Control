@@ -52,7 +52,7 @@
     <h2 class="text-2xl font-bold text-gray-900 dark:text-white">
       {t('performance.title', currentLanguage)}
     </h2>
-    <div>
+    <div class="flex gap-2 mb-2">
       <button
         class="px-4 py-2 rounded mr-1 transition-colors duration-200 text-white {$glassmorphismMode
           ? 'glassmorphism-button'
@@ -67,9 +67,9 @@
         {t('performance.selectAllKeys', currentLanguage)}
       </button>
       <button
-        class="{$glassmorphismMode
+        class="bg-gray-200 hover:bg-gray-300 text-gray-600 dark:bg-gray-800 dark:hover:bg-gray-700 dark:text-white dark:border dark:border-white px-4 py-2 rounded transition-colors duration-200 {$glassmorphismMode
           ? 'glassmorphism-button'
-          : ''} bg-gray-200 hover:bg-gray-300 text-gray-600 dark:bg-gray-800 dark:hover:bg-gray-700 dark:text-white dark:border dark:border-white px-4 py-2 rounded transition-colors duration-200"
+          : ''}"
       >
         {t('performance.discardSelection', currentLanguage)}
       </button>
