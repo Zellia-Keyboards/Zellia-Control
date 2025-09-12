@@ -168,7 +168,7 @@
     <h2 class="text-2xl font-bold text-black dark:text-white">
       {t('lighting.title', currentLanguage)}
     </h2>
-    <div class="flex gap-2">
+    <div class="flex gap-2 mb-2">
       <button
         class="px-4 py-2 rounded transition-colors text-white {$glassmorphismMode
           ? 'glassmorphism-button'
