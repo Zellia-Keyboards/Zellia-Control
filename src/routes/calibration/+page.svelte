@@ -1,6 +1,9 @@
 <script lang="ts">
   import { glassmorphismMode } from '$lib/DarkModeStore.svelte';
-  import NewZellia80He from '$lib/NewZellia80HE.svelte';
+  import NewZellia80HE from '$lib/NewZellia80HE.svelte';
+  import NewZellia60HE from '$lib/NewZellia60HE.svelte';
+  import Zellia80HE from '$lib/Zellia80HE.svelte';
+  import { keyboardConnection } from '$lib/KeyboardConnectionStore.svelte';
 
   const CalibrationState = {
     Calibrating: 0,
@@ -114,30 +117,51 @@
 
   let calibrationData = $state(fixedCalibrationData);
   let isCalibrating = $state(false);
+
+  // Dynamic keyboard component selection
+  const currentKeyboard = $derived(() => {
+    const selectedModel = keyboardConnection.state.selectedModel;
+    if (selectedModel === 'zellia60he') {
+      return { component: NewZellia60HE, isLegacy: false };
+    } else if (selectedModel === 'zellia80he') {
+      return { component: NewZellia80HE, isLegacy: false };
+    }
+    // Default fallback to legacy component
+    return { component: Zellia80HE, isLegacy: true };
+  });
 </script>
 
-<NewZellia80He
-  currentSelectedKey={null}
-  onClick={(x, y, event) => {
-    console.log(`Key clicked at (${x}, ${y})`, event);
-  }}
->
-  {#snippet body(x, y)}
-    <!-- FIXME: need a better color scheme  -->
-    <span
-      class="transition-all duration-300 h-14 bg-gray-50 dark:bg-black border-gray-400 dark:border-gray-700 rounded-lg flex flex-col items-center justify-center hover:cursor-pointer gap-1 font-sans text-white
-        border-4 border-transparent
-        data-[calibrating=true]:data-[state=0]:border-primary-500
-        data-[calibrating=true]:data-[state=1]:border-green-500
-        data-[calibrating=true]:data-[state=2]:border-red-500
-        data-[calibrating=true]:data-[state=0]:bg-primary-50 dark:data-[calibrating=true]:data-[state=0]:bg-primary-900/20
-        data-[calibrating=true]:data-[state=1]:bg-green-50 dark:data-[calibrating=true]:data-[state=1]:bg-green-900/20
-        data-[calibrating=true]:data-[state=2]:bg-red-50 dark:data-[calibrating=true]:data-[state=2]:bg-red-900/20"
-      data-state={calibrationData[y][x]}
-      data-calibrating={isCalibrating}
-    ></span>
-  {/snippet}
-</NewZellia80He>
+{#if currentKeyboard().isLegacy}
+  <svelte:component this={currentKeyboard().component}
+    values={[]}
+    onClick={(x, y, event) => {
+      console.log(`Key clicked at (${x}, ${y})`, event);
+    }}
+  />
+{:else}
+  <svelte:component this={currentKeyboard().component}
+    currentSelectedKey={null}
+    onClick={(x, y, event) => {
+      console.log(`Key clicked at (${x}, ${y})`, event);
+    }}
+  >
+    {#snippet body(x, y)}
+      <!-- FIXME: need a better color scheme  -->
+      <span
+        class="transition-all duration-300 h-14 bg-gray-50 dark:bg-black border-gray-400 dark:border-gray-700 rounded-lg flex flex-col items-center justify-center hover:cursor-pointer gap-1 font-sans text-white
+          border-4 border-transparent
+          data-[calibrating=true]:data-[state=0]:border-primary-500
+          data-[calibrating=true]:data-[state=1]:border-green-500
+          data-[calibrating=true]:data-[state=2]:border-red-500
+          data-[calibrating=true]:data-[state=0]:bg-primary-50 dark:data-[calibrating=true]:data-[state=0]:bg-primary-900/20
+          data-[calibrating=true]:data-[state=1]:bg-green-50 dark:data-[calibrating=true]:data-[state=1]:bg-green-900/20
+          data-[calibrating=true]:data-[state=2]:bg-red-50 dark:data-[calibrating=true]:data-[state=2]:bg-red-900/20"
+        data-state={calibrationData[y][x]}
+        data-calibrating={isCalibrating}
+      ></span>
+    {/snippet}
+  </svelte:component>
+{/if}
 
 <div
   class="rounded-2xl shadow p-8 mt-2 mb-4 grow {$glassmorphismMode

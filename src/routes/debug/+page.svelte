@@ -1,7 +1,10 @@
 <script lang="ts">
   import { browser } from '$app/environment';
   import { onMount } from 'svelte';
-  import NewZellia80He from '$lib/NewZellia80HE.svelte';
+  import NewZellia80HE from '$lib/NewZellia80HE.svelte';
+  import NewZellia60HE from '$lib/NewZellia60HE.svelte';
+  import Zellia80HE from '$lib/Zellia80HE.svelte';
+  import { keyboardConnection } from '$lib/KeyboardConnectionStore.svelte';
   import { language, t } from '$lib/LanguageStore.svelte';
 
   let currentLanguage = $state($language);
@@ -15,6 +18,19 @@
   let trackingInterval: NodeJS.Timeout | null = null;
   let startTime = 0;
   let CurrentSelected = $state<[number, number] | null>(null);
+
+  // Dynamic keyboard component selection
+  const currentKeyboard = $derived(() => {
+    const selectedModel = keyboardConnection.state.selectedModel;
+    if (selectedModel === 'zellia60he') {
+      return { component: NewZellia60HE, isLegacy: false };
+    } else if (selectedModel === 'zellia80he') {
+      return { component: NewZellia80HE, isLegacy: false };
+    }
+    // Default fallback to legacy component
+    return { component: Zellia80HE, isLegacy: true };
+  });
+
   //test data to check
   function generateTestData() {
     const data = [];
@@ -276,17 +292,27 @@
   });
 </script>
 
-<NewZellia80He
-  onClick={(x, y, event) => {
-    console.log(`Key clicked at (${x}, ${y})`, event);
-  }}
-  bind:currentSelectedKey={CurrentSelected}
->
-  {#snippet body(x, y)}
-    <div
-      class="hover:scale-90 transition-all duration-300 h-14 bg-gray-50 dark:bg-black border-gray-400 dark:border-gray-700 data-[selected=true]:bg-gray-500 data-[selected=true]:border-gray-700 data-[selected=true]:border-4 border rounded-lg flex flex-col items-center justify-center hover:cursor-pointer gap-1 font-sans text-white"
-    ></div>{/snippet}
-</NewZellia80He>
+{#if currentKeyboard().isLegacy}
+  <svelte:component this={currentKeyboard().component}
+    values={[]}
+    onClick={(x, y, event) => {
+      console.log(`Key clicked at (${x}, ${y})`, event);
+    }}
+  />
+{:else}
+  <svelte:component this={currentKeyboard().component}
+    onClick={(x, y, event) => {
+      console.log(`Key clicked at (${x}, ${y})`, event);
+    }}
+    bind:currentSelectedKey={CurrentSelected}
+  >
+    {#snippet body(x, y)}
+      <div
+        class="hover:scale-90 transition-all duration-300 h-14 bg-gray-50 dark:bg-black border-gray-400 dark:border-gray-700 data-[selected=true]:bg-gray-500 data-[selected=true]:border-gray-700 data-[selected=true]:border-4 border rounded-lg flex flex-col items-center justify-center hover:cursor-pointer gap-1 font-sans text-white"
+      ></div>
+    {/snippet}
+  </svelte:component>
+{/if}
 <div
   class="rounded-2xl shadow p-8 mt-2 mb-4 grow glassmorphism-card text-black dark:text-white border-0 dark:border dark:border-gray-600 flex flex-col bg-primary-50 dark:bg-black"
 >

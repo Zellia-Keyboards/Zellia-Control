@@ -1,6 +1,9 @@
 <script lang="ts">
   import { glassmorphismMode, darkMode } from '$lib/DarkModeStore.svelte';
   import NewZellia80He from '$lib/NewZellia80HE.svelte';
+  import NewZellia60HE from '$lib/NewZellia60HE.svelte';
+  import Zellia80HE from '$lib/Zellia80HE.svelte';
+  import { keyboardConnection } from '$lib/KeyboardConnectionStore.svelte';
   import { language, t } from '$lib/LanguageStore.svelte';
   import Basic from './Basic.svelte';
   import System from './System.svelte';
@@ -11,6 +14,18 @@
   import { cubicOut } from 'svelte/easing';
   import { X } from 'lucide-svelte';
   import { dev } from '$app/environment';
+
+  // Derived variable to determine which keyboard component to show
+  let currentKeyboard = $derived(() => {
+    const selectedModel = keyboardConnection.state.selectedModel;
+    if (selectedModel === 'zellia60he') {
+      return { component: NewZellia60HE, isLegacy: false };
+    } else if (selectedModel === 'zellia80he') {
+      return { component: NewZellia80He, isLegacy: false };
+    }
+    // Default fallback
+    return { component: Zellia80HE, isLegacy: true };
+  });
 
   // Custom slide transition that moves instead of stretches
   function slideMove(node: Element, { duration = 400, direction = 1 }) {
@@ -95,27 +110,42 @@
 <!-- TODO: Drag select -->
 <!-- TODO: Select ALL by ^A -->
 <!-- TODO: Deselect ALL by ^esc -->
-<NewZellia80He
-  currentSelectedKey={null}
-  onClick={(x, y, event) => {
-    console.log(`Clicked key at (${x}, ${y})`, event);
-    let i = selectedKeys.findIndex(key => key[0] === x && key[1] === y);
-    if (i !== -1) {
-      selectedKeys.splice(i, 1);
-    } else {
-      selectedKeys.push([x, y]);
-    }
-  }}
->
-  {#snippet body(x, y)}
-    <!-- FIXME: need a better color scheme  -->
-    <span
-      class="hover:scale-90 transition-all duration-300 h-14 truncate bg-gray-50 dark:bg-black border border-gray-400 dark:border-gray-700 data-[selected=true]:bg-gray-500 data-[selected=true]:border-gray-700 data-[selected=true]:border-4 rounded-lg flex flex-col items-center justify-center hover:cursor-pointer gap-1 font-sans text-white"
-      data-selected={selectedKeys.findIndex(key => key[0] === x && key[1] === y) !== -1}
-      >{storedKeys[y][x]}</span
-    >
-  {/snippet}
-</NewZellia80He>
+{#if currentKeyboard().isLegacy}
+  <svelte:component this={currentKeyboard().component}
+    values={storedKeys}
+    onClick={(x, y, event) => {
+      console.log(`Clicked key at (${x}, ${y})`, event);
+      let i = selectedKeys.findIndex(key => key[0] === x && key[1] === y);
+      if (i !== -1) {
+        selectedKeys.splice(i, 1);
+      } else {
+        selectedKeys.push([x, y]);
+      }
+    }}
+  />
+{:else}
+  <svelte:component this={currentKeyboard().component}
+    currentSelectedKey={null}
+    onClick={(x, y, event) => {
+      console.log(`Clicked key at (${x}, ${y})`, event);
+      let i = selectedKeys.findIndex(key => key[0] === x && key[1] === y);
+      if (i !== -1) {
+        selectedKeys.splice(i, 1);
+      } else {
+        selectedKeys.push([x, y]);
+      }
+    }}
+  >
+    {#snippet body(x, y)}
+      <!-- FIXME: need a better color scheme  -->
+      <span
+        class="hover:scale-90 transition-all duration-300 h-14 truncate bg-gray-50 dark:bg-black border border-gray-400 dark:border-gray-700 data-[selected=true]:bg-gray-500 data-[selected=true]:border-gray-700 data-[selected=true]:border-4 rounded-lg flex flex-col items-center justify-center hover:cursor-pointer gap-1 font-sans text-white"
+        data-selected={selectedKeys.findIndex(key => key[0] === x && key[1] === y) !== -1}
+        >{storedKeys[y][x]}</span
+      >
+    {/snippet}
+  </svelte:component>
+{/if}
 
 <div
   class="rounded-2xl shadow p-8 mt-2 mb- mb- grow border border-gray-200 dark:border-gray-600 text-black dark:text-white h-full flex flex-col {$glassmorphismMode
