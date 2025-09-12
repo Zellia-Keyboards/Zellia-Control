@@ -55,6 +55,14 @@
   --color-primary-900: color-mix(in srgb, var(--color-primary) 50%, black);
 }
 
+/* Define theme color variables */
+:root {
+  --theme-color-primary: var(--color-primary);
+  --theme-color-hover: var(--color-primary-600);
+  --theme-color-light: var(--color-primary-100);
+  --theme-color-dark: var(--color-primary-800);
+}
+
 @layer base {
   body {
     transition:
