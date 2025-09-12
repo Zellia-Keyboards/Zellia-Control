@@ -327,9 +327,7 @@
               <!-- International: GitHub + Support buttons -->
               <div class="flex flex-col sm:flex-row gap-3">
                 <button
-                  class="{$glassmorphismMode
-                    ? 'glassmorphism'
-                    : 'bg-primary-600 hover:bg-primary-700'} flex items-center justify-center gap-2 px-6 py-3 rounded-lg font-medium transition-all duration-200 text-white shadow-sm hover:shadow-md"
+                  class="bg-primary-600 hover:bg-primary-700 flex items-center justify-center gap-2 px-6 py-3 rounded-lg font-medium transition-all duration-200 text-white shadow-sm hover:shadow-md"
                   onclick={() =>
                     window.open('https://github.com/Zellia-Keyboards/Zellia-Control  ', '_blank')}
                 >
