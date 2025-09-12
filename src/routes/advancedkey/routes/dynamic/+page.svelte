@@ -489,7 +489,11 @@
     : ''} text-black dark:text-white border-0 dark:border dark:border-gray-600 h-full flex flex-col bg-primary-100 dark:bg-black"
 >
   <!-- Header -->
-  <div class="border-b px-6 py-4 bg-white dark:bg-black dark:border-white border-[#e5e5e5]">
+  <div
+    class="border-b px-6 py-4 {$glassmorphismMode
+      ? ''
+      : 'bg-primary-25 dark:bg-primary-950 border-primary-200 dark:border-primary-800'}"
+  >
     <div class="flex items-center justify-between">
       <div class="flex items-center gap-4">
         <a

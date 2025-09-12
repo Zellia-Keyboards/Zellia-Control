@@ -364,7 +364,9 @@
 >
   <!-- Header -->
   <div
-    class="border-b px-6 py-4 bg-primary-50 dark:bg-black border-primary-200 dark:border-gray-600"
+    class="border-b px-6 py-4 {$glassmorphismMode
+      ? ''
+      : 'bg-primary-25 dark:bg-primary-950 border-primary-200 dark:border-primary-800'}"
   >
     <div class="flex items-center justify-between">
       <div class="flex items-center gap-4">
@@ -406,7 +408,7 @@
   </div>
   <!-- Key Selection Section -->
   {#if !canConfigure}
-    <div class="p-6 bg-primary-50 dark:bg-black border-primary-300 dark:border-gray-600">
+    <div class="p-6 {$glassmorphismMode ? '' : 'bg-primary-50 dark:bg-black border-primary-300 dark:border-gray-600'}">
       <div class="max-w-4xl mx-auto">
         <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-3">
           {t('advancedkey.selectTwoKeys', currentLanguage)}

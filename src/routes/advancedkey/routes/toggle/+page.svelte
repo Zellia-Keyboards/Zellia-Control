@@ -204,7 +204,11 @@
     : ''}"
 >
   <!-- Header -->
-  <div class="border-b px-6 py-4 bg-white dark:bg-black border-gray-200 dark:border-gray-600">
+  <div
+    class="border-b px-6 py-4 {$glassmorphismMode
+      ? ''
+      : 'bg-primary-25 dark:bg-primary-950 border-primary-200 dark:border-primary-800'}"
+  >
     <div class="flex items-center justify-between">
       <div class="flex items-center gap-4">
         <button
