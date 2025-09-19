@@ -37,6 +37,15 @@
   let pressSensitivity = $state(0.5);
   let releaseSensitivity = $state(0.5);
   let keysSelected = $state(0);
+  let precisionMode = $state(false);
+
+  
+  $effect(() => {
+    if (!precisionMode) {
+      
+      actuationPoint = Math.round(actuationPoint * 100) / 100;
+    }
+  });
 </script>
 
 {#if currentKeyboard().isLegacy}
@@ -102,17 +111,35 @@
   >
     <!-- 1st Box: Actuation Point -->
     <div class="flex-1 min-w-[260px] flex flex-col">
-      <h3 class="text-lg font-medium mb-4 text-gray-900 dark:text-white">
-        {t('performance.actuationPoint', currentLanguage)}
-      </h3>
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-medium text-gray-900 dark:text-white">
+          {t('performance.actuationPoint', currentLanguage)}
+        </h3>
+        <div class="flex items-center gap-2">
+          <span class="text-xs text-gray-500 dark:text-gray-400">Enable Precision</span>
+          <button
+            class="relative inline-flex items-center h-6 rounded-full w-11 transition-colors focus:outline-none {precisionMode ? '' : 'bg-gray-300 dark:bg-gray-600'}"
+            aria-label="Precision Mode Toggle"
+            style="background: {precisionMode ? 'linear-gradient(135deg, var(--theme-color-primary) 0%, color-mix(in srgb, var(--theme-color-primary) 80%, black) 100%)' : ''};"
+            onclick={() => (precisionMode = !precisionMode)}
+          >
+            <span
+              class="inline-block w-4 h-4 transform rounded-full transition-all shadow"
+              class:translate-x-6={precisionMode}
+              class:translate-x-1={!precisionMode}
+              style="background: {precisionMode ? 'linear-gradient(135deg, #ffffff 0%, #f0f0f0 50%, #e0e0e0 100%)' : '#ffffff'};"
+            ></span>
+          </button>
+        </div>
+      </div>
       <p class="text-sm text-gray-600 dark:text-gray-300 mb-4">
         {t('performance.actuationPointDesc', currentLanguage)}
       </p>
       <div class="mb-2 flex-1">
         <div class="relative">
           <div class="flex justify-between text-sm {'text-gray-500 dark:text-gray-400'} mb-1">
-            <div>{t('performance.actuationPointLabel', currentLanguage)}</div>
-            <div>{actuationPoint.toFixed(2)} {t('units.mm', currentLanguage)}</div>
+            <div>{t('performance.actuationPointLabel', currentLanguage)} {precisionMode ? '(Precision: 0.005mm)' : '(Standard: 0.01mm)'}</div>
+            <div>{precisionMode ? actuationPoint.toFixed(3) : actuationPoint.toFixed(2)} {t('units.mm', currentLanguage)}</div>
           </div>
 
           <!-- Warning box for values below 0.3 -->
@@ -130,7 +157,7 @@
             type="range"
             min="0.01"
             max="4"
-            step="0.01"
+            step={precisionMode ? "0.005" : "0.01"}
             bind:value={actuationPoint}
             class="w-full h-2 rounded-full {'bg-gray-300 dark:bg-gray-700'} appearance-none slider-thumb mb-2"
           />
@@ -144,7 +171,7 @@
               type="number"
               min="0.01"
               max="4"
-              step="0.01"
+              step={precisionMode ? "0.005" : "0.01"}
               bind:value={actuationPoint}
               class="w-20 px-2 py-1 text-xs border rounded dark:bg-gray-800 dark:border-gray-600 dark:text-white bg-white border-gray-300 text-gray-900"
             />
@@ -173,17 +200,16 @@
           {t('performance.enableRapidTrigger', currentLanguage)}
         </h3>
         <button
-          class="relative inline-flex items-center h-6 rounded-full w-11 transition-colors focus:outline-none"
+          class="relative inline-flex items-center h-6 rounded-full w-11 transition-colors focus:outline-none {rapidTriggerEnabled ? '' : 'bg-gray-300 dark:bg-gray-600'}"
           aria-label="Rapid Trigger Toggle"
-          style="background-color: {rapidTriggerEnabled
-            ? 'var(--theme-color-primary)'
-            : '#d1d5db dark:#4b5563'};"
+          style="background: {rapidTriggerEnabled ? 'linear-gradient(135deg, var(--theme-color-primary) 0%, color-mix(in srgb, var(--theme-color-primary) 80%, black) 100%)' : ''};"
           onclick={() => (rapidTriggerEnabled = !rapidTriggerEnabled)}
         >
           <span
-            class="inline-block w-4 h-4 transform rounded-full bg-white transition-transform shadow"
+            class="inline-block w-4 h-4 transform rounded-full transition-all shadow"
             class:translate-x-6={rapidTriggerEnabled}
             class:translate-x-1={!rapidTriggerEnabled}
+            style="background: {rapidTriggerEnabled ? 'linear-gradient(135deg, #ffffff 0%, #f0f0f0 50%, #e0e0e0 100%)' : '#ffffff'};"
           ></span>
         </button>
       </div>
@@ -199,17 +225,16 @@
               {t('performance.enableContinuousRapidTrigger', currentLanguage)}
             </h4>
             <button
-              class="relative inline-flex items-center h-6 rounded-full w-11 transition-colors focus:outline-none"
+              class="relative inline-flex items-center h-6 rounded-full w-11 transition-colors focus:outline-none {continuousRapidTriggerEnabled ? '' : 'bg-gray-300 dark:bg-gray-600'}"
               aria-label="Continuous Rapid Trigger Toggle"
-              style="background-color: {continuousRapidTriggerEnabled
-                ? 'var(--theme-color-primary)'
-                : '#d1d5db dark:#4b5563'};"
+              style="background: {continuousRapidTriggerEnabled ? 'linear-gradient(135deg, var(--theme-color-primary) 0%, color-mix(in srgb, var(--theme-color-primary) 80%, black) 100%)' : ''};"
               onclick={() => (continuousRapidTriggerEnabled = !continuousRapidTriggerEnabled)}
             >
               <span
-                class="inline-block w-4 h-4 transform rounded-full bg-white transition-transform shadow"
+                class="inline-block w-4 h-4 transform rounded-full transition-all shadow"
                 class:translate-x-6={continuousRapidTriggerEnabled}
                 class:translate-x-1={!continuousRapidTriggerEnabled}
+                style="background: {continuousRapidTriggerEnabled ? 'linear-gradient(135deg, #ffffff 0%, #f0f0f0 50%, #e0e0e0 100%)' : '#ffffff'};"
               ></span>
             </button>
           </div>
@@ -232,17 +257,16 @@
         <div class="flex items-center gap-2">
           <span class="text-xs text-gray-500 dark:text-gray-400">Separate Press/Release</span>
           <button
-            class="relative inline-flex items-center h-5 rounded-full w-10 transition-colors focus:outline-none"
+            class="relative inline-flex items-center h-6 rounded-full w-11 transition-colors focus:outline-none {separateSensitivity ? '' : 'bg-gray-300 dark:bg-gray-600'}"
             aria-label="Separate Sensitivity Toggle"
-            style="background-color: {separateSensitivity
-              ? 'var(--theme-color-primary)'
-              : '#d1d5db dark:#4b5563'};"
+            style="background: {separateSensitivity ? 'linear-gradient(135deg, var(--theme-color-primary) 0%, color-mix(in srgb, var(--theme-color-primary) 80%, black) 100%)' : ''};"
             onclick={() => (separateSensitivity = !separateSensitivity)}
           >
             <span
-              class="inline-block w-4 h-4 transform rounded-full bg-white transition-transform shadow"
-              class:translate-x-5={separateSensitivity}
+              class="inline-block w-4 h-4 transform rounded-full transition-all shadow"
+              class:translate-x-6={separateSensitivity}
               class:translate-x-1={!separateSensitivity}
+              style="background: {separateSensitivity ? 'linear-gradient(135deg, #ffffff 0%, #f0f0f0 50%, #e0e0e0 100%)' : '#ffffff'};"
             ></span>
           </button>
         </div>
