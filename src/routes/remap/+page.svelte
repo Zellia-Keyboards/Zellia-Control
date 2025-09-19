@@ -180,7 +180,6 @@
     }}
   >
     {#snippet body(x, y)}
-      <!-- FIXME: need a better color scheme  -->
       <span
         class="hover:scale-90 transition-all duration-300 h-14 truncate bg-gray-50 dark:bg-black border border-gray-400 dark:border-gray-700 data-[selected=true]:bg-gray-500 data-[selected=true]:border-gray-700 data-[selected=true]:border-4 rounded-lg flex flex-col items-center justify-center hover:cursor-pointer gap-1 font-sans text-white"
         data-selected={selectedKeys.findIndex(key => key[0] === x && key[1] === y) !== -1}
@@ -204,20 +203,15 @@
   <!-- Tab Navigation -->
   <div class="flex items-center gap-0.5 -mt-4 mb-4 p-0.5 rounded-xl">
     {#each Tabs as tab}
-      <!-- FIXME: wtf are these classes -->
+      {@const isActive = activeTab === tab.name}
       <button
-        class="flex-1 text-xl font-medium px-2.5 py-2.5 rounded-lg transition-all duration-200 flex items-center justify-center gap-2
-               {$glassmorphismMode
-          ? `glassmorphism-tab ${activeTab === tab.name ? 'active' : ''}`
-          : ''}
-               {!$glassmorphismMode && activeTab === tab.name
-          ? 'text-white shadow-sm'
-          : !$glassmorphismMode
-            ? 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-white dark:hover:bg-gray-800'
-            : ''}"
-        style={!$glassmorphismMode && activeTab === tab.name
-          ? `background-color: var(--theme-color-primary);`
-          : ''}
+        class="flex-1 text-xl font-medium px-2.5 py-2.5 rounded-lg transition-all duration-200 
+               flex items-center justify-center gap-2
+               {$glassmorphismMode ? 'glassmorphism-tab' : ''}
+               {$glassmorphismMode && isActive ? 'active' : ''}
+               {!$glassmorphismMode && isActive ? 'text-white shadow-sm' : ''}
+               {!$glassmorphismMode && !isActive ? 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-white dark:hover:bg-gray-800' : ''}"
+        style={!$glassmorphismMode && isActive ? 'background-color: var(--theme-color-primary);' : ''}
         onclick={() => changeTab(tab.name)}
       >
         {#if tab.icon}
