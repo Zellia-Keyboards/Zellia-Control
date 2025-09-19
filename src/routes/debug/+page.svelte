@@ -63,11 +63,6 @@
     }
   });
 
-  // Subscribe to language changes
-  language.subscribe(value => {
-    currentLanguage = value;
-  });
-
   function handleReset() {}
 
   function handleRebootRecovery() {}

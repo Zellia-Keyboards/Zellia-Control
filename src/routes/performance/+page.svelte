@@ -37,11 +37,6 @@
   let pressSensitivity = $state(0.5);
   let releaseSensitivity = $state(0.5);
   let keysSelected = $state(0);
-
-  // Subscribe to language changes
-  language.subscribe(value => {
-    currentLanguage = value;
-  });
 </script>
 
 {#if currentKeyboard().isLegacy}

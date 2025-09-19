@@ -21,11 +21,6 @@
     return { component: Zellia80HE, isLegacy: true };
   });
 
-  // Subscribe to language changes
-  language.subscribe(value => {
-    currentLanguage = value;
-  });
-
   // Settings options - these will be translated in the template
   const settingsOptions = [
     {

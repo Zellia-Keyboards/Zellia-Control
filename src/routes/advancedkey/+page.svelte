@@ -10,11 +10,6 @@
 
   let currentLanguage = $state($language);
 
-  // Subscribe to language changes
-  language.subscribe(value => {
-    currentLanguage = value;
-  });
-
   // Add the missing state variable
   let currentSelectedKey = $state<[number, number] | null>(null);
 

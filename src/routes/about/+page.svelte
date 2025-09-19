@@ -4,11 +4,6 @@
   import { language, t } from '$lib/LanguageStore.svelte';
 
   let currentLanguage = $state($language);
-
-  // Subscribe to language changes
-  language.subscribe(value => {
-    currentLanguage = value;
-  });
 </script>
 
 <div class="flex-1 w-full p-6">

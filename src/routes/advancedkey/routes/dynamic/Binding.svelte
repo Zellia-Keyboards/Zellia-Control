@@ -5,11 +5,6 @@
 
   let currentLanguage = $state($language);
 
-  // Subscribe to language changes
-  language.subscribe(value => {
-    currentLanguage = value;
-  });
-
   interface Props {
     selectedKeycodes: string[];
     selectedBindingIndex: number | null;

@@ -13,11 +13,6 @@
 
   let currentLanguage = $state($language);
 
-  // Subscribe to language changes
-  language.subscribe(value => {
-    currentLanguage = value;
-  });
-
   // Define the tap-hold specific configuration type
   type TapHoldConfiguration = {
     type: 'tap-hold';

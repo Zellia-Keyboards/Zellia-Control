@@ -14,11 +14,6 @@
 
   let currentLanguage = $state($language);
 
-  // Subscribe to language changes
-  language.subscribe(value => {
-    currentLanguage = value;
-  });
-
   // Define the null bind specific configuration type
   type NullBindConfiguration = {
     type: 'null-bind';

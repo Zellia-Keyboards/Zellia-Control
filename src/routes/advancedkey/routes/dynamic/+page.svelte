@@ -27,11 +27,6 @@
 
   let currentLanguage = $state($language);
 
-  // Subscribe to language changes
-  language.subscribe(value => {
-    currentLanguage = value;
-  });
-
   // Define the dynamic keystroke specific configuration type (local usage if different from global)
   type DynamicKeystrokeConfiguration = {
     type: 'dynamic';

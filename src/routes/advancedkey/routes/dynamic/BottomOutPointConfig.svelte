@@ -4,11 +4,6 @@
 
   let currentLanguage = $state($language);
 
-  // Subscribe to language changes
-  language.subscribe(value => {
-    currentLanguage = value;
-  });
-
   type Props = {
     bottomOutPointValue: number;
   };

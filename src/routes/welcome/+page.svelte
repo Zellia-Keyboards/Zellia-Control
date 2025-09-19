@@ -10,11 +10,6 @@
   let showDemoDropdown = $state(false);
   let isEnteringDemo = $state(false);
 
-  // Subscribe to language changes
-  language.subscribe(value => {
-    currentLanguage = value;
-  });
-
   async function handleConnect() {
     isConnecting = true;
     const success = await keyboardConnection.connect();

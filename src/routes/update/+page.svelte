@@ -36,11 +36,6 @@
     return { component: Zellia80HE, isLegacy: true };
   });
 
-  // Subscribe to language changes
-  language.subscribe(value => {
-    currentLanguage = value;
-  });
-
   // MCU status states
   type MCUStatus = 'idle' | 'checking' | 'updating' | 'success' | 'error' | 'disconnected';
 

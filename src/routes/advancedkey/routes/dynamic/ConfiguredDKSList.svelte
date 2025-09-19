@@ -7,11 +7,6 @@
 
   let currentLanguage = $state($language);
 
-  // Subscribe to language changes
-  language.subscribe(value => {
-    currentLanguage = value;
-  });
-
   // Animation state
   let deletingKeys = $state<Set<string>>(new Set());
   let newlyAddedKeys = $state<Set<string>>(new Set());
