@@ -139,6 +139,21 @@
     }
   });
 
+  // Function to set key content/keycode for selected keys
+  function setKeyContent(content: string) {
+    if (selectedKeys.length === 0) return;
+    
+    selectedKeys.forEach(([x, y]) => {
+      dev ? console.log(`Setting key at (${x}, ${y}) to content: ${content}`) : null;
+      // Set the key content in the keymap
+      // Currently stores as string, but will support keycodes in the future
+      storedKeys[y][x] = content;
+    });
+    
+    // Clear selection after setting keys
+    selectedKeys = [];
+  }
+
   $inspect(ActiveTabComponent, 'ActiveTabComponent');
   $inspect(selectedKeys, 'selectedKeys');
 </script>
@@ -241,16 +256,9 @@
         <ActiveTabComponent>
           {#snippet keyslot(content: string)}
             <button
-              onclick={_ => {
-                dev ? console.log(`Clicked key: ${content}`, _) : null;
-                // TODO: set the key by content (it might be a keycode in future)
-                selectedKeys.forEach(([x, y]) => {
-                  dev ? console.log(`Setting key at (${x}, ${y}) to content: ${content}`) : null;
-                  // Here you would set the key content in your keymap
-                  // For example, you might call a function like:
-                  storedKeys[y][x] = content;
-                });
-                selectedKeys = []; // Clear selection after setting
+              onclick={() => {
+                dev ? console.log(`Clicked key: ${content}`) : null;
+                setKeyContent(content);
               }}
               class="size-14 text-wrap text-sm border whitespace-pre-line rounded-lg overflow-auto truncate"
             >
