@@ -75,15 +75,10 @@ const createThemeColorStore = () => {
           document.documentElement.style.setProperty('--color-primary', plainColor);
         } else {
           localStorage.setItem('themeColor', colorName);
-          // Apply theme color CSS variables to the document root with smooth transition
+          // Apply theme color CSS variables to the document root
           const selectedColor = themeColors[colorName];
-
-          // Apply the new theme colors
           document.documentElement.style.setProperty('--color-primary', selectedColor);
         }
-
-        // Force a repaint to ensure immediate theme color application
-        document.documentElement.offsetHeight;
       }
       set(colorName);
     },
