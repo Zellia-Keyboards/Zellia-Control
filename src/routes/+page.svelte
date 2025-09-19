@@ -1,18 +1,5 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
-  import { goto } from '$app/navigation';
-  import { keyboardConnection } from '$lib/KeyboardConnectionStore.svelte';
-
-  onMount(() => {
-    // Check if we should show configurator (connected with a selected model)
-    if (keyboardConnection.shouldShowConfigurator) {
-      // Redirect to main configurator
-      goto('/remap');
-    } else {
-      // Redirect to welcome page
-      goto('/welcome');
-    }
-  });
+  // Root page - layout handles all redirection
 </script>
 
 <!-- Loading state while redirecting -->

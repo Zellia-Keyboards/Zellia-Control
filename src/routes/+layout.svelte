@@ -116,28 +116,41 @@
     }
   });
 
-  // Route protection and redirection logic
-  onMount(() => {
-    const path = $page.url.pathname;
-    
-    // If trying to access configurator pages without being connected
-    if (usesSidebarLayout() && !keyboardConnection.shouldShowConfigurator) {
-      goto('/welcome');
-    }
-  });
-
-  // Subscribe to connection state changes
+  // Centralized navigation logic - single source of truth
+  let navigationInProgress = $state(false);
+  
   $effect(() => {
-    const path = $page.url.pathname;
+    if (navigationInProgress) return; // Prevent navigation loops
     
-    // If on welcome/demo pages but now connected, redirect to configurator
-    if ((path === '/welcome' || path === '/demo-select') && keyboardConnection.shouldShowConfigurator) {
-      goto('/remap');
+    const path = $page.url.pathname;
+    const shouldShowConfigurator = keyboardConnection.shouldShowConfigurator;
+    
+    // Root page - redirect appropriately
+    if (path === '/') {
+      navigationInProgress = true;
+      if (shouldShowConfigurator) {
+        goto('/remap', { replaceState: true });
+      } else {
+        goto('/welcome', { replaceState: true });
+      }
+      setTimeout(() => navigationInProgress = false, 100);
+      return;
     }
     
-    // If on configurator pages but disconnected, redirect to welcome
-    if (usesSidebarLayout() && !keyboardConnection.shouldShowConfigurator) {
-      goto('/welcome');
+    // Welcome/demo pages - redirect if connected
+    if ((path === '/welcome' || path === '/demo-select') && shouldShowConfigurator) {
+      navigationInProgress = true;
+      goto('/remap', { replaceState: true });
+      setTimeout(() => navigationInProgress = false, 100);
+      return;
+    }
+    
+    // Configurator pages - redirect if not connected
+    if (usesSidebarLayout() && !shouldShowConfigurator) {
+      navigationInProgress = true;
+      goto('/welcome', { replaceState: true });
+      setTimeout(() => navigationInProgress = false, 100);
+      return;
     }
   });
 </script>
