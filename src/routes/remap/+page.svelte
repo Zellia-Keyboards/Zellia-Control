@@ -103,16 +103,50 @@
     ['a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a'],
   ]);
 
+  // Function to select all keys
+  function selectAllKeys() {
+    selectedKeys = [];
+    storedKeys.forEach((row, y) => {
+      row.forEach((_, x) => {
+        selectedKeys.push([x, y]);
+      });
+    });
+  }
+
+  // Function to deselect all keys
+  function deselectAllKeys() {
+    selectedKeys = [];
+  }
+
+  // Keyboard event handler
+  function handleKeydown(event: KeyboardEvent) {
+    if (event.ctrlKey && (event.key === 'a' || event.key === 'A')) {
+      event.preventDefault();
+      selectAllKeys();
+    } else if (event.key === 'Escape') {
+      event.preventDefault();
+      deselectAllKeys();
+    }
+  }
+
+  // Reference to the main container for focus management
+  let mainContainer: HTMLDivElement;
+
+  // Auto-focus the container when component mounts
+  $effect(() => {
+    if (mainContainer) {
+      mainContainer.focus();
+    }
+  });
+
   $inspect(ActiveTabComponent, 'ActiveTabComponent');
   $inspect(selectedKeys, 'selectedKeys');
 </script>
 
-<!-- TODO: Drag select -->
-<!-- TODO: Select ALL by ^A -->
-<!-- TODO: Deselect ALL by ^esc -->
 {#if currentKeyboard().isLegacy}
   <svelte:component this={currentKeyboard().component}
     values={storedKeys}
+    currentSelectedKey={null}
     onClick={(x, y, event) => {
       console.log(`Clicked key at (${x}, ${y})`, event);
       let i = selectedKeys.findIndex(key => key[0] === x && key[1] === y);
@@ -122,9 +156,18 @@
         selectedKeys.push([x, y]);
       }
     }}
-  />
+  >
+    {#snippet body(x, y)}
+      <span
+        class="hover:scale-90 transition-all duration-300 h-14 truncate bg-gray-50 dark:bg-black border border-gray-400 dark:border-gray-700 data-[selected=true]:bg-gray-500 data-[selected=true]:border-gray-700 data-[selected=true]:border-4 rounded-lg flex flex-col items-center justify-center hover:cursor-pointer gap-1 font-sans text-white"
+        data-selected={selectedKeys.findIndex(key => key[0] === x && key[1] === y) !== -1}
+        >{storedKeys[y][x]}</span
+      >
+    {/snippet}
+  </svelte:component>
 {:else}
   <svelte:component this={currentKeyboard().component}
+    values={storedKeys}
     currentSelectedKey={null}
     onClick={(x, y, event) => {
       console.log(`Clicked key at (${x}, ${y})`, event);
@@ -148,9 +191,15 @@
 {/if}
 
 <div
+  bind:this={mainContainer}
   class="rounded-2xl shadow p-8 mt-2 mb- mb- grow border border-gray-200 dark:border-gray-600 text-black dark:text-white h-full flex flex-col {$glassmorphismMode
     ? 'glassmorphism-card bg-gray-50 dark:bg-gray-900'
     : 'bg-[color-mix(in_srgb,var(--theme-color-primary)_10%,white)] dark:bg-[color-mix(in_srgb,var(--theme-color-primary)_5%,black)]'}"
+  tabindex="-1"
+  role="application"
+  onkeydown={handleKeydown}
+  onclick={() => mainContainer?.focus()}
+  style="outline: none;"
 >
   <!-- Tab Navigation -->
   <div class="flex items-center gap-0.5 -mt-4 mb-4 p-0.5 rounded-xl">
