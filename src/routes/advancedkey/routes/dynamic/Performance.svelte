@@ -5,11 +5,6 @@
 
   let currentLanguage = $state($language);
 
-  // Subscribe to language changes
-  language.subscribe(value => {
-    currentLanguage = value;
-  });
-
   // Add actuation point state
   let actuationPoint = $state(1.5);
 </script>

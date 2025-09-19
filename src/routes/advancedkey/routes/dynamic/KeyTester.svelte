@@ -9,11 +9,6 @@
   let { currentKeyName }: Props = $props();
 
   let currentLanguage = $state($language);
-
-  // Subscribe to language changes
-  language.subscribe(value => {
-    currentLanguage = value;
-  });
 </script>
 
 <div

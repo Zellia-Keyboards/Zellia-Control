@@ -13,10 +13,6 @@
 
   let currentLanguage = $state($language);
 
-  // Subscribe to language changes
-  language.subscribe(value => {
-    currentLanguage = value;
-  });
   import NewZellia80He from '$lib/NewZellia80HE.svelte';
 
   let selectedToggleAction = $state('caps');

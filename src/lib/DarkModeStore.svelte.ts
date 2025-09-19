@@ -40,6 +40,13 @@ const createDarkModeStore = () => {
       }
       if (browser) {
         localStorage.setItem('darkMode', (!isDark).toString());
+        
+        // Update accent color if no theme is selected
+        const storedTheme = localStorage.getItem('themeColor');
+        if (storedTheme === 'null' || !storedTheme || !themeColors[storedTheme as ThemeColorName]) {
+          const plainColor = !isDark ? '#ffffff' : '#000000'; // Inverted because we just toggled
+          document.documentElement.style.setProperty('--color-primary', plainColor);
+        }
       }
     },
   };
@@ -49,25 +56,29 @@ export const darkMode = createDarkModeStore();
 
 // Create a store for the selected theme color
 const createThemeColorStore = () => {
-  const defaultValue: ThemeColorName = 'indigo';
-  const storedValue = browser ? (localStorage.getItem('themeColor') as ThemeColorName) : null;
-  const initial = storedValue && themeColors[storedValue] ? storedValue : defaultValue;
+  const storedValue = browser ? localStorage.getItem('themeColor') : null;
+  // Allow null value for no theme (plain black/white)
+  const initial: ThemeColorName | null = storedValue === 'null' || storedValue === '' ? null : 
+    (storedValue && themeColors[storedValue as ThemeColorName] ? storedValue as ThemeColorName : null);
 
-  const { subscribe, set } = writable<ThemeColorName>(initial);
+  const { subscribe, set } = writable<ThemeColorName | null>(initial);
 
   return {
     subscribe,
-    set: (colorName: ThemeColorName) => {
+    set: (colorName: ThemeColorName | null) => {
       if (browser) {
-        localStorage.setItem('themeColor', colorName);
-        // Apply theme color CSS variables to the document root with smooth transition
-        const selectedColor = themeColors[colorName];
-
-        // Apply the new theme colors
-        document.documentElement.style.setProperty('--color-primary', selectedColor);
-
-        // Force a repaint to ensure immediate theme color application
-        document.documentElement.offsetHeight;
+        if (colorName === null) {
+          localStorage.setItem('themeColor', 'null');
+          // Set pure white/black based on current dark mode state
+          const isDark = document.documentElement.classList.contains('dark');
+          const plainColor = isDark ? '#ffffff' : '#000000';
+          document.documentElement.style.setProperty('--color-primary', plainColor);
+        } else {
+          localStorage.setItem('themeColor', colorName);
+          // Apply theme color CSS variables to the document root
+          const selectedColor = themeColors[colorName];
+          document.documentElement.style.setProperty('--color-primary', selectedColor);
+        }
       }
       set(colorName);
     },
@@ -75,6 +86,19 @@ const createThemeColorStore = () => {
 };
 
 export const selectedThemeColor = createThemeColorStore();
+
+// Function to update theme color based on current dark mode (for when dark mode toggles)
+export const updateThemeForDarkMode = () => {
+  if (browser) {
+    const storedTheme = localStorage.getItem('themeColor');
+    if (storedTheme === 'null' || !storedTheme || !themeColors[storedTheme as ThemeColorName]) {
+      // No theme selected, update to appropriate plain color
+      const isDark = document.documentElement.classList.contains('dark');
+      const plainColor = isDark ? '#ffffff' : '#000000';
+      document.documentElement.style.setProperty('--color-primary', plainColor);
+    }
+  }
+};
 
 // Create a store for glassmorphism mode
 const createGlassmorphismStore = () => {
@@ -118,11 +142,15 @@ if (browser) {
     document.documentElement.classList.add('dark');
   }
 
-  const storedTheme = localStorage.getItem('themeColor') as ThemeColorName;
-  const currentThemeName = storedTheme && themeColors[storedTheme] ? storedTheme : 'indigo';
-  if (themeColors[currentThemeName]) {
+  const storedTheme = localStorage.getItem('themeColor');
+  if (storedTheme && storedTheme !== 'null' && themeColors[storedTheme as ThemeColorName]) {
+    const currentThemeName = storedTheme as ThemeColorName;
     const selectedColor = themeColors[currentThemeName];
     document.documentElement.style.setProperty('--color-primary', selectedColor);
+  } else {
+    // No theme selected, use pure white/black based on dark mode
+    const plainColor = isDark ? '#ffffff' : '#000000';
+    document.documentElement.style.setProperty('--color-primary', plainColor);
   }
 
   // Re-enable transitions after a brief delay to prevent flash

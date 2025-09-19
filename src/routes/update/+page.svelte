@@ -1,6 +1,9 @@
 <script lang="ts">
   import { glassmorphismMode } from '$lib/DarkModeStore.svelte';
   import NewZellia80He from '$lib/NewZellia80HE.svelte';
+  import NewZellia60HE from '$lib/NewZellia60HE.svelte';
+  import Zellia80HE from '$lib/Zellia80HE.svelte';
+  import { keyboardConnection } from '$lib/KeyboardConnectionStore.svelte';
   import { 
     Download, 
     CheckCircle, 
@@ -21,9 +24,16 @@
 
   let currentLanguage = $state($language);
 
-  // Subscribe to language changes
-  language.subscribe(value => {
-    currentLanguage = value;
+  // Derived variable to determine which keyboard component to show
+  let currentKeyboard = $derived(() => {
+    const selectedModel = keyboardConnection.state.selectedModel;
+    if (selectedModel === 'zellia60he') {
+      return { component: NewZellia60HE, isLegacy: false };
+    } else if (selectedModel === 'zellia80he') {
+      return { component: NewZellia80He, isLegacy: false };
+    }
+    // Default fallback
+    return { component: Zellia80HE, isLegacy: true };
   });
 
   // MCU status states
@@ -77,7 +87,6 @@
 
   let isUpdating = $state(false);
   let updateMode = $state<'single' | 'all'>('all');
-  let showAdvancedOptions = $state(false);
 
   // Update functions - Master MCU handles everything
   async function updateAllFirmware() {
@@ -195,24 +204,29 @@
   }
 </script>
 
-<NewZellia80He
-  currentSelectedKey={null}
-  onClick={(x, y, event) => {
-    console.log(`Key clicked at (${x}, ${y})`, event);
-  }}
->
-  {#snippet body(x, y)}
-    <div
-      class="hover:scale-90 transition-all duration-300 h-14 bg-gray-50 dark:bg-black border border-gray-400 dark:border-gray-700 data-[selected=true]:bg-gray-500 data-[selected=true]:border-gray-700 data-[selected=true]:border-4 rounded-lg flex flex-col items-center justify-center hover:cursor-pointer gap-1 font-sans text-white"
-    ></div>
-  {/snippet}
-</NewZellia80He>
+{#if currentKeyboard().isLegacy}
+  <svelte:component this={currentKeyboard().component}
+    values={[]}
+    onClick={(x, y, event) => {
+      console.log(`Key clicked at (${x}, ${y})`, event);
+    }}
+  />
+{:else}
+  <svelte:component this={currentKeyboard().component}
+    currentSelectedKey={null}
+    onClick={(x, y, event) => {
+      console.log(`Key clicked at (${x}, ${y})`, event);
+    }}
+  >
+    {#snippet body(x, y)}
+      <div
+        class="hover:scale-90 transition-all duration-300 h-14 bg-gray-50 dark:bg-black border border-gray-400 dark:border-gray-700 data-[selected=true]:bg-gray-500 data-[selected=true]:border-gray-700 data-[selected=true]:border-4 rounded-lg flex flex-col items-center justify-center hover:cursor-pointer gap-1 font-sans text-white"
+      ></div>
+    {/snippet}
+  </svelte:component>
+{/if}
 
-<div
-  class="rounded-2xl shadow p-8 mt-2 mb-4 grow bg-primary-50 dark:bg-black border border-gray-200 dark:border-gray-600 text-black dark:text-white h-full flex flex-col {$glassmorphismMode
-    ? 'glassmorphism-card'
-    : ''}"
->
+<div class="rounded-2xl shadow p-8 mt-2 mb-4 grow bg-primary-50 dark:bg-black border border-gray-200 dark:border-gray-600 text-black dark:text-white h-full flex flex-col {$glassmorphismMode    ? 'glassmorphism-card'    : ''}">
   <!-- Header with Status Overview -->
   <div class="mb-8">
     <div class="flex items-start justify-between mb-6">
@@ -380,59 +394,8 @@
           {/if}
         </div>
       {/each}
+
     </div>
-
-    <!-- Advanced Options -->
-    {#if showAdvancedOptions}
-      <div class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 p-6 {$glassmorphismMode ? 'glassmorphism-card' : ''}">
-        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">{t('update.advancedOptions', currentLanguage)}</h3>
-        <div class="grid md:grid-cols-2 gap-4">
-          <button
-            class="p-4 text-left rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors disabled:opacity-50"
-            disabled={isUpdating}
-          >
-            <div class="flex items-center gap-3 mb-2">
-              <Settings class="w-5 h-5 text-orange-500" />
-              <span class="font-medium text-gray-900 dark:text-white">{t('update.forceUpdate', currentLanguage)}</span>
-            </div>
-            <p class="text-sm text-gray-600 dark:text-gray-400">
-              {t('update.forceUpdateDesc', currentLanguage)}
-            </p>
-          </button>
-          
-          <button
-            class="p-4 text-left rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors disabled:opacity-50"
-            disabled={isUpdating}
-          >
-            <div class="flex items-center gap-3 mb-2">
-              <Zap class="w-5 h-5 text-yellow-500" />
-              <span class="font-medium text-gray-900 dark:text-white">{t('update.bootloaderMode', currentLanguage)}</span>
-            </div>
-            <p class="text-sm text-gray-600 dark:text-gray-400">
-              {t('update.bootloaderModeDesc', currentLanguage)}
-            </p>
-          </button>
-        </div>
-      </div>
-    {/if}
-
-    <!-- Advanced Options Toggle -->
-    <button
-      class="flex items-center justify-center gap-2 w-full py-3 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
-      onclick={() => showAdvancedOptions = !showAdvancedOptions}
-    >
-      <Settings class="w-4 h-4" />
-      {showAdvancedOptions ? t('update.hideAdvancedOptions', currentLanguage) : t('update.showAdvancedOptions', currentLanguage)}
-      <svg 
-        class="w-4 h-4 transition-transform duration-200"
-        class:rotate-180={showAdvancedOptions}
-        fill="none" 
-        stroke="currentColor" 
-        viewBox="0 0 24 24"
-      >
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7 7" />
-      </svg>
-    </button>
   </div>
 
   <!-- Global Update Status -->

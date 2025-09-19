@@ -1,17 +1,24 @@
 <script lang="ts">
   import '../app.css';
   import Zellia80HE from '../lib/Zellia80HE.svelte';
+  import NewZellia60HE from '../lib/NewZellia60HE.svelte';
+  import NewZellia80HE from '../lib/NewZellia80HE.svelte';
   import { KeyboardDisplayValues } from '$lib/KeyboardState.svelte';
+  import { keyboardConnection } from '$lib/KeyboardConnectionStore.svelte';
   import { page } from '$app/stores';
+  import { goto } from '$app/navigation';
+  import { onMount } from 'svelte';
   import {
     selectedThemeColor,
     themeColors,
     type ThemeColorName,
     glassmorphismMode,
+    updateThemeForDarkMode,
   } from '$lib/DarkModeStore.svelte';
   import { language, t, type Language } from '$lib/LanguageStore.svelte';
   import { Palette, Sun, Moon, Globe } from 'lucide-svelte';
   import { slide, fade } from 'svelte/transition';
+  
   const NAVIGATE = [
     ['/performance', 'nav.performance'],
     ['/remap', 'nav.remap'],
@@ -23,6 +30,7 @@
     ['/about', 'nav.about'],
     ['/update', 'nav.update'],
   ];
+  
   let { children } = $props();
   let selectedLayer = $state(1);
   let showDropdown = $state(false);
@@ -30,36 +38,38 @@
   let showLanguageSelector = $state(false);
   let showFirefoxWarning = $state(false);
   let firefoxWarningDismissed = $state(false);
-  let currentTheme = $state<ThemeColorName>('indigo');
+  let currentTheme = $state<ThemeColorName | null>(null);
   let currentLanguage = $state<Language>('en');
 
-  // Long click animation states
-  let longClickStates = $state<
-    Record<
-      string,
-      {
-        isPressed: boolean;
-        progress: number;
-        timeout?: any;
-        animationFrame?: any;
-        x: number;
-        y: number;
-        completed: boolean;
-        fadeProgress: number;
-        showAnimation: boolean;
-        lastCompletedTime?: number;
-      }
-    >
-  >({});
-  let longClickDuration = 1000; // milliseconds - increased from 800 to make it more deliberate
-  let animationDelay = 300; // milliseconds delay before showing animation
-  let clickBlockDuration = 500; // milliseconds to block regular clicks after long press completion
+  // Check if current page should use the sidebar layout
+  const usesSidebarLayout = $derived(() => {
+    const path = $page.url.pathname;
+    const sidebarPages = ['/performance', '/remap', '/lighting', '/advancedkey', '/calibration', '/debug', '/settings', '/about', '/update'];
+    return sidebarPages.some(sidebarPage => path === sidebarPage || path.startsWith(sidebarPage + '/'));
+  });
+
+  // Check if we should show the configurator layout
+  const shouldShowConfiguratorLayout = $derived(() => {
+    return keyboardConnection.shouldShowConfigurator && usesSidebarLayout();
+  });
 
   // Derived variable to determine when to show layer selector
   let shouldShowLayerSelector = $derived(() => {
     const path = $page.url.pathname;
     const showPagesForLayerSelector = ['/performance', '/remap', '/advancedkey'];
     return !showPagesForLayerSelector.some(page => path === page || path.startsWith(page + '/'));
+  });
+
+  // Derived variable to determine which keyboard component to show
+  const currentKeyboardComponent = $derived(() => {
+    const selectedModel = keyboardConnection.state.selectedModel;
+    if (selectedModel === 'zellia60he') {
+      return NewZellia60HE;
+    } else if (selectedModel === 'zellia80he') {
+      return NewZellia80HE;
+    }
+    // Default fallback
+    return Zellia80HE;
   });
 
   selectedThemeColor.subscribe(value => {
@@ -69,147 +79,32 @@
   language.subscribe(value => {
     currentLanguage = value;
   });
+
   function setTheme(colorName: ThemeColorName) {
-    selectedThemeColor.set(colorName);
+    // If clicking the currently selected theme, deselect it
+    if (currentTheme === colorName) {
+      selectedThemeColor.set(null);
+    } else {
+      selectedThemeColor.set(colorName);
+    }
   }
 
   function setLanguage(lang: Language) {
     language.set(lang);
-  } // Function to check if a navigation item is active
+  }
+
+  // Function to check if a navigation item is active
   function isActive(href: string): boolean {
     return $page.url.pathname === href || $page.url.pathname.startsWith(href + '/');
   }
 
-  // Long click animation functions
-  function startLongClick(id: string, event: MouseEvent | TouchEvent) {
-    // Get cursor position relative to the button
-    const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
-    let x, y;
-
-    if (event instanceof MouseEvent) {
-      x = event.clientX - rect.left;
-      y = event.clientY - rect.top;
-    } else {
-      // TouchEvent
-      x = event.touches[0].clientX - rect.left;
-      y = event.touches[0].clientY - rect.top;
-    }
-
-    // Initialize state if not exists
-    if (!longClickStates[id]) {
-      longClickStates[id] = {
-        isPressed: false,
-        progress: 0,
-        x: 0,
-        y: 0,
-        completed: false,
-        fadeProgress: 1,
-        showAnimation: false,
-        lastCompletedTime: undefined,
-      };
-    }
-
-    const state = longClickStates[id];
-    state.isPressed = true;
-    state.progress = 0;
-    state.x = x;
-    state.y = y;
-    state.completed = false;
-    state.fadeProgress = 1;
-    state.showAnimation = false;
-
-    // Start animation after delay
-    state.timeout = setTimeout(() => {
-      if (state.isPressed) {
-        state.showAnimation = true;
-        const startTime = Date.now();
-
-        const animateProgress = () => {
-          if (!state.isPressed && !state.completed) return;
-
-          const elapsed = Date.now() - startTime;
-          state.progress = Math.min(elapsed / longClickDuration, 1);
-
-          if (state.progress < 1) {
-            state.animationFrame = requestAnimationFrame(animateProgress);
-          } else {
-            // Long click completed
-            state.completed = true;
-            onLongClickComplete(id);
-          }
-        };
-
-        state.animationFrame = requestAnimationFrame(animateProgress);
-      }
-    }, animationDelay);
+  // Disconnect function
+  function handleDisconnect() {
+    keyboardConnection.disconnect();
+    goto('/welcome');
   }
 
-  function endLongClick(id: string) {
-    const state = longClickStates[id];
-    if (state) {
-      state.isPressed = false;
-      if (state.completed) {
-        // If completed, start fade out animation
-        const fadeStartTime = Date.now();
-        const fadeDuration = 200; // 200ms fade out
-
-        const fadeOut = () => {
-          const elapsed = Date.now() - fadeStartTime;
-          const fadeProgress = Math.min(elapsed / fadeDuration, 1);
-          state.fadeProgress = 1 - fadeProgress;
-
-          if (fadeProgress < 1) {
-            requestAnimationFrame(fadeOut);
-          } else {
-            // Reset state after fade out
-            state.completed = false;
-            state.progress = 0;
-            state.fadeProgress = 1;
-            state.showAnimation = false;
-          }
-        };
-
-        requestAnimationFrame(fadeOut);
-      } else {
-        // Not completed, reset immediately
-        state.progress = 0;
-        state.showAnimation = false;
-      }
-
-      if (state.animationFrame) {
-        cancelAnimationFrame(state.animationFrame);
-      }
-      if (state.timeout) {
-        clearTimeout(state.timeout);
-      }
-    }
-  }
-
-  function onLongClickComplete(id: string) {
-    console.log(`Long click completed for: ${id}`);
-
-    // Special handling for dark mode button - toggle glassmorphism
-    if (id === 'darkmode') {
-      glassmorphismMode.toggle();
-      console.log('Glassmorphism mode toggled!');
-
-      // Add pulse effect to dark mode button
-      const button = document.querySelector('[onmousedown*="darkmode"]') as HTMLElement;
-      if (button) {
-        button.classList.add('glassmorphism-toggle-complete');
-        setTimeout(() => {
-          button.classList.remove('glassmorphism-toggle-complete');
-        }, 600);
-      }
-    }
-
-    // Keep the completed state and record completion time
-    const state = longClickStates[id];
-    if (state) {
-      state.completed = true;
-      state.lastCompletedTime = Date.now();
-    }
-  } // Set page language for accessibility
+  // Set page language for accessibility
   $effect(() => {
     if (typeof document !== 'undefined') {
       document.documentElement.lang = currentLanguage;
@@ -220,96 +115,136 @@
       }
     }
   });
+
+  // Centralized navigation logic - single source of truth
+  let navigationInProgress = $state(false);
+  
+  $effect(() => {
+    if (navigationInProgress) return; // Prevent navigation loops
+    
+    const path = $page.url.pathname;
+    const shouldShowConfigurator = keyboardConnection.shouldShowConfigurator;
+    
+    // Root page - redirect appropriately
+    if (path === '/') {
+      navigationInProgress = true;
+      if (shouldShowConfigurator) {
+        goto('/remap', { replaceState: true });
+      } else {
+        goto('/welcome', { replaceState: true });
+      }
+      setTimeout(() => navigationInProgress = false, 100);
+      return;
+    }
+    
+    // Welcome/demo pages - redirect if connected
+    if ((path === '/welcome' || path === '/demo-select') && shouldShowConfigurator) {
+      navigationInProgress = true;
+      goto('/remap', { replaceState: true });
+      setTimeout(() => navigationInProgress = false, 100);
+      return;
+    }
+    
+    // Configurator pages - redirect if not connected
+    if (usesSidebarLayout() && !shouldShowConfigurator) {
+      navigationInProgress = true;
+      goto('/welcome', { replaceState: true });
+      setTimeout(() => navigationInProgress = false, 100);
+      return;
+    }
+  });
 </script>
 
-<!-- Small Screen Warning (follows codebase theme) -->
-<div
-  class="xl:hidden fixed inset-0 flex items-center justify-center z-50 bg-primary-50 dark:bg-black"
->
-  <div class="max-w-2xl mx-4">
-    <!-- Main Warning Card -->
-    <div
-      class="rounded-xl shadow-lg border p-8 text-center bg-white dark:bg-black border-primary-200 dark:border-primary-700 text-gray-800 dark:text-white {$glassmorphismMode
-        ? 'glassmorphism-card'
-        : ''}"
-    >
-      <!-- Icon and Title -->
-      <div class="flex items-center justify-center mb-6">
-        <div
-          class="w-16 h-16 rounded-xl flex items-center justify-center bg-primary-100 dark:bg-primary-800"
-        >
-          <svg
-            class="w-8 h-8 text-primary-600 dark:text-primary-400"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-            />
-          </svg>
-        </div>
-      </div>
-
-      <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">Display Too Small</h2>
-      <p class="text-gray-600 dark:text-gray-300 mb-6 leading-relaxed">
-        Zellia Control requires a larger display for the optimal keyboard configuration experience.
-        Please use a desktop or laptop computer, or expand your browser window.
-      </p>
-
-      <!-- Requirements Info -->
+<!-- Main Application -->
+{#if shouldShowConfiguratorLayout()}
+  <!-- Small Screen Warning (follows codebase theme) -->
+  <div
+    class="xl:hidden fixed inset-0 flex items-center justify-center z-50 bg-primary-50 dark:bg-black"
+  >
+    <!-- Small screen warning content -->
+    <div class="max-w-2xl mx-4">
+      <!-- Main Warning Card -->
       <div
-        class="border rounded-lg p-4 mb-6 bg-primary-50 dark:bg-primary-900 border-primary-200 dark:border-primary-700 {$glassmorphismMode
+        class="rounded-xl shadow-lg border p-8 text-center bg-white dark:bg-black border-primary-200 dark:border-primary-700 text-gray-800 dark:text-white {$glassmorphismMode
           ? 'glassmorphism-card'
           : ''}"
       >
-        <div class="flex items-center gap-3 text-primary-600 dark:text-primary-400">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-            />
-          </svg>
-          <div class="text-sm font-medium">Minimum recommended width: 1280px</div>
+        <!-- Icon and Title -->
+        <div class="flex items-center justify-center mb-6">
+          <div
+            class="w-16 h-16 rounded-xl flex items-center justify-center bg-primary-100 dark:bg-primary-800"
+          >
+            <svg
+              class="w-8 h-8 text-primary-600 dark:text-primary-400"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+              />
+            </svg>
+          </div>
         </div>
-      </div>
 
-      <!-- Features that require larger screen -->
-      <div class="text-left space-y-3 mb-6">
-        <h3 class="text-lg font-medium text-gray-900 dark:text-white text-center mb-4">
-          {t('ui.featuresRequiringLargerDisplay', currentLanguage)}
-        </h3>
-        <div class="grid grid-cols-1 gap-3">
-          <div class="flex items-center gap-3 text-sm text-gray-700 dark:text-gray-300">
-            <div class="w-1.5 h-1.5 rounded-full bg-primary-500"></div>
-            <span>{t('ui.keyboardLayoutVisualization', currentLanguage)}</span>
+        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">Display Too Small</h2>
+        <p class="text-gray-600 dark:text-gray-300 mb-6 leading-relaxed">
+          Zellia Control requires a larger display for the optimal keyboard configuration experience.
+          Please use a desktop or laptop computer, or expand your browser window.
+        </p>
+
+        <!-- Requirements Info -->
+        <div
+          class="border rounded-lg p-4 mb-6 bg-primary-50 dark:bg-primary-900 border-primary-200 dark:border-primary-700 {$glassmorphismMode
+            ? 'glassmorphism-card'
+            : ''}"
+        >
+          <div class="flex items-center gap-3 text-primary-600 dark:text-primary-400">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+            <div class="text-sm font-medium">Minimum recommended width: 1280px</div>
           </div>
-          <div class="flex items-center gap-3 text-sm text-gray-700 dark:text-gray-300">
-            <div class="w-1.5 h-1.5 rounded-full bg-primary-500"></div>
-            <span>{t('ui.advancedKeyConfigPanels', currentLanguage)}</span>
-          </div>
-          <div class="flex items-center gap-3 text-sm text-gray-700 dark:text-gray-300">
-            <div class="w-1.5 h-1.5 rounded-full bg-primary-500"></div>
-            <span>Performance tuning controls</span>
-          </div>
-          <div class="flex items-center gap-3 text-sm text-gray-700 dark:text-gray-300">
-            <div class="w-1.5 h-1.5 rounded-full bg-primary-500"></div>
-            <span>Lighting configuration interface</span>
+        </div>
+
+        <!-- Features that require larger screen -->
+        <div class="text-left space-y-3 mb-6">
+          <h3 class="text-lg font-medium text-gray-900 dark:text-white text-center mb-4">
+            {t('ui.featuresRequiringLargerDisplay', currentLanguage)}
+          </h3>
+          <div class="grid grid-cols-1 gap-3">
+            <div class="flex items-center gap-3 text-sm text-gray-700 dark:text-gray-300">
+              <div class="w-1.5 h-1.5 rounded-full bg-primary-500"></div>
+              <span>{t('ui.keyboardLayoutVisualization', currentLanguage)}</span>
+            </div>
+            <div class="flex items-center gap-3 text-sm text-gray-700 dark:text-gray-300">
+              <div class="w-1.5 h-1.5 rounded-full bg-primary-500"></div>
+              <span>{t('ui.advancedKeyConfigPanels', currentLanguage)}</span>
+            </div>
+            <div class="flex items-center gap-3 text-sm text-gray-700 dark:text-gray-300">
+              <div class="w-1.5 h-1.5 rounded-full bg-primary-500"></div>
+              <span>Performance tuning controls</span>
+            </div>
+            <div class="flex items-center gap-3 text-sm text-gray-700 dark:text-gray-300">
+              <div class="w-1.5 h-1.5 rounded-full bg-primary-500"></div>
+              <span>Lighting configuration interface</span>
+            </div>
           </div>
         </div>
       </div>
     </div>
   </div>
-</div>
 
-
-<!-- Main Application (hidden on small screens) -->
-<div class="hidden xl:flex h-screen bg-gray-50 dark:bg-black">
+  <!-- Main Application (hidden on small screens) -->
+  <div class="hidden xl:flex h-screen bg-gray-50 dark:bg-black">
   <!-- Sidebar -->
   <div
     class="flex flex-col w-52 dark:bg-black dark:border-gray-600 bg-white border-gray-200 {$glassmorphismMode
@@ -325,6 +260,18 @@
       >
         {t('common.zellia', currentLanguage)}
       </h1>
+      
+      <!-- Connection Status -->
+      <div class="mt-3 text-center">
+        <div class="flex items-center justify-center gap-2 text-xs text-gray-600 dark:text-gray-400">
+          <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+          <span>
+            {keyboardConnection.state.isDemoMode 
+              ? `Demo: ${keyboardConnection.state.selectedModel?.toUpperCase() || ''}`
+              : keyboardConnection.state.lastConnectedDevice || 'Connected'}
+          </span>
+        </div>
+      </div>
     </div>
 
     <!-- Profile Section -->
@@ -364,84 +311,39 @@
         {/if}
       </div>
 
-      <!-- Import/Export Buttons -->
+      <!-- Import/Export and Disconnect Buttons -->
       {#if !showDropdown}
-        <div class="grid grid-cols-2 gap-2" transition:slide={{ duration: 300, axis: 'y' }}>
+        <div class="grid grid-cols-2 gap-2 mb-2" transition:slide={{ duration: 300, axis: 'y' }}>
           <button
-            class="px-3 py-2 text-xs font-medium border rounded-md transition-colors duration-200 text-white border-transparent relative overflow-hidden bg-primary-500 hover:bg-primary-600 {$glassmorphismMode
+            class="px-3 py-2 text-xs font-medium border rounded-md transition-colors duration-200 text-white border-transparent bg-primary-500 hover:bg-primary-600 {$glassmorphismMode
               ? 'glassmorphism-button'
               : ''}"
-            onmousedown={e => startLongClick('import', e)}
-            onmouseup={() => endLongClick('import')}
-            onmouseleave={() => endLongClick('import')}
-            ontouchstart={e => startLongClick('import', e)}
-            ontouchend={() => endLongClick('import')}
-            ontouchcancel={() => endLongClick('import')}
           >
-            <!-- Long click circular animation -->
-            {#if longClickStates['import']?.showAnimation && (longClickStates['import']?.isPressed || longClickStates['import']?.completed)}
-              <div class="absolute inset-0 rounded-md overflow-hidden pointer-events-none">
-                <div
-                  class="absolute rounded-full transition-all duration-75"
-                  style="
-                                left: {longClickStates['import'].x}px; 
-                                top: {longClickStates['import'].y}px;
-                                width: {longClickStates['import'].progress * 200}px;
-                                height: {longClickStates['import'].progress * 200}px;
-                                margin-left: -{longClickStates['import'].progress * 100}px;
-                                margin-top: -{longClickStates['import'].progress * 100}px;
-                                background-color: color-mix(in srgb, white {longClickStates[
-                    'import'
-                  ].completed
-                    ? '30%'
-                    : '15%'}, transparent);
-                                opacity: {longClickStates['import'].fadeProgress};
-                                transition: background-color 0.3s ease;
-                            "
-                ></div>
-              </div>
-            {/if}
-
-            <span class="relative z-10">{t('ui.import', currentLanguage)}</span>
+            {t('ui.import', currentLanguage)}
           </button>
           <button
-            class="px-3 py-2 text-xs font-medium border rounded-md transition-colors duration-200 text-white border-transparent relative overflow-hidden bg-primary-500 hover:bg-primary-600 {$glassmorphismMode
+            class="px-3 py-2 text-xs font-medium border rounded-md transition-colors duration-200 text-white border-transparent bg-primary-500 hover:bg-primary-600 {$glassmorphismMode
               ? 'glassmorphism-button'
               : ''}"
-            onmousedown={e => startLongClick('export', e)}
-            onmouseup={() => endLongClick('export')}
-            onmouseleave={() => endLongClick('export')}
-            ontouchstart={e => startLongClick('export', e)}
-            ontouchend={() => endLongClick('export')}
-            ontouchcancel={() => endLongClick('export')}
           >
-            <!-- Long click circular animation -->
-            {#if longClickStates['export']?.showAnimation && (longClickStates['export']?.isPressed || longClickStates['export']?.completed)}
-              <div class="absolute inset-0 rounded-md overflow-hidden pointer-events-none">
-                <div
-                  class="absolute rounded-full transition-all duration-75"
-                  style="
-                                left: {longClickStates['export'].x}px; 
-                                top: {longClickStates['export'].y}px;
-                                width: {longClickStates['export'].progress * 200}px;
-                                height: {longClickStates['export'].progress * 200}px;
-                                margin-left: -{longClickStates['export'].progress * 100}px;
-                                margin-top: -{longClickStates['export'].progress * 100}px;
-                                background-color: color-mix(in srgb, white {longClickStates[
-                    'export'
-                  ].completed
-                    ? '30%'
-                    : '15%'}, transparent);
-                                opacity: {longClickStates['export'].fadeProgress};
-                                transition: background-color 0.3s ease;
-                            "
-                ></div>
-              </div>
-            {/if}
-
-            <span class="relative z-10">{t('ui.export', currentLanguage)}</span>
+            {t('ui.export', currentLanguage)}
           </button>
         </div>
+
+        <!-- Disconnect Button -->
+        <button
+          class="w-full px-3 py-2 text-xs font-medium border rounded-md transition-colors duration-200 text-red-600 dark:text-red-400 border-red-300 dark:border-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 {$glassmorphismMode
+            ? 'glassmorphism-button'
+            : ''}"
+          onclick={handleDisconnect}
+        >
+          <div class="flex items-center justify-center gap-1">
+            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+            {t('ui.disconnect', currentLanguage)}
+          </div>
+        </button>
       {/if}
     </div>
     <!-- Navigation -->
@@ -490,16 +392,17 @@
         <div class="grid grid-cols-4 gap-2 mt-2" transition:slide={{ duration: 300, axis: 'y' }}>
           {#each Object.entries(themeColors) as [name, color] (name)}
             <button
-              title={name.charAt(0).toUpperCase() + name.slice(1)}
+              title={name.charAt(0).toUpperCase() + name.slice(1) + (currentTheme === name ? ' (Click to deselect)' : '')}
               class="w-full h-7 rounded border transition-all duration-150
                                    {currentTheme === name
-                ? 'border-white dark:border-white ring-1 ring-gray-400 dark:ring-white'
+                ? 'border-white dark:border-white ring-2 ring-gray-400 dark:ring-white'
                 : 'border-gray-300 dark:border-gray-600 hover:border-gray-500 dark:hover:border-gray-400'}"
               style="background-color: {color};"
               onclick={() => setTheme(name as ThemeColorName)}
             ></button>
           {/each}
         </div>
+        
       {/if}
     </div>
 
@@ -558,55 +461,17 @@
     <!-- Dark Mode Toggle at Bottom -->
     <div class="p-3 border-transparent">
       <button
-        class="flex items-center gap-3 w-full px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative overflow-hidden {$glassmorphismMode
+        class="flex items-center gap-3 w-full px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 {$glassmorphismMode
           ? 'glassmorphism-button'
           : 'text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-900'}"
-        onmousedown={e => startLongClick('darkmode', e)}
-        onmouseup={() => endLongClick('darkmode')}
-        onmouseleave={() => endLongClick('darkmode')}
-        ontouchstart={e => startLongClick('darkmode', e)}
-        ontouchend={() => endLongClick('darkmode')}
-        ontouchcancel={() => endLongClick('darkmode')}
-        onclick={e => {
-          // Prevent regular click if long press was recently completed
-          const state = longClickStates['darkmode'];
-          if (
-            state?.lastCompletedTime &&
-            Date.now() - state.lastCompletedTime < clickBlockDuration
-          ) {
-            e.preventDefault();
-            console.log('Click blocked due to recent long press completion');
-            return;
-          }
+        onclick={() => {
           // Toggle Tailwind dark mode
           document.documentElement.classList.toggle('dark');
+          // Update theme color for plain theme if no color theme is selected
+          updateThemeForDarkMode();
         }}
       >
-        <!-- Long click circular animation -->
-        {#if longClickStates['darkmode']?.showAnimation && (longClickStates['darkmode']?.isPressed || longClickStates['darkmode']?.completed)}
-          <div class="absolute inset-0 rounded-lg overflow-hidden pointer-events-none">
-            <div
-              class="absolute rounded-full transition-all duration-75"
-              style="
-                            left: {longClickStates['darkmode'].x}px; 
-                            top: {longClickStates['darkmode'].y}px;
-                            width: {longClickStates['darkmode'].progress * 400}px;
-                            height: {longClickStates['darkmode'].progress * 400}px;
-                            margin-left: -{longClickStates['darkmode'].progress * 200}px;
-                            margin-top: -{longClickStates['darkmode'].progress * 200}px;
-                            background-color: color-mix(in srgb, var(--theme-color-primary) {longClickStates[
-                'darkmode'
-              ].completed
-                ? '30%'
-                : '15%'}, transparent);
-                            opacity: {longClickStates['darkmode'].fadeProgress};
-                            transition: background-color 0.3s ease;
-                        "
-            ></div>
-          </div>
-        {/if}
-
-        <div class="flex items-center gap-3 relative z-10">
+        <div class="flex items-center gap-3">
           <Sun class="w-4 h-4 hidden dark:block" />
           <Moon class="w-4 h-4 block dark:hidden" />
           <span class="hidden dark:block">{t('ui.darkMode', currentLanguage)}</span>
@@ -663,6 +528,12 @@
     {@render children()}
   </div>
 </div>
+{:else}
+  <!-- Show standalone pages (welcome, demo-select) without sidebar -->
+  <div class="min-h-screen">
+    {@render children()}
+  </div>
+{/if}
 
 <style lang="postcss">
   @reference "tailwindcss";

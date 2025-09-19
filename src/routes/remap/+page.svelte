@@ -1,6 +1,9 @@
 <script lang="ts">
   import { glassmorphismMode, darkMode } from '$lib/DarkModeStore.svelte';
   import NewZellia80He from '$lib/NewZellia80HE.svelte';
+  import NewZellia60HE from '$lib/NewZellia60HE.svelte';
+  import Zellia80HE from '$lib/Zellia80HE.svelte';
+  import { keyboardConnection } from '$lib/KeyboardConnectionStore.svelte';
   import { language, t } from '$lib/LanguageStore.svelte';
   import Basic from './Basic.svelte';
   import System from './System.svelte';
@@ -11,6 +14,18 @@
   import { cubicOut } from 'svelte/easing';
   import { X } from 'lucide-svelte';
   import { dev } from '$app/environment';
+
+  // Derived variable to determine which keyboard component to show
+  let currentKeyboard = $derived(() => {
+    const selectedModel = keyboardConnection.state.selectedModel;
+    if (selectedModel === 'zellia60he') {
+      return { component: NewZellia60HE, isLegacy: false };
+    } else if (selectedModel === 'zellia80he') {
+      return { component: NewZellia80He, isLegacy: false };
+    }
+    // Default fallback
+    return { component: Zellia80HE, isLegacy: true };
+  });
 
   // Custom slide transition that moves instead of stretches
   function slideMove(node: Element, { duration = 400, direction = 1 }) {
@@ -88,57 +103,130 @@
     ['a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a'],
   ]);
 
+  // Function to select all keys
+  function selectAllKeys() {
+    selectedKeys = [];
+    storedKeys.forEach((row, y) => {
+      row.forEach((_, x) => {
+        selectedKeys.push([x, y]);
+      });
+    });
+  }
+
+  // Function to deselect all keys
+  function deselectAllKeys() {
+    selectedKeys = [];
+  }
+
+  // Keyboard event handler
+  function handleKeydown(event: KeyboardEvent) {
+    if (event.ctrlKey && (event.key === 'a' || event.key === 'A')) {
+      event.preventDefault();
+      selectAllKeys();
+    } else if (event.key === 'Escape') {
+      event.preventDefault();
+      deselectAllKeys();
+    }
+  }
+
+  // Reference to the main container for focus management
+  let mainContainer: HTMLDivElement;
+
+  // Auto-focus the container when component mounts
+  $effect(() => {
+    if (mainContainer) {
+      mainContainer.focus();
+    }
+  });
+
+  // Function to set key content/keycode for selected keys
+  function setKeyContent(content: string) {
+    if (selectedKeys.length === 0) return;
+    
+    selectedKeys.forEach(([x, y]) => {
+      dev ? console.log(`Setting key at (${x}, ${y}) to content: ${content}`) : null;
+      // Set the key content in the keymap
+      // Currently stores as string, but will support keycodes in the future
+      storedKeys[y][x] = content;
+    });
+    
+    // Clear selection after setting keys
+    selectedKeys = [];
+  }
+
   $inspect(ActiveTabComponent, 'ActiveTabComponent');
   $inspect(selectedKeys, 'selectedKeys');
 </script>
 
-<!-- TODO: Drag select -->
-<!-- TODO: Select ALL by ^A -->
-<!-- TODO: Deselect ALL by ^esc -->
-<NewZellia80He
-  currentSelectedKey={null}
-  onClick={(x, y, event) => {
-    console.log(`Clicked key at (${x}, ${y})`, event);
-    let i = selectedKeys.findIndex(key => key[0] === x && key[1] === y);
-    if (i !== -1) {
-      selectedKeys.splice(i, 1);
-    } else {
-      selectedKeys.push([x, y]);
-    }
-  }}
->
-  {#snippet body(x, y)}
-    <!-- FIXME: need a better color scheme  -->
-    <span
-      class="hover:scale-90 transition-all duration-300 h-14 truncate bg-gray-50 dark:bg-black border border-gray-400 dark:border-gray-700 data-[selected=true]:bg-gray-500 data-[selected=true]:border-gray-700 data-[selected=true]:border-4 rounded-lg flex flex-col items-center justify-center hover:cursor-pointer gap-1 font-sans text-white"
-      data-selected={selectedKeys.findIndex(key => key[0] === x && key[1] === y) !== -1}
-      >{storedKeys[y][x]}</span
-    >
-  {/snippet}
-</NewZellia80He>
+{#if currentKeyboard().isLegacy}
+  <svelte:component this={currentKeyboard().component}
+    values={storedKeys}
+    currentSelectedKey={null}
+    onClick={(x, y, event) => {
+      console.log(`Clicked key at (${x}, ${y})`, event);
+      let i = selectedKeys.findIndex(key => key[0] === x && key[1] === y);
+      if (i !== -1) {
+        selectedKeys.splice(i, 1);
+      } else {
+        selectedKeys.push([x, y]);
+      }
+    }}
+  >
+    {#snippet body(x, y)}
+      <span
+        class="hover:scale-90 transition-all duration-300 h-14 truncate bg-gray-50 dark:bg-black border border-gray-400 dark:border-gray-700 data-[selected=true]:bg-gray-500 data-[selected=true]:border-gray-700 data-[selected=true]:border-4 rounded-lg flex flex-col items-center justify-center hover:cursor-pointer gap-1 font-sans text-white"
+        data-selected={selectedKeys.findIndex(key => key[0] === x && key[1] === y) !== -1}
+        >{storedKeys[y][x]}</span
+      >
+    {/snippet}
+  </svelte:component>
+{:else}
+  <svelte:component this={currentKeyboard().component}
+    values={storedKeys}
+    currentSelectedKey={null}
+    onClick={(x, y, event) => {
+      console.log(`Clicked key at (${x}, ${y})`, event);
+      let i = selectedKeys.findIndex(key => key[0] === x && key[1] === y);
+      if (i !== -1) {
+        selectedKeys.splice(i, 1);
+      } else {
+        selectedKeys.push([x, y]);
+      }
+    }}
+  >
+    {#snippet body(x, y)}
+      <span
+        class="hover:scale-90 transition-all duration-300 h-14 truncate bg-gray-50 dark:bg-black border border-gray-400 dark:border-gray-700 data-[selected=true]:bg-gray-500 data-[selected=true]:border-gray-700 data-[selected=true]:border-4 rounded-lg flex flex-col items-center justify-center hover:cursor-pointer gap-1 font-sans text-white"
+        data-selected={selectedKeys.findIndex(key => key[0] === x && key[1] === y) !== -1}
+        >{storedKeys[y][x]}</span
+      >
+    {/snippet}
+  </svelte:component>
+{/if}
 
 <div
+  bind:this={mainContainer}
   class="rounded-2xl shadow p-8 mt-2 mb- mb- grow border border-gray-200 dark:border-gray-600 text-black dark:text-white h-full flex flex-col {$glassmorphismMode
     ? 'glassmorphism-card bg-gray-50 dark:bg-gray-900'
     : 'bg-[color-mix(in_srgb,var(--theme-color-primary)_10%,white)] dark:bg-[color-mix(in_srgb,var(--theme-color-primary)_5%,black)]'}"
+  tabindex="-1"
+  role="application"
+  onkeydown={handleKeydown}
+  onclick={() => mainContainer?.focus()}
+  style="outline: none;"
 >
   <!-- Tab Navigation -->
   <div class="flex items-center gap-0.5 -mt-4 mb-4 p-0.5 rounded-xl">
     {#each Tabs as tab}
-      <!-- FIXME: wtf are these classes -->
+      {@const isActive = activeTab === tab.name}
       <button
-        class="flex-1 text-xl font-medium px-2.5 py-2.5 rounded-lg transition-all duration-200 flex items-center justify-center gap-2
-               {$glassmorphismMode
-          ? `glassmorphism-tab ${activeTab === tab.name ? 'active' : ''}`
-          : ''}
-               {!$glassmorphismMode && activeTab === tab.name
-          ? 'text-white shadow-sm'
-          : !$glassmorphismMode
-            ? 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-white dark:hover:bg-gray-800'
-            : ''}"
-        style={!$glassmorphismMode && activeTab === tab.name
-          ? `background-color: var(--theme-color-primary);`
-          : ''}
+        class="flex-1 text-xl font-medium px-2.5 py-2.5 rounded-lg transition-all duration-200 
+               flex items-center justify-center gap-2
+               {$glassmorphismMode ? 'glassmorphism-tab' : ''}
+               {$glassmorphismMode && isActive ? 'active' : ''}
+               {!$glassmorphismMode && isActive ? 'text-white shadow-sm' : ''}
+               {!$glassmorphismMode && !isActive ? 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-white dark:hover:bg-gray-800' : ''}"
+        style={!$glassmorphismMode && isActive ? 'background-color: var(--theme-color-primary);' : ''}
         onclick={() => changeTab(tab.name)}
       >
         {#if tab.icon}
@@ -168,16 +256,9 @@
         <ActiveTabComponent>
           {#snippet keyslot(content: string)}
             <button
-              onclick={_ => {
-                dev ? console.log(`Clicked key: ${content}`, _) : null;
-                // TODO: set the key by content (it might be a keycode in future)
-                selectedKeys.forEach(([x, y]) => {
-                  dev ? console.log(`Setting key at (${x}, ${y}) to content: ${content}`) : null;
-                  // Here you would set the key content in your keymap
-                  // For example, you might call a function like:
-                  storedKeys[y][x] = content;
-                });
-                selectedKeys = []; // Clear selection after setting
+              onclick={() => {
+                dev ? console.log(`Clicked key: ${content}`) : null;
+                setKeyContent(content);
               }}
               class="size-14 text-wrap text-sm border whitespace-pre-line rounded-lg overflow-auto truncate"
             >
