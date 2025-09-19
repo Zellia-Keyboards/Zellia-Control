@@ -13,6 +13,7 @@
     themeColors,
     type ThemeColorName,
     glassmorphismMode,
+    updateThemeForDarkMode,
   } from '$lib/DarkModeStore.svelte';
   import { language, t, type Language } from '$lib/LanguageStore.svelte';
   import { Palette, Sun, Moon, Globe } from 'lucide-svelte';
@@ -37,7 +38,7 @@
   let showLanguageSelector = $state(false);
   let showFirefoxWarning = $state(false);
   let firefoxWarningDismissed = $state(false);
-  let currentTheme = $state<ThemeColorName>('indigo');
+  let currentTheme = $state<ThemeColorName | null>(null);
   let currentLanguage = $state<Language>('en');
 
   // Check if current page should use the sidebar layout
@@ -102,7 +103,12 @@
   });
 
   function setTheme(colorName: ThemeColorName) {
-    selectedThemeColor.set(colorName);
+    // If clicking the currently selected theme, deselect it
+    if (currentTheme === colorName) {
+      selectedThemeColor.set(null);
+    } else {
+      selectedThemeColor.set(colorName);
+    }
   }
 
   function setLanguage(lang: Language) {
@@ -586,16 +592,17 @@
         <div class="grid grid-cols-4 gap-2 mt-2" transition:slide={{ duration: 300, axis: 'y' }}>
           {#each Object.entries(themeColors) as [name, color] (name)}
             <button
-              title={name.charAt(0).toUpperCase() + name.slice(1)}
+              title={name.charAt(0).toUpperCase() + name.slice(1) + (currentTheme === name ? ' (Click to deselect)' : '')}
               class="w-full h-7 rounded border transition-all duration-150
                                    {currentTheme === name
-                ? 'border-white dark:border-white ring-1 ring-gray-400 dark:ring-white'
+                ? 'border-white dark:border-white ring-2 ring-gray-400 dark:ring-white'
                 : 'border-gray-300 dark:border-gray-600 hover:border-gray-500 dark:hover:border-gray-400'}"
               style="background-color: {color};"
               onclick={() => setTheme(name as ThemeColorName)}
             ></button>
           {/each}
         </div>
+        
       {/if}
     </div>
 
@@ -676,6 +683,8 @@
           }
           // Toggle Tailwind dark mode
           document.documentElement.classList.toggle('dark');
+          // Update theme color for plain theme if no color theme is selected
+          updateThemeForDarkMode();
         }}
       >
         <!-- Long click circular animation -->
