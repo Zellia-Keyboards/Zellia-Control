@@ -53,28 +53,6 @@
     return keyboardConnection.shouldShowConfigurator && usesSidebarLayout();
   });
 
-  // Long click animation states
-  let longClickStates = $state<
-    Record<
-      string,
-      {
-        isPressed: boolean;
-        progress: number;
-        timeout?: any;
-        animationFrame?: any;
-        x: number;
-        y: number;
-        completed: boolean;
-        fadeProgress: number;
-        showAnimation: boolean;
-        lastCompletedTime?: number;
-      }
-    >
-  >({});
-  let longClickDuration = 1000; // milliseconds - increased from 800 to make it more deliberate
-  let animationDelay = 300; // milliseconds delay before showing animation
-  let clickBlockDuration = 500; // milliseconds to block regular clicks after long press completion
-
   // Derived variable to determine when to show layer selector
   let shouldShowLayerSelector = $derived(() => {
     const path = $page.url.pathname;
@@ -162,137 +140,6 @@
       goto('/welcome');
     }
   });
-
-  // Long click animation functions
-  function startLongClick(id: string, event: MouseEvent | TouchEvent) {
-    // Get cursor position relative to the button
-    const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
-    let x, y;
-
-    if (event instanceof MouseEvent) {
-      x = event.clientX - rect.left;
-      y = event.clientY - rect.top;
-    } else {
-      // TouchEvent
-      x = event.touches[0].clientX - rect.left;
-      y = event.touches[0].clientY - rect.top;
-    }
-
-    // Initialize state if not exists
-    if (!longClickStates[id]) {
-      longClickStates[id] = {
-        isPressed: false,
-        progress: 0,
-        x: 0,
-        y: 0,
-        completed: false,
-        fadeProgress: 1,
-        showAnimation: false,
-        lastCompletedTime: undefined,
-      };
-    }
-
-    const state = longClickStates[id];
-    state.isPressed = true;
-    state.progress = 0;
-    state.x = x;
-    state.y = y;
-    state.completed = false;
-    state.fadeProgress = 1;
-    state.showAnimation = false;
-
-    // Start animation after delay
-    state.timeout = setTimeout(() => {
-      if (state.isPressed) {
-        state.showAnimation = true;
-        const startTime = Date.now();
-
-        const animateProgress = () => {
-          if (!state.isPressed && !state.completed) return;
-
-          const elapsed = Date.now() - startTime;
-          state.progress = Math.min(elapsed / longClickDuration, 1);
-
-          if (state.progress < 1) {
-            state.animationFrame = requestAnimationFrame(animateProgress);
-          } else {
-            // Long click completed
-            state.completed = true;
-            onLongClickComplete(id);
-          }
-        };
-
-        state.animationFrame = requestAnimationFrame(animateProgress);
-      }
-    }, animationDelay);
-  }
-
-  function endLongClick(id: string) {
-    const state = longClickStates[id];
-    if (state) {
-      state.isPressed = false;
-      if (state.completed) {
-        // If completed, start fade out animation
-        const fadeStartTime = Date.now();
-        const fadeDuration = 200; // 200ms fade out
-
-        const fadeOut = () => {
-          const elapsed = Date.now() - fadeStartTime;
-          const fadeProgress = Math.min(elapsed / fadeDuration, 1);
-          state.fadeProgress = 1 - fadeProgress;
-
-          if (fadeProgress < 1) {
-            requestAnimationFrame(fadeOut);
-          } else {
-            // Reset state after fade out
-            state.completed = false;
-            state.progress = 0;
-            state.fadeProgress = 1;
-            state.showAnimation = false;
-          }
-        };
-
-        requestAnimationFrame(fadeOut);
-      } else {
-        // Not completed, reset immediately
-        state.progress = 0;
-        state.showAnimation = false;
-      }
-
-      if (state.animationFrame) {
-        cancelAnimationFrame(state.animationFrame);
-      }
-      if (state.timeout) {
-        clearTimeout(state.timeout);
-      }
-    }
-  }
-
-  function onLongClickComplete(id: string) {
-    console.log(`Long click completed for: ${id}`);
-
-    // Special handling for dark mode button - toggle glassmorphism
-    if (id === 'darkmode') {
-      glassmorphismMode.toggle();
-      console.log('Glassmorphism mode toggled!');
-
-      // Add pulse effect to dark mode button
-      const button = document.querySelector('[onmousedown*="darkmode"]') as HTMLElement;
-      if (button) {
-        button.classList.add('glassmorphism-toggle-complete');
-        setTimeout(() => {
-          button.classList.remove('glassmorphism-toggle-complete');
-        }, 600);
-      }
-    }
-
-    // Keep the completed state and record completion time
-    const state = longClickStates[id];
-    if (state) {
-      state.completed = true;
-      state.lastCompletedTime = Date.now();
-    }
-  }
 </script>
 
 <!-- Main Application -->
@@ -455,78 +302,18 @@
       {#if !showDropdown}
         <div class="grid grid-cols-2 gap-2 mb-2" transition:slide={{ duration: 300, axis: 'y' }}>
           <button
-            class="px-3 py-2 text-xs font-medium border rounded-md transition-colors duration-200 text-white border-transparent relative overflow-hidden bg-primary-500 hover:bg-primary-600 {$glassmorphismMode
+            class="px-3 py-2 text-xs font-medium border rounded-md transition-colors duration-200 text-white border-transparent bg-primary-500 hover:bg-primary-600 {$glassmorphismMode
               ? 'glassmorphism-button'
               : ''}"
-            onmousedown={e => startLongClick('import', e)}
-            onmouseup={() => endLongClick('import')}
-            onmouseleave={() => endLongClick('import')}
-            ontouchstart={e => startLongClick('import', e)}
-            ontouchend={() => endLongClick('import')}
-            ontouchcancel={() => endLongClick('import')}
           >
-            <!-- Long click circular animation -->
-            {#if longClickStates['import']?.showAnimation && (longClickStates['import']?.isPressed || longClickStates['import']?.completed)}
-              <div class="absolute inset-0 rounded-md overflow-hidden pointer-events-none">
-                <div
-                  class="absolute rounded-full transition-all duration-75"
-                  style="
-                                left: {longClickStates['import'].x}px; 
-                                top: {longClickStates['import'].y}px;
-                                width: {longClickStates['import'].progress * 200}px;
-                                height: {longClickStates['import'].progress * 200}px;
-                                margin-left: -{longClickStates['import'].progress * 100}px;
-                                margin-top: -{longClickStates['import'].progress * 100}px;
-                                background-color: color-mix(in srgb, white {longClickStates[
-                    'import'
-                  ].completed
-                    ? '30%'
-                    : '15%'}, transparent);
-                                opacity: {longClickStates['import'].fadeProgress};
-                                transition: background-color 0.3s ease;
-                            "
-                ></div>
-              </div>
-            {/if}
-
-            <span class="relative z-10">{t('ui.import', currentLanguage)}</span>
+            {t('ui.import', currentLanguage)}
           </button>
           <button
-            class="px-3 py-2 text-xs font-medium border rounded-md transition-colors duration-200 text-white border-transparent relative overflow-hidden bg-primary-500 hover:bg-primary-600 {$glassmorphismMode
+            class="px-3 py-2 text-xs font-medium border rounded-md transition-colors duration-200 text-white border-transparent bg-primary-500 hover:bg-primary-600 {$glassmorphismMode
               ? 'glassmorphism-button'
               : ''}"
-            onmousedown={e => startLongClick('export', e)}
-            onmouseup={() => endLongClick('export')}
-            onmouseleave={() => endLongClick('export')}
-            ontouchstart={e => startLongClick('export', e)}
-            ontouchend={() => endLongClick('export')}
-            ontouchcancel={() => endLongClick('export')}
           >
-            <!-- Long click circular animation -->
-            {#if longClickStates['export']?.showAnimation && (longClickStates['export']?.isPressed || longClickStates['export']?.completed)}
-              <div class="absolute inset-0 rounded-md overflow-hidden pointer-events-none">
-                <div
-                  class="absolute rounded-full transition-all duration-75"
-                  style="
-                                left: {longClickStates['export'].x}px; 
-                                top: {longClickStates['export'].y}px;
-                                width: {longClickStates['export'].progress * 200}px;
-                                height: {longClickStates['export'].progress * 200}px;
-                                margin-left: -{longClickStates['export'].progress * 100}px;
-                                margin-top: -{longClickStates['export'].progress * 100}px;
-                                background-color: color-mix(in srgb, white {longClickStates[
-                    'export'
-                  ].completed
-                    ? '30%'
-                    : '15%'}, transparent);
-                                opacity: {longClickStates['export'].fadeProgress};
-                                transition: background-color 0.3s ease;
-                            "
-                ></div>
-              </div>
-            {/if}
-
-            <span class="relative z-10">{t('ui.export', currentLanguage)}</span>
+            {t('ui.export', currentLanguage)}
           </button>
         </div>
 
@@ -661,57 +448,17 @@
     <!-- Dark Mode Toggle at Bottom -->
     <div class="p-3 border-transparent">
       <button
-        class="flex items-center gap-3 w-full px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative overflow-hidden {$glassmorphismMode
+        class="flex items-center gap-3 w-full px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 {$glassmorphismMode
           ? 'glassmorphism-button'
           : 'text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-900'}"
-        onmousedown={e => startLongClick('darkmode', e)}
-        onmouseup={() => endLongClick('darkmode')}
-        onmouseleave={() => endLongClick('darkmode')}
-        ontouchstart={e => startLongClick('darkmode', e)}
-        ontouchend={() => endLongClick('darkmode')}
-        ontouchcancel={() => endLongClick('darkmode')}
-        onclick={e => {
-          // Prevent regular click if long press was recently completed
-          const state = longClickStates['darkmode'];
-          if (
-            state?.lastCompletedTime &&
-            Date.now() - state.lastCompletedTime < clickBlockDuration
-          ) {
-            e.preventDefault();
-            console.log('Click blocked due to recent long press completion');
-            return;
-          }
+        onclick={() => {
           // Toggle Tailwind dark mode
           document.documentElement.classList.toggle('dark');
           // Update theme color for plain theme if no color theme is selected
           updateThemeForDarkMode();
         }}
       >
-        <!-- Long click circular animation -->
-        {#if longClickStates['darkmode']?.showAnimation && (longClickStates['darkmode']?.isPressed || longClickStates['darkmode']?.completed)}
-          <div class="absolute inset-0 rounded-lg overflow-hidden pointer-events-none">
-            <div
-              class="absolute rounded-full transition-all duration-75"
-              style="
-                            left: {longClickStates['darkmode'].x}px; 
-                            top: {longClickStates['darkmode'].y}px;
-                            width: {longClickStates['darkmode'].progress * 400}px;
-                            height: {longClickStates['darkmode'].progress * 400}px;
-                            margin-left: -{longClickStates['darkmode'].progress * 200}px;
-                            margin-top: -{longClickStates['darkmode'].progress * 200}px;
-                            background-color: color-mix(in srgb, var(--theme-color-primary) {longClickStates[
-                'darkmode'
-              ].completed
-                ? '30%'
-                : '15%'}, transparent);
-                            opacity: {longClickStates['darkmode'].fadeProgress};
-                            transition: background-color 0.3s ease;
-                        "
-            ></div>
-          </div>
-        {/if}
-
-        <div class="flex items-center gap-3 relative z-10">
+        <div class="flex items-center gap-3">
           <Sun class="w-4 h-4 hidden dark:block" />
           <Moon class="w-4 h-4 block dark:hidden" />
           <span class="hidden dark:block">{t('ui.darkMode', currentLanguage)}</span>
