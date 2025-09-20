@@ -324,7 +324,7 @@
               <input
                 type="color"
                 bind:value={keyColor}
-                class="w-12 h-10 rounded border border-gray-300 dark:border-white"
+                class="w-12 h-10 rounded border-0 p-0 cursor-pointer overflow-hidden"
               />
               <input
                 type="text"
@@ -379,7 +379,7 @@
               <input
                 type="color"
                 bind:value={staticColor}
-                class="w-12 h-10 rounded border border-gray-300 dark:border-white"
+                class="w-12 h-10 rounded border-0 p-0 cursor-pointer overflow-hidden"
               />
               <input
                 type="text"
@@ -408,7 +408,7 @@
                   <input
                     type="color"
                     bind:value={gradientColors[index]}
-                    class="w-10 h-8 rounded border border-gray-300 dark:border-white"
+                    class="w-10 h-8 rounded border-0 p-0 cursor-pointer overflow-hidden"
                   />
                   <input
                     type="text"
@@ -490,5 +490,32 @@
     cursor: pointer;
     border: none;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  }
+
+  /* Color input styling to fill containers */
+  input[type="color"] {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+  }
+  
+  input[type="color"]::-webkit-color-swatch-wrapper {
+    padding: 0;
+    border: none;
+    border-radius: inherit;
+  }
+  
+  input[type="color"]::-webkit-color-swatch {
+    border: none;
+    border-radius: inherit;
+    padding: 0;
+  }
+  
+  input[type="color"]::-moz-color-swatch {
+    border: none;
+    border-radius: inherit;
   }
 </style>
