@@ -123,7 +123,9 @@
   </div>
   <!-- Getting Started Section -->
   <div
-    class=" rounded-xl p-6 border mb-4"
+    class="rounded-xl p-6 border mb-4 {$glassmorphismMode
+      ? 'glassmorphism-card'
+      : ''}"
     style="background: {'color-mix(in srgb, var(--theme-color-primary) 5%, #f9fafb) dark:color-mix(in srgb, var(--theme-color-primary) 8%, #111827)'};
                     border-color: {'color-mix(in srgb, var(--theme-color-primary) 10%, #e5e7eb) dark:color-mix(in srgb, var(--theme-color-primary) 15%, #374151)'};"
   >
@@ -133,7 +135,9 @@
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
       <div class="flex items-start gap-3">
         <div
-          class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white bg-primary"
+          class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white bg-primary {$glassmorphismMode
+            ? 'glassmorphism-button'
+            : ''}"
         >
           1
         </div>
@@ -148,7 +152,9 @@
       </div>
       <div class="flex items-start gap-3">
         <div
-          class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white bg-primary"
+          class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white bg-primary {$glassmorphismMode
+            ? 'glassmorphism-button'
+            : ''}"
         >
           2
         </div>
@@ -163,7 +169,9 @@
       </div>
       <div class="flex items-start gap-3">
         <div
-          class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white bg-primary"
+          class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white bg-primary {$glassmorphismMode
+            ? 'glassmorphism-button'
+            : ''}"
         >
           3
         </div>
