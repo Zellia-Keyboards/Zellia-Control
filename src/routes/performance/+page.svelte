@@ -3,10 +3,14 @@
   import NewZellia80He from '$lib/NewZellia80HE.svelte';
   import NewZellia60HE from '$lib/NewZellia60HE.svelte';
   import Zellia80HE from '$lib/Zellia80HE.svelte';
+  import KeyboardRender from '$lib/KeyboardRender.svelte';
   import { keyboardConnection } from '$lib/KeyboardConnectionStore.svelte';
   import { AlertTriangle } from 'lucide-svelte';
   import { language, t } from '$lib/LanguageStore.svelte';
+  import * as kle from '@ijprest/kle-serial';
 
+  const layout = `[["Esc","!\\n1","@\\n2","#\\n3","$\\n4","%\\n5","^\\n6","&\\n7","*\\n8","(\\n9",")\\n0","_\\n-","+\\n=",{"w":2},"Backspace"],[{"w":1.5},"Tab","Q","W","E","R","T","Y","U","I","O","P","{\\n[","}\\n]",{"w":1.5},"|\\n\\\\"],[{"w":1.75},"Caps Lock","A","S","D","F","G","H","J","K","L",":\\n;","\\"\\n'",{"w":2.25},"Enter"],[{"w":2},"Shift","Z","X","C","V","B","N","M","<\\n,",">\\n.","?\\n/","Shift","↑","Del"],[{"w":1.25},"Ctrl",{"w":1.25},"Win",{"w":1.25},"Alt",{"a":7,"w":6.25},"",{"a":4},"Alt","Fn","←","↓","→"]]`;
+  
   let currentLanguage = $derived($language);
 
   // Derived variable to determine which keyboard component to show
@@ -20,6 +24,8 @@
     // Default fallback
     return { component: Zellia80HE, isLegacy: true };
   });
+
+  let keyboard_keys : kle.Key[] = kle.Serial.deserialize(JSON.parse(layout)).keys;
 
   let ACTUATION_POINT = $state([
     [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
@@ -48,29 +54,10 @@
   });
 </script>
 
-{#if currentKeyboard().isLegacy}
-  <svelte:component this={currentKeyboard().component}
-    values={ACTUATION_POINT}
-    onClick={(x, y, event) => {
-      console.log(`Key clicked at (${x}, ${y})`, event);
-    }}
-  />
-{:else}
-  <svelte:component this={currentKeyboard().component}
-    currentSelectedKey={null}
-    onClick={(x, y, event) => {
-      console.log(`Key clicked at (${x}, ${y})`, event);
-    }}
-  >
-    {#snippet body(x, y)}
-      <p
-        class="hover:scale-90 transition-all duration-300 h-14 bg-gray-50 dark:bg-black border border-gray-400 dark:border-gray-700 data-[selected=true]:bg-gray-500 data-[selected=true]:border-gray-700 data-[selected=true]:border-4 rounded-lg flex flex-col items-center justify-center hover:cursor-pointer gap-1 font-sans text-white"
-      >
-        {ACTUATION_POINT[y][x]}
-      </p>
-    {/snippet}
-  </svelte:component>
-{/if}
+<div>
+  <KeyboardRender
+  keys={keyboard_keys}/>
+</div>
 
 <div
   class="rounded-2xl shadow p-8 mt-2 mb-4 grow bg-primary-100 dark:bg-black border border-transparent dark:border-gray-600 text-black dark:text-white h-full flex flex-col {$glassmorphismMode
