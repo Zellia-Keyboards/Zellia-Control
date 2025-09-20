@@ -65,23 +65,18 @@
     transition: all 0.3s ease-out;
   `;
   
-  // 5. 计算按键内部按钮的样式
-  $: buttonStyle = `
-    background-color: blue;
-    color: white;
-    outline: 2px solid #00aaff;
-    outline-offset: 2px;
-  `;
-
-  // 6. 计算不同位置标签的样式
+  // 5. 计算不同位置标签的样式 - 修复文本裁剪
   $: labelContainerStyle = `
-    width: ${width * usize - 8}px;
-    height: ${height * usize - 8}px;
+    width: 100%;
+    height: 100%;
   `;
 </script>
 
 <div class="key-container" style={keyStyle}>
-  <button class="keycap" style={buttonStyle} on:mousedown={handleClick}>
+  <button 
+    class="keycap bg-white dark:bg-black text-gray-700 dark:text-white border border-gray-300 dark:border-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800" 
+    on:mousedown={handleClick}
+  >
     <div class="label-grid" style={labelContainerStyle}>
       {#each Array(9) as _, i}
         <div class="label-cell label-cell-{i}">
@@ -100,27 +95,34 @@
   }
 
   .keycap {
-    /* 按键本身的美化样式 */
+    /* 按键本身的美化样式 - 现代设计 */
     width: 100%;
     height: 100%;
-    border: none;
     border-radius: 8px;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
       Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
     font-weight: 500;
     cursor: pointer;
-    box-shadow: 0 4px 0px rgba(0, 0, 0, 0.3), inset 0 -2px 4px rgba(0, 0, 0, 0.2);
-    transition: all 0.15s ease;
-    padding: 0;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+    transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    padding: 4px;
     display: flex;
     align-items: center;
     justify-content: center;
+    overflow: visible;
+    box-sizing: border-box;
+  }
+
+  .keycap:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12), 0 2px 4px rgba(0, 0, 0, 0.08);
   }
 
   .keycap:active {
-    /* 点击时的下沉效果 */
-    transform: translateY(3px);
-    box-shadow: 0 1px 0px rgba(0, 0, 0, 0.4), inset 0 -1px 2px rgba(0, 0, 0, 0.2);
+    /* 点击时的下沉效果 - 更自然的机械键盘感觉 */
+    transform: translateY(2px);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2), inset 0 1px 3px rgba(0, 0, 0, 0.15);
+    transition: all 0.05s ease-in;
   }
 
   /* 使用 CSS Grid 实现九宫格标签布局 */
@@ -132,14 +134,17 @@
     height: 100%;
     font-size: 14px;
     box-sizing: border-box;
-    padding: 4px;
+    padding: 0;
+    gap: 1px;
   }
   
   .label-cell {
     display: flex;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    overflow: visible;
     white-space: nowrap;
+    line-height: 1.2;
+    min-height: 0;
+    min-width: 0;
   }
 
   /* 九宫格对齐 */

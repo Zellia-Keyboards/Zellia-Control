@@ -44,26 +44,29 @@
 
 <!-- The template uses Svelte's logic blocks like `#each` -->
 <div class="grid-container">
-  <div class="keyboard no-select" style="min-height: {minHeight}; min-width: {minWidth};">
-    <!-- 5. Svelte's `#each` block replaces `v-for`. The `(index)` is the key for the list. -->
-    {#each keys as key, index (index)}
-      <!-- 6. The `animate:flip` directive provides smooth reordering, replacing Vue's <TransitionGroup> -->
-      <div animate:flip={{ duration: 500 }}>
-        <Key
-          on:mousedown={(event) => handleMouseDown(event, index)}
-          on:mouseenter={(event) => handleMouseEnter(event, index)}
-          x={key.x}
-          y={key.y}
-          width={key.width}
-          height={key.height}
-          rotationX={key.rotation_x}
-          rotationY={key.rotation_y}
-          rotationAngle={key.rotation_angle}
-          labels={key.labels}
-          {index}
-        />
-      </div>
-    {/each}
+  <!-- Keyboard container with styling similar to NewZellia60HE -->
+  <div class="keyboard-container p-4 bg-gray-100 dark:bg-neutral-800 border border-gray-300 dark:border-neutral-700 rounded-xl shadow-md m-auto">
+    <div class="keyboard no-select" style="min-height: {minHeight}; min-width: {minWidth};">
+      <!-- 5. Svelte's `#each` block replaces `v-for`. The `(index)` is the key for the list. -->
+      {#each keys as key, index (index)}
+        <!-- 6. The `animate:flip` directive provides smooth reordering, replacing Vue's <TransitionGroup> -->
+        <div animate:flip={{ duration: 500 }}>
+          <Key
+            on:mousedown={(event) => handleMouseDown(event, index)}
+            on:mouseenter={(event) => handleMouseEnter(event, index)}
+            x={key.x}
+            y={key.y}
+            width={key.width}
+            height={key.height}
+            rotationX={key.rotation_x}
+            rotationY={key.rotation_y}
+            rotationAngle={key.rotation_angle}
+            labels={key.labels}
+            {index}
+          />
+        </div>
+      {/each}
+    </div>
   </div>
 </div>
 
@@ -72,6 +75,13 @@
   .grid-container {
     display: grid;
     place-items: center;
+    width: 100%;
+  }
+  
+  .keyboard-container {
+    /* Container styling similar to NewZellia60HE */
+    display: inline-block;
+    box-sizing: border-box;
   }
   
   .keyboard {
