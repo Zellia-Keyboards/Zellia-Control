@@ -125,6 +125,29 @@
   [style*='border-color: var(--theme-color-primary)'] {
     transition: all var(--transition-duration) var(--transition-timing);
   }
+
+  /* Fix key text visibility in light mode - target the exact class combinations used */
+  p.bg-gray-50.text-white,
+  div.bg-gray-50.text-white,
+  .bg-gray-50.text-white,
+  .bg-gray-100.text-white,
+  .bg-white.text-white {
+    color: rgb(17 24 39) !important; /* gray-900 for light mode */
+  }
+
+
+  /* Keep white text in dark mode for all scenarios */
+  .dark p.bg-gray-50.text-white,
+  .dark div.bg-gray-50.text-white,
+  .dark .bg-gray-50.text-white,
+  .dark .bg-gray-100.text-white,
+  .dark .bg-white.text-white,
+  .dark .bg-black.text-white,
+  .dark .bg-blue-900\/20.text-white,
+  .dark .bg-green-900\/20.text-white,
+  .dark .bg-red-900\/20.text-white {
+    color: rgb(255 255 255) !important; /* white for dark mode */
+  }
 }
 
 @layer components {
