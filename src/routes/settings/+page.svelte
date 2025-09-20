@@ -7,7 +7,7 @@
   import { RotateCcw, Download, Trash2, Info } from 'lucide-svelte';
   import { language, t } from '$lib/LanguageStore.svelte';
 
-  let currentLanguage = $state($language);
+  let currentLanguage = $derived($language);
 
   // Derived variable to determine which keyboard component to show
   let currentKeyboard = $derived(() => {
@@ -185,12 +185,5 @@
         </button>
       </div>
     {/each}
-  </div>
-
-  <!-- Info Section -->
-  <div class="mt-4 text-center text-gray-600 dark:text-gray-300">
-    <p class="text-sm">
-      {t('calibration.deviceSettingsDesc', currentLanguage)}
-    </p>
   </div>
 </div>

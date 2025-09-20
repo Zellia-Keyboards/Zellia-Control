@@ -5,7 +5,7 @@
   import { language, t } from '$lib/LanguageStore.svelte';
   import { Trash2 } from 'lucide-svelte';
 
-  let currentLanguage = $state($language);
+  let currentLanguage = $derived($language);
 
   // Animation state
   let deletingKeys = $state<Set<string>>(new Set());

@@ -11,7 +11,7 @@
     type KeyConfiguration,
   } from '$lib/AdvancedKeyShared';
 
-  let currentLanguage = $state($language);
+  let currentLanguage = $derived($language);
 
   import NewZellia80He from '$lib/NewZellia80HE.svelte';
 

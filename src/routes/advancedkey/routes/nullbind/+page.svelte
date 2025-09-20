@@ -12,7 +12,7 @@
   } from '$lib/AdvancedKeyShared';
   import NewZellia80He from '$lib/NewZellia80HE.svelte';
 
-  let currentLanguage = $state($language);
+  let currentLanguage = $derived($language);
 
   // Define the null bind specific configuration type
   type NullBindConfiguration = {

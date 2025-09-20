@@ -11,7 +11,7 @@
   } from '$lib/AdvancedKeyShared';
   import NewZellia80He from '$lib/NewZellia80HE.svelte';
 
-  let currentLanguage = $state($language);
+  let currentLanguage = $derived($language);
 
   // Define the tap-hold specific configuration type
   type TapHoldConfiguration = {

@@ -7,7 +7,7 @@
   import { keyboardConnection } from '$lib/KeyboardConnectionStore.svelte';
   import { language, t } from '$lib/LanguageStore.svelte';
 
-  let currentLanguage = $state($language);
+  let currentLanguage = $derived($language);
 
   let keyPressReporting = false;
   let isTracking = false;

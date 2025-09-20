@@ -3,7 +3,7 @@
   import type { KeyAction } from '$lib/AdvancedKeyShared';
   import { language, t } from '$lib/LanguageStore.svelte';
 
-  let currentLanguage = $state($language);
+  let currentLanguage = $derived($language);
 
   interface Props {
     selectedKeycodes: string[];

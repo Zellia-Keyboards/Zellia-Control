@@ -22,7 +22,7 @@
   } from 'lucide-svelte';
   import { language, t, tPlaceholder } from '$lib/LanguageStore.svelte';
 
-  let currentLanguage = $state($language);
+  let currentLanguage = $derived($language);
 
   // Derived variable to determine which keyboard component to show
   let currentKeyboard = $derived(() => {

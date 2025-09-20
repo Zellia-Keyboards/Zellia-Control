@@ -3,7 +3,7 @@
   import { Keyboard, Heart } from 'lucide-svelte';
   import { language, t } from '$lib/LanguageStore.svelte';
 
-  let currentLanguage = $state($language);
+  let currentLanguage = $derived($language);
 </script>
 
 <div class="flex-1 w-full p-6">

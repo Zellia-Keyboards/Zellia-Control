@@ -14,7 +14,7 @@
     });
   };
 
-  let currentLanguage = $state($language);
+  let currentLanguage = $derived($language);
 
   // Derived variable to determine which keyboard component to show
   let currentKeyboard = $derived(() => {

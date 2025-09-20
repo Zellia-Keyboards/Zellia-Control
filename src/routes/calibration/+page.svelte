@@ -167,7 +167,9 @@
     {#snippet body(x, y)}
       {@const state = calibrationData[y][x]}
       <p
-        class="hover:scale-90 transition-all duration-300 h-14 bg-gray-50 dark:bg-black border border-gray-400 dark:border-gray-700 rounded-lg flex flex-col items-center justify-center hover:cursor-pointer gap-1 font-sans text-white
+        class="group relative h-14 bg-gray-50 dark:bg-black border border-gray-400 dark:border-gray-700 rounded-lg flex flex-col items-center justify-center cursor-pointer gap-1 font-sans text-white
+        transform transition-transform duration-200 ease-out
+        hover:scale-95
         {isCalibrating && state === CalibrationState.Calibrating ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' : ''}
         {isCalibrating && state === CalibrationState.Finished ? 'border-green-500 bg-green-50 dark:bg-green-900/20' : ''}
         {isCalibrating && state === CalibrationState.Error ? 'border-red-500 bg-red-50 dark:bg-red-900/20' : ''}"
@@ -180,7 +182,7 @@
           {:else if state === CalibrationState.Error}
             <span class="text-red-600 dark:text-red-400 text-xs">✗</span>
           {:else}
-            <span class="text-blue-600 dark:text-blue-400 text-xs">•</span>
+            <span class="text-blue-600 dark:text-blue-400 text-xs animate-pulse">•</span>
           {/if}
         {/if}
       </p>

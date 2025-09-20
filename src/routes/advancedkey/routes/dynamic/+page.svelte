@@ -25,7 +25,7 @@
   import ConfiguredDKSList from './ConfiguredDKSList.svelte';
   import NewZellia80He from '$lib/NewZellia80HE.svelte';
 
-  let currentLanguage = $state($language);
+  let currentLanguage = $derived($language);
 
   // Define the dynamic keystroke specific configuration type (local usage if different from global)
   type DynamicKeystrokeConfiguration = {
