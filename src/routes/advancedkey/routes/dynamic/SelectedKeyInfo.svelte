@@ -8,7 +8,7 @@
   };
   let { currentKeyName, currentSelectedCoords }: Props = $props();
 
-  let currentLanguage = $state($language);
+  let currentLanguage = $derived($language);
 </script>
 
 <div

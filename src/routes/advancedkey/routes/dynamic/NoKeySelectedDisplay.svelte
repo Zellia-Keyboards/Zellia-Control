@@ -2,7 +2,7 @@
   import { glassmorphismMode } from '$lib/DarkModeStore.svelte';
   import { language, t } from '$lib/LanguageStore.svelte';
 
-  let currentLanguage = $state($language);
+  let currentLanguage = $derived($language);
 </script>
 
 <div class="flex-1 flex items-center justify-center">

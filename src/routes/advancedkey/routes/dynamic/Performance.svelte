@@ -3,7 +3,7 @@
   import { language, t } from '$lib/LanguageStore.svelte';
   import { AlertTriangle } from 'lucide-svelte';
 
-  let currentLanguage = $state($language);
+  let currentLanguage = $derived($language);
 
   // Add actuation point state
   let actuationPoint = $state(1.5);

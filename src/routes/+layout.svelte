@@ -39,7 +39,9 @@
   let showFirefoxWarning = $state(false);
   let firefoxWarningDismissed = $state(false);
   let currentTheme = $state<ThemeColorName | null>(null);
-  let currentLanguage = $state<Language>('en');
+  
+  // Make language reactive to store changes
+  let currentLanguage = $derived($language);
 
   // Check if current page should use the sidebar layout
   const usesSidebarLayout = $derived(() => {
@@ -74,10 +76,6 @@
 
   selectedThemeColor.subscribe(value => {
     currentTheme = value;
-  });
-
-  language.subscribe(value => {
-    currentLanguage = value;
   });
 
   function setTheme(colorName: ThemeColorName) {
