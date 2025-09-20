@@ -605,6 +605,26 @@ export const translations = {
     'update.updateInProgress': 'Firmware Update in Progress',
     'update.keepConnected': 'Keep your keyboard connected during the update.',
 
+    // Additional update translations for new UI
+    'update.updateAvailable': 'Update Available',
+    'update.updating': 'Updating...',
+    'update.updateComplete': 'Update Complete',
+    'update.updateError': 'Update Error',
+    'update.upToDate': 'Up to Date',
+    'update.connected': 'Connected',
+    'update.disconnected': 'Disconnected',
+    'update.firmwareVersion': 'Firmware Version',
+    'update.current': 'Current',
+    'update.latest': 'Latest',
+    'update.progress': 'Progress',
+    'update.updateNow': 'Update Now',
+    'update.checkForUpdates': 'Check for Updates',
+    'update.importantNote': 'Do not disconnect during update',
+    'update.success': 'Update completed successfully',
+    'update.whatsNew': "What's New",
+    'update.loadingChangelog': 'Loading changelog...',
+    'update.changelogDesc': 'Fetching latest release information',
+
     // Welcome Page
     'welcome.title': 'Zellia Control',
     'welcome.subtitle': 'Professional Keyboard Configurator',
@@ -1184,6 +1204,26 @@ export const translations = {
     'update.showAdvancedOptions': '显示高级选项',
     'update.updateInProgress': '固件更新进行中',
     'update.keepConnected': '更新期间请保持键盘连接。',
+
+    // Additional update translations for new UI
+    'update.updateAvailable': '有可用更新',
+    'update.updating': '更新中...',
+    'update.updateComplete': '更新完成',
+    'update.updateError': '更新错误',
+    'update.upToDate': '已是最新版本',
+    'update.connected': '已连接',
+    'update.disconnected': '未连接',
+    'update.firmwareVersion': '固件版本',
+    'update.current': '当前',
+    'update.latest': '最新',
+    'update.progress': '进度',
+    'update.updateNow': '立即更新',
+    'update.checkForUpdates': '检查更新',
+    'update.importantNote': '更新期间请勿断开连接',
+    'update.success': '更新成功完成',
+    'update.whatsNew': '更新内容',
+    'update.loadingChangelog': '正在加载更新日志...',
+    'update.changelogDesc': '正在获取最新发布信息',
 
     // Welcome page
     'welcome.title': 'Zellia Control',
