@@ -27,8 +27,8 @@
     ['/calibration', 'nav.calibration'],
     ['/debug', 'nav.debug'],
     ['/settings', 'nav.settings'],
-    ['/about', 'nav.about'],
     ['/update', 'nav.update'],
+    ['/about', 'nav.about'],
   ];
   
   let { children } = $props();
