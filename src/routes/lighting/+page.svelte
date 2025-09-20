@@ -225,14 +225,21 @@
       <div class="grid grid-cols-2 gap-3 mb-6">
         {#each effects as effect}
           <button
-            class="p-3 rounded-lg border-2 text-left transition-all duration-200 border-[#e5e5e5] bg-transparent dark:border-[#4b5563] data-[activate=true]:border-primary data-[activate=true]:bg-primary-800"
+            class="p-3 rounded-lg border-2 text-left transition-all duration-200 relative overflow-hidden {selectedEffect === effect.id
+              ? 'border-primary bg-primary/20 dark:bg-primary/30 shadow-lg shadow-primary/25'
+              : 'border-[#e5e5e5] bg-transparent dark:border-[#4b5563] hover:border-primary/50 hover:bg-primary/5'} {$glassmorphismMode
+              ? 'glassmorphism-button'
+              : ''}"
             data-activate={selectedEffect === effect.id}
             onclick={() => (selectedEffect = effect.id)}
           >
-            <div class="font-medium text-black dark:text-white">
+            {#if selectedEffect === effect.id}
+              <div class="absolute inset-0 bg-gradient-to-br from-primary/10 to-primary/20 dark:from-primary/20 dark:to-primary/30"></div>
+            {/if}
+            <div class="relative z-10 font-medium {selectedEffect === effect.id ? 'text-primary-700 dark:text-primary-200' : 'text-black dark:text-white'}">
               {effect.name}
             </div>
-            <div class="text-sm text-gray-600 dark:text-gray-300">
+            <div class="relative z-10 text-sm {selectedEffect === effect.id ? 'text-primary-600 dark:text-primary-300' : 'text-gray-600 dark:text-gray-300'}">
               {effect.description}
             </div>
           </button>
