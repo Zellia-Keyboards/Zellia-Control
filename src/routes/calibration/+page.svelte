@@ -319,19 +319,19 @@
 
         <!-- Legend -->
         <div class="mt-6 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-          <div class="font-medium text-gray-900 dark:text-white mb-2 text-xs uppercase tracking-wide">Legend</div>
+          <div class="font-medium text-gray-900 dark:text-white mb-2 text-xs uppercase tracking-wide">{t('calibration.legend', currentLanguage)}</div>
           <div class="space-y-2 text-xs">
             <div class="flex items-center gap-2">
               <div class="w-3 h-3 rounded border border-blue-500 bg-blue-50 dark:bg-blue-900/20"></div>
-              <span>Calibrating</span>
+              <span>{t('calibration.calibrating', currentLanguage)}</span>
             </div>
             <div class="flex items-center gap-2">
               <div class="w-3 h-3 rounded border border-green-500 bg-green-50 dark:bg-green-900/20"></div>
-              <span>Completed</span>
+              <span>{t('calibration.completed', currentLanguage)}</span>
             </div>
             <div class="flex items-center gap-2">
               <div class="w-3 h-3 rounded border border-red-500 bg-red-50 dark:bg-red-900/20"></div>
-              <span>Error</span>
+              <span>{t('calibration.error', currentLanguage)}</span>
             </div>
           </div>
         </div>

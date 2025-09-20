@@ -531,6 +531,12 @@ export const translations = {
     'calibration.helpTip1': 'Make sure to press keys firmly and completely during calibration',
     'calibration.helpTip2': 'Calibration works automatically - no need to select keys in software',
     'calibration.helpTip3': 'Green checkmarks indicate successfully calibrated switches',
+    'calibration.startCalibrationStep': 'Start Calibration',
+    'calibration.calibrationProcess': 'Calibration Process',
+    'calibration.legend': 'Legend',
+    'calibration.calibrating': 'Calibrating',
+    'calibration.completed': 'Completed',
+    'calibration.error': 'Error',
 
     // Lighting Page
     'lighting.title': 'Lighting',
@@ -836,7 +842,13 @@ export const translations = {
     'calibration.helpTitle': '校准帮助',
     'calibration.helpTip1': '校准时确保按键按下牢固完整',
     'calibration.helpTip2': '校准自动工作 - 无需在软件中选择按键',
-    'calibration.helpTip3': '绿色勾号表示开关校准成功', // Lighting Page
+    'calibration.helpTip3': '绿色勾号表示开关校准成功',
+    'calibration.startCalibrationStep': '开始校准',
+    'calibration.calibrationProcess': '校准过程',
+    'calibration.legend': '图例',
+    'calibration.calibrating': '校准中',
+    'calibration.completed': '已完成',
+    'calibration.error': '错误', // Lighting Page
     'lighting.title': '灯光',
     'lighting.subtitle': '自定义RGB灯光效果和颜色',
     'lighting.brightness': '亮度',
