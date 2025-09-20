@@ -12,7 +12,7 @@
   const dispatch = createEventDispatcher<{ select: number }>();
 
   // 3. A regular `let` variable is reactive within the component
-  let usize = 54;
+  let usize = 59; // Match the Key.svelte size
 
   // 4. Reactive statements (`$:`) are the Svelte equivalent of Vue's `computed` properties.
   // They automatically recalculate when their dependencies (like `keys` or `usize`) change.
@@ -45,8 +45,8 @@
 <!-- The template uses Svelte's logic blocks like `#each` -->
 <div class="grid-container">
   <!-- Keyboard container with styling similar to NewZellia60HE -->
-  <div class="keyboard-container p-4 bg-gray-100 dark:bg-neutral-800 border border-gray-300 dark:border-neutral-700 rounded-xl shadow-md m-auto">
-    <div class="keyboard no-select" style="min-height: {minHeight}; min-width: {minWidth};">
+  <div class="keyboard-container p-4 bg-gray-100 dark:bg-neutral-800 border border-gray-300 dark:border-neutral-700 rounded-xl shadow-md m-auto" style="width: fit-content;">
+    <div class="keyboard no-select" style="width: {minWidth}; height: {minHeight};">
       <!-- 5. Svelte's `#each` block replaces `v-for`. The `(index)` is the key for the list. -->
       {#each keys as key, index (index)}
         <!-- 6. The `animate:flip` directive provides smooth reordering, replacing Vue's <TransitionGroup> -->

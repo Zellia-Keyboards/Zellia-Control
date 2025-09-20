@@ -13,7 +13,7 @@
   export let index: number = 0;
 
   // --- 内部状态 ---
-  const usize = 54; // 按键的基础单位尺寸 (1U)
+  const usize = 59; // 按键的基础单位尺寸 (1U)
 
   // --- 事件派发器 ---
   // 用于向父组件发送消息
