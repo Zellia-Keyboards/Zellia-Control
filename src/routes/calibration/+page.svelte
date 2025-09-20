@@ -246,7 +246,9 @@
       </h3>
       
       <!-- Status Display -->
-      <div class="mb-4 p-4 rounded-lg border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-800">
+      <div class="mb-4 p-4 rounded-lg border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-800 {$glassmorphismMode
+        ? 'glassmorphism-card'
+        : ''}">
         <div class="text-sm text-gray-600 dark:text-gray-300 mb-2">
           {t('calibration.calibrationStatus', currentLanguage)}:
         </div>
@@ -262,7 +264,9 @@
       <!-- Step-by-step Instructions -->
       <div class="space-y-3 text-sm text-gray-600 dark:text-gray-300">
         <div class="flex items-start gap-3">
-          <div class="flex-shrink-0 w-6 h-6 rounded-full bg-blue-500 text-white text-xs flex items-center justify-center font-medium">1</div>
+          <div class="flex-shrink-0 w-6 h-6 rounded-full bg-blue-500 text-white text-xs flex items-center justify-center font-medium {$glassmorphismMode
+            ? 'glassmorphism-button'
+            : ''}">1</div>
           <div class="flex-1">
             <div class="font-medium text-gray-900 dark:text-white mb-1">{t('calibration.startCalibrationStep', currentLanguage)}</div>
             <div>{t('calibration.clickStartButton', currentLanguage)}</div>
@@ -270,7 +274,9 @@
         </div>
         
         <div class="flex items-start gap-3">
-          <div class="flex-shrink-0 w-6 h-6 rounded-full bg-blue-500 text-white text-xs flex items-center justify-center font-medium">2</div>
+          <div class="flex-shrink-0 w-6 h-6 rounded-full bg-blue-500 text-white text-xs flex items-center justify-center font-medium {$glassmorphismMode
+            ? 'glassmorphism-button'
+            : ''}">2</div>
           <div class="flex-1">
             <div class="font-medium text-gray-900 dark:text-white mb-1">{t('calibration.pressKeysStep', currentLanguage)}</div>
             <div>{t('calibration.pressKeysDesc', currentLanguage)}</div>
@@ -278,7 +284,9 @@
         </div>
         
         <div class="flex items-start gap-3">
-          <div class="flex-shrink-0 w-6 h-6 rounded-full bg-blue-500 text-white text-xs flex items-center justify-center font-medium">3</div>
+          <div class="flex-shrink-0 w-6 h-6 rounded-full bg-blue-500 text-white text-xs flex items-center justify-center font-medium {$glassmorphismMode
+            ? 'glassmorphism-button'
+            : ''}">3</div>
           <div class="flex-1">
             <div class="font-medium text-gray-900 dark:text-white mb-1">{t('calibration.automaticDetection', currentLanguage)}</div>
             <div>{t('calibration.automaticDetectionDesc', currentLanguage)}</div>
@@ -297,7 +305,9 @@
       </h3>
       
       <!-- Warning Notice -->
-      <div class="mb-4 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-600 rounded-lg flex items-start gap-2">
+      <div class="mb-4 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-600 rounded-lg flex items-start gap-2 {$glassmorphismMode
+        ? 'glassmorphism-card'
+        : ''}">
         <AlertTriangle size={16} class="text-yellow-600 dark:text-yellow-400 flex-shrink-0 mt-0.5" />
         <div class="text-sm text-yellow-700 dark:text-yellow-300">
           <div class="font-medium mb-1">{t('calibration.calibrationProcess', currentLanguage)}</div>
@@ -318,7 +328,9 @@
         </div>
 
         <!-- Legend -->
-        <div class="mt-6 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+        <div class="mt-6 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg {$glassmorphismMode
+          ? 'glassmorphism-card'
+          : ''}">
           <div class="font-medium text-gray-900 dark:text-white mb-2 text-xs uppercase tracking-wide">{t('calibration.legend', currentLanguage)}</div>
           <div class="space-y-2 text-xs">
             <div class="flex items-center gap-2">
