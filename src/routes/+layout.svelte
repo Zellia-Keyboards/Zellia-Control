@@ -328,7 +328,9 @@
           </button>
         </div>
 
-        <!-- Disconnect Button -->
+        
+      {/if}
+      <!-- Disconnect Button -->
         <button
           class="w-full px-3 py-2 text-xs font-medium border rounded-md transition-colors duration-200 text-red-600 dark:text-red-400 border-red-300 dark:border-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 {$glassmorphismMode
             ? 'glassmorphism-button'
@@ -342,8 +344,8 @@
             {t('ui.disconnect', currentLanguage)}
           </div>
         </button>
-      {/if}
     </div>
+    
     <!-- Navigation -->
     <div class="flex-1 p-3">
       <nav class="space-y-1">
