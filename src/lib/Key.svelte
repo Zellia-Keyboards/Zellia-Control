@@ -74,7 +74,7 @@
 
 <div class="key-container" style={keyStyle}>
   <button 
-    class="keycap bg-white dark:bg-black text-gray-700 dark:text-white border border-gray-300 dark:border-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800" 
+    class="keycap" 
     on:mousedown={handleClick}
   >
     <div class="label-grid" style={labelContainerStyle}>
@@ -95,15 +95,18 @@
   }
 
   .keycap {
-    /* 按键本身的美化样式 - 现代设计 */
+    /* 按键本身的美化样式 - 基于 toggleVariants outline 风格 */
     width: 100%;
     height: 100%;
-    border-radius: 8px;
+    border-radius: 6px;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
       Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
     font-weight: 500;
     cursor: pointer;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+    /* Outline variant styling - transparent background with gray border */
+    background-color: transparent;
+    border: 1px solid #d1d5db; /* gray-300 */
+    color: hsl(var(--foreground, 222.2 84% 4.9%));
     transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
     padding: 4px;
     display: flex;
@@ -111,18 +114,45 @@
     justify-content: center;
     overflow: visible;
     box-sizing: border-box;
+    /* Remove default button styling */
+    outline: none;
+  }
+
+  /* Dark mode colors */
+  :global(.dark) .keycap {
+    border-color: #6b7280; /* gray-500 for dark mode */
+    color: hsl(var(--foreground, 210 40% 98%));
   }
 
   .keycap:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12), 0 2px 4px rgba(0, 0, 0, 0.08);
+    /* Outline variant hover - subtle background with accent border */
+    background-color: hsl(var(--accent, 210 40% 96%));
+    border-color: hsl(var(--accent-foreground, 222.2 84% 4.9%));
+  }
+
+  /* Dark mode hover */
+  :global(.dark) .keycap:hover {
+    background-color: hsl(var(--accent, 217.2 32.6% 17.5%));
+    border-color: hsl(var(--accent-foreground, 210 40% 98%));
   }
 
   .keycap:active {
-    /* 点击时的下沉效果 - 更自然的机械键盘感觉 */
-    transform: translateY(2px);
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2), inset 0 1px 3px rgba(0, 0, 0, 0.15);
+    /* Active state - more pronounced background */
+    background-color: hsl(var(--accent, 210 40% 94%));
+    border-color: hsl(var(--accent-foreground, 222.2 84% 4.9%));
+    transform: scale(0.98);
     transition: all 0.05s ease-in;
+  }
+
+  /* Dark mode active */
+  :global(.dark) .keycap:active {
+    background-color: hsl(var(--accent, 217.2 32.6% 19.5%));
+  }
+
+  /* Focus state for accessibility */
+  .keycap:focus-visible {
+    outline: 2px solid hsl(var(--ring, 222.2 84% 4.9%));
+    outline-offset: 2px;
   }
 
   /* 使用 CSS Grid 实现九宫格标签布局 */

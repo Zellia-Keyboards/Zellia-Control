@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite dev",
-    "build": "vite build",
+    "build": "cd src-controller && pnpm install && pnpm run build && cd .. && vite build",
     "preview": "vite preview",
     "check": "svelte-kit sync && svelte-check --tsconfig ./jsconfig.json",
     "check:watch": "svelte-kit sync && svelte-check --tsconfig ./jsconfig.json --watch",
@@ -21,7 +21,8 @@
     "@tauri-apps/plugin-shell": ">=2.0.0",
     "chart.js": "^4.4.9",
     "chartjs-plugin-zoom": "^2.2.0",
-    "lucide-svelte": "^0.511.0"
+    "lucide-svelte": "^0.511.0",
+    "emi-keyboard-controller": "link:src-controller"
   },
   "devDependencies": {
     "@sveltejs/adapter-static": "^3.0.1",
