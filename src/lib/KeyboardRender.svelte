@@ -45,7 +45,6 @@
 <!-- The template uses Svelte's logic blocks like `#each` -->
 <div class="grid-container">
   <!-- Keyboard container with styling similar to NewZellia60HE -->
-  <div class="keyboard-container p-4 bg-gray-100 dark:bg-neutral-800 border border-gray-300 dark:border-neutral-700 rounded-xl shadow-md m-auto" style="width: fit-content;">
     <div class="keyboard no-select" style="width: {minWidth}; height: {minHeight};">
       <!-- 5. Svelte's `#each` block replaces `v-for`. The `(index)` is the key for the list. -->
       {#each keys as key, index (index)}
@@ -66,7 +65,6 @@
           />
         </div>
       {/each}
-    </div>
   </div>
 </div>
 
