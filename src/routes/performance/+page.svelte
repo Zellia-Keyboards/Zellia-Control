@@ -34,12 +34,13 @@
     [1.5, 1, 1.5, 2, 1.6, 1, 1.5, 1, 1, 1],
   ]);
   let rapidTriggerEnabled = $state(false);
-  let continuousRapidTriggerEnabled = $state(false);
   let actuationPoint = $state(2.0);
   let sensitivityValue = $state(0.5);
   let separateSensitivity = $state(false);
   let pressSensitivity = $state(0.5);
   let releaseSensitivity = $state(0.5);
+  let upperDeadzone = $state(0.500); // Start of key (top)
+  let lowerDeadzone = $state(3.500); // Bottom of key
   let keysSelected = $state(0);
 </script>
 
@@ -80,75 +81,79 @@
       ? 'glassmorphism-card'
       : ''}"
   >
-    <!-- 1st Box: Actuation Point -->
-    <div class="flex-1 min-w-[260px] flex flex-col">
-      <div class="flex items-center justify-between mb-4">
-        <h3 class="text-lg font-medium text-gray-900 dark:text-white">
-          {t('performance.actuationPoint', currentLanguage)}
-        </h3>
-      </div>
-      <p class="text-sm text-gray-600 dark:text-gray-300 mb-4">
-        {t('performance.actuationPointDesc', currentLanguage)}
-      </p>
-      <div class="mb-2 flex-1">
-        <div class="relative">
-          <div class="flex justify-between text-sm {'text-gray-500 dark:text-gray-400'} mb-1">
-            <div>{t('performance.actuationPointLabel', currentLanguage)} (Precision: 0.005mm)</div>
-            <div>{actuationPoint.toFixed(3)} {t('units.mm', currentLanguage)}</div>
-          </div>
-
-          <!-- Warning box for values below 0.3 -->
-          {#if actuationPoint < 0.3}
-            <div
-              class="mb-2 p-2 {'bg-yellow-50 border-yellow-300 text-yellow-700 dark:bg-yellow-900 border-yellow-600 text-yellow-200'} border rounded-md text-xs flex items-center gap-2"
-            >
-              <AlertTriangle size={14} />
-              {t('performance.sensitivityWarning', currentLanguage)}
+    <!-- 1st Box: Actuation Point (with slide-out animation) -->
+    <div class="actuation-point-container" class:slide-out={rapidTriggerEnabled}>
+      <div class="flex-1 min-w-[260px] flex flex-col h-full">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-lg font-medium text-gray-900 dark:text-white">
+            {t('performance.actuationPoint', currentLanguage)}
+          </h3>
+        </div>
+        <p class="text-sm text-gray-600 dark:text-gray-300 mb-4">
+          {t('performance.actuationPointDesc', currentLanguage)}
+        </p>
+        <div class="mb-2 flex-1">
+          <div class="relative">
+            <div class="flex justify-between text-sm {'text-gray-500 dark:text-gray-400'} mb-1">
+              <div>{t('performance.actuationPointLabel', currentLanguage)} (Precision: 0.005mm)</div>
+              <div>{actuationPoint.toFixed(3)} {t('units.mm', currentLanguage)}</div>
             </div>
-          {/if}
 
-          <!-- Dual input: Slider -->
-          <input
-            type="range"
-            min="0.005"
-            max="4"
-            step="0.005"
-            bind:value={actuationPoint}
-            class="w-full h-2 rounded-full {'bg-gray-300 dark:bg-gray-700'} appearance-none slider-thumb mb-2"
-          />
+            <!-- Warning box for values below 0.3 -->
+            {#if actuationPoint < 0.3}
+              <div
+                class="mb-2 p-2 {'bg-yellow-50 border-yellow-300 text-yellow-700 dark:bg-yellow-900 border-yellow-600 text-yellow-200'} border rounded-md text-xs flex items-center gap-2"
+              >
+                <AlertTriangle size={14} />
+                {t('performance.sensitivityWarning', currentLanguage)}
+              </div>
+            {/if}
 
-          <!-- Dual input: Text input -->
-          <div class="flex items-center gap-2 mb-2">
-            <span class="text-xs text-gray-500 dark:text-gray-400"
-              >{t('performance.directInput', currentLanguage)}:</span
-            >
+            <!-- Dual input: Slider -->
             <input
-              type="number"
+              type="range"
               min="0.005"
               max="4"
               step="0.005"
               bind:value={actuationPoint}
-              class="w-20 px-2 py-1 text-xs border rounded dark:bg-gray-800 dark:border-gray-600 dark:text-white bg-white border-gray-300 text-gray-900"
+              class="w-full h-2 rounded-full {'bg-gray-300 dark:bg-gray-700'} appearance-none slider-thumb mb-2"
             />
-            <span class="text-xs text-gray-500 dark:text-gray-400">mm</span>
+
+            <!-- Dual input: Text input -->
+            <div class="flex items-center gap-2 mb-2">
+              <span class="text-xs text-gray-500 dark:text-gray-400"
+                >{t('performance.directInput', currentLanguage)}:</span
+              >
+              <input
+                type="number"
+                min="0.005"
+                max="4"
+                step="0.005"
+                bind:value={actuationPoint}
+                class="w-20 px-2 py-1 text-xs border rounded dark:bg-gray-800 dark:border-gray-600 dark:text-white bg-white border-gray-300 text-gray-900"
+              />
+              <span class="text-xs text-gray-500 dark:text-gray-400">mm</span>
+            </div>
+            <div class="flex justify-between text-sm {'text-gray-500 dark:text-gray-400'} mb-1">
+              <div>{t('performance.high', currentLanguage)}</div>
+              <div>{t('performance.low', currentLanguage)}</div>
+            </div>
           </div>
-          <div class="flex justify-between text-sm {'text-gray-500 dark:text-gray-400'} mb-1">
-            <div>{t('performance.high', currentLanguage)}</div>
-            <div>{t('performance.low', currentLanguage)}</div>
+          <!-- Keys selected indicator -->
+          <div class="mt-4 text-gray-900 dark:text-white font-medium">
+            {keysSelected}
+            {t('performance.keysSelected', currentLanguage)}
           </div>
-        </div>
-        <!-- Keys selected indicator -->
-        <div class="mt-4 text-gray-900 dark:text-white font-medium">
-          {keysSelected}
-          {t('performance.keysSelected', currentLanguage)}
         </div>
       </div>
     </div>
 
-    <!-- Divider for desktop -->
-    <div class="hidden md:block w-px bg-gray-200 dark:bg-white mx-2"></div>
+    <!-- Divider for desktop (with animation) -->
+    <div class="divider-container" class:slide-out={rapidTriggerEnabled}>
+      <div class="hidden md:block w-px bg-gray-200 dark:bg-white mx-2"></div>
+    </div>
 
-    <!-- 2nd Box: Rapid Trigger Toggles (moved from 3rd position) -->
+    <!-- 2nd Box: Rapid Trigger Toggle -->
     <div class="flex-1 min-w-[260px] flex flex-col">
       <div class="flex items-center justify-between mb-4">
         <h3 class="text-lg font-medium text-gray-900 dark:text-white">
@@ -173,29 +178,98 @@
       </p>
       <div class="flex-1">
         {#if rapidTriggerEnabled}
-          <div
-            class="flex items-center justify-between mb-4 border-t dark:border-white border-gray-200 pt-4"
-          >
-            <h4 class="text-lg font-medium text-gray-900 dark:text-white">
-              {t('performance.enableContinuousRapidTrigger', currentLanguage)}
+          <!-- Dual-handle slider for upper and lower deadzones -->
+          <div class="border-t dark:border-white border-gray-200 pt-4 deadzone-container {$glassmorphismMode ? 'glassmorphism-card' : ''}">
+            <h4 class="text-lg font-medium text-gray-900 dark:text-white mb-4">
+              Key Travel Deadzones
             </h4>
-            <button
-              class="relative inline-flex items-center h-6 rounded-full w-11 transition-colors focus:outline-none {continuousRapidTriggerEnabled ? '' : 'bg-gray-300 dark:bg-gray-600'}"
-              aria-label="Continuous Rapid Trigger Toggle"
-              style="background: {continuousRapidTriggerEnabled ? 'linear-gradient(135deg, var(--theme-color-primary) 0%, color-mix(in srgb, var(--theme-color-primary) 80%, black) 100%)' : ''};"
-              onclick={() => (continuousRapidTriggerEnabled = !continuousRapidTriggerEnabled)}
-            >
-              <span
-                class="inline-block w-4 h-4 transform rounded-full transition-all shadow"
-                class:translate-x-6={continuousRapidTriggerEnabled}
-                class:translate-x-1={!continuousRapidTriggerEnabled}
-                style="background: {continuousRapidTriggerEnabled ? 'linear-gradient(135deg, #ffffff 0%, #f0f0f0 50%, #e0e0e0 100%)' : '#ffffff'};"
-              ></span>
-            </button>
+            <p class="text-sm text-gray-600 dark:text-gray-300 mb-4">
+              Adjust the start and bottom deadzone limits for rapid trigger activation.
+            </p>
+            
+            <!-- Dual Range Slider for Deadzones -->
+            <div class="mb-3">
+              <div class="flex justify-between items-center text-sm dark:text-gray-400 text-gray-500 mb-2">
+                <div>Start: {upperDeadzone.toFixed(3)}mm</div>
+                <div>Bottom: {lowerDeadzone.toFixed(3)}mm</div>
+              </div>
+              
+              <!-- Dual Range Slider Container -->
+              <div class="relative mb-4">
+                <!-- Background track -->
+                <div class="w-full h-2 bg-gray-300 dark:bg-gray-700 rounded-full relative overflow-hidden">
+                  <!-- Dead zone before start (left side) -->
+                  <div 
+                    class="absolute h-full rounded-l-full deadzone-pattern"
+                    style="left: 0%; width: {(upperDeadzone / 4) * 100}%;"
+                  ></div>
+                  
+                  <!-- Active range highlight -->
+                  <div 
+                    class="absolute h-full"
+                    style="background: linear-gradient(135deg, var(--theme-color-primary) 0%, color-mix(in srgb, var(--theme-color-primary) 80%, black) 100%); left: {(upperDeadzone / 4) * 100}%; width: {((lowerDeadzone - upperDeadzone) / 4) * 100}%;"
+                  ></div>
+                  
+                  <!-- Dead zone after bottom (right side) -->
+                  <div 
+                    class="absolute h-full rounded-r-full deadzone-pattern"
+                    style="left: {(lowerDeadzone / 4) * 100}%; width: {((4 - lowerDeadzone) / 4) * 100}%;"
+                  ></div>
+                </div>
+                
+                <!-- Start deadzone slider (upper) -->
+                <input
+                  type="range"
+                  min="0.005"
+                  max="4.000"
+                  step="0.005"
+                  bind:value={upperDeadzone}
+                  class="absolute top-0 w-full h-2 appearance-none bg-transparent dual-range-slider upper-handle"
+                  style="pointer-events: none;"
+                />
+                
+                <!-- Bottom deadzone slider (lower) -->
+                <input
+                  type="range"
+                  min="0.005"
+                  max="4.000"
+                  step="0.005"
+                  bind:value={lowerDeadzone}
+                  class="absolute top-0 w-full h-2 appearance-none bg-transparent dual-range-slider lower-handle"
+                  style="pointer-events: none;"
+                />
+              </div>
+              
+              <!-- Direct inputs -->
+              <div class="flex justify-between items-center gap-4">
+                <div class="flex items-center gap-2">
+                  <span class="text-xs text-gray-500 dark:text-gray-400">Start:</span>
+                  <input
+                    type="number"
+                    min="0.005"
+                    max={lowerDeadzone - 0.005}
+                    step="0.005"
+                    bind:value={upperDeadzone}
+                    class="w-16 px-1 py-0.5 text-xs border rounded dark:bg-gray-800 dark:border-gray-600 dark:text-white bg-white border-gray-300 text-gray-900"
+                  />
+                  <span class="text-xs text-gray-500 dark:text-gray-400">mm</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="text-xs text-gray-500 dark:text-gray-400">Bottom:</span>
+                  <input
+                    type="number"
+                    min={upperDeadzone + 0.005}
+                    max="4.000"
+                    step="0.005"
+                    bind:value={lowerDeadzone}
+                    class="w-16 px-1 py-0.5 text-xs border rounded dark:bg-gray-800 dark:border-gray-600 dark:text-white bg-white border-gray-300 text-gray-900"
+                  />
+                  <span class="text-xs text-gray-500 dark:text-gray-400">mm</span>
+                </div>
+              </div>
+            </div>
+
           </div>
-          <p class="text-sm text-gray-600 dark:text-gray-300">
-            {t('performance.continuousRapidTriggerFullDesc', currentLanguage)}
-          </p>
         {/if}
       </div>
     </div>
@@ -203,7 +277,7 @@
     <!-- Divider for desktop -->
     <div class="hidden md:block w-px bg-gray-200 dark:bg-white mx-2"></div>
 
-    <!-- 3rd Box: Sensitivity Slider & Toggle (moved from 2nd position) -->
+    <!-- 3rd Box: Sensitivity Slider & Toggle -->
     <div class="flex-1 min-w-[260px] flex flex-col">
       <div class="flex items-center justify-between mb-4">
         <h3 class="text-lg font-medium text-gray-900 dark:text-white">
@@ -313,5 +387,170 @@
     cursor: pointer;
     border: none;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  }
+
+  /* Animation for actuation point slide-out */
+  .actuation-point-container {
+    transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    transform: translateX(0);
+    opacity: 1;
+    width: auto;
+    flex: 1;
+    min-width: 260px;
+    overflow: hidden;
+  }
+
+  .actuation-point-container.slide-out {
+    transform: translateX(100%);
+    opacity: 0;
+    width: 0;
+    min-width: 0;
+    flex: 0;
+    margin: 0;
+    padding: 0;
+  }
+
+  /* Divider animation */
+  .divider-container {
+    transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    transform: translateX(0);
+    opacity: 1;
+    width: auto;
+    overflow: hidden;
+  }
+
+  .divider-container.slide-out {
+    transform: translateX(100%);
+    opacity: 0;
+    width: 0;
+    margin: 0;
+    padding: 0;
+  }
+
+  /* Dual range slider styling */
+  .dual-range-slider {
+    pointer-events: auto !important;
+    z-index: 1;
+  }
+  
+  .dual-range-slider::-webkit-slider-thumb {
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+    pointer-events: auto;
+    position: relative;
+    z-index: 2;
+  }
+  
+  .dual-range-slider::-moz-range-thumb {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    cursor: pointer;
+    border: none;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+    pointer-events: auto;
+    position: relative;
+    z-index: 2;
+  }
+
+  /* Upper handle (start deadzone) */
+  .upper-handle::-webkit-slider-thumb {
+    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
+  }
+  .upper-handle::-moz-range-thumb {
+    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
+  }
+
+  /* Lower handle (bottom deadzone) */
+  .lower-handle::-webkit-slider-thumb {
+    background: linear-gradient(135deg, #4ecdc4 0%, #44b3ac 100%);
+  }
+  .lower-handle::-moz-range-thumb {
+    background: linear-gradient(135deg, #4ecdc4 0%, #44b3ac 100%);
+  }
+
+  /* Make sure sliders don't interfere with each other */
+  .lower-handle {
+    z-index: 3;
+  }
+  .upper-handle {
+    z-index: 2;
+  }
+  
+  /* Improve handle interaction */
+  .dual-range-slider:hover {
+    z-index: 4 !important;
+  }
+  
+  .dual-range-slider:active {
+    z-index: 5 !important;
+  }
+
+  /* Deadzone pattern styling */
+  .deadzone-pattern {
+    background: repeating-linear-gradient(
+      45deg,
+      #ff4444 0px,
+      #ff4444 2px,
+      #000000 2px,
+      #000000 4px,
+      #ff4444 4px,
+      #ff4444 6px,
+      #000000 6px,
+      #000000 8px
+    );
+    opacity: 0.9;
+  }
+
+  /* Dark mode deadzone pattern */
+  :global(.dark) .deadzone-pattern {
+    background: repeating-linear-gradient(
+      45deg,
+      #ff4444 0px,
+      #ff4444 2px,
+      #000000 2px,
+      #000000 4px,
+      #ff4444 4px,
+      #ff4444 6px,
+      #000000 6px,
+      #000000 8px
+    );
+    opacity: 0.8;
+  }
+
+  /* Glassmorphism styling for deadzone container */
+  .deadzone-container {
+    border-radius: 12px;
+    padding: 16px;
+    margin-top: 8px;
+  }
+
+  .glassmorphism-inner {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+
+  /* Ensure consistent height without forcing scroll */
+  .flex-1.min-w-\[260px\].flex.flex-col {
+    height: 100%;
+  }
+
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .actuation-point-container.slide-out {
+      transform: translateY(-100%);
+      height: 0;
+      min-height: 0;
+    }
+    
+    .divider-container.slide-out {
+      transform: translateY(-100%);
+      height: 0;
+    }
   }
 </style>
