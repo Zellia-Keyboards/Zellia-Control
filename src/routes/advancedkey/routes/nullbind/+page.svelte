@@ -1,6 +1,5 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import { KeyboardDisplayValues } from '$lib/KeyboardState.svelte';
   import { glassmorphismMode } from '$lib/DarkModeStore.svelte';
   import { language, t } from '$lib/LanguageStore.svelte';
   import { AlertTriangle, Trash2 } from 'lucide-svelte';

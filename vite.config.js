@@ -24,6 +24,10 @@ export default defineConfig(async () => ({
           port: 1421,
         }
       : undefined,
+    fs: {
+      // Allow serving files from the src-controller directory
+      allow: ['..', 'src-controller']
+    },
     watch: {
       // 3. tell vite to ignore watching `src-tauri`
       ignored: ['**/src-tauri/**'],

@@ -1,6 +1,5 @@
 <script lang="ts">
-  import { KeyboardDisplayValues } from '$lib/KeyboardState.svelte';
-  import { keyboardConnection } from '$lib/KeyboardConnectionStore.svelte';
+  import { keyboardAPI } from '$lib/keyboardAPI.svelte';
   import { glassmorphismMode } from '$lib/DarkModeStore.svelte';
   import NewZellia80He from '$lib/NewZellia80HE.svelte';
   import NewZellia60HE from '$lib/NewZellia60HE.svelte';
@@ -18,7 +17,7 @@
 
   // Derived variable to determine which keyboard component to show
   let currentKeyboard = $derived(() => {
-    const selectedModel = keyboardConnection.state.selectedModel;
+    const selectedModel = keyboardAPI.state.selectedModel;
     if (selectedModel === 'zellia60he') {
       return { component: NewZellia60HE, isLegacy: false };
     } else if (selectedModel === 'zellia80he') {

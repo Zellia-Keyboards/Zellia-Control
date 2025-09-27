@@ -3,7 +3,7 @@
   import NewZellia80HE from '$lib/NewZellia80HE.svelte';
   import NewZellia60HE from '$lib/NewZellia60HE.svelte';
   import Zellia80HE from '$lib/Zellia80HE.svelte';
-  import { keyboardConnection } from '$lib/KeyboardConnectionStore.svelte';
+  import { keyboardAPI } from '$lib/keyboardAPI.svelte';
   import { language, t } from '$lib/LanguageStore.svelte';
   import { AlertTriangle, Play, Square, RotateCcw } from 'lucide-svelte';
 
@@ -125,7 +125,7 @@
   
   // Dynamic keyboard component selection
   const currentKeyboard = $derived(() => {
-    const selectedModel = keyboardConnection.state.selectedModel;
+    const selectedModel = keyboardAPI.state.selectedModel;
     if (selectedModel === 'zellia60he') {
       return { component: NewZellia60HE, isLegacy: false };
     } else if (selectedModel === 'zellia80he') {

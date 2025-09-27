@@ -3,8 +3,7 @@
   import Zellia80HE from '../lib/Zellia80HE.svelte';
   import NewZellia60HE from '../lib/NewZellia60HE.svelte';
   import NewZellia80HE from '../lib/NewZellia80HE.svelte';
-  import { KeyboardDisplayValues } from '$lib/KeyboardState.svelte';
-  import { keyboardConnection } from '$lib/KeyboardConnectionStore.svelte';
+  import { keyboardAPI } from '$lib/keyboardAPI.svelte';
   import { page } from '$app/stores';
   import { goto } from '$app/navigation';
   import { onMount } from 'svelte';
@@ -52,7 +51,7 @@
 
   // Check if we should show the configurator layout
   const shouldShowConfiguratorLayout = $derived(() => {
-    return keyboardConnection.shouldShowConfigurator && usesSidebarLayout();
+    return keyboardAPI.shouldShowConfigurator && usesSidebarLayout();
   });
 
   // Derived variable to determine when to show layer selector
@@ -64,7 +63,7 @@
 
   // Derived variable to determine which keyboard component to show
   const currentKeyboardComponent = $derived(() => {
-    const selectedModel = keyboardConnection.state.selectedModel;
+    const selectedModel = keyboardAPI.state.selectedModel;
     if (selectedModel === 'zellia60he') {
       return NewZellia60HE;
     } else if (selectedModel === 'zellia80he') {
@@ -98,7 +97,7 @@
 
   // Disconnect function
   function handleDisconnect() {
-    keyboardConnection.disconnect();
+    keyboardAPI.disconnect();
     goto('/welcome');
   }
 
@@ -121,7 +120,7 @@
     if (navigationInProgress) return; // Prevent navigation loops
     
     const path = $page.url.pathname;
-    const shouldShowConfigurator = keyboardConnection.shouldShowConfigurator;
+    const shouldShowConfigurator = keyboardAPI.shouldShowConfigurator;
     
     // Root page - redirect appropriately
     if (path === '/') {
@@ -264,9 +263,9 @@
         <div class="flex items-center justify-center gap-2 text-xs text-gray-600 dark:text-gray-400">
           <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
           <span>
-            {keyboardConnection.state.isDemoMode 
-              ? `Demo: ${keyboardConnection.state.selectedModel?.toUpperCase() || ''}`
-              : keyboardConnection.state.lastConnectedDevice || 'Connected'}
+            {keyboardAPI.state.isDemoMode 
+              ? `Demo: ${keyboardAPI.state.selectedModel?.toUpperCase() || ''}`
+              : keyboardAPI.state.lastConnectedDevice || 'Connected'}
           </span>
         </div>
       </div>

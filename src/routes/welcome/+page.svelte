@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { keyboardConnection, type KeyboardModel } from '$lib/KeyboardConnectionStore.svelte';
+  import { keyboardAPI, type KeyboardModel } from '$lib/keyboardAPI.svelte';
   import { language, t } from '$lib/LanguageStore.svelte';
   import { glassmorphismMode } from '$lib/DarkModeStore.svelte';
   import { goto } from '$app/navigation';
@@ -12,7 +12,7 @@
 
   async function handleConnect() {
     isConnecting = true;
-    const success = await keyboardConnection.connect();
+    const success = await keyboardAPI.connect();
     isConnecting = false;
     
     if (success) {
@@ -23,7 +23,7 @@
   async function handleDemoMode(model: KeyboardModel) {
     isEnteringDemo = true;
     showDemoDropdown = false;
-    keyboardConnection.enterDemoMode(model);
+    keyboardAPI.enterDemoMode(model);
     
     // Small delay for UX
     await new Promise(resolve => setTimeout(resolve, 800));
@@ -36,7 +36,7 @@
 
   onMount(() => {
     // If already connected, redirect to configurator
-    if (keyboardConnection.shouldShowConfigurator) {
+    if (keyboardAPI.shouldShowConfigurator) {
       goto('/remap');
     }
   });

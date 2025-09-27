@@ -4,7 +4,7 @@
   import NewZellia60HE from '$lib/NewZellia60HE.svelte';
   import Zellia80HE from '$lib/Zellia80HE.svelte';
   import KeyboardRender from '$lib/KeyboardRender.svelte';
-  import { keyboardConnection } from '$lib/KeyboardConnectionStore.svelte';
+  import { keyboardAPI } from '$lib/keyboardAPI.svelte';
   import { AlertTriangle } from 'lucide-svelte';
   import { language, t } from '$lib/LanguageStore.svelte';
   import * as kle from '@ijprest/kle-serial';
@@ -15,7 +15,7 @@
 
   // Derived variable to determine which keyboard component to show
   let currentKeyboard = $derived(() => {
-    const selectedModel = keyboardConnection.state.selectedModel;
+    const selectedModel = keyboardAPI.state.selectedModel;
     if (selectedModel === 'zellia60he') {
       return { component: NewZellia60HE, isLegacy: false };
     } else if (selectedModel === 'zellia80he') {

@@ -1,6 +1,5 @@
 <script lang="ts">
   import { glassmorphismMode } from '$lib/DarkModeStore.svelte';
-  import type { KeyboardDisplayValues as KeyboardDisplayValuesType } from '$lib/KeyboardState.svelte';
   import type { globalConfigurations, DynamicKeystrokeConfiguration } from '$lib/AdvancedKeyShared';
   import { language, t } from '$lib/LanguageStore.svelte';
   import { Trash2 } from 'lucide-svelte';
