@@ -162,26 +162,7 @@
   }
 </script>
 
-{#if currentKeyboard().isLegacy}
-  <svelte:component this={currentKeyboard().component}
-    values={[]} 
-    onClick={(x, y, event) => {
-      console.log(`Key clicked at (${x}, ${y})`, event);
-    }}
-  />
-{:else}
-  <svelte:component this={currentKeyboard().component}
-    onClick={(x, y, event) => {
-      console.log(`Key clicked at (${x}, ${y})`, event);
-    }}
-    bind:currentSelectedKey={CurrentSelected}
-  >
-    {#snippet body(x, y)}
-      <div
-        class="hover:scale-90 transition-all duration-300 h-14 border bg-gray-50 border-gray-400 dark:bg-black borde dark:border-gray-700 data-[selected=true]:bg-gray-500 data-[selected=true]:border-gray-700 data-[selected=true]:border-4 rounded-lg flex flex-col items-center justify-center hover:cursor-pointer gap-1 font-sans text-white"
-      ></div>{/snippet}
-  </svelte:component>
-{/if}
+
 <div
   class="rounded-2xl shadow p-8 mt-2 mb-4 grow bg-gray-50 dark:bg-black border border-gray-200 dark:border-gray-600 text-black dark:text-white h-full flex flex-col {$glassmorphismMode
     ? 'glassmorphism-card'

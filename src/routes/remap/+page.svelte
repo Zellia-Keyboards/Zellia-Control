@@ -16,16 +16,7 @@
   import { dev } from '$app/environment';
 
   // Derived variable to determine which keyboard component to show
-  let currentKeyboard = $derived(() => {
-    const selectedModel = keyboardAPI.state.selectedModel;
-    if (selectedModel === 'zellia60he') {
-      return { component: NewZellia60HE, isLegacy: false };
-    } else if (selectedModel === 'zellia80he') {
-      return { component: NewZellia80He, isLegacy: false };
-    }
-    // Default fallback
-    return { component: Zellia80HE, isLegacy: true };
-  });
+  
 
   // Custom slide transition that moves instead of stretches
   function slideMove(node: Element, { duration = 400, direction = 1 }) {
@@ -157,52 +148,6 @@
   $inspect(ActiveTabComponent, 'ActiveTabComponent');
   $inspect(selectedKeys, 'selectedKeys');
 </script>
-
-{#if currentKeyboard().isLegacy}
-  <svelte:component this={currentKeyboard().component}
-    values={storedKeys}
-    currentSelectedKey={null}
-    onClick={(x, y, event) => {
-      console.log(`Clicked key at (${x}, ${y})`, event);
-      let i = selectedKeys.findIndex(key => key[0] === x && key[1] === y);
-      if (i !== -1) {
-        selectedKeys.splice(i, 1);
-      } else {
-        selectedKeys.push([x, y]);
-      }
-    }}
-  >
-    {#snippet body(x, y)}
-      <span
-        class="hover:scale-90 transition-all duration-300 h-14 truncate bg-gray-50 dark:bg-black border border-gray-400 dark:border-gray-700 data-[selected=true]:bg-gray-500 data-[selected=true]:border-gray-700 data-[selected=true]:border-4 rounded-lg flex flex-col items-center justify-center hover:cursor-pointer gap-1 font-sans text-white"
-        data-selected={selectedKeys.findIndex(key => key[0] === x && key[1] === y) !== -1}
-        >{storedKeys[y][x]}</span
-      >
-    {/snippet}
-  </svelte:component>
-{:else}
-  <svelte:component this={currentKeyboard().component}
-    values={storedKeys}
-    currentSelectedKey={null}
-    onClick={(x, y, event) => {
-      console.log(`Clicked key at (${x}, ${y})`, event);
-      let i = selectedKeys.findIndex(key => key[0] === x && key[1] === y);
-      if (i !== -1) {
-        selectedKeys.splice(i, 1);
-      } else {
-        selectedKeys.push([x, y]);
-      }
-    }}
-  >
-    {#snippet body(x, y)}
-      <span
-        class="hover:scale-90 transition-all duration-300 h-14 truncate bg-gray-50 dark:bg-black border border-gray-400 dark:border-gray-700 data-[selected=true]:bg-gray-500 data-[selected=true]:border-gray-700 data-[selected=true]:border-4 rounded-lg flex flex-col items-center justify-center hover:cursor-pointer gap-1 font-sans text-white"
-        data-selected={selectedKeys.findIndex(key => key[0] === x && key[1] === y) !== -1}
-        >{storedKeys[y][x]}</span
-      >
-    {/snippet}
-  </svelte:component>
-{/if}
 
 <div
   bind:this={mainContainer}

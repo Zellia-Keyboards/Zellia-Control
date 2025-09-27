@@ -3,7 +3,9 @@
   import Zellia80HE from '../lib/Zellia80HE.svelte';
   import NewZellia60HE from '../lib/NewZellia60HE.svelte';
   import NewZellia80HE from '../lib/NewZellia80HE.svelte';
+  import KeyboardRender from '$lib/KeyboardRender.svelte';
   import { keyboardAPI } from '$lib/keyboardAPI.svelte';
+  import * as kle from '@ijprest/kle-serial';
   import { page } from '$app/stores';
   import { goto } from '$app/navigation';
   import { onMount } from 'svelte';
@@ -41,6 +43,10 @@
   
   // Make language reactive to store changes
   let currentLanguage = $derived($language);
+
+  // Keyboard layout for global KeyboardRender
+  const layout = `[[{"x":2.25},"~\\n\`","!\\n1","@\\n2","#\\n3","$\\n4","%\\n5","^\\n6","&\\n7","*\\n8","(\\n9",")\\n0","_\\n-","+\\n=",{"w":2},"Backspace",{"a":7},"",""],[{"x":2.25,"a":4,"w":1.5},"Tab","Q","W","E","R","T","Y","U","I","O","P","{\\n[","}\\n]",{"w":1.5},"|\\n\\\\"   ],   [     {       "x": 2.25,       "w": 1.75     },     "CapsLock",     "A",     "S",     "D",     "F",     "G",     "H",     "J",     "K",     "L",     ":\\n;",     "\\"\\n'",{"w":2.25},"Enter"],[{"a":7,"w":1.25},"","",{"a":4,"w":2.25},"Shift","Z","X","C","V","B","N","M","<\\n,",">\\n.","?\\n/",{"w":2.75},"Shift",{"a":7,"w":1.75},"",""],[{"x":2.25,"a":4,"w":1.5},"Ctrl","Win",{"w":1.5},"Alt",{"a":7,"w":7},"",{"a":4,"w":1.5},"Alt","Win",{"w":1.5},"Ctrl"],[{"x":6.25,"a":7,"w":3.5},"",{"w":3.5},""]]`;
+  let keyboard_keys: kle.Key[] = kle.Serial.deserialize(JSON.parse(layout)).keys;
 
   // Check if current page should use the sidebar layout
   const usesSidebarLayout = $derived(() => {
@@ -523,6 +529,13 @@
       </div>
     </div>
     <!-- Component for adjust part -->
+
+    <!-- Global KeyboardRender -->
+    {#if keyboardAPI.state.isConnected && !$page.url.pathname.includes('/about')}
+      <div>
+        <KeyboardRender keys={keyboard_keys}/>
+      </div>
+    {/if}
 
     {@render children()}
   </div>

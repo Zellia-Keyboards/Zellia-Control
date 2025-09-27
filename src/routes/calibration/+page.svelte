@@ -154,41 +154,6 @@
   }
 </script>
 
-{#if currentKeyboard().isLegacy}
-  <svelte:component this={currentKeyboard().component}
-    values={[]}
-    onClick={handleKeyClick}
-  />
-{:else}
-  <svelte:component this={currentKeyboard().component}
-    currentSelectedKey={null}
-    onClick={handleKeyClick}
-  >
-    {#snippet body(x, y)}
-      {@const state = calibrationData[y][x]}
-      <p
-        class="group relative h-14 bg-gray-50 dark:bg-black border border-gray-400 dark:border-gray-700 rounded-lg flex flex-col items-center justify-center cursor-pointer gap-1 font-sans text-white
-        transform transition-transform duration-200 ease-out
-        hover:scale-95
-        {isCalibrating && state === CalibrationState.Calibrating ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' : ''}
-        {isCalibrating && state === CalibrationState.Finished ? 'border-green-500 bg-green-50 dark:bg-green-900/20' : ''}
-        {isCalibrating && state === CalibrationState.Error ? 'border-red-500 bg-red-50 dark:bg-red-900/20' : ''}"
-        data-state={state}
-        data-calibrating={isCalibrating}
-      >
-        {#if isCalibrating}
-          {#if state === CalibrationState.Finished}
-            <span class="text-green-600 dark:text-green-400 text-xs">✓</span>
-          {:else if state === CalibrationState.Error}
-            <span class="text-red-600 dark:text-red-400 text-xs">✗</span>
-          {:else}
-            <span class="text-blue-600 dark:text-blue-400 text-xs animate-pulse">•</span>
-          {/if}
-        {/if}
-      </p>
-    {/snippet}
-  </svelte:component>
-{/if}
 
 <div
   class="rounded-2xl shadow p-8 mt-2 mb-4 grow bg-primary-100 dark:bg-black border border-transparent dark:border-gray-600 text-black dark:text-white h-full flex flex-col {$glassmorphismMode

@@ -466,17 +466,6 @@
   {/each}
 {/snippet}
 
-<NewZellia80He
-  onClick={(x, y, event) => {
-    console.log(`Key clicked at (${x}, ${y})`, event);
-  }}
-  bind:currentSelectedKey={currentSelected}
->
-  {#snippet body(x, y)}
-    <div
-      class="hover:scale-90 transition-all duration-300 h-14 dark:bg-black dark:border-gray-700 bg-gray-50 border-gray-400 data-[selected=true]:bg-gray-500 data-[selected=true]:border-gray-700 data-[selected=true]:border-4 border rounded-lg flex flex-col items-center justify-center hover:cursor-pointer gap-1 font-sans text-white"
-    ></div>{/snippet}
-</NewZellia80He>
 <div
   class="rounded-2xl shadow p-4 mt-2 mb-4 grow {$glassmorphismMode
     ? 'glassmorphism-card'
