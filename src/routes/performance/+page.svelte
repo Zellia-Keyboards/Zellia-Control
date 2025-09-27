@@ -41,18 +41,7 @@
   let pressSensitivity = $state(0.5);
   let releaseSensitivity = $state(0.5);
   let keysSelected = $state(0);
-  let precisionMode = $state(false);
-
-  
-  $effect(() => {
-    if (!precisionMode) {
-      
-      actuationPoint = Math.round(actuationPoint * 100) / 100;
-    }
-  });
 </script>
-
-
 
 <div
   class="rounded-2xl shadow p-8 mt-2 mb-4 grow bg-primary-100 dark:bg-black border border-transparent dark:border-gray-600 text-black dark:text-white h-full flex flex-col {$glassmorphismMode
@@ -97,22 +86,6 @@
         <h3 class="text-lg font-medium text-gray-900 dark:text-white">
           {t('performance.actuationPoint', currentLanguage)}
         </h3>
-        <div class="flex items-center gap-2">
-          <span class="text-xs text-gray-500 dark:text-gray-400">Enable Precision</span>
-          <button
-            class="relative inline-flex items-center h-6 rounded-full w-11 transition-colors focus:outline-none {precisionMode ? '' : 'bg-gray-300 dark:bg-gray-600'}"
-            aria-label="Precision Mode Toggle"
-            style="background: {precisionMode ? 'linear-gradient(135deg, var(--theme-color-primary) 0%, color-mix(in srgb, var(--theme-color-primary) 80%, black) 100%)' : ''};"
-            onclick={() => (precisionMode = !precisionMode)}
-          >
-            <span
-              class="inline-block w-4 h-4 transform rounded-full transition-all shadow"
-              class:translate-x-6={precisionMode}
-              class:translate-x-1={!precisionMode}
-              style="background: {precisionMode ? 'linear-gradient(135deg, #ffffff 0%, #f0f0f0 50%, #e0e0e0 100%)' : '#ffffff'};"
-            ></span>
-          </button>
-        </div>
       </div>
       <p class="text-sm text-gray-600 dark:text-gray-300 mb-4">
         {t('performance.actuationPointDesc', currentLanguage)}
@@ -120,8 +93,8 @@
       <div class="mb-2 flex-1">
         <div class="relative">
           <div class="flex justify-between text-sm {'text-gray-500 dark:text-gray-400'} mb-1">
-            <div>{t('performance.actuationPointLabel', currentLanguage)} {precisionMode ? '(Precision: 0.005mm)' : '(Standard: 0.01mm)'}</div>
-            <div>{precisionMode ? actuationPoint.toFixed(3) : actuationPoint.toFixed(2)} {t('units.mm', currentLanguage)}</div>
+            <div>{t('performance.actuationPointLabel', currentLanguage)} (Precision: 0.005mm)</div>
+            <div>{actuationPoint.toFixed(3)} {t('units.mm', currentLanguage)}</div>
           </div>
 
           <!-- Warning box for values below 0.3 -->
@@ -137,9 +110,9 @@
           <!-- Dual input: Slider -->
           <input
             type="range"
-            min="0.01"
+            min="0.005"
             max="4"
-            step={precisionMode ? "0.005" : "0.01"}
+            step="0.005"
             bind:value={actuationPoint}
             class="w-full h-2 rounded-full {'bg-gray-300 dark:bg-gray-700'} appearance-none slider-thumb mb-2"
           />
@@ -151,9 +124,9 @@
             >
             <input
               type="number"
-              min="0.01"
+              min="0.005"
               max="4"
-              step={precisionMode ? "0.005" : "0.01"}
+              step="0.005"
               bind:value={actuationPoint}
               class="w-20 px-2 py-1 text-xs border rounded dark:bg-gray-800 dark:border-gray-600 dark:text-white bg-white border-gray-300 text-gray-900"
             />
