@@ -18,6 +18,7 @@
   import { slide, fade } from 'svelte/transition';
   import * as api from '$lib/api.svelte';
   import * as ekc from 'emi-keyboard-controller';
+  import { advancedKeys } from '$lib/ControllerStore.svelte';
   
   const NAVIGATE = [
     ['/performance', 'nav.performance'],
@@ -65,7 +66,7 @@
     });
     if (isActive('/performance')) {
       newKeys.forEach((key, index)=>{
-        const advanced_key = advancedKeys[index];
+        const advanced_key = $advancedKeys[index];
         let labels = newKeys[index].labels;
         labels = labels.map(() => "");
         switch (advanced_key.mode) {
@@ -101,7 +102,6 @@
 
   // Controller variables
 
-  let advancedKeys : ekc.IAdvancedKey[] = $state(Array<ekc.IAdvancedKey>()); 
 
   // Check if current page should use the sidebar layout
   const usesSidebarLayout = $derived(() => {
@@ -733,7 +733,7 @@
                   api.set_device("Zellia60 HE");
                   api.connect_device();
                   layout = await api.get_layout_json();
-                  advancedKeys = await api.get_advanced_keys();
+                  advancedKeys.set(await api.get_advanced_keys());
                   console.log("advancedKeys",advancedKeys);
                   const success = await keyboardAPI.connect();
                   // Navigation is handled automatically by keyboardAPI

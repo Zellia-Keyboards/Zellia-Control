@@ -1,8 +1,5 @@
 <script lang="ts">
   import { glassmorphismMode } from '$lib/DarkModeStore.svelte';
-  import NewZellia80HE from '$lib/NewZellia80HE.svelte';
-  import NewZellia60HE from '$lib/NewZellia60HE.svelte';
-  import Zellia80HE from '$lib/Zellia80HE.svelte';
   import { keyboardAPI } from '$lib/keyboardAPI.svelte';
   import { language, t } from '$lib/LanguageStore.svelte';
   import { AlertTriangle, Play, Square, RotateCcw } from 'lucide-svelte';
@@ -122,18 +119,6 @@
 
   let calibrationData = $state(fixedCalibrationData);
   let isCalibrating = $state(false);
-  
-  // Dynamic keyboard component selection
-  const currentKeyboard = $derived(() => {
-    const selectedModel = keyboardAPI.state.selectedModel;
-    if (selectedModel === 'zellia60he') {
-      return { component: NewZellia60HE, isLegacy: false };
-    } else if (selectedModel === 'zellia80he') {
-      return { component: NewZellia80HE, isLegacy: false };
-    }
-    // Default fallback to legacy component
-    return { component: Zellia80HE, isLegacy: true };
-  });
 
   // No manual key selection needed - keys are automatically detected when pressed during calibration
   function handleKeyClick(x: number, y: number) {

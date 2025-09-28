@@ -5,6 +5,8 @@
   import { language, t } from '$lib/LanguageStore.svelte';
   import { selectedCount, toggleSelectAll, deselectAll } from '$lib/SelectedKeysStore';
   import * as ekc from 'emi-keyboard-controller';
+  import { advancedKeys } from '$lib/ControllerStore.svelte';
+  import { selectedKeys } from '$lib/SelectedKeysStore';
 
   //let advancedKey : ekc.AdvancedKey = $derived.by(()=>{
   //  var k = new ekc.AdvancedKey();
@@ -33,6 +35,53 @@
   let upperDeadzone = $state(0.500); // Start of key (top)
   let lowerDeadzone = $state(3.500); // Bottom of key
   let keysSelected = $state(0);
+
+  let advancedKey : ekc.AdvancedKey = $derived.by(()=>{
+    var k = new ekc.AdvancedKey();
+    
+    // 基础模式和点位计算
+    k.mode = rapidTriggerEnabled ? ekc.KeyMode.KeyAnalogRapidMode : ekc.KeyMode.KeyAnalogNormalMode;
+    k.activation_value = mmToPercent(actuationPoint); 
+
+    // 灵敏度设置
+    // 使用 separateSensitivity 来决定使用哪个值
+    let finalPressSensitivity = separateSensitivity ? pressSensitivity : sensitivityValue;
+    let finalReleaseSensitivity = separateSensitivity ? releaseSensitivity : sensitivityValue;
+    
+    k.trigger_distance = mmToPercent(finalPressSensitivity);
+    k.release_distance = mmToPercent(finalReleaseSensitivity);
+    
+    // 死区设置 (仅在 Rapid Trigger 启用时有意义，但会设置)
+    k.upper_deadzone = mmToPercent(upperDeadzone);
+    k.lower_deadzone = mmToPercent(4.0 - lowerDeadzone); // 注意这里有一个 4.0 - lowerDeadzone 的转换 
+    return k;
+  });
+
+  $effect(() => {
+    const keysToUpdate = $selectedKeys;
+    
+    // 只有在有按键被选中的时候才更新
+    if (keysToUpdate.length === 0) {
+      return;
+    }
+    
+    // 更新 advancedKeys 存储
+    advancedKeys.update(currentKeys => {
+      // 创建一个新的数组副本进行修改
+      const newKeys = [...currentKeys]; 
+      const config = advancedKey;
+
+      // 遍历所有选中的按键索引，将配置应用到对应位置
+      for (const index of keysToUpdate) {
+        // 确保索引在数组范围内，并应用新的配置
+        if (index >= 0 && index < newKeys.length) {
+          // 创建一个新对象以避免直接修改旧对象（保持不变性）
+          newKeys[index] = { ...config }; 
+        }
+      }
+      return newKeys;
+    });
+  });
 
   // Update local count from store (auto-subscribes)
   $derived: keysSelected = $selectedCount;

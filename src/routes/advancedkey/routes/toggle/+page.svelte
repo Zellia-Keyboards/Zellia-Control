@@ -12,8 +12,6 @@
 
   let currentLanguage = $derived($language);
 
-  import NewZellia80He from '$lib/NewZellia80HE.svelte';
-
   let selectedToggleAction = $state('caps');
   let toggleMode = $state('press');
   let toggleState = $state(false);

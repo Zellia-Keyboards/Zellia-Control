@@ -1,8 +1,5 @@
 <script lang="ts">
   import { glassmorphismMode } from '$lib/DarkModeStore.svelte';
-  import NewZellia80He from '$lib/NewZellia80HE.svelte';
-  import NewZellia60HE from '$lib/NewZellia60HE.svelte';
-  import Zellia80HE from '$lib/Zellia80HE.svelte';
   import { keyboardAPI } from '$lib/keyboardAPI.svelte';
   import { RotateCcw, Download, Trash2, Info } from 'lucide-svelte';
   import { language, t } from '$lib/LanguageStore.svelte';

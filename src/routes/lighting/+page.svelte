@@ -1,9 +1,6 @@
 <script lang="ts">
   import { keyboardAPI } from '$lib/keyboardAPI.svelte';
   import { glassmorphismMode } from '$lib/DarkModeStore.svelte';
-  import NewZellia80He from '$lib/NewZellia80HE.svelte';
-  import NewZellia60HE from '$lib/NewZellia60HE.svelte';
-  import Zellia80HE from '$lib/Zellia80HE.svelte';
   import { language, t } from '$lib/LanguageStore.svelte';
 
   // Helper function for string formatting
@@ -14,18 +11,6 @@
   };
 
   let currentLanguage = $derived($language);
-
-  // Derived variable to determine which keyboard component to show
-  let currentKeyboard = $derived(() => {
-    const selectedModel = keyboardAPI.state.selectedModel;
-    if (selectedModel === 'zellia60he') {
-      return { component: NewZellia60HE, isLegacy: false };
-    } else if (selectedModel === 'zellia80he') {
-      return { component: NewZellia80He, isLegacy: false };
-    }
-    // Default fallback
-    return { component: Zellia80HE, isLegacy: true };
-  });
 
   // Subscribe to language changes
   language.subscribe(value => {
