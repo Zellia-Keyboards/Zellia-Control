@@ -1,9 +1,6 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
   import { glassmorphismMode } from '$lib/DarkModeStore.svelte';
-  import NewZellia80HE from '$lib/NewZellia80HE.svelte';
-  import NewZellia60HE from '$lib/NewZellia60HE.svelte';
-  import Zellia80HE from '$lib/Zellia80HE.svelte';
   import { keyboardAPI } from '$lib/keyboardAPI.svelte';
   import { Zap, RotateCcw, Settings, Target } from 'lucide-svelte';
   import { language, t } from '$lib/LanguageStore.svelte';
@@ -13,17 +10,6 @@
   // Add the missing state variable
   let currentSelectedKey = $state<[number, number] | null>(null);
 
-  // Dynamic keyboard component selection
-  const currentKeyboard = $derived(() => {
-    const selectedModel = keyboardAPI.state.selectedModel;
-    if (selectedModel === 'zellia60he') {
-      return { component: NewZellia60HE, isLegacy: false };
-    } else if (selectedModel === 'zellia80he') {
-      return { component: NewZellia80HE, isLegacy: false };
-    }
-    // Default fallback to legacy component
-    return { component: Zellia80HE, isLegacy: true };
-  });
   // Available advanced key modes
   const keyModes = $derived([
     {

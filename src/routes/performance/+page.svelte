@@ -1,11 +1,9 @@
 <script lang="ts">
   import { glassmorphismMode } from '$lib/DarkModeStore.svelte';
-  import NewZellia80He from '$lib/NewZellia80HE.svelte';
-  import NewZellia60HE from '$lib/NewZellia60HE.svelte';
-  import Zellia80HE from '$lib/Zellia80HE.svelte';
   import { keyboardAPI } from '$lib/keyboardAPI.svelte';
   import { AlertTriangle, LetterText } from 'lucide-svelte';
   import { language, t } from '$lib/LanguageStore.svelte';
+  import { selectedCount, toggleSelectAll, deselectAll } from '$lib/SelectedKeysStore';
   import * as ekc from 'emi-keyboard-controller';
 
   //let advancedKey : ekc.AdvancedKey = $derived.by(()=>{
@@ -35,6 +33,36 @@
   let upperDeadzone = $state(0.500); // Start of key (top)
   let lowerDeadzone = $state(3.500); // Bottom of key
   let keysSelected = $state(0);
+
+  // Update local count from store (auto-subscribes)
+  $derived: keysSelected = $selectedCount;
+
+  // Keyboard shortcuts
+  function onKeyDown(e: KeyboardEvent) {
+    const ctrl = e.ctrlKey || e.metaKey;
+    // Ctrl+A behavior
+    if (ctrl && e.key.toLowerCase() === 'a') {
+      e.preventDefault();
+      toggleSelectAll();
+      return;
+    }
+
+    // Ctrl+Escape => deselect all
+    if (ctrl && e.key === 'Escape') {
+      e.preventDefault();
+      deselectAll();
+      return;
+    }
+  }
+
+  // Attach listener on mount
+  import { onMount, onDestroy } from 'svelte';
+  onMount(() => {
+    window.addEventListener('keydown', onKeyDown);
+  });
+  onDestroy(() => {
+    window.removeEventListener('keydown', onKeyDown);
+  });
 </script>
 
 <div
@@ -57,6 +85,7 @@
             'color-mix(in srgb, var(--theme-color-primary) 85%, black)')}
         onmouseout={e =>
           ((e.currentTarget as HTMLElement).style.backgroundColor = 'var(--theme-color-primary)')}
+        onclick={() => toggleSelectAll()}
       >
         {t('performance.selectAllKeys', currentLanguage)}
       </button>
@@ -64,6 +93,7 @@
         class="bg-gray-200 hover:bg-gray-300 text-gray-600 dark:bg-gray-800 dark:hover:bg-gray-700 dark:text-white dark:border dark:border-white px-4 py-2 rounded transition-colors duration-200 {$glassmorphismMode
           ? 'glassmorphism-button'
           : ''}"
+        onclick={() => deselectAll()}
       >
         {t('performance.discardSelection', currentLanguage)}
       </button>
