@@ -660,6 +660,9 @@ export const translations = {
     'demo.enterDemo': 'Enter Demo Mode',
     'demo.entering': 'Entering...',
     'demo.note': 'Demo mode allows you to explore all features without a physical keyboard connected.',
+
+    // Connection warnings
+    'ui.usbHubWarning': 'Using USB Hub connections may cause connectivity issues. Direct connection recommended.',
   },
   zh: {
     // Navigation
@@ -1264,6 +1267,9 @@ export const translations = {
     'demo.enterDemo': '进入演示模式',
     'demo.entering': '进入中...',
     'demo.note': '演示模式允许您在没有连接物理键盘的情况下探索所有功能。',
+
+    // Connection warnings
+    'ui.usbHubWarning': '使用 USB Hub 连接设备可能会导致连接不稳定。',
   },
 };
 

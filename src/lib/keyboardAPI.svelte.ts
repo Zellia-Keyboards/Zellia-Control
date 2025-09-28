@@ -106,8 +106,8 @@ export const keyboardAPI = {
       // Request initial configuration from keyboard
       selectedController.request_config();
       
-      // Redirect to performance page after successful connection
-      goto('/performance');
+      // Redirect to remap page after successful connection
+      goto('/remap');
       
       return true;
     } catch (error) {
@@ -134,8 +134,8 @@ export const keyboardAPI = {
     keyboardConnectionState.controller = undefined;
     keyboardConnectionState.error = undefined;
     
-    // Redirect to performance page after entering demo mode
-    goto('/performance');
+    // Redirect to remap page after entering demo mode
+    goto('/remap');
   },
 
   // Check if a device matches a controller (simplified matching)

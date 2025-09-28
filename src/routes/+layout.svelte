@@ -41,6 +41,8 @@
   let firefoxWarningDismissed = $state(false);
   let currentTheme = $state<ThemeColorName | null>(null);
   let showLayoutMenu = $state(false);
+  let showDemoDropdown = $state(false);
+  let isEnteringDemo = $state(false);
   
   // Layout configuration state
   let bottomRowConfig = $state<'6.25u' | '7u'>('6.25u');
@@ -63,9 +65,9 @@
     return sidebarPages.some(sidebarPage => path === sidebarPage || path.startsWith(sidebarPage + '/'));
   });
 
-  // Check if we should show the configurator layout
+  // Always show the sidebar layout for configurator pages and root page
   const shouldShowConfiguratorLayout = $derived(() => {
-    return keyboardAPI.shouldShowConfigurator && usesSidebarLayout();
+    return usesSidebarLayout() || $page.url.pathname === '/';
   });
 
   // Derived variable to determine when to show layer selector
@@ -102,7 +104,8 @@
   // Disconnect function
   function handleDisconnect() {
     keyboardAPI.disconnect();
-    goto('/welcome');
+    // Redirect to home page to show connection interface
+    goto('/');
   }
 
   // Set page language for accessibility
@@ -126,30 +129,10 @@
     const path = $page.url.pathname;
     const shouldShowConfigurator = keyboardAPI.shouldShowConfigurator;
     
-    // Root page - redirect appropriately
-    if (path === '/') {
-      navigationInProgress = true;
-      if (shouldShowConfigurator) {
-        goto('/remap', { replaceState: true });
-      } else {
-        goto('/welcome', { replaceState: true });
-      }
-      setTimeout(() => navigationInProgress = false, 100);
-      return;
-    }
-    
-    // Welcome/demo pages - redirect if connected
-    if ((path === '/welcome' || path === '/demo-select') && shouldShowConfigurator) {
+    // Root page - redirect to remap only if connected
+    if (path === '/' && shouldShowConfigurator) {
       navigationInProgress = true;
       goto('/remap', { replaceState: true });
-      setTimeout(() => navigationInProgress = false, 100);
-      return;
-    }
-    
-    // Configurator pages - redirect if not connected
-    if (usesSidebarLayout() && !shouldShowConfigurator) {
-      navigationInProgress = true;
-      goto('/welcome', { replaceState: true });
       setTimeout(() => navigationInProgress = false, 100);
       return;
     }
@@ -265,12 +248,17 @@
       <!-- Connection Status -->
       <div class="mt-3 text-center">
         <div class="flex items-center justify-center gap-2 text-xs text-gray-600 dark:text-gray-400">
-          <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-          <span>
-            {keyboardAPI.state.isDemoMode 
-              ? `Demo: ${keyboardAPI.state.selectedModel?.toUpperCase() || ''}`
-              : keyboardAPI.state.lastConnectedDevice || 'Connected'}
-          </span>
+          {#if keyboardAPI.shouldShowConfigurator}
+            <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+            <span>
+              {keyboardAPI.state.isDemoMode 
+                ? `Demo: ${keyboardAPI.state.selectedModel?.toUpperCase() || ''}`
+                : keyboardAPI.state.lastConnectedDevice || 'Connected'}
+            </span>
+          {:else}
+            <div class="w-2 h-2 bg-gray-400 rounded-full"></div>
+            <span>Waiting to connect</span>
+          {/if}
         </div>
       </div>
     </div>
@@ -333,7 +321,9 @@
 
         
       {/if}
-      <!-- Disconnect Button -->
+      
+      <!-- Disconnect Button - only show when connected -->
+      {#if keyboardAPI.shouldShowConfigurator}
         <button
           class="w-full px-3 py-2 text-xs font-medium border rounded-md transition-colors duration-200 text-red-600 dark:text-red-400 border-red-300 dark:border-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 {$glassmorphismMode
             ? 'glassmorphism-button'
@@ -347,6 +337,7 @@
             {t('ui.disconnect', currentLanguage)}
           </div>
         </button>
+      {/if}
     </div>
     
     <!-- Navigation -->
@@ -489,176 +480,376 @@
       ? 'glassmorphism-main'
       : 'bg-primary-50/20 dark:bg-black/20'}"
   >
-    <!-- Layer selector (fades out on certain pages) -->
-    <div class="flex items-center justify-between -mb-3">
-      <div class="flex items-center gap-2 px-4 py-2 h-12">
-        {#if !shouldShowLayerSelector()}
-          <span
-            class="font-semibold text-gray-900 dark:text-white mr-2 {$glassmorphismMode
-              ? 'text-gray-800 dark:text-white'
-              : ''}"
-            >Layer:</span
-          >
-          {#each [1, 2, 3, 4] as layer}
-            <button
-              class="w-8 h-8 flex items-center justify-center rounded-lg border font-bold text-lg transition-colors duration-200 focus:outline-none bg-white dark:bg-black border-gray-300 dark:border-gray-600 text-primary-500 hover:bg-primary-100 dark:hover:bg-gray-700 {$glassmorphismMode
-                ? 'glassmorphism-button'
-                : ''} {selectedLayer === layer
-                ? 'bg-primary-500 !text-white !border-primary-700'
+    <!-- Layer selector and Layout toggle (only show when connected) -->
+    {#if keyboardAPI.shouldShowConfigurator}
+      <div class="flex items-center justify-between -mb-3">
+        <div class="flex items-center gap-2 px-4 py-2 h-12">
+          {#if !shouldShowLayerSelector()}
+            <span
+              class="font-semibold text-gray-900 dark:text-white mr-2 {$glassmorphismMode
+                ? 'text-gray-800 dark:text-white'
                 : ''}"
-              onmouseover={e => {
-                if (selectedLayer !== layer) {
-                  const element = e.currentTarget as HTMLElement;
-                  element.classList.add('hover:bg-primary-100', 'dark:hover:bg-gray-700');
-                }
-              }}
-              onmouseout={e => {
-                if (selectedLayer !== layer) {
-                  const element = e.currentTarget as HTMLElement;
-                  element.classList.remove('hover:bg-primary-100', 'dark:hover:bg-gray-700');
-                }
-              }}
-              onclick={() => (selectedLayer = layer)}
+              >Layer:</span
             >
-              {layer}
-            </button>
-          {/each}
-        {/if}
-      </div>
+            {#each [1, 2, 3, 4] as layer}
+              <button
+                class="w-8 h-8 flex items-center justify-center rounded-lg border font-bold text-lg transition-colors duration-200 focus:outline-none bg-white dark:bg-black border-gray-300 dark:border-gray-600 text-primary-500 hover:bg-primary-100 dark:hover:bg-gray-700 {$glassmorphismMode
+                  ? 'glassmorphism-button'
+                  : ''} {selectedLayer === layer
+                  ? 'bg-primary-500 !text-white !border-primary-700'
+                  : ''}"
+                onmouseover={e => {
+                  if (selectedLayer !== layer) {
+                    const element = e.currentTarget as HTMLElement;
+                    element.classList.add('hover:bg-primary-100', 'dark:hover:bg-gray-700');
+                  }
+                }}
+                onmouseout={e => {
+                  if (selectedLayer !== layer) {
+                    const element = e.currentTarget as HTMLElement;
+                    element.classList.remove('hover:bg-primary-100', 'dark:hover:bg-gray-700');
+                  }
+                }}
+                onclick={() => (selectedLayer = layer)}
+              >
+                {layer}
+              </button>
+            {/each}
+          {/if}
+        </div>
 
-      <!-- Layout Configuration Dropdown -->
-      <div class="relative px-4 py-2">
-        <button
-          class="flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-200 {$glassmorphismMode
-            ? 'glassmorphism-button'
-            : 'bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'}"
-          onclick={() => (showLayoutMenu = !showLayoutMenu)}
-        >
-          <Settings class="w-4 h-4 text-gray-600 dark:text-gray-400" />
-          <span class="text-sm font-medium text-gray-900 dark:text-white">Layout</span>
-          <svg
-            class="w-4 h-4 transition-transform duration-200 text-gray-600 dark:text-gray-400"
-            class:rotate-180={showLayoutMenu}
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            viewBox="0 0 24 24"
+        <!-- Layout Configuration Dropdown -->
+        <div class="relative px-4 py-2">
+          <button
+            class="flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-200 {$glassmorphismMode
+              ? 'glassmorphism-button'
+              : 'bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'}"
+            onclick={() => (showLayoutMenu = !showLayoutMenu)}
           >
-            <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
-          </svg>
-        </button>
+            <Settings class="w-4 h-4 text-gray-600 dark:text-gray-400" />
+            <span class="text-sm font-medium text-gray-900 dark:text-white">Layout</span>
+            <svg
+              class="w-4 h-4 transition-transform duration-200 text-gray-600 dark:text-gray-400"
+              class:rotate-180={showLayoutMenu}
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              viewBox="0 0 24 24"
+            >
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
         
-        <!-- Dropdown Menu -->
-        {#if showLayoutMenu}
-          <div 
-            class="absolute right-0 top-12 w-72 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg z-50 p-4 {$glassmorphismMode ? 'glassmorphism-card' : ''}"
-            transition:slide={{ duration: 300, axis: 'y' }}
-          >
-            <!-- Bottom Row Configuration -->
-            <div class="mb-4">
-              <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Bottom Row</h4>
-              <div class="space-y-1">
-                <label class="flex items-center text-sm cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 p-1 rounded">
-                  <input
-                    type="radio"
-                    bind:group={bottomRowConfig}
-                    value="6.25u"
-                    class="mr-2 text-primary-500"
-                  />
-                  <span class="text-gray-900 dark:text-white">6.25u (standard)</span>
-                </label>
-                <label class="flex items-center text-sm cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 p-1 rounded">
-                  <input
-                    type="radio"
-                    bind:group={bottomRowConfig}
-                    value="7u"
-                    class="mr-2 text-primary-500"
-                  />
-                  <span class="text-gray-900 dark:text-white">7u (Tsangan)</span>
-                </label>
+          <!-- Dropdown Menu -->
+          {#if showLayoutMenu}
+            <div 
+              class="absolute right-0 top-12 w-72 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg z-50 p-4 {$glassmorphismMode ? 'glassmorphism-card' : ''}"
+              transition:slide={{ duration: 300, axis: 'y' }}
+            >
+              <!-- Bottom Row Configuration -->
+              <div class="mb-4">
+                <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Bottom Row</h4>
+                <div class="space-y-1">
+                  <label class="flex items-center text-sm cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 p-1 rounded">
+                    <input
+                      type="radio"
+                      bind:group={bottomRowConfig}
+                      value="6.25u"
+                      class="mr-2 text-primary-500"
+                    />
+                    <span class="text-gray-900 dark:text-white">6.25u (standard)</span>
+                  </label>
+                  <label class="flex items-center text-sm cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 p-1 rounded">
+                    <input
+                      type="radio"
+                      bind:group={bottomRowConfig}
+                      value="7u"
+                      class="mr-2 text-primary-500"
+                    />
+                    <span class="text-gray-900 dark:text-white">7u (Tsangan)</span>
+                  </label>
+                </div>
               </div>
-            </div>
-            
-            <!-- Split Spacebar (only if 7u is selected) -->
-            {#if bottomRowConfig === '7u'}
-              <div class="mb-4 pb-3 border-b border-gray-200 dark:border-gray-600">
+              
+              <!-- Split Spacebar (only if 7u is selected) -->
+              {#if bottomRowConfig === '7u'}
+                <div class="mb-4 pb-3 border-b border-gray-200 dark:border-gray-600">
+                  <label class="flex items-center text-sm cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 p-1 rounded">
+                    <input
+                      type="checkbox"
+                      bind:checked={splitSpacebar}
+                      class="mr-2 text-primary-500"
+                    />
+                    <span class="text-gray-900 dark:text-white">Split spacebar (3u+1u+3u)</span>
+                  </label>
+                </div>
+              {/if}
+              
+              <!-- Other Split Options -->
+              <div class="space-y-1">
+                <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Split Keys</h4>
                 <label class="flex items-center text-sm cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 p-1 rounded">
                   <input
                     type="checkbox"
-                    bind:checked={splitSpacebar}
+                    bind:checked={rightShiftSplit}
                     class="mr-2 text-primary-500"
                   />
-                  <span class="text-gray-900 dark:text-white">Split spacebar (3u+1u+3u)</span>
+                  <span class="text-gray-900 dark:text-white">Right shift split</span>
+                </label>
+                
+                <label class="flex items-center text-sm cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 p-1 rounded">
+                  <input
+                    type="checkbox"
+                    bind:checked={leftShiftSplit}
+                    class="mr-2 text-primary-500"
+                  />
+                  <span class="text-gray-900 dark:text-white">Left shift split</span>
+                </label>
+                
+                <label class="flex items-center text-sm cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 p-1 rounded">
+                  <input
+                    type="checkbox"
+                    bind:checked={splitBackspace}
+                    class="mr-2 text-primary-500"
+                  />
+                  <span class="text-gray-900 dark:text-white">Split backspace</span>
                 </label>
               </div>
-            {/if}
-            
-            <!-- Other Split Options -->
-            <div class="space-y-1">
-              <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Split Keys</h4>
-              <label class="flex items-center text-sm cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 p-1 rounded">
-                <input
-                  type="checkbox"
-                  bind:checked={rightShiftSplit}
-                  class="mr-2 text-primary-500"
-                />
-                <span class="text-gray-900 dark:text-white">Right shift split</span>
-              </label>
               
-              <label class="flex items-center text-sm cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 p-1 rounded">
-                <input
-                  type="checkbox"
-                  bind:checked={leftShiftSplit}
-                  class="mr-2 text-primary-500"
-                />
-                <span class="text-gray-900 dark:text-white">Left shift split</span>
-              </label>
-              
-              <label class="flex items-center text-sm cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 p-1 rounded">
-                <input
-                  type="checkbox"
-                  bind:checked={splitBackspace}
-                  class="mr-2 text-primary-500"
-                />
-                <span class="text-gray-900 dark:text-white">Split backspace</span>
-              </label>
+              <!-- Apply Button -->
+              <div class="mt-4 pt-3 border-t border-gray-200 dark:border-gray-600">
+                <button
+                  class="w-full px-3 py-2 rounded-lg transition-colors duration-200 text-sm font-medium {$glassmorphismMode
+                    ? 'glassmorphism-button text-gray-900 dark:text-white'
+                    : 'bg-primary-500 text-white hover:bg-primary-600'}"
+                  onclick={() => {
+                    // Apply layout configuration logic here
+                    console.log('Layout config applied:', {
+                      bottomRowConfig,
+                      splitSpacebar,
+                      rightShiftSplit,
+                      leftShiftSplit,
+                      splitBackspace
+                    });
+                    showLayoutMenu = false;
+                  }}
+                >
+                  Apply Configuration
+                </button>
+              </div>
             </div>
-            
-            <!-- Apply Button -->
-            <div class="mt-4 pt-3 border-t border-gray-200 dark:border-gray-600">
-              <button
-                class="w-full px-3 py-2 rounded-lg transition-colors duration-200 text-sm font-medium {$glassmorphismMode
-                  ? 'glassmorphism-button text-gray-900 dark:text-white'
-                  : 'bg-primary-500 text-white hover:bg-primary-600'}"
-                onclick={() => {
-                  // Apply layout configuration logic here
-                  console.log('Layout config applied:', {
-                    bottomRowConfig,
-                    splitSpacebar,
-                    rightShiftSplit,
-                    leftShiftSplit,
-                    splitBackspace
-                  });
-                  showLayoutMenu = false;
-                }}
-              >
-                Apply Configuration
-              </button>
-            </div>
-          </div>
-        {/if}
+          {/if}
+        </div>
       </div>
-    </div>
+    {/if}
     <!-- Component for adjust part -->
 
-    <!-- Global KeyboardRender -->
-    {#if keyboardAPI.state.isConnected && !$page.url.pathname.includes('/about')}
+    <!-- Global KeyboardRender - only show when connected -->
+    {#if keyboardAPI.shouldShowConfigurator && !$page.url.pathname.includes('/about')}
       <div class="relative">
         <KeyboardRender keys={keyboard_keys}/>
       </div>
     {/if}
 
-    {@render children()}
+    <!-- Connection Interface when not connected and on root page -->
+    {#if !keyboardAPI.shouldShowConfigurator && $page.url.pathname === '/'}
+      <div class="flex-1 flex items-center justify-center p-8">
+        <div class="w-full max-w-2xl mx-auto">
+          <!-- Logo -->
+          <div class="text-center mb-8">
+            <div class="w-16 h-16 bg-primary-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+              <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"/>
+              </svg>
+            </div>
+          </div>
+
+          <!-- Connection Cards -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Connect Physical Device -->
+            <div class="p-6 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 {$glassmorphismMode ? 'glassmorphism-card' : ''} transition-all duration-200 hover:shadow-lg">
+              <div class="text-center mb-4">
+                <div class="w-12 h-12 bg-primary-100 dark:bg-primary-900 rounded-xl flex items-center justify-center mx-auto mb-3">
+                  <svg class="w-6 h-6 text-primary-600 dark:text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                  </svg>
+                </div>
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                  {t('welcome.connectKeyboard', currentLanguage)}
+                </h3>
+                <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                  {t('welcome.connectDescription', currentLanguage)}
+                </p>
+              </div>
+              
+              <button
+                class="w-full px-6 py-3 bg-primary-500 hover:bg-primary-600 text-white rounded-lg font-medium transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed {$glassmorphismMode ? 'glassmorphism-button' : ''}"
+                onclick={async () => {
+                  const success = await keyboardAPI.connect();
+                  // Navigation is handled automatically by keyboardAPI
+                }}
+                disabled={keyboardAPI.state.connectionStatus === 'connecting' || isEnteringDemo}
+              >
+                {#if keyboardAPI.state.connectionStatus === 'connecting'}
+                  <div class="flex items-center justify-center gap-2">
+                    <svg class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                    </svg>
+                    {t('welcome.connecting', currentLanguage)}
+                  </div>
+                {:else}
+                  {t('welcome.getStarted', currentLanguage)}
+                {/if}
+              </button>
+            </div>
+
+            <!-- Demo Mode -->
+            <div class="p-6 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 {$glassmorphismMode ? 'glassmorphism-card' : ''} transition-all duration-200 hover:shadow-lg relative">
+              <div class="text-center mb-4">
+                <div class="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-xl flex items-center justify-center mx-auto mb-3">
+                  <svg class="w-6 h-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1m4 0h1m-6 4h1m4 0h1m-6-8h8a2 2 0 012 2v8a2 2 0 01-2 2H8a2 2 0 01-2-2v-8a2 2 0 012-2z"/>
+                  </svg>
+                </div>
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                  {t('welcome.tryDemo', currentLanguage)}
+                </h3>
+                <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                  {t('welcome.demoDescription', currentLanguage)}
+                </p>
+              </div>
+              
+              <button
+                class="w-full px-6 py-3 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg font-medium transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed {$glassmorphismMode ? 'glassmorphism-button' : ''} flex items-center justify-center gap-2"
+                onclick={() => (showDemoDropdown = !showDemoDropdown)}
+                disabled={keyboardAPI.state.connectionStatus === 'connecting' || isEnteringDemo}
+              >
+                {#if isEnteringDemo}
+                  <svg class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                  </svg>
+                  {t('demo.entering', currentLanguage)}
+                {:else}
+                  {t('demo.selectKeyboard', currentLanguage)}
+                  <svg class="w-4 h-4 transition-transform duration-200" class:rotate-180={showDemoDropdown} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                  </svg>
+                {/if}
+              </button>
+
+              <!-- Demo Dropdown -->
+              {#if showDemoDropdown && !isEnteringDemo}
+                <div class="absolute top-full left-6 right-6 mt-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-10 {$glassmorphismMode ? 'glassmorphism-card' : ''}" transition:slide={{ duration: 300, axis: 'y' }}>
+                  <div class="p-2">
+                    <button
+                      class="w-full p-3 text-left hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors duration-200 disabled:opacity-50"
+                      disabled={isEnteringDemo}
+                      onclick={async () => {
+                        isEnteringDemo = true;
+                        showDemoDropdown = false;
+                        
+                        // Small delay for better UX
+                        await new Promise(resolve => setTimeout(resolve, 300));
+                        keyboardAPI.enterDemoMode('zellia60he');
+                        
+                        // Reset state after navigation
+                        setTimeout(() => {
+                          isEnteringDemo = false;
+                        }, 800);
+                      }}
+                    >
+                      <div class="flex items-center gap-3">
+                        <div>
+                          <div class="font-medium text-gray-900 dark:text-white">Zellia 60HE</div>
+                          <div class="text-sm text-gray-500 dark:text-gray-400">{t('demo.zellia60.description', currentLanguage)}</div>
+                        </div>
+                      </div>
+                    </button>
+                    
+                    <button
+                      class="w-full p-3 text-left hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors duration-200 disabled:opacity-50"
+                      disabled={isEnteringDemo}
+                      onclick={async () => {
+                        isEnteringDemo = true;
+                        showDemoDropdown = false;
+                        
+                        // Small delay for better UX
+                        await new Promise(resolve => setTimeout(resolve, 300));
+                        keyboardAPI.enterDemoMode('zellia80he');
+                        
+                        // Reset state after navigation
+                        setTimeout(() => {
+                          isEnteringDemo = false;
+                        }, 800);
+                      }}
+                    >
+                      <div class="flex items-center gap-3">
+                        <div>
+                          <div class="font-medium text-gray-900 dark:text-white">Zellia 80HE</div>
+                          <div class="text-sm text-gray-500 dark:text-gray-400">{t('demo.zellia80.description', currentLanguage)}</div>
+                        </div>
+                      </div>
+                    </button>
+                  </div>
+                </div>
+              {/if}
+            </div>
+          </div>
+
+          <!-- Connection Error Display -->
+          {#if keyboardAPI.state.error}
+            <div class="mt-6 p-4 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800" transition:fade>
+              <div class="flex items-center gap-3">
+                <svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                <div>
+                  <div class="text-sm font-medium text-red-800 dark:text-red-200">Connection Failed</div>
+                  <div class="text-sm text-red-600 dark:text-red-300">{keyboardAPI.state.error}</div>
+                </div>
+              </div>
+            </div>
+          {/if}
+
+          <!-- USB HID Warning -->
+          <div class="mt-6 p-4 rounded-lg bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700" transition:fade>
+            <div class="flex items-center gap-3">
+              <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+              <div class="text-sm text-gray-600 dark:text-gray-400">
+                {t('ui.usbHubWarning', currentLanguage)}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    {:else if keyboardAPI.shouldShowConfigurator}
+      {@render children()}
+    {:else}
+      <!-- Fallback content for pages when not connected -->
+      <div class="flex-1 flex items-center justify-center p-8">
+        <div class="text-center">
+          <div class="w-16 h-16 bg-gray-200 dark:bg-gray-700 rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"/>
+            </svg>
+          </div>
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+            No Keyboard Connected
+          </h3>
+          <p class="text-gray-600 dark:text-gray-400 mb-4">
+            Please connect a keyboard or go to the home page to start.
+          </p>
+          <button
+            class="px-6 py-2 bg-primary-500 hover:bg-primary-600 text-white rounded-lg font-medium transition-colors duration-200"
+            onclick={() => goto('/')}
+          >
+            Go to Home
+          </button>
+        </div>
+      </div>
+    {/if}
   </div>
 </div>
 {:else}
