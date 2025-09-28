@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { glassmorphismMode } from '$lib/DarkModeStore.svelte';
-  import { language, t } from '$lib/LanguageStore.svelte';
+  import { glassmorphismMode } from '$lib/hooks/DarkModeStore.svelte';
+  import { language, t } from '$lib/hooks/LanguageStore.svelte';
 
   type Props = {
     currentKeyName: string;

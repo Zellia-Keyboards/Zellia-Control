@@ -1,11 +1,11 @@
 <script lang="ts">
   import { browser } from '$app/environment';
   import { onMount } from 'svelte';
-  import NewZellia80HE from '$lib/NewZellia80HE.svelte';
-  import NewZellia60HE from '$lib/NewZellia60HE.svelte';
-  import Zellia80HE from '$lib/Zellia80HE.svelte';
-  import { keyboardAPI } from '$lib/keyboardAPI.svelte';
-  import { language, t } from '$lib/LanguageStore.svelte';
+  import NewZellia80HE from '$lib/keyboard/NewZellia80HE.svelte';
+  import NewZellia60HE from '$lib/keyboard/NewZellia60HE.svelte';
+  import Zellia80HE from '$lib/keyboard/Zellia80HE.svelte';
+  import { keyboardAPI } from '$lib/hooks/keyboardAPI.svelte';
+  import { language, t } from '$lib/hooks/LanguageStore.svelte';
 
   let currentLanguage = $derived($language);
 

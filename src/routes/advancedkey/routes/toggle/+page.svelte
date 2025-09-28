@@ -1,18 +1,18 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import { glassmorphismMode } from '$lib/DarkModeStore.svelte';
-  import { language, t, tPlaceholder } from '$lib/LanguageStore.svelte';
+  import { glassmorphismMode } from '$lib/hooks/DarkModeStore.svelte';
+  import { language, t, tPlaceholder } from '$lib/hooks/LanguageStore.svelte';
   import {
     globalConfigurations,
     updateGlobalConfiguration,
     resetGlobalConfiguration,
     keyActions,
     type KeyConfiguration,
-  } from '$lib/AdvancedKeyShared';
+  } from '$lib/configurator/AdvancedKeyShared';
 
   let currentLanguage = $derived($language);
 
-  import NewZellia80He from '$lib/NewZellia80HE.svelte';
+  import NewZellia80He from '$lib/keyboard/NewZellia80HE.svelte';
 
   let selectedToggleAction = $state('caps');
   let toggleMode = $state('press');

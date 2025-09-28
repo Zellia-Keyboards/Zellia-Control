@@ -1,7 +1,7 @@
 <script lang="ts">
-  import { glassmorphismMode } from '$lib/DarkModeStore.svelte';
+  import { glassmorphismMode } from '$lib/hooks/DarkModeStore.svelte';
   import { Keyboard, Heart } from 'lucide-svelte';
-  import { language, t } from '$lib/LanguageStore.svelte';
+  import { language, t } from '$lib/hooks/LanguageStore.svelte';
 
   let currentLanguage = $derived($language);
 </script>

@@ -1,16 +1,16 @@
 <script lang="ts">
-  import { glassmorphismMode, darkMode } from '$lib/DarkModeStore.svelte';
-  import NewZellia80He from '$lib/NewZellia80HE.svelte';
-  import NewZellia60HE from '$lib/NewZellia60HE.svelte';
-  import Zellia80HE from '$lib/Zellia80HE.svelte';
-  import { keyboardAPI } from '$lib/keyboardAPI.svelte';
-  import { language, t } from '$lib/LanguageStore.svelte';
-  import Basic from './Basic.svelte';
-  import System from './System.svelte';
+  import { glassmorphismMode, darkMode } from '$lib/hooks/DarkModeStore.svelte';
+  import NewZellia80He from '$lib/keyboard/NewZellia80HE.svelte';
+  import NewZellia60HE from '$lib/keyboard/NewZellia60HE.svelte';
+  import Zellia80HE from '$lib/keyboard/Zellia80HE.svelte';
+  import { keyboardAPI } from '$lib/hooks/keyboardAPI.svelte';
+  import { language, t } from '$lib/hooks/LanguageStore.svelte';
+  import Basic from '$lib/configurator/remap/Basic.svelte';
+  import System from '$lib/configurator/remap/System.svelte';
   import type { Component, Snippet } from 'svelte';
-  import Layer from './Layer.svelte';
-  import Profile from './Profile.svelte';
-  import Extension from './Extension.svelte';
+  import Layer from '$lib/configurator/remap/Layer.svelte';
+  import Profile from '$lib/configurator/remap/Profile.svelte';
+  import Extension from '$lib/configurator/remap/Extension.svelte';
   import { cubicOut } from 'svelte/easing';
   import { X } from 'lucide-svelte';
   import { dev } from '$app/environment';

@@ -1,7 +1,7 @@
 <script lang="ts">
-  import { glassmorphismMode } from '$lib/DarkModeStore.svelte';
-  import type { globalConfigurations, DynamicKeystrokeConfiguration } from '$lib/AdvancedKeyShared';
-  import { language, t } from '$lib/LanguageStore.svelte';
+  import { glassmorphismMode } from '$lib/hooks/DarkModeStore.svelte';
+  import type { globalConfigurations, DynamicKeystrokeConfiguration } from '$lib/configurator/AdvancedKeyShared';
+  import { language, t } from '$lib/hooks/LanguageStore.svelte';
   import { Trash2 } from 'lucide-svelte';
 
   let currentLanguage = $derived($language);

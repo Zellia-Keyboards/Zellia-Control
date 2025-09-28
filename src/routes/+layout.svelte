@@ -1,10 +1,10 @@
 <script lang="ts">
   import '../app.css';
-  import Zellia80HE from '../lib/Zellia80HE.svelte';
-  import NewZellia60HE from '../lib/NewZellia60HE.svelte';
-  import NewZellia80HE from '../lib/NewZellia80HE.svelte';
-  import KeyboardRender from '$lib/KeyboardRender.svelte';
-  import { keyboardAPI } from '$lib/keyboardAPI.svelte';
+  import Zellia80HE from '../lib/keyboard/Zellia80HE.svelte';
+  import NewZellia60HE from '../lib/keyboard/NewZellia60HE.svelte';
+  import NewZellia80HE from '../lib/keyboard/NewZellia80HE.svelte';
+  import KeyboardRender from '$lib/keyboard/KeyboardRender.svelte';
+  import { keyboardAPI } from '$lib/hooks/keyboardAPI.svelte';
   import * as kle from '@ijprest/kle-serial';
   import { page } from '$app/stores';
   import { goto } from '$app/navigation';
@@ -15,8 +15,8 @@
     type ThemeColorName,
     glassmorphismMode,
     updateThemeForDarkMode,
-  } from '$lib/DarkModeStore.svelte';
-  import { language, t, type Language } from '$lib/LanguageStore.svelte';
+  } from '$lib/hooks/DarkModeStore.svelte';
+  import { language, t, type Language } from '$lib/hooks/LanguageStore.svelte';
   import { Palette, Sun, Moon, Globe, Settings } from 'lucide-svelte';
   import { slide, fade } from 'svelte/transition';
   

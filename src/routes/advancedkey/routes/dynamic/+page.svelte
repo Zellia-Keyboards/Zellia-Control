@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { glassmorphismMode } from '$lib/DarkModeStore.svelte';
-  import { language, t } from '$lib/LanguageStore.svelte';
+  import { glassmorphismMode } from '$lib/hooks/DarkModeStore.svelte';
+  import { language, t } from '$lib/hooks/LanguageStore.svelte';
   import {
     globalConfigurations,
     updateGlobalConfiguration,
@@ -10,19 +10,19 @@
     type KeyConfiguration,
     type DynamicKeystrokeConfiguration as GlobalDynamicKeystrokeConfiguration, // Alias to avoid conflict
     type KeyAction,
-  } from '$lib/AdvancedKeyShared';
+  } from '$lib/configurator/AdvancedKeyShared';
 
-  import Binding from './Binding.svelte';
-  import Performance from './Performance.svelte';
-  import KeyTester from './KeyTester.svelte';
+  import Binding from '$lib/configurator/advancedkey/Binding.svelte';
+  import Performance from '$lib/configurator/advancedkey/Performance.svelte';
+  import KeyTester from '$lib/configurator/advancedkey/KeyTester.svelte';
 
   // Import new components
-  import SelectedKeyInfo from './SelectedKeyInfo.svelte';
-  import DKSBindingRow from './DKSBindingRow.svelte';
-  import BottomOutPointConfig from './BottomOutPointConfig.svelte';
-  import NoKeySelectedDisplay from './NoKeySelectedDisplay.svelte';
-  import ConfiguredDKSList from './ConfiguredDKSList.svelte';
-  import NewZellia80He from '$lib/NewZellia80HE.svelte';
+  import SelectedKeyInfo from '$lib/configurator/advancedkey/SelectedKeyInfo.svelte';
+  import DKSBindingRow from '$lib/configurator/advancedkey/DKSBindingRow.svelte';
+  import BottomOutPointConfig from '$lib/configurator/advancedkey/BottomOutPointConfig.svelte';
+  import NoKeySelectedDisplay from '$lib/configurator/advancedkey/NoKeySelectedDisplay.svelte';
+  import ConfiguredDKSList from '$lib/configurator/advancedkey/ConfiguredDKSList.svelte';
+  import NewZellia80He from '$lib/keyboard/NewZellia80HE.svelte';
 
   let currentLanguage = $derived($language);
 

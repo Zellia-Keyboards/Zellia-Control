@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { KeyboardDisplayValues } from '$lib/KeyboardState.svelte';
+  import { KeyboardDisplayValues } from '$lib/hooks/KeyboardState.svelte.ts';
   let data = $state(1);
   let CurrentSelected = $state<[number, number] | null>(null);
 </script>

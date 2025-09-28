@@ -1,14 +1,14 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import { darkMode, glassmorphismMode } from '$lib/DarkModeStore.svelte';
-  import { language, t, tPlaceholder } from '$lib/LanguageStore.svelte';
+  import { darkMode, glassmorphismMode } from '$lib/hooks/DarkModeStore.svelte';
+  import { language, t, tPlaceholder } from '$lib/hooks/LanguageStore.svelte';
   import {
     globalConfigurations,
     updateGlobalConfiguration,
     resetGlobalConfiguration,
     keyActions,
-  } from '$lib/AdvancedKeyShared';
-  import NewZellia80He from '$lib/NewZellia80HE.svelte';
+  } from '$lib/configurator/AdvancedKeyShared';
+  import NewZellia80He from '$lib/keyboard/NewZellia80HE.svelte';
 
   let currentLanguage = $derived($language);
 
