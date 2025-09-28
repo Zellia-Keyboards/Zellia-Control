@@ -2,6 +2,7 @@
   import { createEventDispatcher } from 'svelte';
   import { flip } from 'svelte/animate';
   import Key from './Key.svelte';
+  import { setTotalKeys, toggleKey, selectedKeys } from '$lib/SelectedKeysStore';
   // Assuming the kle-serial types are available in your project
   import type * as kle from '@ijprest/kle-serial';
 
@@ -21,6 +22,9 @@
 
   $: maxX = keys.length > 0 ? Math.max(...keys.map(key => key.x + key.width)) : 0;
   $: minWidth = `${maxX * usize}px`;
+
+  // Keep store informed of total keys
+  $: setTotalKeys(keys.length);
 
   // --- Event Handlers ---
   // These functions can be defined directly in the script.
@@ -53,6 +57,7 @@
           <Key
             on:mousedown={(event) => handleMouseDown(event, index)}
             on:mouseenter={(event) => handleMouseEnter(event, index)}
+            on:select={() => toggleKey(index)}
             x={key.x}
             y={key.y}
             width={key.width}
@@ -62,6 +67,7 @@
             rotationAngle={key.rotation_angle}
             labels={key.labels}
             {index}
+            selected={$selectedKeys.includes(index)}
           />
         </div>
       {/each}

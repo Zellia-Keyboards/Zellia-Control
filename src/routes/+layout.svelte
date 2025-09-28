@@ -1,8 +1,5 @@
 <script lang="ts">
   import '../app.css';
-  import Zellia80HE from '../lib/Zellia80HE.svelte';
-  import NewZellia60HE from '../lib/NewZellia60HE.svelte';
-  import NewZellia80HE from '../lib/NewZellia80HE.svelte';
   import KeyboardRender from '$lib/KeyboardRender.svelte';
   import { keyboardAPI } from '$lib/keyboardAPI.svelte';
   import * as kle from '@ijprest/kle-serial';

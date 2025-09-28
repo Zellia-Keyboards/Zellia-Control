@@ -9,7 +9,6 @@
     resetGlobalConfiguration,
     keyActions,
   } from '$lib/AdvancedKeyShared';
-  import NewZellia80He from '$lib/NewZellia80HE.svelte';
 
   let currentLanguage = $derived($language);
 

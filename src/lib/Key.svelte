@@ -11,6 +11,7 @@
   export let rotationY: number = 0;
   export let labels: string[] = [];
   export let index: number = 0;
+  export let selected: boolean = false;
 
   // --- 内部状态 ---
   const usize = 59; // 按键的基础单位尺寸 (1U)
@@ -74,7 +75,8 @@
 
 <div class="key-container" style={keyStyle}>
   <button 
-    class="keycap" 
+    class="keycap"
+    class:selected={selected}
     on:mousedown={handleClick}
   >
     <div class="label-grid" style={labelContainerStyle}>
@@ -153,6 +155,24 @@
   .keycap:focus-visible {
     outline: 2px solid hsl(var(--ring, 222.2 84% 4.9%));
     outline-offset: 2px;
+  }
+
+  /* Selected state: subtle glow around the key border */
+  .keycap.selected {
+    /* Use theme color variable for glow */
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--theme-color-primary) 18%, transparent), 0 8px 22px color-mix(in srgb, var(--theme-color-primary) 12%, transparent);
+    border-color: color-mix(in srgb, var(--theme-color-primary) 85%, black);
+    position: relative;
+    z-index: 6;
+  }
+
+  :global(.dark) .keycap.selected {
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--theme-color-primary) 16%, transparent), 0 8px 22px color-mix(in srgb, var(--theme-color-primary) 16%, transparent);
+    border-color: color-mix(in srgb, var(--theme-color-primary) 85%, black);
+  }
+
+  .keycap {
+    transition: box-shadow 160ms ease, border-color 160ms ease, transform 80ms ease;
   }
 
   /* 使用 CSS Grid 实现九宫格标签布局 */

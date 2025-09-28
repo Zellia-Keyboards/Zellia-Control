@@ -22,7 +22,6 @@
   import BottomOutPointConfig from './BottomOutPointConfig.svelte';
   import NoKeySelectedDisplay from './NoKeySelectedDisplay.svelte';
   import ConfiguredDKSList from './ConfiguredDKSList.svelte';
-  import NewZellia80He from '$lib/NewZellia80HE.svelte';
 
   let currentLanguage = $derived($language);
 
