@@ -20,7 +20,6 @@ enum PacketData {
 
 export class LibampKeyboardController extends KeyboardController {
     device: HIDDevice | undefined;
-    openPromise: Promise<void> = Promise.resolve();
     private handleInputReport: (event: HIDInputReportEvent) => void;
     config_file_number:number = 4;
 
@@ -29,7 +28,7 @@ export class LibampKeyboardController extends KeyboardController {
         this.device = undefined;
         this.handleInputReport = (event: HIDInputReportEvent) => {
             const { data } = event;
-            this.prase_buffer(new Uint8Array(data.buffer));
+            this.packet_process(new Uint8Array(data.buffer));
         };
 
     }
@@ -50,12 +49,10 @@ export class LibampKeyboardController extends KeyboardController {
             result = (await this.device.open()) == undefined
         }
         if (result) {
-            this.device.addEventListener('inputreport', this.handleInputReport);
             this.request_config();
+            this.device.addEventListener("inputreport", this.handleInputReport);
         }
         return result;
-    }
-    setupListeners() {
     }
     disconnect(): void {
         this.device?.close();
@@ -440,7 +437,7 @@ export class LibampKeyboardController extends KeyboardController {
       }
       else (buf[0] == PacketCode.PacketCodeSet)
       {
-            const index = buf[3];
+            const index = buf[2];
             const item = this.dynamic_keys[index];
             console.debug(item);
             switch (item.type) {
@@ -766,7 +763,7 @@ export class LibampKeyboardController extends KeyboardController {
         let send_buf = new Uint8Array(63);
         send_buf[0] = PacketCode.PacketCodeAction;
         send_buf[1] = this.config_file_number + 0x10;
-        //let res = this.write(send_buf);
+        let res = this.write(send_buf);
         this.request_config();
     }
 };
