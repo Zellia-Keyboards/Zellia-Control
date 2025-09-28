@@ -4,35 +4,28 @@
   import NewZellia60HE from '$lib/NewZellia60HE.svelte';
   import Zellia80HE from '$lib/Zellia80HE.svelte';
   import { keyboardAPI } from '$lib/keyboardAPI.svelte';
-  import { AlertTriangle } from 'lucide-svelte';
+  import { AlertTriangle, LetterText } from 'lucide-svelte';
   import { language, t } from '$lib/LanguageStore.svelte';
+  import * as ekc from 'emi-keyboard-controller';
 
+  //let advancedKey : ekc.AdvancedKey = $derived.by(()=>{
+  //  var k = new ekc.AdvancedKey();
+  //  k.mode = rapidTriggerEnabled ? ekc.KeyMode.KeyAnalogRapidMode : ekc.KeyMode.KeyAnalogNormalMode;
+  //  k.activation_value = mmToPercent(actuationPoint);
+  //  k.trigger_distance = mmToPercent(pressSensitivity);
+  //  k.release_distance = mmToPercent(releaseSensitivity);
+  //  k.upper_deadzone = mmToPercent(upperDeadzone);
+  //  k.lower_deadzone = mmToPercent(4.0 - lowerDeadzone);
+  //  return k;
+  //});
 
-  
+  function mmToPercent(distance : number)
+  {
+    return distance / 4.0;
+  }
+
   let currentLanguage = $derived($language);
 
-  // Derived variable to determine which keyboard component to show
-  let currentKeyboard = $derived(() => {
-    const selectedModel = keyboardAPI.state.selectedModel;
-    if (selectedModel === 'zellia60he') {
-      return { component: NewZellia60HE, isLegacy: false };
-    } else if (selectedModel === 'zellia80he') {
-      return { component: NewZellia80He, isLegacy: false };
-    }
-    // Default fallback
-    return { component: Zellia80HE, isLegacy: true };
-  });
-
-
-
-  let ACTUATION_POINT = $state([
-    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1],
-    [1.5, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1.5, 1, 1, 1],
-    [1.75, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2],
-    [2.25, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1],
-    [1.5, 1, 1.5, 2, 1.6, 1, 1.5, 1, 1, 1],
-  ]);
   let rapidTriggerEnabled = $state(false);
   let actuationPoint = $state(2.0);
   let sensitivityValue = $state(0.5);

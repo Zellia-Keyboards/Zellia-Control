@@ -17,8 +17,10 @@
     updateThemeForDarkMode,
   } from '$lib/DarkModeStore.svelte';
   import { language, t, type Language } from '$lib/LanguageStore.svelte';
-  import { Palette, Sun, Moon, Globe, Settings } from 'lucide-svelte';
+  import { Palette, Sun, Moon, Globe, Settings, AwardIcon } from 'lucide-svelte';
   import { slide, fade } from 'svelte/transition';
+  import * as api from '$lib/api.svelte';
+  import * as ekc from 'emi-keyboard-controller';
   
   const NAVIGATE = [
     ['/performance', 'nav.performance'],
@@ -55,8 +57,54 @@
   let currentLanguage = $derived($language);
 
   // Keyboard layout for global KeyboardRender
-  const layout = `[[{"x":2.25},"~\\n\`","!\\n1","@\\n2","#\\n3","$\\n4","%\\n5","^\\n6","&\\n7","*\\n8","(\\n9",")\\n0","_\\n-","+\\n=",{"w":2},"Backspace",{"a":7},"",""],[{"x":2.25,"a":4,"w":1.5},"Tab","Q","W","E","R","T","Y","U","I","O","P","{\\n[","}\\n]",{"w":1.5},"|\\n\\\\"   ],   [     {       "x": 2.25,       "w": 1.75     },     "CapsLock",     "A",     "S",     "D",     "F",     "G",     "H",     "J",     "K",     "L",     ":\\n;",     "\\"\\n'",{"w":2.25},"Enter"],[{"a":7,"w":1.25},"","",{"a":4,"w":2.25},"Shift","Z","X","C","V","B","N","M","<\\n,",">\\n.","?\\n/",{"w":2.75},"Shift",{"a":7,"w":1.75},"",""],[{"x":2.25,"a":4,"w":1.5},"Ctrl","Win",{"w":1.5},"Alt",{"a":7,"w":7},"",{"a":4,"w":1.5},"Alt","Win",{"w":1.5},"Ctrl"],[{"x":6.25,"a":7,"w":3.5},"",{"w":3.5},""]]`;
-  let keyboard_keys: kle.Key[] = kle.Serial.deserialize(JSON.parse(layout)).keys;
+  let layout = $state(`[]`);
+  let keyboardLayout : kle.Key[] = $derived(kle.Serial.deserialize(JSON.parse(layout)).keys);
+  let keyboardKeys: kle.Key[] = $derived.by(() => {
+        console.log(`isActive('/performance')?`, isActive('/performance'));
+    console.log(`isActive('/remap')?`, isActive('/remap'));
+    let newKeys = keyboardLayout.map(key => {
+    const newKey = JSON.parse(JSON.stringify(key));
+      return newKey;
+    });
+    if (isActive('/performance')) {
+      newKeys.forEach((key, index)=>{
+        const advanced_key = advancedKeys[index];
+        let labels = newKeys[index].labels;
+        labels = labels.map(() => "");
+        switch (advanced_key.mode) {
+          case ekc.KeyMode.KeyAnalogNormalMode: {
+            labels[3] = `↓${Math.round(advanced_key.activation_value * 1000) / 10}\t↑${Math.round(advanced_key.deactivation_value * 1000) / 10}`;
+            break;
+          }
+          case ekc.KeyMode.KeyAnalogRapidMode: {
+            labels[3] = `↓${Math.round(advanced_key.trigger_distance * 1000) / 10}\t↑${Math.round(advanced_key.release_distance * 1000) / 10}`;
+            labels[6] = `↧${Math.round(advanced_key.upper_deadzone * 1000) / 10}\t↥${Math.round(advanced_key.lower_deadzone * 1000) / 10}`;
+            break;
+          }
+          case ekc.KeyMode.KeyAnalogSpeedMode: {
+            labels[3] = `↓${Math.round(advanced_key.trigger_speed * 1000) / 10}\t↑${Math.round(advanced_key.release_speed * 1000) / 10}`;
+            labels[6] = `↧${Math.round(advanced_key.upper_deadzone * 1000) / 10}\t↥${Math.round(advanced_key.lower_deadzone * 1000) / 10}`;
+            break;
+          }
+          default: {
+            break;
+          }
+        }
+        newKeys[index].labels = labels;
+      });
+    }
+    if (isActive('/remap')) {
+      newKeys.forEach((key, index)=>{
+        newKeys[index].labels[0] = "2";
+      });
+    }
+    return newKeys
+  
+  });
+
+  // Controller variables
+
+  let advancedKeys : ekc.IAdvancedKey[] = $state(Array<ekc.IAdvancedKey>()); 
 
   // Check if current page should use the sidebar layout
   const usesSidebarLayout = $derived(() => {
@@ -647,7 +695,7 @@
     <!-- Global KeyboardRender - only show when connected -->
     {#if keyboardAPI.shouldShowConfigurator && !$page.url.pathname.includes('/about')}
       <div class="relative">
-        <KeyboardRender keys={keyboard_keys}/>
+        <KeyboardRender keys={keyboardKeys}/>
       </div>
     {/if}
 
@@ -685,6 +733,11 @@
               <button
                 class="w-full px-6 py-3 bg-primary-500 hover:bg-primary-600 text-white rounded-lg font-medium transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed {$glassmorphismMode ? 'glassmorphism-button' : ''}"
                 onclick={async () => {
+                  api.set_device("Zellia60 HE");
+                  api.connect_device();
+                  layout = await api.get_layout_json();
+                  advancedKeys = await api.get_advanced_keys();
+                  console.log("advancedKeys",advancedKeys);
                   const success = await keyboardAPI.connect();
                   // Navigation is handled automatically by keyboardAPI
                 }}
