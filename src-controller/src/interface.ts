@@ -811,6 +811,11 @@ export interface IKeyboardController{
     get_config_file_num() : number;
     get_config_file_index(): number;
     set_config_file_index(index: number) : void;
+    send_advanced_key_packet(indexs: number[], advanced_key : IAdvancedKey) : void;
+    send_keymap_packet(indexs: number[], layer: number, keymap : number) : void;
+    send_dynamic_key_packet(indexs: number[], dynamic_keys : IDynamicKey) : void;
+    send_rgb_base_packet(rgb_base_config : IRGBBaseConfig) : void;
+    send_rgb_packet(indexs: number[], rgb_config : IRGBConfig) : void;
 }
 
 export abstract class KeyboardController implements IKeyboardController, EventTarget{
@@ -986,6 +991,21 @@ export abstract class KeyboardController implements IKeyboardController, EventTa
     }
     set_config_file_index(index: number) : void {
         this.config_index = index;
+    }
+    send_advanced_key_packet(indexs: number[], advanced_key: IAdvancedKey): void {
+        //throw new Error("Method not implemented.");
+    }
+    send_keymap_packet(indexs: number[], layer : number, keymap: number): void {
+        //throw new Error("Method not implemented.");
+    }
+    send_dynamic_key_packet(indexs: number[], dynamic_keys: IDynamicKey): void {
+        //throw new Error("Method not implemented.");
+    }
+    send_rgb_base_packet(rgb_base_config: IRGBBaseConfig): void {
+        //throw new Error("Method not implemented.");
+    }
+    send_rgb_packet(indexs: number[], rgb_config: IRGBConfig): void {
+        //throw new Error("Method not implemented.");
     }
 }
 

@@ -161,3 +161,20 @@ export async function addEventListener(type: string, listener: EventListener){
 export async function removeEventListener(type: string, listener: EventListener){
     return CONTROLLER.removeEventListener(type, listener);
 }
+
+
+export async function send_advanced_key_packet(indexs: number[], advanced_key : ekc.IAdvancedKey){
+    return CONTROLLER.send_advanced_key_packet(indexs, advanced_key);
+}
+export async function send_keymap_packet(indexs: number[], layer: number, keymap : number){
+    return CONTROLLER.send_keymap_packet(indexs, layer, keymap);
+}
+export async function send_dynamic_key_packet(indexs: number[], dynamic_keys : ekc.IDynamicKey){
+    return CONTROLLER.send_dynamic_key_packet(indexs, dynamic_keys);
+}
+export async function send_rgb_base_packet(rgb_base_config : ekc.IRGBBaseConfig){
+    return CONTROLLER.send_rgb_base_packet(rgb_base_config);
+}
+export async function send_rgb_packet(indexs: number[], rgb_config : ekc.IRGBConfig){
+    return CONTROLLER.send_rgb_packet(indexs, rgb_config);
+}

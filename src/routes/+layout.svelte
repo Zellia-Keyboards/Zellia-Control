@@ -1,7 +1,7 @@
 <script lang="ts">
   import '../app.css';
   import KeyboardRender from '$lib/KeyboardRender.svelte';
-  import { keyboardAPI } from '$lib/keyboardAPI.svelte';
+  import { keyboardAPI, keyboardConnectionState } from '$lib/keyboardAPI.svelte';
   import * as kle from '@ijprest/kle-serial';
   import { page } from '$app/stores';
   import { goto } from '$app/navigation';
@@ -16,7 +16,6 @@
   import { language, t, type Language } from '$lib/LanguageStore.svelte';
   import { Palette, Sun, Moon, Globe, Settings, AwardIcon } from 'lucide-svelte';
   import { slide, fade } from 'svelte/transition';
-  import * as api from '$lib/api.svelte';
   import * as ekc from 'emi-keyboard-controller';
   import { advancedKeys } from '$lib/ControllerStore.svelte';
   
@@ -730,12 +729,10 @@
               <button
                 class="w-full px-6 py-3 bg-primary-500 hover:bg-primary-600 text-white rounded-lg font-medium transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed {$glassmorphismMode ? 'glassmorphism-button' : ''}"
                 onclick={async () => {
-                  api.set_device("Zellia60 HE");
-                  api.connect_device();
-                  layout = await api.get_layout_json();
-                  advancedKeys.set(await api.get_advanced_keys());
-                  console.log("advancedKeys",advancedKeys);
                   const success = await keyboardAPI.connect();
+                  layout = keyboardConnectionState.controller?.get_layout_json() as string;
+                  advancedKeys.set(keyboardConnectionState.controller?.get_advanced_keys() as ekc.IAdvancedKey[]);
+                  //api.send_advanced_key_packet([0], new ekc.AdvancedKey());
                   // Navigation is handled automatically by keyboardAPI
                 }}
                 disabled={keyboardAPI.state.connectionStatus === 'connecting' || isEnteringDemo}

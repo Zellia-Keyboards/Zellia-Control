@@ -1,7 +1,7 @@
 <script lang="ts">
   import { glassmorphismMode } from '$lib/DarkModeStore.svelte';
-  import { keyboardAPI } from '$lib/keyboardAPI.svelte';
-  import { AlertTriangle, LetterText } from 'lucide-svelte';
+  import { keyboardAPI, keyboardConnectionState } from '$lib/keyboardAPI.svelte';
+  import { AlertTriangle, AppleIcon, LetterText } from 'lucide-svelte';
   import { language, t } from '$lib/LanguageStore.svelte';
   import { selectedCount, toggleSelectAll, deselectAll } from '$lib/SelectedKeysStore';
   import * as ekc from 'emi-keyboard-controller';
@@ -22,6 +22,11 @@
   function mmToPercent(distance : number)
   {
     return distance / 4.0;
+  }
+
+  function percentToMm(distance : number)
+  {
+    return distance * 4.0;
   }
 
   let currentLanguage = $derived($language);
@@ -57,13 +62,26 @@
     return k;
   });
 
+  let hasSelection = $state(false);
+
   $effect(() => {
     const keysToUpdate = $selectedKeys;
-    
+    const isSelected = $selectedKeys.length > 0;
+    if (isSelected && !hasSelection) {
+      let k = $advancedKeys[$selectedKeys[0]];
+      rapidTriggerEnabled = k.mode === ekc.KeyMode.KeyAnalogRapidMode;
+      separateSensitivity = k.trigger_distance != k.release_distance;
+      pressSensitivity = percentToMm(k.trigger_distance);
+      sensitivityValue = percentToMm(k.trigger_distance);
+      releaseSensitivity = percentToMm(k.release_distance);
+      upperDeadzone = percentToMm(k.upper_deadzone);
+      lowerDeadzone = percentToMm(k.lower_deadzone);
+    }
     // 只有在有按键被选中的时候才更新
     if (keysToUpdate.length === 0) {
       return;
     }
+    hasSelection = isSelected;
     
     // 更新 advancedKeys 存储
     advancedKeys.update(currentKeys => {
@@ -81,6 +99,7 @@
       }
       return newKeys;
     });
+    keyboardConnectionState.controller?.send_advanced_key_packet($selectedKeys,advancedKey);
   });
 
   // Update local count from store (auto-subscribes)

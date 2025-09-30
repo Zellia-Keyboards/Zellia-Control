@@ -1,4 +1,4 @@
-import { AdvancedKeyToBytes, DynamicKey, DynamicKeyModTap, DynamicKeyMutex, DynamicKeyStroke4x4, DynamicKeyToggleKey, DynamicKeyType, IDynamicKey, KeyboardController, getEMIPathIdentifier, KeyboardKeycode} from "./../../interface";
+import { AdvancedKeyToBytes, DynamicKey, DynamicKeyModTap, DynamicKeyMutex, DynamicKeyStroke4x4, DynamicKeyToggleKey, DynamicKeyType, IDynamicKey, KeyboardController, getEMIPathIdentifier, KeyboardKeycode, IAdvancedKey, IRGBBaseConfig, IRGBConfig} from "./../../interface";
 
 enum PacketCode {
   PacketCodeAction = 0x00,
@@ -33,7 +33,7 @@ export class LibampKeyboardController extends KeyboardController {
 
     }
     write(buf: Uint8Array): number {
-        this.device?.sendReport(0, buf);
+        this.device?.sendReport(0, buf as BufferSource);
         return (buf.byteLength + 1);
     }
     read(buf: Uint8Array): number {
@@ -765,5 +765,74 @@ export class LibampKeyboardController extends KeyboardController {
         send_buf[1] = this.config_file_number + 0x10;
         let res = this.write(send_buf);
         this.request_config();
+    }
+
+
+    send_advanced_key_packet(indexs: number[], advanced_key: IAdvancedKey): void {
+        indexs.forEach((index)=>{
+            let send_buf = new Uint8Array(63);
+            send_buf[0] = PacketCode.PacketCodeSet;
+            send_buf[1] = PacketData.PacketDataAdvancedKey;
+            let dataView = new DataView(send_buf.buffer);
+            dataView.setUint16(2,index,true);
+            let key_bytes = AdvancedKeyToBytes(advanced_key);
+            send_buf.set(key_bytes,4);
+            let res = this.write(send_buf);
+            console.debug("Wrote Advanced Key: {:?} byte(s)", res);
+        });      
+    }
+    send_keymap_packet(indexs: number[], layer : number, keymap: number): void {
+        indexs.forEach((index)=>{
+            let send_buf = new Uint8Array(63);
+            let dataView = new DataView(send_buf.buffer);    
+            send_buf[0] = PacketCode.PacketCodeSet;
+            send_buf[1] = PacketData.PacketDataAdvancedKey;
+            send_buf[2] = layer; //layer_index
+            dataView.setUint16(3,index,true);
+            send_buf[5] = 1;
+            dataView.setUint16(6,keymap,true);
+            let res = this.write(send_buf);
+            console.debug("Wrote Keymap: {:?} byte(s)", res);
+        });
+        //throw new Error("Method not implemented.");
+    }
+    send_dynamic_key_packet(indexs: number[], dynamic_keys: IDynamicKey): void {
+        //throw new Error("Method not implemented.");
+    }
+    send_rgb_base_packet(rgb_base_config: IRGBBaseConfig): void {
+        let send_buf = new Uint8Array(63);
+        let dataView = new DataView(send_buf.buffer);
+        send_buf[0] = PacketCode.PacketCodeSet;
+        send_buf[1] = PacketData.PacketDataRgbBaseConfig;
+        send_buf[2] = rgb_base_config.mode;
+        send_buf[3] = rgb_base_config.rgb.red;
+        send_buf[4] = rgb_base_config.rgb.green;
+        send_buf[5] = rgb_base_config.rgb.blue;
+        send_buf[6] = rgb_base_config.secondary_rgb.red;
+        send_buf[7] = rgb_base_config.secondary_rgb.green;
+        send_buf[8] = rgb_base_config.secondary_rgb.blue;
+        dataView.setFloat32(9,rgb_base_config.speed,true);
+        dataView.setUint16(13,rgb_base_config.direction % 65536,true);
+        send_buf[15] = rgb_base_config.density % 256;
+        send_buf[16] = rgb_base_config.brightness % 256;
+        let res = this.write(send_buf);
+        console.debug("Rgb base config: {:?} byte(s)", res);
+    }
+    send_rgb_packet(indexs: number[], rgb_config: IRGBConfig): void {        
+        indexs.forEach((index)=>{
+            let send_buf = new Uint8Array(63);
+            let dataView = new DataView(send_buf.buffer);
+            send_buf[0] = PacketCode.PacketCodeSet;
+            send_buf[1] = PacketData.PacketDataRgbConfig;
+            send_buf[2] = 1;
+            dataView.setUint16(3, index,true);
+            send_buf[3 + 2] = this.rgb_configs[index].mode;
+            send_buf[3 + 3] = this.rgb_configs[index].rgb.red;
+            send_buf[3 + 4] = this.rgb_configs[index].rgb.green;
+            send_buf[3 + 5] = this.rgb_configs[index].rgb.blue;
+            dataView.setFloat32(3 + 6,this.rgb_configs[index].speed,true);
+            let res = this.write(send_buf);
+            console.debug("Wrote rgb: {:?} byte(s)", res);
+        });
     }
 };

@@ -37,7 +37,7 @@ const defaultState: KeyboardConnectionState = {
 };
 
 // Create reactive state
-export const keyboardConnectionState = $state<KeyboardConnectionState>({
+export let keyboardConnectionState = $state<KeyboardConnectionState>({
   ...defaultState
 });
 
@@ -70,7 +70,7 @@ export const keyboardAPI = {
       
       // Match the first device to a controller
       let selectedController: IKeyboardController | null = null;
-      let selectedModel: KeyboardModel = 'zellia80he';
+      let selectedModel: KeyboardModel = 'trinity_pad';
       let deviceName = 'Unknown Device';
       
       for (const device of devices) {
@@ -91,7 +91,7 @@ export const keyboardAPI = {
       
       // Connect to the device
       const connected = await selectedController.connect(devices[0]);
-      
+      //const connected = true;
       if (!connected) {
         throw new Error('Failed to connect to keyboard');
       }
