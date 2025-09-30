@@ -275,7 +275,7 @@
   <div class="hidden xl:flex h-screen bg-gray-50 dark:bg-black">
   <!-- Sidebar -->
   <div
-    class="flex flex-col w-52 dark:bg-black dark:border-gray-600 bg-white border-gray-200 {$glassmorphismMode
+    class="sidebar flex flex-col w-52 dark:bg-black dark:border-gray-600 bg-white border-gray-200 {$glassmorphismMode
       ? 'glassmorphism-sidebar'
       : ''} shadow-xl h-full overflow-y-auto border-r"
   >
@@ -527,7 +527,7 @@
     <!-- Layer selector and Layout toggle (only show when connected) -->
     {#if keyboardAPI.shouldShowConfigurator}
       <div class="flex items-center justify-between -mb-3">
-        <div class="flex items-center gap-2 px-4 py-2 h-12">
+        <div class="layer-selector flex items-center gap-2 px-4 py-2 h-12">
           {#if !shouldShowLayerSelector()}
             <span
               class="font-semibold text-gray-900 dark:text-white mr-2 {$glassmorphismMode
@@ -911,6 +911,14 @@
   :global(html) {
     background-color: theme(--color-gray-50);
     --theme-color-primary: #6366f1; /* Default Indigo, will be overridden */
+  }
+
+  .sidebar {
+    user-select: none;
+  }
+
+  .layer-selector {
+    user-select: none;
   }
 
   /* Layer selector fade-in animation */
