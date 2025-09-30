@@ -143,6 +143,7 @@
       {t('performance.title', currentLanguage)}
     </h2>
     <div class="flex gap-2 mb-2">
+      <!-- svelte-ignore a11y_mouse_events_have_key_events -->
       <button
         class="px-4 py-2 rounded mr-1 transition-colors duration-200 text-white {$glassmorphismMode
           ? 'glassmorphism-button'
@@ -620,11 +621,6 @@
     margin-top: 8px;
   }
 
-  .glassmorphism-inner {
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-  }
 
   /* Ensure consistent height without forcing scroll */
   .flex-1.min-w-\[260px\].flex.flex-col {
