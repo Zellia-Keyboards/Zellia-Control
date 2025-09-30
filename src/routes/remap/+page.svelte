@@ -9,6 +9,7 @@
   import Profile from './Profile.svelte';
   import Extension from './Extension.svelte';
   import { cubicOut } from 'svelte/easing';
+  import { fade } from 'svelte/transition';
   import { X } from 'lucide-svelte';
   import { dev } from '$app/environment';
 
@@ -81,6 +82,8 @@
   }
 
   let selectedKeys = $state<[number, number][]>([]);
+
+  let showingNotification = $state(false);
 
   let storedKeys = $state<string[][]>([
     ['a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a'],
@@ -199,8 +202,13 @@
           {#snippet keyslot(content: string)}
             <button
               onclick={() => {
-                dev ? console.log(`Clicked key: ${content}`) : null;
-                setKeyContent(content);
+                if (selectedKeys.length === 0) {
+                  showingNotification = true;
+                  setTimeout(() => showingNotification = false, 3000);
+                } else {
+                  dev ? console.log(`Clicked key: ${content}`) : null;
+                  setKeyContent(content);
+                }
               }}
               class="size-14 text-wrap text-sm border whitespace-pre-line rounded-lg overflow-auto truncate"
             >
@@ -212,6 +220,14 @@
     {/key}
   </div>
 </div>
+
+{#if showingNotification}
+  <div class="fixed top-4 left-1/2 transform -translate-x-1/2 z-50" transition:fade={{ duration: 300 }}>
+    <div class="glassmorphism-card bg-gray-50 dark:bg-gray-900 p-4 rounded-lg shadow-lg border border-gray-200 dark:border-gray-600 text-black dark:text-white">
+      Select the key you want to remap first
+    </div>
+  </div>
+{/if}
 
 <style>
   .key-square {
