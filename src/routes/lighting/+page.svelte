@@ -22,7 +22,6 @@
   let speed = $state(50);
   let direction = $state('left-to-right');
   let staticColor = $state('#ff0000');
-  let gradientColors = $state(['#ff0000', '#00ff00', '#0000ff']);
   let selectedLayer = $state(1);
   let perKeyMode = $state(false);
   let selectedKeys = $state(new Set());
@@ -69,16 +68,6 @@
       name: t('lighting.reactive', currentLanguage),
       description: t('lighting.reactiveDesc', currentLanguage),
     },
-    {
-      id: 'spectrum',
-      name: t('lighting.spectrum', currentLanguage),
-      description: t('lighting.spectrumDesc', currentLanguage),
-    },
-    {
-      id: 'gradient',
-      name: t('lighting.gradient', currentLanguage),
-      description: t('lighting.gradientDesc', currentLanguage),
-    },
   ]);
 
   const directions = $derived([
@@ -99,14 +88,6 @@
           b: parseInt(result[3], 16),
         }
       : null;
-  }
-
-  function addGradientColor() {
-    gradientColors = [...gradientColors, '#ffffff'];
-  }
-
-  function removeGradientColor(index: number) {
-    gradientColors = gradientColors.filter((_, i) => i !== index);
   }
 
   function toggleKeySelection() {
@@ -141,7 +122,6 @@
       speed,
       direction,
       staticColor,
-      gradientColors,
       layer: selectedLayer,
     });
   }
@@ -229,7 +209,7 @@
         </div>
 
         <!-- Speed (for animated effects) -->
-        {#if ['breathing', 'wave', 'rainbow', 'spectrum'].includes(selectedEffect)}
+        {#if ['breathing', 'wave', 'rainbow'].includes(selectedEffect)}
           <div>
             <div class="flex justify-between text-sm text-gray-600 dark:text-gray-300 mb-2">
               <span>{t('lighting.speed', currentLanguage)}</span>
@@ -246,7 +226,7 @@
         {/if}
 
         <!-- Direction (for directional effects) -->
-        {#if ['wave', 'gradient', 'spectrum'].includes(selectedEffect)}
+        {#if ['rainbow'].includes(selectedEffect)}
           <div>
             <label class="block text-sm text-gray-600 dark:text-gray-300 mb-2"
               >{t('lighting.direction', currentLanguage)}</label
@@ -369,44 +349,10 @@
               {/if}
             {/if}
           </div>
-        {:else if selectedEffect === 'gradient'}
-          <div>
-            <label class="block text-sm text-gray-600 dark:text-gray-300 mb-2"
-              >{t('lighting.gradientColors', currentLanguage)}</label
-            >
-            <div class="space-y-2">
-              {#each gradientColors as color, index}
-                <div class="flex gap-2 items-center">
-                  <input
-                    type="color"
-                    bind:value={gradientColors[index]}
-                    class="w-10 h-8 rounded border-0 p-0 cursor-pointer overflow-hidden"
-                  />
-                  <input
-                    type="text"
-                    bind:value={gradientColors[index]}
-                    class="flex-1 p-1 border border-gray-300 dark:border-white bg-white dark:bg-black text-black dark:text-white rounded text-sm font-mono"
-                  />
-                  {#if gradientColors.length > 2}
-                    <button
-                      class="w-8 h-8 bg-red-500 text-white rounded hover:bg-red-600 transition-colors text-sm"
-                      onclick={() => removeGradientColor(index)}>×</button
-                    >
-                  {/if}
-                </div>
-              {/each}
-            </div>
-            <button
-              class="mt-2 w-full bg-gray-200 hover:bg-gray-300 text-gray-700 dark:bg-gray-800 dark:hover:bg-gray-700 dark:text-white border border-white px-3 py-2 rounded transition-colors"
-              onclick={addGradientColor}
-            >
-              {t('lighting.addColor', currentLanguage)}
-            </button>
-          </div>
         {:else}
           <div class="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg text-center">
             <div class="text-gray-600 dark:text-gray-300">
-              {selectedEffect === 'rainbow' || selectedEffect === 'spectrum'
+              {selectedEffect === 'rainbow'
                 ? t('lighting.automaticColors', currentLanguage)
                 : t('lighting.noColorSettings', currentLanguage)}
             </div>
@@ -422,11 +368,9 @@
           class="h-16 rounded-lg border {'border-gray-300 dark:border-white'} flex items-center justify-center"
           style:background={selectedEffect === 'static'
             ? staticColor
-            : selectedEffect === 'gradient'
-              ? `linear-gradient(90deg, ${gradientColors.join(', ')})`
-              : '#f3f4f6 dark:#374151'}
+            : '#f3f4f6 dark:#374151'}
         >
-          {#if selectedEffect === 'rainbow' || selectedEffect === 'spectrum'}
+          {#if selectedEffect === 'rainbow'}
             <div class="text-sm text-gray-600 dark:text-gray-300">
               {t('lighting.animatedEffect', currentLanguage)}
             </div>
