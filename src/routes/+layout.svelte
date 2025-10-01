@@ -24,7 +24,6 @@
     ['/remap', 'nav.remap'],
     ['/lighting', 'nav.lighting'],
     ['/advancedkey', 'nav.advancedkey'],
-    ['/calibration', 'nav.calibration'],
     ['/debug', 'nav.debug'],
     ['/settings', 'nav.settings'],
     ['/update', 'nav.update'],
@@ -35,13 +34,13 @@
   let selectedLayer = $state(1);
   let showDropdown = $state(false);
   let showThemeSelector = $state(false);
-  let showLanguageSelector = $state(false);
   let showFirefoxWarning = $state(false);
   let firefoxWarningDismissed = $state(false);
   let currentTheme = $state<ThemeColorName | null>(null);
   let showLayoutMenu = $state(false);
   let showDemoDropdown = $state(false);
   let isEnteringDemo = $state(false);
+  let isLoadingConfigurator = $state(false);
   
   // Layout configuration state
   let bottomRowConfig = $state<'6.25u' | '7u'>('6.25u');
@@ -105,7 +104,7 @@
   // Check if current page should use the sidebar layout
   const usesSidebarLayout = $derived(() => {
     const path = $page.url.pathname;
-    const sidebarPages = ['/performance', '/remap', '/lighting', '/advancedkey', '/calibration', '/debug', '/settings', '/about', '/update'];
+    const sidebarPages = ['/performance', '/remap', '/lighting', '/advancedkey', '/debug', '/settings', '/about', '/update'];
     return sidebarPages.some(sidebarPage => path === sidebarPage || path.startsWith(sidebarPage + '/'));
   });
 
@@ -179,6 +178,20 @@
       goto('/remap', { replaceState: true });
       setTimeout(() => navigationInProgress = false, 100);
       return;
+    }
+  });
+
+  // Handle loading state for smooth connection transition
+  $effect(() => {
+    if (keyboardAPI.state.connectionStatus === 'connecting') {
+      isLoadingConfigurator = true;
+    } else if (keyboardAPI.state.connectionStatus === 'connected' && keyboardAPI.shouldShowConfigurator) {
+      // Add a small delay to ensure everything is loaded before showing the configurator
+      setTimeout(() => {
+        isLoadingConfigurator = false;
+      }, 400);
+    } else if (keyboardAPI.state.connectionStatus === 'error' || keyboardAPI.state.connectionStatus === 'disconnected') {
+      isLoadingConfigurator = false;
     }
   });
 </script>
@@ -446,54 +459,50 @@
 
     <!-- Language Selector -->
     <div class="p-3">
-      <!-- Language Button -->
-      <button
-        class="flex items-center justify-between w-full px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 {$glassmorphismMode
-          ? 'glassmorphism-button'
-          : 'text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-900'}"
-        onclick={() => (showLanguageSelector = !showLanguageSelector)}
-      >
-        <div class="flex items-center gap-3">
-          <Globe class="w-4 h-4" />
-          <span>{t('ui.language', currentLanguage)}</span>
-        </div>
-        <svg
-          class="w-4 h-4 transition-transform duration-200"
-          class:rotate-180={showLanguageSelector}
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          viewBox="0 0 24 24"
+      <div class="flex items-center gap-2 mb-2">
+        <Globe class="w-4 h-4 text-gray-600 dark:text-gray-400" />
+        <span class="text-sm font-medium text-gray-900 dark:text-white">{t('ui.language', currentLanguage)}</span>
+      </div>
+      
+      <!-- Language Switch Button with Animation -->
+      <div class="relative inline-flex w-full rounded-lg p-1 {$glassmorphismMode ? 'glassmorphism-card' : 'bg-gray-100 dark:bg-gray-800'}">
+        <!-- Animated sliding background with glassmorphism -->
+        <div 
+          class="language-switch-slider absolute top-1 bottom-1 w-[calc(50%-4px)] rounded-md transition-all duration-300 ease-out shadow-lg language-slider-bg {!$glassmorphismMode && !currentTheme ? 'bg-gray-900 dark:bg-white' : $glassmorphismMode && !currentTheme ? '' : $glassmorphismMode ? '' : 'bg-primary-500'}"
+          style="left: {currentLanguage === 'en' ? '4px' : 'calc(50% + 0px)'}; transform: translateZ(0); {$glassmorphismMode && currentTheme ? `
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            background: linear-gradient(135deg, 
+              ${themeColors[currentTheme]}CC, 
+              ${themeColors[currentTheme]}99
+            );
+            box-shadow: 
+              0 8px 16px -4px ${themeColors[currentTheme]}40,
+              0 4px 8px -2px ${themeColors[currentTheme]}30,
+              inset 0 1px 0 0 rgba(255, 255, 255, 0.15),
+              inset 0 -1px 0 0 rgba(0, 0, 0, 0.1);
+            border: 1px solid ${themeColors[currentTheme]}33;
+          ` : ''}"
+        ></div>
+        
+        <!-- Language buttons -->
+        <button
+          class="flex-1 px-3 py-2 text-sm font-medium rounded-md transition-all duration-200 relative z-10 {currentLanguage === 'en'
+            ? (!currentTheme && !$glassmorphismMode ? 'text-white dark:text-gray-900 font-semibold' : 'text-white font-semibold')
+            : 'text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'}"
+          onclick={() => setLanguage('en')}
         >
-          <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
-        </svg>
-      </button>
-
-      <!-- Language Options (collapsible) -->
-      {#if showLanguageSelector}
-        <div class="mt-2 space-y-1" transition:slide={{ duration: 300, axis: 'y' }}>
-          <button
-            class="w-full px-3 py-2 text-sm text-left rounded-lg transition-all duration-150 {$glassmorphismMode
-              ? 'glassmorphism-button'
-              : ''} {currentLanguage === 'en'
-              ? 'bg-primary-500 text-white'
-              : 'text-gray-900 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'}"
-            onclick={() => setLanguage('en')}
-          >
-            {t('common.english', currentLanguage)}
-          </button>
-          <button
-            class="w-full px-3 py-2 text-sm text-left rounded-lg transition-all duration-150 {$glassmorphismMode
-              ? 'glassmorphism-button'
-              : ''} {currentLanguage === 'zh'
-              ? 'bg-primary-500 text-white'
-              : 'text-gray-900 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'}"
-            onclick={() => setLanguage('zh')}
-          >
-            {t('common.chinese', currentLanguage)}
-          </button>
-        </div>
-      {/if}
+          EN
+        </button>
+        <button
+          class="flex-1 px-3 py-2 text-sm font-medium rounded-md transition-all duration-200 relative z-10 {currentLanguage === 'zh'
+            ? (!currentTheme && !$glassmorphismMode ? 'text-white dark:text-gray-900 font-semibold' : 'text-white font-semibold')
+            : 'text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'}"
+          onclick={() => setLanguage('zh')}
+        >
+          中文
+        </button>
+      </div>
     </div>
 
     <!-- Dark Mode Toggle at Bottom -->
@@ -525,7 +534,7 @@
       : 'bg-primary-50/20 dark:bg-black/20'}"
   >
     <!-- Layer selector and Layout toggle (only show when connected) -->
-    {#if keyboardAPI.shouldShowConfigurator}
+    {#if keyboardAPI.shouldShowConfigurator && !isLoadingConfigurator}
       <div class="flex items-center justify-between -mb-3">
         <div class="layer-selector flex items-center gap-2 px-4 py-2 h-12">
           {#if !shouldShowLayerSelector()}
@@ -689,14 +698,31 @@
     <!-- Component for adjust part -->
 
     <!-- Global KeyboardRender - only show when connected -->
-    {#if keyboardAPI.shouldShowConfigurator && !$page.url.pathname.includes('/about')}
+    {#if keyboardAPI.shouldShowConfigurator && !$page.url.pathname.includes('/about') && !isLoadingConfigurator}
       <div class="relative">
         <KeyboardRender keys={keyboardKeys}/>
       </div>
     {/if}
 
+    <!-- Loading overlay while configurator is loading -->
+    {#if isLoadingConfigurator}
+      <div class="flex-1 flex items-center justify-center p-8">
+        <div class="text-center p-8 rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 {$glassmorphismMode ? 'glassmorphism-card' : ''} shadow-xl">
+          <div class="w-16 h-16 bg-primary-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg animate-pulse {$glassmorphismMode ? 'glassmorphism-button' : ''}">
+            <svg class="w-8 h-8 text-white animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+            </svg>
+          </div>
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+            {keyboardAPI.state.isDemoMode ? t('demo.entering', currentLanguage) : t('welcome.connecting', currentLanguage)}
+          </h3>
+          <p class="text-sm text-gray-600 dark:text-gray-400">
+            {t('welcome.loadingConfigurator', currentLanguage)}
+          </p>
+        </div>
+      </div>
     <!-- Connection Interface when not connected and on root page -->
-    {#if !keyboardAPI.shouldShowConfigurator && $page.url.pathname === '/'}
+    {:else if !keyboardAPI.shouldShowConfigurator && $page.url.pathname === '/'}
       <div class="flex-1 flex items-center justify-center p-8">
         <div class="w-full max-w-2xl mx-auto">
           <!-- Logo -->
@@ -845,7 +871,7 @@
 
           <!-- Connection Error Display -->
           {#if keyboardAPI.state.error}
-            <div class="mt-6 p-4 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800" transition:fade>
+            <div class="mt-6 p-4 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800" >
               <div class="flex items-center gap-3">
                 <svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
@@ -859,7 +885,7 @@
           {/if}
 
           <!-- USB HID Warning -->
-          <div class="mt-6 p-4 rounded-lg bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700" transition:fade>
+          <div class="mt-6 p-4 rounded-lg bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
             <div class="flex items-center gap-3">
               <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
@@ -871,7 +897,7 @@
           </div>
         </div>
       </div>
-    {:else if keyboardAPI.shouldShowConfigurator}
+    {:else if keyboardAPI.shouldShowConfigurator && !isLoadingConfigurator}
       {@render children()}
     {:else}
       <!-- Fallback content for pages when not connected -->
@@ -935,5 +961,41 @@
       opacity: 1;
       transform: translateY(0);
     }
+  }
+
+  /* Language switch slider - ensures smooth animation */
+  .language-switch-slider {
+    will-change: left;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Glassmorphism default styling for language slider (no theme) */
+  .language-slider-bg:not(.bg-gray-900):not(.bg-white):not(.bg-primary-500) {
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    background: linear-gradient(135deg, 
+      rgba(17, 24, 39, 0.85), 
+      rgba(17, 24, 39, 0.7)
+    );
+    box-shadow: 
+      0 8px 16px -4px rgba(0, 0, 0, 0.25),
+      0 4px 8px -2px rgba(0, 0, 0, 0.2),
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.15),
+      inset 0 -1px 0 0 rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(0, 0, 0, 0.2);
+  }
+
+  /* Dark mode: use white glassmorphism when no theme is selected */
+  :global(.dark) .language-slider-bg:not(.bg-gray-900):not(.bg-white):not(.bg-primary-500) {
+    background: linear-gradient(135deg, 
+      rgba(255, 255, 255, 0.85), 
+      rgba(255, 255, 255, 0.7)
+    );
+    box-shadow: 
+      0 8px 16px -4px rgba(255, 255, 255, 0.25),
+      0 4px 8px -2px rgba(255, 255, 255, 0.2),
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.3),
+      inset 0 -1px 0 0 rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.3);
   }
 </style>
