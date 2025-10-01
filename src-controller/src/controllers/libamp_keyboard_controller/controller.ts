@@ -786,7 +786,7 @@ export class LibampKeyboardController extends KeyboardController {
             let send_buf = new Uint8Array(63);
             let dataView = new DataView(send_buf.buffer);    
             send_buf[0] = PacketCode.PacketCodeSet;
-            send_buf[1] = PacketData.PacketDataAdvancedKey;
+            send_buf[1] = PacketData.PacketDataKeymap;
             send_buf[2] = layer; //layer_index
             dataView.setUint16(3,index,true);
             send_buf[5] = 1;
