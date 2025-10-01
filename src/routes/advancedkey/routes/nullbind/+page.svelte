@@ -9,8 +9,30 @@
     resetGlobalConfiguration,
     keyActions,
   } from '$lib/AdvancedKeyShared';
+  import { selectedKeys, deselectAll, toggleKey } from '$lib/SelectedKeysStore';
+  import * as api from '$lib/api.svelte';
+  import { onMount, onDestroy } from 'svelte';
+  import * as kle from '@ijprest/kle-serial';
 
   let currentLanguage = $derived($language);
+  
+  // Keyboard layout data - needed for getKeyLabel helper
+  let keyboardKeys = $state<kle.Key[]>([]);
+  
+  // Load keyboard layout on mount
+  onMount(async () => {
+    const layoutJson = await api.get_layout_json();
+    const keyboard = kle.Serial.deserialize(JSON.parse(layoutJson));
+    keyboardKeys = keyboard.keys;
+    
+    // Clear any previous selections when entering the page
+    deselectAll();
+  });
+  
+  // Clear selections when leaving the page
+  onDestroy(() => {
+    deselectAll();
+  });
 
   // Define the null bind specific configuration type
   type NullBindConfiguration = {
@@ -61,12 +83,11 @@
   let behavior = $state(0); // Default to last input
   let bottomOutPoint = $state(0); // Default to disabled
   let actuationPoint = $state(DEFAULT_ACTUATION);
-  let selectedKeys = $state<string[]>([]);
+  let localSelectedKeys = $state<number[]>([]);
   let activeTab = $state<'performance' | 'key-tester'>('performance');
   let rtDown = $state(0); // Rapid trigger down
   let rtUp = $state(0); // Rapid trigger up
   let continuous = $state(false);
-  let CurrentSelected = $state<[number, number] | null>(null);
 
   // State for smooth deletion and addition animations
   let deletingPairs = $state<Set<string>>(new Set());
@@ -80,23 +101,34 @@
     goto('/advancedkey');
   }
 
-  // Automatically add selected key without needing to press a button
+  // Track selected keys from the keyboard render component
   $effect(() => {
-    if (CurrentSelected && selectedKeys.length < 2) {
-      const keyName = $KeyboardDisplayValues[CurrentSelected[1]]?.[CurrentSelected[0]] || 'Unknown';
-
-      if (!selectedKeys.includes(keyName)) {
-        selectedKeys = [...selectedKeys, keyName];
-      }
-    }
+    localSelectedKeys = $selectedKeys.slice(0, 2);
   });
 
+  // Helper function to get key label from index
+  function getKeyLabel(keyIndex: number): string {
+    if (keyIndex >= 0 && keyIndex < keyboardKeys.length) {
+      const key = keyboardKeys[keyIndex];
+      // KLE labels are in a 3x3 grid (9 positions)
+      // Position 4 (center) is typically the main label
+      // Fallback to position 0 (top-left) if position 4 is empty
+      const label = key.labels?.[4] || key.labels?.[0] || key.labels?.find(l => l && l.trim() !== '');
+      return label || 'Unknown';
+    }
+    return 'Unknown';
+  }
+
   function removeKey(index: number): void {
-    selectedKeys = selectedKeys.filter((_, i) => i !== index);
+    // Get the key index to toggle
+    const keyIndexToRemove = localSelectedKeys[index];
+    if (keyIndexToRemove !== undefined) {
+      toggleKey(keyIndexToRemove);
+    }
   }
 
   function resetSelection(): void {
-    selectedKeys = [];
+    deselectAll();
   }
 
   function updateBottomOut(checked: boolean): void {
@@ -126,56 +158,40 @@
     actuationPoint = uiActuationPoint;
   }
   function updateConfiguration(): void {
-    if (selectedKeys.length !== 2) return;
+    if (localSelectedKeys.length !== 2) return;
+
+    const key1Label = getKeyLabel(localSelectedKeys[0]);
+    const key2Label = getKeyLabel(localSelectedKeys[1]);
 
     // Apply configuration to both keys
-    selectedKeys.forEach(keyName => {
-      const keyPosition = findKeyPosition(keyName);
+    localSelectedKeys.forEach(keyIndex => {
+      const keyId = keyIndex.toString();
+      const config: NullBindConfiguration = {
+        type: 'null-bind',
+        behavior: behavior,
+        bottomOutPoint: bottomOutPoint,
+        actuationPoint: actuationPoint,
+        pairedKeys: [key1Label, key2Label] as [string, string],
+        rtDown: rtDown,
+        rtUp: rtUp,
+        continuous: continuous,
+      };
 
-      if (keyPosition) {
-        const keyId = `${keyPosition[0]},${keyPosition[1]}`;
-        const config: NullBindConfiguration = {
-          type: 'null-bind',
-          behavior: behavior,
-          bottomOutPoint: bottomOutPoint,
-          actuationPoint: actuationPoint,
-          pairedKeys: [selectedKeys[0], selectedKeys[1]] as [string, string],
-          rtDown: rtDown,
-          rtUp: rtUp,
-          continuous: continuous,
-        };
-
-        // Force update even if configuration exists
-        updateGlobalConfiguration(keyId, config);
-        console.log(`Updated configuration for key ${keyId}:`, config);
-      }
+      // Force update even if configuration exists
+      updateGlobalConfiguration(keyId, config);
+      console.log(`Updated configuration for key ${keyId}:`, config);
     });
 
-    console.log('Configuration updated for keys:', selectedKeys);
+    console.log('Configuration updated for keys:', [key1Label, key2Label]);
   }
 
   function resetConfiguration(): void {
-    if (selectedKeys.length !== 2) return;
+    if (localSelectedKeys.length !== 2) return;
 
     // Reset configuration for both selected keys
-    selectedKeys.forEach(keyName => {
-      // Find the key position for this key name
-      let keyPosition: [number, number] | null = null;
-
-      for (let row = 0; row < $KeyboardDisplayValues.length; row++) {
-        for (let col = 0; col < $KeyboardDisplayValues[row].length; col++) {
-          if ($KeyboardDisplayValues[row][col] === keyName) {
-            keyPosition = [col, row];
-            break;
-          }
-        }
-        if (keyPosition) break;
-      }
-
-      if (keyPosition) {
-        const keyId = `${keyPosition[0]},${keyPosition[1]}`;
-        resetGlobalConfiguration(keyId);
-      }
+    localSelectedKeys.forEach(keyIndex => {
+      const keyId = keyIndex.toString();
+      resetGlobalConfiguration(keyId);
     });
 
     // Reset local settings to defaults
@@ -224,12 +240,16 @@
 
     // Wait for animation to complete, then delete
     setTimeout(() => {
-      // Find and delete both keys in the pair
-      pairKeys.forEach(keyName => {
-        const keyPosition = findKeyPosition(keyName);
-        if (keyPosition) {
-          const keyId = `${keyPosition[0]},${keyPosition[1]}`;
-          resetGlobalConfiguration(keyId);
+      // Find and delete both keys in the pair by searching through configurations
+      Object.entries($globalConfigurations).forEach(([keyId, config]) => {
+        if (config.type === 'null-bind') {
+          const nullConfig = config as NullBindConfiguration;
+          if (
+            (nullConfig.pairedKeys[0] === pairKeys[0] && nullConfig.pairedKeys[1] === pairKeys[1]) ||
+            (nullConfig.pairedKeys[0] === pairKeys[1] && nullConfig.pairedKeys[1] === pairKeys[0])
+          ) {
+            resetGlobalConfiguration(keyId);
+          }
         }
       });
 
@@ -242,11 +262,14 @@
     updateConfiguration();
 
     // Add fade-in animation for newly configured pairs
-    if (selectedKeys.length === 2) {
+    if (localSelectedKeys.length === 2) {
+      const key1Label = getKeyLabel(localSelectedKeys[0]);
+      const key2Label = getKeyLabel(localSelectedKeys[1]);
+      
       // Create both possible pair combinations since pairedKeys are sorted
-      const pairId1 = `${selectedKeys[0]}-${selectedKeys[1]}`;
-      const pairId2 = `${selectedKeys[1]}-${selectedKeys[0]}`;
-      const sortedPairId = [selectedKeys[0], selectedKeys[1]].sort().join('-');
+      const pairId1 = `${key1Label}-${key2Label}`;
+      const pairId2 = `${key2Label}-${key1Label}`;
+      const sortedPairId = [key1Label, key2Label].sort().join('-');
 
       newlyAddedPairs = new Set([...newlyAddedPairs, pairId1, pairId2, sortedPairId]);
 
@@ -257,6 +280,9 @@
         );
       }, 500); // Slightly longer than fade-in duration for better visual
     }
+
+    // Clear selection after applying to allow selecting new keys
+    deselectAll();
 
     console.log('Applying null bind configurations:', $globalConfigurations);
   } // Get configured null bind keys count - only show unique pairs
@@ -278,48 +304,36 @@
     });
 
     return Array.from(uniquePairs.values());
-  }); // Check if we have exactly 2 keys selected
-  const canConfigure = $derived(selectedKeys.length === 2);
+  }); 
+  
+  // Check if we have exactly 2 keys selected
+  const canConfigure = $derived(localSelectedKeys.length === 2);
 
   // Load existing configuration when two keys are selected
   $effect(() => {
-    if (selectedKeys.length === 2) {
+    if (localSelectedKeys.length === 2) {
       // Check if these keys already have a configuration
-      const firstKeyPosition = findKeyPosition(selectedKeys[0]);
-      if (firstKeyPosition) {
-        const keyId = `${firstKeyPosition[0]},${firstKeyPosition[1]}`;
-        const existingConfig = $globalConfigurations[keyId] as NullBindConfiguration | undefined;
+      const firstKeyIndex = localSelectedKeys[0];
+      const keyId = firstKeyIndex.toString();
+      const existingConfig = $globalConfigurations[keyId] as NullBindConfiguration | undefined;
 
-        if (existingConfig && existingConfig.type === 'null-bind') {
-          // Load the existing configuration into the UI
-          behavior = existingConfig.behavior;
-          bottomOutPoint = existingConfig.bottomOutPoint;
-          actuationPoint = existingConfig.actuationPoint;
-          uiActuationPoint = existingConfig.actuationPoint;
-          if (existingConfig.bottomOutPoint > 0) {
-            uiBottomOutPoint = existingConfig.bottomOutPoint;
-          }
-          rtDown = existingConfig.rtDown;
-          rtUp = existingConfig.rtUp;
-          continuous = existingConfig.continuous;
-
-          console.log('Loaded existing configuration for keys:', selectedKeys, existingConfig);
+      if (existingConfig && existingConfig.type === 'null-bind') {
+        // Load the existing configuration into the UI
+        behavior = existingConfig.behavior;
+        bottomOutPoint = existingConfig.bottomOutPoint;
+        actuationPoint = existingConfig.actuationPoint;
+        uiActuationPoint = existingConfig.actuationPoint;
+        if (existingConfig.bottomOutPoint > 0) {
+          uiBottomOutPoint = existingConfig.bottomOutPoint;
         }
+        rtDown = existingConfig.rtDown;
+        rtUp = existingConfig.rtUp;
+        continuous = existingConfig.continuous;
+
+        console.log('Loaded existing configuration for keys:', localSelectedKeys, existingConfig);
       }
     }
   });
-
-  // Helper function to find key position
-  function findKeyPosition(keyName: string): [number, number] | null {
-    for (let row = 0; row < $KeyboardDisplayValues.length; row++) {
-      for (let col = 0; col < $KeyboardDisplayValues[row].length; col++) {
-        if ($KeyboardDisplayValues[row][col] === keyName) {
-          return [col, row];
-        }
-      }
-    }
-    return null;
-  }
 
   // Helper function to get behavior name
   function getBehaviorName(behaviorValue: number): string {
@@ -404,18 +418,18 @@
           <div
             class="p-4 border-2 border-dashed rounded-lg {$glassmorphismMode
               ? 'glassmorphism-card'
-              : ''} {selectedKeys.length >= 1
+              : ''} {localSelectedKeys.length >= 1
               ? 'border-primary-500 bg-primary-100 dark:bg-primary-900'
               : 'border-primary-400 bg-primary-200 dark:bg-primary-800'}"
           >
             <div class="text-center">
-              {#if selectedKeys.length >= 1}
+              {#if localSelectedKeys.length >= 1}
                 <div
                   class="w-12 h-12 text-white bg-primary-500 rounded-lg flex items-center justify-center mx-auto mb-2 {$glassmorphismMode
                     ? 'glassmorphism-button'
                     : ''}"
                 >
-                  <span class="font-mono font-bold">{selectedKeys[0]}</span>
+                  <span class="font-mono font-bold">{getKeyLabel(localSelectedKeys[0])}</span>
                 </div>
                 <div class="text-sm font-medium text-primary-500">
                   {t('advancedkey.firstKey', currentLanguage)}
@@ -446,20 +460,20 @@
           <div
             class="p-4 border-2 border-dashed rounded-lg {$glassmorphismMode
               ? 'glassmorphism-card'
-              : ''} {selectedKeys.length >= 2
+              : ''} {localSelectedKeys.length >= 2
               ? 'border-primary-500 bg-primary-100 dark:bg-primary-900'
-              : selectedKeys.length === 1
+              : localSelectedKeys.length === 1
                 ? 'border-primary-500 bg-primary-100 dark:bg-primary-800'
                 : 'border-gray-300 dark:border-gray-500 bg-gray-50 dark:bg-gray-800'}"
           >
             <div class="text-center">
-              {#if selectedKeys.length >= 2}
+              {#if localSelectedKeys.length >= 2}
                 <div
                   class="w-12 h-12 text-white bg-primary-500 rounded-lg flex items-center justify-center mx-auto mb-2 {$glassmorphismMode
                     ? 'glassmorphism-button'
                     : ''}"
                 >
-                  <span class="font-mono font-bold">{selectedKeys[1]}</span>
+                  <span class="font-mono font-bold">{getKeyLabel(localSelectedKeys[1])}</span>
                 </div>
                 <div class="text-sm font-medium text-primary-500">
                   {t('advancedkey.secondKey', currentLanguage)}
@@ -472,7 +486,7 @@
                 >
                   {t('advancedkey.remove', currentLanguage)}
                 </button>
-              {:else if selectedKeys.length === 1}
+              {:else if localSelectedKeys.length === 1}
                 <div
                   class="w-12 h-12 bg-primary-300 dark:bg-gray-700 rounded-lg flex items-center justify-center mx-auto mb-2 animate-pulse {$glassmorphismMode
                     ? 'glassmorphism-button'
@@ -525,7 +539,7 @@
                       ? 'glassmorphism-button'
                       : ''}"
                   >
-                    {selectedKeys[0]}
+                    {getKeyLabel(localSelectedKeys[0])}
                   </div>
                   <div class="flex items-center gap-1 text-primary-500">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -542,7 +556,7 @@
                       ? 'glassmorphism-button'
                       : ''}"
                   >
-                    {selectedKeys[1]}
+                    {getKeyLabel(localSelectedKeys[1])}
                   </div>
                 </div>
               </div>
@@ -854,7 +868,7 @@
                         <div
                           class="text-2xl font-mono font-bold text-gray-900 dark:text-white mb-2"
                         >
-                          {selectedKeys[0]}
+                          {getKeyLabel(localSelectedKeys[0])}
                         </div>
                         <div class="text-sm text-gray-600 dark:text-gray-400">
                           {t('advancedkey.key1', currentLanguage)}
@@ -873,7 +887,7 @@
                         <div
                           class="text-2xl font-mono font-bold text-gray-900 dark:text-white mb-2"
                         >
-                          {selectedKeys[1]}
+                          {getKeyLabel(localSelectedKeys[1])}
                         </div>
                         <div class="text-sm text-gray-600 dark:text-gray-400">
                           {t('advancedkey.key2', currentLanguage)}
@@ -938,8 +952,8 @@
         </div>
         <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
           {#each configuredNullBindKeys() as [keyId, config]}
-            {@const [x, y] = keyId.split(',').map(Number)}
-            {@const keyName = $KeyboardDisplayValues[y]?.[x] || 'Unknown'}
+            {@const keyIndex = parseInt(keyId)}
+            {@const keyName = getKeyLabel(keyIndex)}
             {@const nullBindConfig = config as NullBindConfiguration}
             {@const pairId = `${nullBindConfig.pairedKeys[0]}-${nullBindConfig.pairedKeys[1]}`}
             {@const isDeleting = deletingPairs.has(pairId)}
