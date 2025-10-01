@@ -725,14 +725,7 @@
     {:else if !keyboardAPI.shouldShowConfigurator && $page.url.pathname === '/'}
       <div class="flex-1 flex items-center justify-center p-8">
         <div class="w-full max-w-2xl mx-auto">
-          <!-- Logo -->
-          <div class="text-center mb-8">
-            <div class="w-16 h-16 bg-primary-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
-              <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"/>
-              </svg>
-            </div>
-          </div>
+          
 
           <!-- Connection Cards -->
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
