@@ -1,6 +1,6 @@
 <script lang="ts">
   import { glassmorphismMode, darkMode } from '$lib/DarkModeStore.svelte';
-  import { keyboardAPI } from '$lib/keyboardAPI.svelte';
+  import { keyboardAPI, keyboardConnectionState } from '$lib/keyboardAPI.svelte';
   import { language, t } from '$lib/LanguageStore.svelte';
   import Basic from './Basic.svelte';
   import System from './System.svelte';
@@ -13,6 +13,8 @@
   import { X } from 'lucide-svelte';
   import { dev } from '$app/environment';
   import type { Keycode } from '../../../src-controller/src/interface';
+  import { selectedKeys } from '$lib/SelectedKeysStore';
+  import { selectedCount, toggleSelectAll, deselectAll } from '$lib/SelectedKeysStore';
 
   // Type for key information with keycode support
   type KeyInfo = {
@@ -90,9 +92,6 @@
     previousTabIndex = currentTabIndex;
     activeTab = newTabName;
   }
-
-  let selectedKeys = $state<[number, number][]>([]);
-
   let showingNotification = $state(false);
 
   // Store keycodes with their full info
@@ -107,17 +106,12 @@
 
   // Function to select all keys
   function selectAllKeys() {
-    selectedKeys = [];
-    storedKeys.forEach((row, y) => {
-      row.forEach((_, x) => {
-        selectedKeys.push([x, y]);
-      });
-    });
+    toggleSelectAll();
   }
 
   // Function to deselect all keys
   function deselectAllKeys() {
-    selectedKeys = [];
+    deselectAll();
   }
 
   // Keyboard event handler
@@ -143,17 +137,27 @@
 
   // Function to set key content/keycode for selected keys
   function setKeyContent(keyInfo: KeyInfo) {
-    if (selectedKeys.length === 0) return;
-    
-    selectedKeys.forEach(([x, y]) => {
-      dev ? console.log(`Setting key at (${x}, ${y}) to keycode: ${keyInfo.keycode} (${keyInfo.label})`) : null;
-      // Set the key info in the keymap
-      storedKeys[y][x] = keyInfo;
-    });
-    
+    if ($selectedKeys.length === 0) return;
+        
     // Clear selection after setting keys
-    selectedKeys = [];
+    //$selectedKeys = [];
   }
+
+
+  let hasSelection = $state(false);
+  $effect(() => {
+    const keysToUpdate = $selectedKeys;
+    const isSelected = $selectedKeys.length > 0;
+    if (isSelected && !hasSelection) {
+    }
+    // 只有在有按键被选中的时候才更新
+    if (keysToUpdate.length === 0) {
+      return;
+    }
+    hasSelection = isSelected;
+    
+    keyboardConnectionState.controller?.send_keymap_packet($selectedKeys,0,0);
+  });
 
   $inspect(ActiveTabComponent, 'ActiveTabComponent');
   $inspect(selectedKeys, 'selectedKeys');
