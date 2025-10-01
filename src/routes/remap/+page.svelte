@@ -139,8 +139,11 @@
   function setKeyContent(keyInfo: KeyInfo) {
     if ($selectedKeys.length === 0) return;
         
-    // Clear selection after setting keys
-    //$selectedKeys = [];
+    let keycode = keyInfo.keycode;
+    if (keyInfo.subcode != undefined) {
+      keycode |= keyInfo.subcode;
+    }
+    keyboardConnectionState.controller?.send_keymap_packet($selectedKeys,0,keycode);
   }
 
 
@@ -156,7 +159,6 @@
     }
     hasSelection = isSelected;
     
-    keyboardConnectionState.controller?.send_keymap_packet($selectedKeys,0,0);
   });
 
   $inspect(ActiveTabComponent, 'ActiveTabComponent');
