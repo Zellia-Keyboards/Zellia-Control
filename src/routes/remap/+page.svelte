@@ -12,7 +12,7 @@
   import { fade } from 'svelte/transition';
   import { X } from 'lucide-svelte';
   import { dev } from '$app/environment';
-  import type { Keycode } from '../../src-controller/src/interface';
+  import type { Keycode } from '../../../src-controller/src/interface';
 
   // Type for key information with keycode support
   type KeyInfo = {
