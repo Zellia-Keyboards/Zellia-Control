@@ -9,13 +9,17 @@
     keyActions,
     type KeyConfiguration,
   } from '$lib/AdvancedKeyShared';
+  import { selectedKeys } from '$lib/SelectedKeysStore';
+  import { keyboardAPI } from '$lib/keyboardAPI.svelte';
 
   let currentLanguage = $derived($language);
 
   let selectedToggleAction = $state('caps');
   let toggleMode = $state('press');
   let toggleState = $state(false);
-  let CurrentSelected = $state<[number, number] | null>(null);
+  
+  // Get the first selected key index (or null if none selected)
+  let currentSelectedIndex = $derived($selectedKeys.length > 0 ? $selectedKeys[0] : null);
 
   // Animation state variables
   let deletingKeys = $state(new Set<string>());
@@ -30,8 +34,8 @@
   }
 
   function getCurrentKeyConfiguration(): KeyConfiguration | null {
-    if (!CurrentSelected) return null;
-    const keyId = `${CurrentSelected[0]},${CurrentSelected[1]}`;
+    if (currentSelectedIndex === null) return null;
+    const keyId = `${currentSelectedIndex}`;
     return (
       $globalConfigurations[keyId] || {
         type: 'toggle',
@@ -43,8 +47,8 @@
   }
 
   function updateConfiguration(): void {
-    if (!CurrentSelected) return;
-    const keyId = `${CurrentSelected[0]},${CurrentSelected[1]}`;
+    if (currentSelectedIndex === null) return;
+    const keyId = `${currentSelectedIndex}`;
     updateGlobalConfiguration(keyId, {
       type: 'toggle',
       toggleAction: selectedToggleAction,
@@ -66,8 +70,8 @@
   }
 
   function applyConfiguration(): void {
-    if (!CurrentSelected) return;
-    const keyId = `${CurrentSelected[0]},${CurrentSelected[1]}`;
+    if (currentSelectedIndex === null) return;
+    const keyId = `${currentSelectedIndex}`;
 
     // Check if this is a new key being configured
     const isNewKey =
@@ -106,15 +110,36 @@
     }, 500); // Match the animation duration
   }
 
-  // Reactive values
-  const currentKeyName = $derived(
-    CurrentSelected
-      ? $KeyboardDisplayValues[CurrentSelected[1]]?.[CurrentSelected[0]] || 'Unknown'
-      : 'No key selected'
-  ); // Load existing configuration when key selection changes
+  // Get key label from keyboard layout
+  const currentKeyName = $derived.by(() => {
+    if (currentSelectedIndex === null) return 'No key selected';
+    const controller = keyboardAPI.state.controller;
+    if (!controller) return 'Unknown';
+    
+    try {
+      const layoutJson = controller.get_layout_json();
+      const layout = JSON.parse(layoutJson);
+      const keys = layout;
+      
+      if (keys && keys[currentSelectedIndex]) {
+        const key = keys[currentSelectedIndex];
+        // Return the first non-empty label
+        if (key.labels && key.labels.length > 0) {
+          const label = key.labels.find((l: string) => l && l.trim());
+          if (label) return label;
+        }
+      }
+    } catch (e) {
+      console.error('Error getting key label:', e);
+    }
+    
+    return `Key ${currentSelectedIndex}`;
+  });
+
+  // Load existing configuration when key selection changes
   $effect(() => {
-    if (CurrentSelected) {
-      const keyId = `${CurrentSelected[0]},${CurrentSelected[1]}`;
+    if (currentSelectedIndex !== null) {
+      const keyId = `${currentSelectedIndex}`;
       const config = $globalConfigurations[keyId];
       if (config && config.type === 'toggle') {
         selectedToggleAction = config.toggleAction || 'caps';
@@ -223,7 +248,7 @@
             ? 'glassmorphism-button'
             : ''}"
           onclick={applyConfiguration}
-          disabled={!CurrentSelected}
+          disabled={currentSelectedIndex === null}
         >
           {t('advancedkey.applyConfiguration', currentLanguage)}
         </button>
@@ -240,7 +265,7 @@
   </div>
   <!-- Main Content -->
   <div class="flex-1 p-4 sm:p-6">
-    {#if CurrentSelected}
+    {#if currentSelectedIndex !== null}
       <div class="max-w-7xl mx-auto">
         <!-- Selected Key Info -->
         <div
@@ -263,7 +288,7 @@
                 <div>
                   <h3 class="font-medium text-gray-900 dark:text-white">Selected Key</h3>
                   <p class="text-sm text-gray-500 dark:text-gray-400">
-                    Position: {CurrentSelected[0]}, {CurrentSelected[1]}
+                    Key Index: {currentSelectedIndex}
                   </p>
                 </div>
               </div>
@@ -537,9 +562,29 @@
                 </div>
                 <div class="space-y-3 mb-6">
                   {#each configuredToggleKeys as [keyId, config] (keyId)}
-                    {@const [x, y] = keyId.split(',').map(Number)}
-                    {@const keyName =
-                      $KeyboardDisplayValues[y]?.[x] || t('common.unknown', currentLanguage)}
+                    {@const keyIndex = parseInt(keyId)}
+                    {@const keyName = (() => {
+                      const controller = keyboardAPI.state.controller;
+                      if (!controller) return t('common.unknown', currentLanguage);
+                      
+                      try {
+                        const layoutJson = controller.get_layout_json();
+                        const layout = JSON.parse(layoutJson);
+                        const keys = layout;
+                        
+                        if (keys && keys[keyIndex]) {
+                          const key = keys[keyIndex];
+                          if (key.labels && key.labels.length > 0) {
+                            const label = key.labels.find((l: string) => l && l.trim());
+                            if (label) return label;
+                          }
+                        }
+                      } catch (e) {
+                        console.error('Error getting key label:', e);
+                      }
+                      
+                      return `Key ${keyIndex}`;
+                    })()}
                     {@const isDeleting = deletingKeys.has(keyId)}
                     {@const isNewlyAdded = newlyAddedKeys.has(keyId)}
                     <div

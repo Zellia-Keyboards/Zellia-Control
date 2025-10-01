@@ -8,6 +8,8 @@
     resetGlobalConfiguration,
     keyActions,
   } from '$lib/AdvancedKeyShared';
+  import { selectedKeys } from '$lib/SelectedKeysStore';
+  import { keyboardAPI } from '$lib/keyboardAPI.svelte';
 
   let currentLanguage = $derived($language);
 
@@ -20,7 +22,9 @@
     tapTimeout: number;
   };
 
-  let CurrentSelected = $state<[number, number] | null>(null);
+  // Get the first selected key index (or null if none selected)
+  let currentSelectedIndex = $derived($selectedKeys.length > 0 ? $selectedKeys[0] : null);
+  
   let tapAction = $state('esc');
   let holdAction = $state('ctrl');
   let holdDelay = $state(200); // milliseconds
@@ -31,8 +35,8 @@
   }
 
   function getCurrentKeyConfiguration(): TapHoldConfiguration | null {
-    if (!CurrentSelected) return null;
-    const keyId = `${CurrentSelected[0]},${CurrentSelected[1]}`;
+    if (currentSelectedIndex === null) return null;
+    const keyId = `${currentSelectedIndex}`;
     const config = $globalConfigurations[keyId];
 
     if (config && config.type === 'tap-hold') {
@@ -49,8 +53,8 @@
   }
 
   function updateConfiguration(): void {
-    if (!CurrentSelected) return;
-    const keyId = `${CurrentSelected[0]},${CurrentSelected[1]}`;
+    if (currentSelectedIndex === null) return;
+    const keyId = `${currentSelectedIndex}`;
     const config: TapHoldConfiguration = {
       type: 'tap-hold',
       tapAction: tapAction,
@@ -92,8 +96,8 @@
   }
 
   function applyConfiguration(): void {
-    if (!CurrentSelected) return;
-    const keyId = `${CurrentSelected[0]},${CurrentSelected[1]}`;
+    if (currentSelectedIndex === null) return;
+    const keyId = `${currentSelectedIndex}`;
 
     // Check if this is a new key being configured
     const isNewKey =
@@ -112,11 +116,37 @@
     }
   }
 
+  // Get key label from keyboard layout
+  const currentKeyName = $derived.by(() => {
+    if (currentSelectedIndex === null) return 'No key selected';
+    const controller = keyboardAPI.state.controller;
+    if (!controller) return 'Unknown';
+    
+    try {
+      const layoutJson = controller.get_layout_json();
+      const layout = JSON.parse(layoutJson);
+      const keys = layout;
+      
+      if (keys && keys[currentSelectedIndex]) {
+        const key = keys[currentSelectedIndex];
+        // Return the first non-empty label
+        if (key.labels && key.labels.length > 0) {
+          const label = key.labels.find((l: string) => l && l.trim());
+          if (label) return label;
+        }
+      }
+    } catch (e) {
+      console.error('Error getting key label:', e);
+    }
+    
+    return `Key ${currentSelectedIndex}`;
+  });
+
   // Load existing configuration when key selection changes
   $effect(() => {
-    if (CurrentSelected) {
+    if (currentSelectedIndex !== null) {
       const config = getCurrentKeyConfiguration();
-      if (config && $globalConfigurations[`${CurrentSelected[0]},${CurrentSelected[1]}`]) {
+      if (config && $globalConfigurations[`${currentSelectedIndex}`]) {
         tapAction = config.tapAction || 'esc';
         holdAction = config.holdAction || 'ctrl';
         holdDelay = config.holdDelay || 200;
@@ -243,11 +273,11 @@
         <button
           class="px-4 py-2 text-white rounded-md transition-colors text-sm font-medium disabled:opacity-50 {$glassmorphismMode
             ? 'glassmorphism-button'
-            : CurrentSelected
+            : currentSelectedIndex !== null
               ? 'bg-primary-500 hover:bg-primary-600'
               : 'bg-primary-500'}"
           onclick={applyConfiguration}
-          disabled={!CurrentSelected}
+          disabled={currentSelectedIndex === null}
         >
           {t('advancedkey.applyConfiguration', currentLanguage)}
         </button>
@@ -265,7 +295,7 @@
 
   <!-- Main Content -->
   <div class="flex-1 p-6">
-    {#if CurrentSelected}
+    {#if currentSelectedIndex !== null}
       <div class="max-w-6xl mx-auto">
         <!-- Selected Key Info -->
         <div
@@ -282,10 +312,7 @@
                     : 'bg-primary-200 dark:bg-primary-800 border-primary-500 dark:border-primary-600'}"
                 >
                   <span class="font-mono font-bold text-gray-900 dark:text-white"
-                    >{CurrentSelected
-                      ? $KeyboardDisplayValues[CurrentSelected[1]]?.[CurrentSelected[0]] ||
-                        t('common.unknown', currentLanguage)
-                      : t('advancedkey.noKeySelected', currentLanguage)}</span
+                    >{currentKeyName}</span
                   >
                 </div>
                 <div>
@@ -293,7 +320,7 @@
                     {t('advancedkey.selectedKey', currentLanguage)}
                   </h3>
                   <p class="text-sm text-gray-500 dark:text-gray-400">
-                    {t('advancedkey.position', currentLanguage)}: {CurrentSelected[0]}, {CurrentSelected[1]}
+                    Key Index: {currentSelectedIndex}
                   </p>
                 </div>
               </div>
@@ -474,10 +501,7 @@
                 >
                   <span class="text-sm text-gray-600 dark:text-gray-400">Key</span>
                   <span class="font-mono font-medium text-gray-900 dark:text-white"
-                    >{CurrentSelected
-                      ? $KeyboardDisplayValues[CurrentSelected[1]]?.[CurrentSelected[0]] ||
-                        t('common.unknown', currentLanguage)
-                      : t('advancedkey.noKeySelected', currentLanguage)}</span
+                    >{currentKeyName}</span
                   >
                 </div>
                 <div
@@ -546,9 +570,29 @@
                 </div>
                 <div class="space-y-3 mb-3">
                   {#each configuredTapHoldKeys as [keyId, config] (keyId)}
-                    {@const [x, y] = keyId.split(',').map(Number)}
-                    {@const keyName =
-                      $KeyboardDisplayValues[y]?.[x] || t('common.unknown', currentLanguage)}
+                    {@const keyIndex = parseInt(keyId)}
+                    {@const keyName = (() => {
+                      const controller = keyboardAPI.state.controller;
+                      if (!controller) return t('common.unknown', currentLanguage);
+                      
+                      try {
+                        const layoutJson = controller.get_layout_json();
+                        const layout = JSON.parse(layoutJson);
+                        const keys = layout;
+                        
+                        if (keys && keys[keyIndex]) {
+                          const key = keys[keyIndex];
+                          if (key.labels && key.labels.length > 0) {
+                            const label = key.labels.find((l: string) => l && l.trim());
+                            if (label) return label;
+                          }
+                        }
+                      } catch (e) {
+                        console.error('Error getting key label:', e);
+                      }
+                      
+                      return `Key ${keyIndex}`;
+                    })()}
                     {@const tapHoldConfig = config as TapHoldConfiguration}
                     {@const isDeleting = deletingKeys.has(keyId)}
                     {@const isNewlyAdded = newlyAddedKeys.has(keyId)}
