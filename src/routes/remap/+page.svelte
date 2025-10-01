@@ -220,7 +220,9 @@
                   setKeyContent(keyInfo);
                 }
               }}
-              class="size-14 text-wrap text-sm border whitespace-pre-line rounded-lg overflow-auto truncate"
+              class="size-14 text-wrap text-sm whitespace-pre-line rounded-lg overflow-auto truncate transition-all duration-200 border-2 hover:shadow-[inset_0_0_0_2px_rgba(255,255,255,0.6)] hover:border-white/60 {$glassmorphismMode
+                ? 'glassmorphism-button'
+                : 'border-gray-300 dark:border-gray-600'}"
             >
               {keyInfo.label}
             </button>
