@@ -2,6 +2,8 @@
   import { keyboardAPI } from '$lib/keyboardAPI.svelte';
   import { glassmorphismMode } from '$lib/DarkModeStore.svelte';
   import { language, t } from '$lib/LanguageStore.svelte';
+  import { selectedKeys } from '$lib/SelectedKeysStore';
+  import { selectedCount, toggleSelectAll, deselectAll } from '$lib/SelectedKeysStore';
 
   // Helper function for string formatting
   const formatString = (template: string, ...args: (string | number)[]): string => {
@@ -23,8 +25,6 @@
   let direction = $state('left-to-right');
   let staticColor = $state('#ff0000');
   let selectedLayer = $state(1);
-  let perKeyMode = $state(false);
-  let selectedKeys = $state(new Set());
   let keyColor = $state('#ffffff');
 
   let CurrentSelected = $state<[number, number] | null>(null);
@@ -91,25 +91,20 @@
   }
 
   function toggleKeySelection() {
-    if (CurrentSelected) {
-      const keyId = `${CurrentSelected[0]},${CurrentSelected[1]}`;
-      if (selectedKeys.has(keyId)) {
-        selectedKeys.delete(keyId);
-      } else {
-        selectedKeys.add(keyId);
-      }
-      selectedKeys = new Set(selectedKeys);
-    }
+
+
   }
 
   function applyToSelectedKeys() {
     // Apply current color to selected keys
     console.log('Applying color to selected keys:', selectedKeys);
+
+    
   }
 
   function clearKeySelection() {
-    selectedKeys.clear();
-    selectedKeys = new Set(selectedKeys);
+    //selectedKeys.clear();
+    //selectedKeys = new Set(selectedKeys);
   }
 
   function applySettings() {
@@ -146,16 +141,6 @@
         onclick={applySettings}
       >
         {t('lighting.applySettings', currentLanguage)}
-      </button>
-      <button
-        class="bg-gray-800 dark:bg-gray-800 hover:bg-gray-700 dark:hover:bg-gray-700 text-white border border-white dark:border-white px-4 py-2 rounded transition-colors {$glassmorphismMode
-          ? 'glassmorphism-button'
-          : ''}"
-        onclick={() => (perKeyMode = !perKeyMode)}
-      >
-        {perKeyMode
-          ? t('lighting.exitPerKeyMode', currentLanguage)
-          : t('lighting.perKeyMode', currentLanguage)}
       </button>
     </div>
   </div>
@@ -252,112 +237,43 @@
       <h3 class="text-lg font-medium mb-4 text-black dark:text-white">
         {t('lighting.colorSettings', currentLanguage)}
       </h3>
-      {#if perKeyMode}
-        <!-- Per-Key Color Mode -->
-        <div class="space-y-4">
-          <div
-            class="p-3 rounded-lg border dark:bg-black bg-white dark:border-white border-[#e5e5e5] {$glassmorphismMode
-              ? 'glassmorphism-button'
-              : ''}"
+
+      <!-- Effect-based Color Controls -->
+      {#if selectedEffect === 'static' || selectedEffect === 'breathing' || selectedEffect === 'reactive'}
+        <div>
+          <spam class="block text-sm text-gray-600 dark:text-gray-300 mb-2"
+            >{t('lighting.color', currentLanguage)}</spam
           >
-            <div class="font-medium text-black dark:text-white">
-              {t('lighting.perKeyModeActive', currentLanguage)}
-            </div>
-            <div class="text-sm" style="color: var(--theme-color-primary);">
-              {t('lighting.clickKeysToSelect', currentLanguage)}
-            </div>
-          </div>
-
-          <div>
-            <label class="block text-sm text-gray-600 dark:text-gray-300 mb-2"
-              >{t('lighting.keyColor', currentLanguage)}</label
-            >
-            <div class="flex gap-2">
-              <input
-                type="color"
-                bind:value={keyColor}
-                class="w-12 h-10 rounded border-0 p-0 cursor-pointer overflow-hidden"
-              />
-              <input
-                type="text"
-                bind:value={keyColor}
-                class="flex-1 p-2 border border-gray-300 dark:border-white bg-white dark:bg-black text-black dark:text-white rounded-lg font-mono"
-                placeholder="#ffffff"
-              />
-            </div>
-          </div>
-
           <div class="flex gap-2">
-            <button
-              class="flex-1 px-3 py-2 rounded transition-colors text-white bg-primary {$glassmorphismMode
-                ? 'glassmorphism-button'
-                : ''}"
-              style="background-color: var(--theme-color-primary);"
-              onclick={toggleKeySelection}
-              disabled={!CurrentSelected}
-            >
-              {CurrentSelected && selectedKeys.has(`${CurrentSelected[0]},${CurrentSelected[1]}`)
-                ? t('lighting.deselectKey', currentLanguage)
-                : t('lighting.selectKey', currentLanguage)}
-            </button>
-            <button
-              class="{$glassmorphismMode
-                ? 'glassmorphism-button'
-                : ''} bg-gray-600 hover:bg-gray-700 text-white dark:bg-gray-800 border border-white px-3 py-2 rounded transition-colors"
-              onclick={clearKeySelection}
-            >
-              {t('lighting.clear', currentLanguage)} ({selectedKeys.size})
-            </button>
+            <input
+              type="color"
+              bind:value={staticColor}
+              class="w-12 h-10 rounded border-0 p-0 cursor-pointer overflow-hidden"
+            />
+            <input
+              type="text"
+              bind:value={staticColor}
+              class="flex-1 p-2 border border-gray-300 dark:border-white bg-white dark:bg-black text-black dark:text-white rounded-lg font-mono"
+              placeholder="#ff0000"
+            />
           </div>
-          <button
-            class="w-full px-3 py-2 rounded transition-colors text-white {$glassmorphismMode
-              ? 'glassmorphism-button'
-              : ''}"
-            style="background-color: var(--theme-color-primary);"
-            onclick={applyToSelectedKeys}
-            disabled={selectedKeys.size === 0}
-          >
-            {t('lighting.applyToSelectedKeys', currentLanguage)}
-          </button>
+          {#if hexToRgb(staticColor)}
+            {@const rgb = hexToRgb(staticColor)}
+            {#if rgb}
+              <div class="text-xs text-gray-600 dark:text-gray-400">
+                {formatString(t('lighting.rgbValues', currentLanguage), rgb.r, rgb.g, rgb.b)}
+              </div>
+            {/if}
+          {/if}
         </div>
       {:else}
-        <!-- Effect-based Color Controls -->
-        {#if selectedEffect === 'static' || selectedEffect === 'breathing' || selectedEffect === 'reactive'}
-          <div>
-            <spam class="block text-sm text-gray-600 dark:text-gray-300 mb-2"
-              >{t('lighting.color', currentLanguage)}</spam
-            >
-            <div class="flex gap-2">
-              <input
-                type="color"
-                bind:value={staticColor}
-                class="w-12 h-10 rounded border-0 p-0 cursor-pointer overflow-hidden"
-              />
-              <input
-                type="text"
-                bind:value={staticColor}
-                class="flex-1 p-2 border border-gray-300 dark:border-white bg-white dark:bg-black text-black dark:text-white rounded-lg font-mono"
-                placeholder="#ff0000"
-              />
-            </div>
-            {#if hexToRgb(staticColor)}
-              {@const rgb = hexToRgb(staticColor)}
-              {#if rgb}
-                <div class="text-xs text-gray-600 dark:text-gray-400">
-                  {formatString(t('lighting.rgbValues', currentLanguage), rgb.r, rgb.g, rgb.b)}
-                </div>
-              {/if}
-            {/if}
+        <div class="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg text-center">
+          <div class="text-gray-600 dark:text-gray-300">
+            {selectedEffect === 'rainbow'
+              ? t('lighting.automaticColors', currentLanguage)
+              : t('lighting.noColorSettings', currentLanguage)}
           </div>
-        {:else}
-          <div class="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg text-center">
-            <div class="text-gray-600 dark:text-gray-300">
-              {selectedEffect === 'rainbow'
-                ? t('lighting.automaticColors', currentLanguage)
-                : t('lighting.noColorSettings', currentLanguage)}
-            </div>
-          </div>
-        {/if}
+        </div>
       {/if}
       <!-- Preview -->
       <div class="mt-6">
