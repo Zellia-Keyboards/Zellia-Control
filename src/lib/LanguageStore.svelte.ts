@@ -139,7 +139,13 @@ export const translations = {
     'lighting.noColorSettings': 'No color settings needed for this effect',
     'lighting.animatedEffect': 'Animated Effect',
     'lighting.reactiveEffect': 'Reactive Effect',
-    'lighting.rgbValues': 'RGB: {0}, {1}, {2}', // Advanced Key Pages
+    'lighting.rgbValues': 'RGB: {0}, {1}, {2}',
+    'lighting.globalEffects': 'Global Effects',
+    'lighting.allKeys': 'All Keys',
+    'lighting.perKeyEffects': 'Per-Key Effects',
+    'lighting.customizable': 'Customizable',
+    
+    // Advanced Key Pages
     'advancedkey.title': 'Advanced Keys',
     'advancedkey.subtitle': 'Configure advanced keyboard behaviors for enhanced productivity',
     'advancedkey.gettingStarted': 'Getting Started',
@@ -901,6 +907,11 @@ export const translations = {
     'lighting.animatedEffect': '动画效果',
     'lighting.reactiveEffect': '反应效果',
     'lighting.rgbValues': 'RGB: {0}, {1}, {2}',
+    'lighting.globalEffects': '全键盘效果',
+    'lighting.allKeys': '全部按键',
+    'lighting.perKeyEffects': '单键效果',
+    'lighting.customizable': '可自定义',
+    
     // Remap Page
     'remap.title': '按键映射',
     'remap.subtitle': '重新映射按键以自定义键盘布局',

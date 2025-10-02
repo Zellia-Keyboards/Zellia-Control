@@ -26,6 +26,7 @@
   let staticColor = $state('#ff0000');
   let selectedLayer = $state(1);
   let keyColor = $state('#ffffff');
+  let effectMode = $state<'global' | 'per-key'>('per-key'); // Track effect scope
 
   let CurrentSelected = $state<[number, number] | null>(null);
 
@@ -37,36 +38,47 @@
     return Math.round((hardwareBrightness / 70) * 100);
   }
 
-  const effects = $derived([
+  // Global effects - apply to entire keyboard (全键盘效果)
+  const globalEffects = $derived([
+    {
+      id: 'rainbow',
+      name: t('lighting.rainbow', currentLanguage), // 彩虹
+      description: t('lighting.rainbowDesc', currentLanguage),
+      mode: 'global' as const,
+    },
+    {
+      id: 'wave',
+      name: t('lighting.wave', currentLanguage), // 波浪
+      description: t('lighting.waveDesc', currentLanguage),
+      mode: 'global' as const,
+    },
+    {
+      id: 'breathing',
+      name: t('lighting.breathing', currentLanguage), // 呼吸
+      description: t('lighting.breathingDesc', currentLanguage),
+      mode: 'global' as const,
+    },
+  ]);
+
+  // Per-key effects - can be customized per key (单键效果)
+  const perKeyEffects = $derived([
     {
       id: 'static',
       name: t('lighting.static', currentLanguage),
       description: t('lighting.staticDesc', currentLanguage),
-    },
-    {
-      id: 'breathing',
-      name: t('lighting.breathing', currentLanguage),
-      description: t('lighting.breathingDesc', currentLanguage),
-    },
-    {
-      id: 'wave',
-      name: t('lighting.wave', currentLanguage),
-      description: t('lighting.waveDesc', currentLanguage),
-    },
-    {
-      id: 'ripple',
-      name: t('lighting.ripple', currentLanguage),
-      description: t('lighting.rippleDesc', currentLanguage),
-    },
-    {
-      id: 'rainbow',
-      name: t('lighting.rainbow', currentLanguage),
-      description: t('lighting.rainbowDesc', currentLanguage),
+      mode: 'per-key' as const,
     },
     {
       id: 'reactive',
       name: t('lighting.reactive', currentLanguage),
       description: t('lighting.reactiveDesc', currentLanguage),
+      mode: 'per-key' as const,
+    },
+    {
+      id: 'ripple',
+      name: t('lighting.ripple', currentLanguage),
+      description: t('lighting.rippleDesc', currentLanguage),
+      mode: 'per-key' as const,
     },
   ]);
 
@@ -112,13 +124,21 @@
 
     console.log('Applying lighting settings:', {
       effect: selectedEffect,
+      effectMode,
       brightness: hardwareBrightness, // Send hardware value (0-70)
       frontendBrightness: brightness, // For reference (0-100)
       speed,
       direction,
       staticColor,
       layer: selectedLayer,
+      selectedKeys: effectMode === 'per-key' ? Array.from(selectedKeys) : 'all',
     });
+  }
+
+  // Update effect mode when selecting an effect
+  function selectEffect(effectId: string, mode: 'global' | 'per-key') {
+    selectedEffect = effectId;
+    effectMode = mode;
   }
 </script>
 
@@ -146,157 +166,143 @@
   </div>
 
   <div
-    class="rounded-xl shadow p-6 flex flex-col lg:flex-row gap-6 flex-1 {$glassmorphismMode
+    class="rounded-xl shadow p-4 flex flex-col lg:flex-row gap-4 flex-1 {$glassmorphismMode
       ? 'glassmorphism-card'
       : ''}"
   >
-    <!-- Effects Panel -->
-    <div class="flex-1 min-w-[300px]">
-      <div class="grid grid-cols-2 gap-3 mb-6">
-        {#each effects as effect}
-          <button
-            class="p-3 rounded-lg border-2 text-left transition-all duration-200 relative overflow-hidden {selectedEffect === effect.id
-              ? 'border-primary bg-primary/20 dark:bg-primary/30 shadow-lg shadow-primary/25'
-              : 'border-[#e5e5e5] bg-transparent dark:border-[#4b5563] hover:border-primary/50 hover:bg-primary/5'} {$glassmorphismMode
-              ? 'glassmorphism-button'
-              : ''}"
-            data-activate={selectedEffect === effect.id}
-            onclick={() => (selectedEffect = effect.id)}
-          >
-            {#if selectedEffect === effect.id}
-              <div class="absolute inset-0 bg-gradient-to-br from-primary/10 to-primary/20 dark:from-primary/20 dark:to-primary/30"></div>
-            {/if}
-            <div class="relative z-10 font-medium {selectedEffect === effect.id ? 'text-primary-700 dark:text-primary-200' : 'text-black dark:text-white'}">
-              {effect.name}
-            </div>
-            <div class="relative z-10 text-sm {selectedEffect === effect.id ? 'text-primary-600 dark:text-primary-300' : 'text-gray-600 dark:text-gray-300'}">
-              {effect.description}
-            </div>
-          </button>
-        {/each}
+    <!-- Left: Effects Panel -->
+    <div class="flex-1">
+      <!-- Global Effects (全键盘效果) -->
+      <div class="mb-3">
+        <div class="flex items-center gap-2 mb-2">
+          <h3 class="text-sm font-semibold text-black dark:text-white">{t('lighting.globalEffects', currentLanguage)}</h3>
+          <span class="text-xs px-1.5 py-0.5 rounded bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300">
+            {t('lighting.allKeys', currentLanguage)}
+          </span>
+        </div>
+        <div class="grid grid-cols-3 gap-2">
+          {#each globalEffects as effect}
+            <button
+              class="px-3 py-2 rounded-lg border-2 text-center transition-all duration-200 relative overflow-hidden {selectedEffect === effect.id
+                ? 'border-primary bg-primary/20 dark:bg-primary/30 shadow-lg'
+                : 'border-gray-300 dark:border-gray-600 hover:border-primary/50'} {$glassmorphismMode
+                ? 'glassmorphism-button'
+                : ''}"
+              onclick={() => selectEffect(effect.id, effect.mode)}
+            >
+              {#if selectedEffect === effect.id}
+                <div class="absolute inset-0 bg-gradient-to-br from-primary/10 to-primary/20 dark:from-primary/20 dark:to-primary/30"></div>
+              {/if}
+              <div class="relative z-10 text-xs font-medium {selectedEffect === effect.id ? 'text-primary-700 dark:text-primary-200' : 'text-black dark:text-white'}">
+                {effect.name}
+              </div>
+            </button>
+          {/each}
+        </div>
       </div>
 
-      <!-- Global Controls -->
-      <div class="space-y-4">
-        <!-- Brightness -->
-        <div>
-          <div class="flex justify-between text-sm text-gray-600 dark:text-gray-300 mb-2">
-            <span>{t('lighting.brightness', currentLanguage)}</span>
-            <span>{brightness}%</span>
-          </div>
-          <input
-            type="range"
-            min="0"
-            max="100"
-            bind:value={brightness}
-            class="w-full h-2 rounded-full bg-gray-300 dark:bg-gray-700 appearance-none slider-thumb"
-          />
+      <!-- Per-Key Effects (单键效果) -->
+      <div class="mb-3">
+        <div class="flex items-center gap-2 mb-2">
+          <h3 class="text-sm font-semibold text-black dark:text-white">{t('lighting.perKeyEffects', currentLanguage)}</h3>
+          <span class="text-xs px-1.5 py-0.5 rounded bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300">
+            {t('lighting.customizable', currentLanguage)}
+          </span>
         </div>
-
-        <!-- Speed (for animated effects) -->
-        {#if ['breathing', 'wave', 'rainbow'].includes(selectedEffect)}
-          <div>
-            <div class="flex justify-between text-sm text-gray-600 dark:text-gray-300 mb-2">
-              <span>{t('lighting.speed', currentLanguage)}</span>
-              <span>{speed}%</span>
-            </div>
-            <input
-              type="range"
-              min="1"
-              max="100"
-              bind:value={speed}
-              class="w-full h-2 rounded-full bg-gray-300 dark:bg-gray-700 appearance-none slider-thumb"
-            />
-          </div>
-        {/if}
-
-        <!-- Direction (for directional effects) -->
-        {#if ['rainbow'].includes(selectedEffect)}
-          <div>
-            <label class="block text-sm text-gray-600 dark:text-gray-300 mb-2"
-              >{t('lighting.direction', currentLanguage)}</label
+        <div class="grid grid-cols-3 gap-2">
+          {#each perKeyEffects as effect}
+            <button
+              class="px-3 py-2 rounded-lg border-2 text-center transition-all duration-200 relative overflow-hidden {selectedEffect === effect.id
+                ? 'border-primary bg-primary/20 dark:bg-primary/30 shadow-lg'
+                : 'border-gray-300 dark:border-gray-600 hover:border-primary/50'} {$glassmorphismMode
+                ? 'glassmorphism-button'
+                : ''}"
+              onclick={() => selectEffect(effect.id, effect.mode)}
             >
-            <select
-              bind:value={direction}
-              class="w-full p-2 border border-gray-300 dark:border-white bg-white dark:bg-black text-black dark:text-white rounded-lg"
-            >
-              {#each directions as dir}
-                <option value={dir.id}>{dir.name}</option>
-              {/each}
-            </select>
-          </div>
-        {/if}
+              {#if selectedEffect === effect.id}
+                <div class="absolute inset-0 bg-gradient-to-br from-primary/10 to-primary/20 dark:from-primary/20 dark:to-primary/30"></div>
+              {/if}
+              <div class="relative z-10 text-xs font-medium {selectedEffect === effect.id ? 'text-primary-700 dark:text-primary-200' : 'text-black dark:text-white'}">
+                {effect.name}
+              </div>
+            </button>
+          {/each}
+        </div>
       </div>
     </div>
 
-    <!-- Divider -->
-    <div class="hidden lg:block w-px bg-gray-200 dark:bg-white"></div>
+    <!-- Right: Settings Panel -->
+    <div class="flex-1 space-y-3">
+      <!-- Brightness -->
+      <div>
+        <div class="flex justify-between text-xs text-gray-600 dark:text-gray-300 mb-1.5">
+          <span>{t('lighting.brightness', currentLanguage)}</span>
+          <span class="font-semibold">{brightness}%</span>
+        </div>
+        <input
+          type="range"
+          min="0"
+          max="100"
+          bind:value={brightness}
+          class="w-full h-2 rounded-full bg-gray-300 dark:bg-gray-700 appearance-none slider-thumb"
+        />
+      </div>
 
-    <!-- Color Controls Panel -->
-    <div class="flex-1 min-w-[300px]">
-      <h3 class="text-lg font-medium mb-4 text-black dark:text-white">
-        {t('lighting.colorSettings', currentLanguage)}
-      </h3>
+      <!-- Speed (for animated effects) -->
+      {#if ['breathing', 'wave', 'rainbow'].includes(selectedEffect)}
+        <div>
+          <div class="flex justify-between text-xs text-gray-600 dark:text-gray-300 mb-1.5">
+            <span>{t('lighting.speed', currentLanguage)}</span>
+            <span class="font-semibold">{speed}%</span>
+          </div>
+          <input
+            type="range"
+            min="1"
+            max="100"
+            bind:value={speed}
+            class="w-full h-2 rounded-full bg-gray-300 dark:bg-gray-700 appearance-none slider-thumb"
+          />
+        </div>
+      {/if}
 
-      <!-- Effect-based Color Controls -->
+      <!-- Color (for applicable effects) -->
       {#if selectedEffect === 'static' || selectedEffect === 'breathing' || selectedEffect === 'reactive'}
         <div>
-          <spam class="block text-sm text-gray-600 dark:text-gray-300 mb-2"
-            >{t('lighting.color', currentLanguage)}</spam
-          >
+          <div class="text-xs text-gray-600 dark:text-gray-300 mb-1.5">
+            {t('lighting.color', currentLanguage)}
+          </div>
           <div class="flex gap-2">
             <input
               type="color"
               bind:value={staticColor}
-              class="w-12 h-10 rounded border-0 p-0 cursor-pointer overflow-hidden"
+              class="w-10 h-9 rounded border-0 p-0 cursor-pointer overflow-hidden"
             />
             <input
               type="text"
               bind:value={staticColor}
-              class="flex-1 p-2 border border-gray-300 dark:border-white bg-white dark:bg-black text-black dark:text-white rounded-lg font-mono"
+              class="flex-1 px-2 py-1.5 border border-gray-300 dark:border-white bg-white dark:bg-black text-black dark:text-white rounded-lg font-mono text-xs"
               placeholder="#ff0000"
             />
           </div>
-          {#if hexToRgb(staticColor)}
-            {@const rgb = hexToRgb(staticColor)}
-            {#if rgb}
-              <div class="text-xs text-gray-600 dark:text-gray-400">
-                {formatString(t('lighting.rgbValues', currentLanguage), rgb.r, rgb.g, rgb.b)}
-              </div>
-            {/if}
-          {/if}
-        </div>
-      {:else}
-        <div class="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg text-center">
-          <div class="text-gray-600 dark:text-gray-300">
-            {selectedEffect === 'rainbow'
-              ? t('lighting.automaticColors', currentLanguage)
-              : t('lighting.noColorSettings', currentLanguage)}
-          </div>
         </div>
       {/if}
-      <!-- Preview -->
-      <div class="mt-6">
-        <label class="block text-sm text-gray-600 dark:text-gray-300 mb-2"
-          >{t('lighting.preview', currentLanguage)}</label
-        >
-        <div
-          class="h-16 rounded-lg border {'border-gray-300 dark:border-white'} flex items-center justify-center"
-          style:background={selectedEffect === 'static'
-            ? staticColor
-            : '#f3f4f6 dark:#374151'}
-        >
-          {#if selectedEffect === 'rainbow'}
-            <div class="text-sm text-gray-600 dark:text-gray-300">
-              {t('lighting.animatedEffect', currentLanguage)}
-            </div>
-          {:else if selectedEffect === 'reactive' || selectedEffect === 'ripple'}
-            <div class="text-sm text-gray-600 dark:text-gray-300">
-              {t('lighting.reactiveEffect', currentLanguage)}
-            </div>
-          {/if}
+
+      <!-- Direction (for directional effects) -->
+      {#if ['rainbow'].includes(selectedEffect)}
+        <div>
+          <label class="block text-xs text-gray-600 dark:text-gray-300 mb-1.5"
+            >{t('lighting.direction', currentLanguage)}</label
+          >
+          <select
+            bind:value={direction}
+            class="w-full px-2 py-1.5 border border-gray-300 dark:border-white bg-white dark:bg-black text-black dark:text-white rounded-lg text-xs"
+          >
+            {#each directions as dir}
+              <option value={dir.id}>{dir.name}</option>
+            {/each}
+          </select>
         </div>
-      </div>
+      {/if}
     </div>
   </div>
 </div>
