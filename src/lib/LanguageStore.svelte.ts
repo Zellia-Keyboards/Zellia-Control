@@ -93,6 +93,8 @@ export const translations = {
     'performance.high': 'HIGH',
     'performance.low': 'LOW',
     'performance.directInput': 'Direct input',
+    'performance.keyTravelDeadzones': 'Key Travel Deadzones',
+    'performance.keyTravelDeadzonesDesc': 'Adjust the start and bottom deadzone limits for rapid trigger activation.',
 
     // Lighting Page
     'lighting.color': 'Color',
@@ -771,6 +773,8 @@ export const translations = {
     'performance.high': '高',
     'performance.low': '低',
     'performance.directInput': '直接输入',
+    'performance.keyTravelDeadzones': '按键行程死区',
+    'performance.keyTravelDeadzonesDesc': '调整快速触发激活的起始和底部死区限制。',
 
     // Debug Page
     'debug.title': '调试',
