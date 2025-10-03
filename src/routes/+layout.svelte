@@ -18,6 +18,7 @@
   import { slide, fade } from 'svelte/transition';
   import * as ekc from 'emi-keyboard-controller';
   import { advancedKeys } from '$lib/ControllerStore.svelte';
+  import { selectedLayer } from '$lib/SelectedLayerStore.svelte';
   
   const NAVIGATE = [
     ['/performance', 'nav.performance'],
@@ -31,7 +32,6 @@
   ];
   
   let { children } = $props();
-  let selectedLayer = $state(1);
   let showDropdown = $state(false);
   let showThemeSelector = $state(false);
   let showFirefoxWarning = $state(false);
@@ -116,8 +116,9 @@
   // Derived variable to determine when to show layer selector
   let shouldShowLayerSelector = $derived(() => {
     const path = $page.url.pathname;
+    // Show layer selector on these pages
     const showPagesForLayerSelector = ['/performance', '/remap', '/advancedkey'];
-    return !showPagesForLayerSelector.some(page => path === page || path.startsWith(page + '/'));
+    return showPagesForLayerSelector.some(page => path === page || path.startsWith(page + '/'));
   });
 
 
@@ -537,7 +538,7 @@
     {#if keyboardAPI.shouldShowConfigurator && !isLoadingConfigurator}
       <div class="flex items-center justify-between -mb-3">
         <div class="layer-selector flex items-center gap-2 px-4 py-2 h-12">
-          {#if !shouldShowLayerSelector()}
+          {#if shouldShowLayerSelector()}
             <span
               class="font-semibold text-gray-900 dark:text-white mr-2 {$glassmorphismMode
                 ? 'text-gray-800 dark:text-white'
@@ -546,24 +547,13 @@
             >
             {#each [1, 2, 3, 4] as layer}
               <button
-                class="w-8 h-8 flex items-center justify-center rounded-lg border font-bold text-lg transition-colors duration-200 focus:outline-none bg-white dark:bg-black border-gray-300 dark:border-gray-600 text-primary-500 hover:bg-primary-100 dark:hover:bg-gray-700 {$glassmorphismMode
+                class="w-8 h-8 flex items-center justify-center rounded-lg border font-bold text-lg transition-all duration-200 focus:outline-none bg-white dark:bg-black border-gray-300 dark:border-gray-600 text-primary-500 hover:bg-primary-100 dark:hover:bg-gray-700 {$glassmorphismMode
                   ? 'glassmorphism-button'
-                  : ''} {selectedLayer === layer
-                  ? 'bg-primary-500 !text-white !border-primary-700'
+                  : ''} {$selectedLayer === layer
+                  ? 'bg-primary-500 !text-white !border-primary-700 shadow-lg scale-110 ring-2 ring-primary-400'
                   : ''}"
-                onmouseover={e => {
-                  if (selectedLayer !== layer) {
-                    const element = e.currentTarget as HTMLElement;
-                    element.classList.add('hover:bg-primary-100', 'dark:hover:bg-gray-700');
-                  }
-                }}
-                onmouseout={e => {
-                  if (selectedLayer !== layer) {
-                    const element = e.currentTarget as HTMLElement;
-                    element.classList.remove('hover:bg-primary-100', 'dark:hover:bg-gray-700');
-                  }
-                }}
-                onclick={() => (selectedLayer = layer)}
+                onclick={() => selectedLayer.set(layer)}
+                title="Layer {layer}"
               >
                 {layer}
               </button>
