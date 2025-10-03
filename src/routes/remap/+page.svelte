@@ -2,6 +2,7 @@
   import { glassmorphismMode, darkMode } from '$lib/DarkModeStore.svelte';
   import { keyboardAPI, keyboardConnectionState } from '$lib/keyboardAPI.svelte';
   import { language, t } from '$lib/LanguageStore.svelte';
+  import { selectedLayer } from '$lib/SelectedLayerStore.svelte';
   import Basic from './Basic.svelte';
   import System from './System.svelte';
   import type { Component, Snippet } from 'svelte';
@@ -143,7 +144,13 @@
     if (keyInfo.subcode != undefined) {
       keycode |= keyInfo.subcode;
     }
-    keyboardConnectionState.controller?.send_keymap_packet($selectedKeys,0,keycode);
+    const apiLayer = $selectedLayer - 1;
+    
+    if (dev) {
+      console.log(`Setting keycode ${keycode} for keys ${$selectedKeys} on layer ${$selectedLayer} (API layer ${apiLayer})`);
+    }
+    
+    keyboardConnectionState.controller?.send_keymap_packet($selectedKeys, apiLayer, keycode);
   }
 
 
@@ -163,6 +170,33 @@
 
   $inspect(ActiveTabComponent, 'ActiveTabComponent');
   $inspect(selectedKeys, 'selectedKeys');
+  
+  // Helper text for layer descriptions
+  const getLayerDescription = (layer: number): string => {
+    switch (layer) {
+      case 1:
+        return 'Default layer for primary key assignments';
+      case 2:
+        return 'Custom layer for RGB controls and secondary functions';
+      case 3:
+        return 'Custom layer for advanced macros and settings';
+      case 4:
+        return 'Custom layer for additional user configurations';
+      default:
+        return '';
+    }
+  };
+  
+  // Get layer color for visual distinction
+  const getLayerColor = (layer: number): string => {
+    const colors = {
+      1: '#6366f1', // Indigo
+      2: '#8b5cf6', // Purple
+      3: '#ec4899', // Pink
+      4: '#f59e0b', // Amber
+    };
+    return colors[layer as keyof typeof colors] || '#6366f1';
+  };
 </script>
 
 <div
@@ -176,6 +210,7 @@
   onclick={() => mainContainer?.focus()}
   style="outline: none;"
 >
+
   <!-- Tab Navigation -->
   <div class="flex items-center gap-0.5 -mt-4 mb-4 p-0.5 rounded-xl">
     {#each Tabs as tab}
