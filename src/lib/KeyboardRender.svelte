@@ -82,11 +82,7 @@
     width: 100%;
   }
   
-  .keyboard-container {
-    /* Container styling similar to NewZellia60HE */
-    display: inline-block;
-    box-sizing: border-box;
-  }
+
   
   .keyboard {
     background-color: transparent;
