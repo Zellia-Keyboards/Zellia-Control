@@ -59,7 +59,7 @@
               aria-label="Key Press Reporting Toggle"
               class:bg-blue-600={keyPressReporting}
               class:bg-gray-300={!keyPressReporting}
-              on:click={() => (keyPressReporting = !keyPressReporting)}
+              onclick={() => (keyPressReporting = !keyPressReporting)}
             >
               <span
                 class="inline-block w-4 h-4 transform rounded-full bg-white transition-transform shadow"
@@ -89,7 +89,7 @@
           <button
             type="button"
             class="w-full text-white border-none rounded-md px-4 py-2 font-semibold transition-colors duration-200 bg-red-700 hover:bg-red-600 hover:opacity-90 glassmorphism-button"
-            on:click={handleReset}
+            onclick={handleReset}
           >
             {t('debug.resetButton', currentLanguage)}
           </button>
@@ -111,7 +111,7 @@
           <button
             type="button"
             class="w-full text-white border-none rounded-md px-4 py-2 font-semibold transition-colors duration-200 bg-primary-600 hover:bg-primary-500 hover:opacity-90 glassmorphism-button"
-            on:click={handleRebootRecovery}
+            onclick={handleRebootRecovery}
           >
             {t('debug.recoveryModeButton', currentLanguage)}
           </button>

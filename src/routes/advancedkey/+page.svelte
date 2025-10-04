@@ -160,7 +160,7 @@
             ? 'glassmorphism-card'
             : ''}"
           onclick={() => navigateToMode(mode.path)}
-        >
+        > 
           <!-- Mode Header -->
           <div class="flex items-center gap-4 mb-4">
             <div class="flex items-center justify-center w-10 h-10">
