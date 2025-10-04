@@ -927,9 +927,6 @@
     user-select: none;
   }
 
-  .layer-selector {
-    user-select: none;
-  }
 
   /* Layer selector fade-in animation */
   .animate-fade-in {
