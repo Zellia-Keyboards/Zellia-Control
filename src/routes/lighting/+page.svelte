@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { ArrowRight, ArrowLeft, ArrowDown, ArrowUp } from 'lucide-svelte';
   import { keyboardAPI } from '$lib/keyboardAPI.svelte';
   import { glassmorphismMode } from '$lib/DarkModeStore.svelte';
   import { language, t } from '$lib/LanguageStore.svelte';
@@ -83,12 +84,10 @@
   ]);
 
   const directions = $derived([
-    { id: 'left-to-right', name: t('lighting.leftToRight', currentLanguage) },
-    { id: 'right-to-left', name: t('lighting.rightToLeft', currentLanguage) },
-    { id: 'top-to-bottom', name: t('lighting.topToBottom', currentLanguage) },
-    { id: 'bottom-to-top', name: t('lighting.bottomToTop', currentLanguage) },
-    { id: 'center-out', name: t('lighting.centerOut', currentLanguage) },
-    { id: 'outside-in', name: t('lighting.outsideIn', currentLanguage) },
+    { id: 'left-to-right', name: t('lighting.leftToRight', currentLanguage), icon: ArrowRight },
+    { id: 'right-to-left', name: t('lighting.rightToLeft', currentLanguage), icon: ArrowLeft },
+    { id: 'top-to-bottom', name: t('lighting.topToBottom', currentLanguage), icon: ArrowDown },
+    { id: 'bottom-to-top', name: t('lighting.bottomToTop', currentLanguage), icon: ArrowUp },
   ]);
 
   function hexToRgb(hex: string) {
@@ -293,14 +292,29 @@
           <label class="block text-xs text-gray-600 dark:text-gray-300 mb-1.5"
             >{t('lighting.direction', currentLanguage)}</label
           >
-          <select
-            bind:value={direction}
-            class="w-full px-2 py-1.5 border border-gray-300 dark:border-white bg-white dark:bg-black text-black dark:text-white rounded-lg text-xs"
-          >
+          <div class="grid grid-cols-4 gap-2">
             {#each directions as dir}
-              <option value={dir.id}>{dir.name}</option>
+              <button
+                class="aspect-square p-3 rounded-lg border-2 flex flex-col items-center justify-center gap-1 transition-all duration-200 relative overflow-hidden {direction === dir.id
+                  ? 'border-primary bg-primary/20 dark:bg-primary/30 shadow-lg'
+                  : 'border-gray-300 dark:border-gray-600 hover:border-primary/50'} {$glassmorphismMode
+                  ? 'glassmorphism-button'
+                  : ''}"
+                onclick={() => (direction = dir.id)}
+              >
+                {#if direction === dir.id}
+                  <div class="absolute inset-0 bg-gradient-to-br from-primary/10 to-primary/20 dark:from-primary/20 dark:to-primary/30"></div>
+                {/if}
+                <svelte:component 
+                  this={dir.icon} 
+                  class="relative z-10 w-6 h-6 {direction === dir.id ? 'text-primary-700 dark:text-primary-200' : 'text-black dark:text-white'}"
+                />
+                <div class="relative z-10 text-xs font-medium text-center {direction === dir.id ? 'text-primary-700 dark:text-primary-200' : 'text-black dark:text-white'}">
+                  {dir.name}
+                </div>
+              </button>
             {/each}
-          </select>
+          </div>
         </div>
       {/if}
     </div>
