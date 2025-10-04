@@ -2,7 +2,7 @@
   import { goto } from '$app/navigation';
   import { glassmorphismMode } from '$lib/DarkModeStore.svelte';
   import { keyboardAPI } from '$lib/keyboardAPI.svelte';
-  import { Zap, RotateCcw, Settings, Target } from 'lucide-svelte';
+  import { LayoutTemplateIcon, ToggleLeftIcon, LayersIcon, MoveHorizontalIcon } from 'lucide-svelte';
   import { language, t } from '$lib/LanguageStore.svelte';
 
   let currentLanguage = $state($language);
@@ -16,7 +16,7 @@
       id: 'tap-hold',
       name: t('advancedkey.tapHold', currentLanguage),
       description: t('advancedkey.tapHoldDesc', currentLanguage),
-      icon: Zap,
+      icon: LayoutTemplateIcon,
       path: '/advancedkey/routes/tap-hold',
       features: [
         t('advancedkey.tapHoldFeature1', currentLanguage),
@@ -29,7 +29,7 @@
       id: 'toggle',
       name: t('advancedkey.toggle', currentLanguage),
       description: t('advancedkey.toggleDesc', currentLanguage),
-      icon: RotateCcw,
+      icon: ToggleLeftIcon,
       path: '/advancedkey/routes/toggle',
       features: [
         t('advancedkey.toggleFeature1', currentLanguage),
@@ -42,7 +42,7 @@
       id: 'dynamic',
       name: t('advancedkey.dynamic', currentLanguage),
       description: t('advancedkey.dynamicDesc', currentLanguage),
-      icon: Settings,
+      icon: LayersIcon,
       path: '/advancedkey/routes/dynamic',
       features: [
         t('advancedkey.dynamicFeature1', currentLanguage),
@@ -55,7 +55,7 @@
       id: 'null-bind',
       name: t('advancedkey.nullBind', currentLanguage),
       description: t('advancedkey.nullBindDesc', currentLanguage),
-      icon: Target,
+      icon: MoveHorizontalIcon,
       path: '/advancedkey/routes/nullbind',
       features: [
         t('advancedkey.nullBindFeature1', currentLanguage),
