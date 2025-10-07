@@ -10,6 +10,7 @@
   } from '$lib/AdvancedKeyShared';
   import { selectedKeys } from '$lib/SelectedKeysStore';
   import { keyboardAPI } from '$lib/keyboardAPI.svelte';
+  import { slide } from 'svelte/transition';
 
   let currentLanguage = $derived($language);
 
@@ -25,8 +26,8 @@
   // Get the first selected key index (or null if none selected)
   let currentSelectedIndex = $derived($selectedKeys.length > 0 ? $selectedKeys[0] : null);
   
-  let tapAction = $state('esc');
-  let holdAction = $state('ctrl');
+  let tapAction = $state('KC_ESC');
+  let holdAction = $state('KC_LCTL');
   let holdDelay = $state(200); // milliseconds
   let tapTimeout = $state(150); // milliseconds
 
@@ -147,31 +148,46 @@
     if (currentSelectedIndex !== null) {
       const config = getCurrentKeyConfiguration();
       if (config && $globalConfigurations[`${currentSelectedIndex}`]) {
-        tapAction = config.tapAction || 'esc';
-        holdAction = config.holdAction || 'ctrl';
+        tapAction = config.tapAction || 'KC_ESC';
+        holdAction = config.holdAction || 'KC_LCTL';
         holdDelay = config.holdDelay || 200;
         tapTimeout = config.tapTimeout || 150;
       }
     }
-  }); // Action categories for better organization
+  });
+  
+  // Expandable section state - separate for tap and hold actions
+  let expandedTapSections: Record<string, boolean> = $state({
+    Basic: true,
+    Layer: false,
+    System: false,
+    Mouse: false,
+  });
+  
+  let expandedHoldSections: Record<string, boolean> = $state({
+    Basic: false,
+    Layer: false,
+    System: false,
+    Mouse: false,
+  });
+  
+  // Action categories - only 4 sections matching remap pages
   const actionCategories = $derived([
     {
-      name: t('advancedkey.common', currentLanguage),
-      actions: keyActions.filter(action =>
-        ['esc', 'enter', 'space', 'tab', 'backspace', 'delete'].includes(action.id)
-      ),
+      name: 'Basic',
+      actions: keyActions.filter(action => action.category === 'Basic'),
     },
     {
-      name: t('advancedkey.modifiers', currentLanguage),
-      actions: keyActions.filter(action => ['ctrl', 'shift', 'alt', 'win'].includes(action.id)),
+      name: 'Layer',
+      actions: keyActions.filter(action => action.category === 'Layer'),
     },
     {
-      name: t('advancedkey.function', currentLanguage),
-      actions: keyActions.filter(action => action.category === 'Function').slice(0, 12),
+      name: 'System',
+      actions: keyActions.filter(action => action.category === 'System'),
     },
     {
-      name: t('advancedkey.letters', currentLanguage),
-      actions: keyActions.filter(action => action.category === 'Letter').slice(0, 20),
+      name: 'Mouse',
+      actions: keyActions.filter(action => action.category === 'Mouse'),
     },
   ]);
 
@@ -294,16 +310,16 @@
   </div>
 
   <!-- Main Content -->
-  <div class="flex-1 p-6">
+  <div class="flex-1 p-4 sm:p-6">
     {#if currentSelectedIndex !== null}
-      <div class="max-w-6xl mx-auto">
+      <div class="max-w-7xl mx-auto">
         <!-- Selected Key Info -->
         <div
-          class="rounded-lg border p-6 mb-6 {$glassmorphismMode
+          class="rounded-lg border p-4 sm:p-6 mb-6 {$glassmorphismMode
             ? 'glassmorphism-card'
             : 'bg-primary-100 dark:bg-primary-900 border-primary-300 dark:border-primary-700'}"
         >
-          <div class="flex items-center justify-between">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div class="flex items-center gap-4">
               <div class="flex items-center gap-3">
                 <div
@@ -339,12 +355,12 @@
           </div>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
           <!-- Configuration Panel -->
-          <div class="lg:col-span-2 space-y-6">
+          <div class="xl:col-span-2 space-y-6">
             <!-- Tap Action Selection -->
             <div
-              class="rounded-lg border p-6 {$glassmorphismMode
+              class="rounded-lg border p-4 sm:p-6 {$glassmorphismMode
                 ? 'glassmorphism-card'
                 : 'bg-primary-50 dark:bg-primary-950 border-primary-300 dark:border-primary-800'}"
             >
@@ -355,34 +371,46 @@
                 {t('advancedkey.tapActionDesc', currentLanguage)}
               </p>
 
-              <div class="space-y-4">
+              <div class="space-y-2">
                 {#each actionCategories as category}
-                  <div>
-                    <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      {category.name}
-                    </h4>
-                    <div class="grid grid-cols-10 gap-2">
-                      {#each category.actions as action}
-                        <button
-                          class="aspect-square w-15 h-15 text-xs rounded-md border transition-all {$glassmorphismMode
-                            ? 'glassmorphism-button'
-                            : tapAction === action.id
-                              ? 'bg-primary-500 border-primary-500 text-white'
-                              : 'bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-primary-100 hover:border-primary-400 dark:hover:bg-gray-700'}"
-                          onclick={() => (tapAction = action.id)}
-                          title={action.name}
-                        >
-                          {action.name}
-                        </button>
-                      {/each}
-                    </div>
+                  <div class="border rounded-lg {$glassmorphismMode ? 'glassmorphism-card' : 'border-primary-200 dark:border-primary-700'}">
+                    <button
+                      class="w-full px-4 py-3 flex items-center justify-between {$glassmorphismMode ? 'glassmorphism-button' : 'hover:bg-primary-100 dark:hover:bg-primary-900'} rounded-lg transition-colors"
+                      onclick={() => expandedTapSections[category.name] = !expandedTapSections[category.name]}
+                    >
+                      <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300">
+                        {category.name}
+                      </h4>
+                      <svg class="w-4 h-4 transition-transform {expandedTapSections[category.name] ? 'rotate-180' : ''}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </button>
+                    {#if expandedTapSections[category.name]}
+                      <div class="px-4 pb-4 pt-2" transition:slide={{ duration: 300, axis: 'y' }}>
+                        <div class="grid grid-cols-6 sm:grid-cols-8 md:grid-cols-10 lg:grid-cols-12 gap-2">
+                          {#each category.actions as action}
+                            <button
+                              class="aspect-square min-w-12 text-xs rounded-md border transition-all flex items-center justify-center p-1 whitespace-pre-line leading-tight {$glassmorphismMode
+                                ? 'glassmorphism-button'
+                                : tapAction === action.id
+                                  ? 'bg-primary-500 border-primary-500 text-white'
+                                  : 'bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-primary-100 hover:border-primary-400 dark:hover:bg-gray-700'}"
+                              onclick={() => (tapAction = action.id)}
+                              title={action.name}
+                            >
+                              {action.name}
+                            </button>
+                          {/each}
+                        </div>
+                      </div>
+                    {/if}
                   </div>
                 {/each}
               </div>
             </div>
             <!-- Hold Action Selection -->
             <div
-              class="rounded-lg border p-6 {$glassmorphismMode
+              class="rounded-lg border p-4 sm:p-6 {$glassmorphismMode
                 ? 'glassmorphism-card'
                 : 'bg-primary-50 dark:bg-primary-950 border-primary-300 dark:border-primary-800'}"
             >
@@ -393,34 +421,46 @@
                 {t('advancedkey.holdActionDesc', currentLanguage)}
               </p>
 
-              <div class="space-y-4">
+              <div class="space-y-2">
                 {#each actionCategories as category}
-                  <div>
-                    <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      {category.name}
-                    </h4>
-                    <div class="grid grid-cols-10 gap-2">
-                      {#each category.actions as action}
-                        <button
-                          class="aspect-square w-15 h-15 text-xs rounded-md border transition-all {$glassmorphismMode
-                            ? 'glassmorphism-button'
-                            : holdAction === action.id
-                              ? 'bg-green-500 border-green-500 text-white'
-                              : 'bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-primary-100 hover:border-primary-400 dark:hover:bg-gray-700'}"
-                          onclick={() => (holdAction = action.id)}
-                          title={action.name}
-                        >
-                          {action.name}
-                        </button>
-                      {/each}
-                    </div>
+                  <div class="border rounded-lg {$glassmorphismMode ? 'glassmorphism-card' : 'border-primary-200 dark:border-primary-700'}">
+                    <button
+                      class="w-full px-4 py-3 flex items-center justify-between {$glassmorphismMode ? 'glassmorphism-button' : 'hover:bg-primary-100 dark:hover:bg-primary-900'} rounded-lg transition-colors"
+                      onclick={() => expandedHoldSections[category.name] = !expandedHoldSections[category.name]}
+                    >
+                      <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300">
+                        {category.name}
+                      </h4>
+                      <svg class="w-4 h-4 transition-transform {expandedHoldSections[category.name] ? 'rotate-180' : ''}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </button>
+                    {#if expandedHoldSections[category.name]}
+                      <div class="px-4 pb-4 pt-2" transition:slide={{ duration: 300, axis: 'y' }}>
+                        <div class="grid grid-cols-6 sm:grid-cols-8 md:grid-cols-10 lg:grid-cols-12 gap-2">
+                          {#each category.actions as action}
+                            <button
+                              class="aspect-square min-w-12 text-xs rounded-md border transition-all flex items-center justify-center p-1 whitespace-pre-line leading-tight {$glassmorphismMode
+                                ? 'glassmorphism-button'
+                                : holdAction === action.id
+                                  ? 'bg-green-500 border-green-500 text-white'
+                                  : 'bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-primary-100 hover:border-primary-400 dark:hover:bg-gray-700'}"
+                              onclick={() => (holdAction = action.id)}
+                              title={action.name}
+                            >
+                              {action.name}
+                            </button>
+                          {/each}
+                        </div>
+                      </div>
+                    {/if}
                   </div>
                 {/each}
               </div>
             </div>
             <!-- Timing Configuration -->
             <div
-              class="rounded-lg border p-6 {$glassmorphismMode
+              class="rounded-lg border p-4 sm:p-6 {$glassmorphismMode
                 ? 'glassmorphism-card'
                 : 'bg-primary-50 dark:bg-primary-950 border-primary-300 dark:border-primary-800'}"
             >
@@ -486,10 +526,10 @@
           </div>
 
           <!-- Preview Panel -->
-          <div class="lg:col-span-1 space-y-6">
+          <div class="xl:col-span-1 space-y-6">
             <!-- Live Preview -->
             <div
-              class="rounded-lg border p-6 {$glassmorphismMode
+              class="rounded-lg border p-4 sm:p-6 {$glassmorphismMode
                 ? 'glassmorphism-card'
                 : 'bg-primary-50 dark:bg-primary-950 border-primary-300 dark:border-primary-800'}"
             >
@@ -528,7 +568,7 @@
             </div>
             <!-- Info Panel -->
             <div
-              class="border rounded-lg p-6 {$glassmorphismMode
+              class="border rounded-lg p-4 sm:p-6 {$glassmorphismMode
                 ? 'glassmorphism-card'
                 : 'bg-primary-200 dark:bg-primary-900 border-primary-400 dark:border-primary-700'}"
             >
@@ -551,7 +591,7 @@
             <!-- Configured Keys Summary -->
             {#if showConfiguredSection}
               <div
-                class="rounded-lg border p-6 {$glassmorphismMode
+                class="rounded-lg border p-4 sm:p-6 {$glassmorphismMode
                   ? 'glassmorphism-card'
                   : 'bg-primary-50 dark:bg-primary-950 border-primary-300 dark:border-primary-800'} {sectionAnimationPlayed
                   ? 'animate-section-fade-in'

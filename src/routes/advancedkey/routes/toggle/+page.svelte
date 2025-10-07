@@ -11,10 +11,11 @@
   } from '$lib/AdvancedKeyShared';
   import { selectedKeys } from '$lib/SelectedKeysStore';
   import { keyboardAPI } from '$lib/keyboardAPI.svelte';
+  import { slide } from 'svelte/transition';
 
   let currentLanguage = $derived($language);
 
-  let selectedToggleAction = $state('caps');
+  let selectedToggleAction = $state('KC_CAPS');
   let toggleMode = $state('press');
   let toggleState = $state(false);
   
@@ -142,37 +143,45 @@
       const keyId = `${currentSelectedIndex}`;
       const config = $globalConfigurations[keyId];
       if (config && config.type === 'toggle') {
-        selectedToggleAction = config.toggleAction || 'caps';
+        selectedToggleAction = config.toggleAction || 'KC_CAPS';
         toggleMode = config.toggleMode || 'press';
         toggleState = config.toggleState || false;
       } else {
         // Reset to defaults when no configuration exists or switching to a new key
-        selectedToggleAction = 'caps';
+        selectedToggleAction = 'KC_CAPS';
         toggleMode = 'press';
         toggleState = false;
       }
     }
   });
 
-  // Toggle action categories
-  const toggleCategories = [
+  // Expandable section state - only 4 sections
+  let expandedSections: Record<string, boolean> = $state({
+    Basic: true,
+    Layer: false,
+    System: false,
+    Mouse: false,
+  });
+
+  // Toggle action categories - only 4 sections matching remap pages
+  const toggleCategories = $derived([
+    {
+      name: 'Basic',
+      actions: keyActions.filter(action => action.category === 'Basic'),
+    },
+    {
+      name: 'Layer',
+      actions: keyActions.filter(action => action.category === 'Layer'),
+    },
     {
       name: 'System',
-      actions: keyActions.filter(action => ['caps', 'num', 'scroll'].includes(action.id)),
+      actions: keyActions.filter(action => action.category === 'System'),
     },
     {
-      name: 'Modifiers',
-      actions: keyActions.filter(action => ['ctrl', 'shift', 'alt', 'win'].includes(action.id)),
+      name: 'Mouse',
+      actions: keyActions.filter(action => action.category === 'Mouse'),
     },
-    {
-      name: 'Function',
-      actions: keyActions.filter(action => action.category === 'Function').slice(0, 12),
-    },
-    {
-      name: 'Letters',
-      actions: keyActions.filter(action => action.category === 'Letter').slice(0, 20),
-    },
-  ];
+  ]);
 
   // Get configured toggle keys count
   const configuredToggleKeys = $derived(
@@ -327,30 +336,40 @@
                 {t('advancedkey.toggleAction', currentLanguage)}
               </h3>
 
-              <div class="space-y-4">
+              <div class="space-y-2">
                 {#each toggleCategories as category}
-                  <div>
-                    <h4 class="text-sm font-medium text-gray-700 dark:text-white mb-2">
-                      {category.name}
-                    </h4>
-                    <div
-                      class="grid grid-cols-6 sm:grid-cols-8 md:grid-cols-10 lg:grid-cols-12 gap-2"
+                  <div class="border rounded-lg {$glassmorphismMode ? 'glassmorphism-card' : 'border-primary-200 dark:border-primary-700'}">
+                    <button
+                      class="w-full px-4 py-3 flex items-center justify-between {$glassmorphismMode ? 'glassmorphism-button' : 'hover:bg-primary-100 dark:hover:bg-primary-900'} rounded-lg transition-colors"
+                      onclick={() => expandedSections[category.name] = !expandedSections[category.name]}
                     >
-                      {#each category.actions as action}
-                        <button
-                          class="aspect-square min-w-12 text-xs rounded-md border transition-all flex items-center justify-center p-1 {selectedToggleAction ===
-                          action.id
-                            ? 'bg-primary-600 text-white border-primary-600 hover:bg-primary-700'
-                            : 'bg-white dark:bg-black text-gray-700 dark:text-white border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800'} {$glassmorphismMode
-                            ? 'glassmorphism-button'
-                            : ''}"
-                          onclick={() => (selectedToggleAction = action.id)}
-                          title={action.name}
-                        >
-                          {action.name}
-                        </button>
-                      {/each}
-                    </div>
+                      <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300">
+                        {category.name}
+                      </h4>
+                      <svg class="w-4 h-4 transition-transform {expandedSections[category.name] ? 'rotate-180' : ''}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </button>
+                    {#if expandedSections[category.name]}
+                      <div class="px-4 pb-4 pt-2" transition:slide={{ duration: 300, axis: 'y' }}>
+                        <div class="grid grid-cols-6 sm:grid-cols-8 md:grid-cols-10 lg:grid-cols-12 gap-2">
+                          {#each category.actions as action}
+                            <button
+                              class="aspect-square min-w-12 text-xs rounded-md border transition-all flex items-center justify-center p-1 whitespace-pre-line leading-tight {selectedToggleAction ===
+                              action.id
+                                ? 'bg-primary-600 text-white border-primary-600 hover:bg-primary-700'
+                                : 'bg-white dark:bg-black text-gray-700 dark:text-white border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800'} {$glassmorphismMode
+                                ? 'glassmorphism-button'
+                                : ''}"
+                              onclick={() => (selectedToggleAction = action.id)}
+                              title={action.name}
+                            >
+                              {action.name}
+                            </button>
+                          {/each}
+                        </div>
+                      </div>
+                    {/if}
                   </div>
                 {/each}
               </div>
