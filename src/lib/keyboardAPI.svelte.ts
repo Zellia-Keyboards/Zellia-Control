@@ -3,6 +3,7 @@
 
 import { 
   Zellia80Controller, 
+  Zellia60Controller,
   OholeoKeyboardController, 
   TrinityPadController,
   type IKeyboardController 
@@ -43,6 +44,7 @@ export let keyboardConnectionState = $state<KeyboardConnectionState>({
 
 // Available controllers
 const availableControllers = [
+  { controller: Zellia60Controller, modelName: 'Zellia 60HE', modelKey: 'zellia60he' as KeyboardModel },
   { controller: Zellia80Controller, modelName: 'Zellia 80HE', modelKey: 'zellia80he' as KeyboardModel },
   { controller: OholeoKeyboardController, modelName: 'Oholeo Keyboard', modelKey: 'oholeo' as KeyboardModel },
   { controller: TrinityPadController, modelName: 'Trinity Pad', modelKey: 'trinity_pad' as KeyboardModel },
@@ -70,13 +72,14 @@ export const keyboardAPI = {
       
       // Match the first device to a controller
       let selectedController: IKeyboardController | null = null;
-      let selectedModel: KeyboardModel = 'trinity_pad';
+      let selectedModel: KeyboardModel = 'zellia60he';
       let deviceName = 'Unknown Device';
       
       for (const device of devices) {
         for (const controllerConfig of availableControllers) {
           if (this.deviceMatchesController(device, controllerConfig.controller)) {
             selectedController = new controllerConfig.controller();
+            console.log(selectedController);
             selectedModel = controllerConfig.modelKey;
             deviceName = device.productName || controllerConfig.modelName;
             break;
@@ -141,6 +144,10 @@ export const keyboardAPI = {
 
   // Check if a device matches a controller (simplified matching)
   deviceMatchesController(device: any, ControllerClass: any): boolean {
+    // For Zellia60Controller: vendorId: 0xFEED, productId: 22319
+    if (ControllerClass === Zellia60Controller) {
+      return device.vendorId === 0xFEED && device.productId === 22319;
+    }
     // For Zellia80Controller: vendorId: 0xFEED, productId: 22319
     if (ControllerClass === Zellia80Controller) {
       return device.vendorId === 0xFEED && device.productId === 22319;
