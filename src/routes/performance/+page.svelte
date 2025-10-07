@@ -48,7 +48,7 @@
     // 基础模式和点位计算
     k.mode = rapidTriggerEnabled ? ekc.KeyMode.KeyAnalogRapidMode : ekc.KeyMode.KeyAnalogNormalMode;
     k.activation_value = mmToPercent(actuationPoint); 
-
+    k.deactivation_value = mmToPercent(deactivationPoint); 
     // 灵敏度设置
     // 使用 separateSensitivity 来决定使用哪个值
     let finalPressSensitivity = separateSensitivity ? pressSensitivity : sensitivityValue;

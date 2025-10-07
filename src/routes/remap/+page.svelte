@@ -136,6 +136,7 @@
     }
   });
 
+  let currentKeycode = $state(0);
   // Function to set key content/keycode for selected keys
   function setKeyContent(keyInfo: KeyInfo) {
     if ($selectedKeys.length === 0) return;
@@ -144,6 +145,7 @@
     if (keyInfo.subcode != undefined) {
       keycode |= keyInfo.subcode;
     }
+    currentKeycode = keycode;
     const apiLayer = $selectedLayer - 1;
     
     if (dev) {
@@ -165,6 +167,7 @@
       return;
     }
     hasSelection = isSelected;
+    keyboardConnectionState.controller?.send_keymap_packet($selectedKeys, $selectedLayer - 1, currentKeycode);
     
   });
 
