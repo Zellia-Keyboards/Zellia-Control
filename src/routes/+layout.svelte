@@ -17,7 +17,7 @@
   import { Palette, Sun, Moon, Globe, Settings, AwardIcon } from 'lucide-svelte';
   import { slide, fade } from 'svelte/transition';
   import * as ekc from 'emi-keyboard-controller';
-  import { advancedKeys } from '$lib/ControllerStore.svelte';
+  import { advancedKeys, rgbBaseConfig, rgbConfigs } from '$lib/ControllerStore.svelte';
   import { selectedLayer } from '$lib/SelectedLayerStore.svelte';
   
   const NAVIGATE = [
@@ -92,6 +92,31 @@
     if (isActive('/remap')) {
       newKeys.forEach((key, index)=>{
         newKeys[index].labels[0] = "2";
+      });
+    }
+    if (isActive('/lighting')) {
+      newKeys.forEach((key, index)=>{
+        const rgb_config = $rgbConfigs[index];
+        let labels = newKeys[index].labels;
+        labels = labels.map(() => "");
+        switch (rgb_config.mode) {
+          case ekc.RGBMode.RgbModeStatic: {
+            labels[3] = `Static`;
+            break;
+          }
+          case ekc.RGBMode.RgbModeLinear: {
+            labels[3] = `reactive`;
+            break;
+          }
+          case ekc.RGBMode.RgbModeFadingDiamondRipple: {
+            labels[3] = `ripple`;
+            break;
+          }
+          default: {
+            break;
+          }
+        }
+        newKeys[index].labels = labels;
       });
     }
     return newKeys
@@ -741,6 +766,8 @@
                   const success = await keyboardAPI.connect();
                   layout = keyboardConnectionState.controller?.get_layout_json() as string;
                   advancedKeys.set(keyboardConnectionState.controller?.get_advanced_keys() as ekc.IAdvancedKey[]);
+                  rgbConfigs.set(keyboardConnectionState.controller?.get_rgb_configs() as ekc.IRGBConfig[]);
+                  rgbBaseConfig.set(keyboardConnectionState.controller?.get_rgb_base_config() as ekc.IRGBBaseConfig);
                   //api.send_advanced_key_packet([0], new ekc.AdvancedKey());
                   // Navigation is handled automatically by keyboardAPI
                 }}

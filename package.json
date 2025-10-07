@@ -19,10 +19,12 @@
     "@ijprest/kle-serial": "^0.15.1",
     "@tauri-apps/api": ">=2.0.0",
     "@tauri-apps/plugin-shell": ">=2.0.0",
+    "@types/tinycolor2": "^1.4.6",
     "chart.js": "^4.4.9",
     "chartjs-plugin-zoom": "^2.2.0",
+    "emi-keyboard-controller": "link:src-controller",
     "lucide-svelte": "^0.511.0",
-    "emi-keyboard-controller": "link:src-controller"
+    "tinycolor2": "^1.6.0"
   },
   "devDependencies": {
     "@sveltejs/adapter-static": "^3.0.1",

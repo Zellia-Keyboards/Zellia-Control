@@ -826,11 +826,11 @@ export class LibampKeyboardController extends KeyboardController {
             send_buf[1] = PacketData.PacketDataRgbConfig;
             send_buf[2] = 1;
             dataView.setUint16(3, index,true);
-            send_buf[3 + 2] = this.rgb_configs[index].mode;
-            send_buf[3 + 3] = this.rgb_configs[index].rgb.red;
-            send_buf[3 + 4] = this.rgb_configs[index].rgb.green;
-            send_buf[3 + 5] = this.rgb_configs[index].rgb.blue;
-            dataView.setFloat32(3 + 6,this.rgb_configs[index].speed,true);
+            send_buf[3 + 2] = rgb_config.mode;
+            send_buf[3 + 3] = rgb_config.rgb.red;
+            send_buf[3 + 4] = rgb_config.rgb.green;
+            send_buf[3 + 5] = rgb_config.rgb.blue;
+            dataView.setFloat32(3 + 6,rgb_config.speed,true);
             let res = this.write(send_buf);
             console.debug("Wrote rgb: {:?} byte(s)", res);
         });
