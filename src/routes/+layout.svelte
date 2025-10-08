@@ -19,6 +19,7 @@
   import * as ekc from 'emi-keyboard-controller';
   import { advancedKeys, rgbBaseConfig, rgbConfigs } from '$lib/ControllerStore.svelte';
   import { selectedLayer } from '$lib/SelectedLayerStore.svelte';
+  import ProfileDropdown from '$lib/ProfileDropdown.svelte';
   
   const NAVIGATE = [
     ['/performance', 'nav.performance'],
@@ -129,7 +130,7 @@
   // Check if current page should use the sidebar layout
   const usesSidebarLayout = $derived(() => {
     const path = $page.url.pathname;
-    const sidebarPages = ['/performance', '/remap', '/lighting', '/advancedkey', '/debug', '/settings', '/about', '/update'];
+    const sidebarPages = ['/performance', '/remap', '/lighting', '/advancedkey', '/debug', '/settings', '/about', '/update', '/profiles'];
     return sidebarPages.some(sidebarPage => path === sidebarPage || path.startsWith(sidebarPage + '/'));
   });
 
@@ -321,11 +322,11 @@
     <!-- Header -->
     <div class="p-4">
       <h1
-        class="font-bold text-xl dark:text-white text-gray-900 {$glassmorphismMode
+        class="font-black text-xl dark:text-white text-gray-900 {$glassmorphismMode
           ? ''
           : ''} text-center"
       >
-        {t('common.zellia', currentLanguage)}
+        <span class="italic">{currentLanguage === 'en' ? 'ZELLIA' : 'Zellia'}</span> {currentLanguage === 'en' ? 'Control' : '控制'}
       </h1>
       
       <!-- Connection Status -->
@@ -347,63 +348,22 @@
     </div>
 
     <!-- Profile Section -->
-    <div class="px-3 pb-3 border-b border-gray-100 dark:border-gray-600">
-      <!-- Profile Dropdown -->
-      <div class="mb-2">
-        <button
-          class="flex items-center justify-between w-full px-3 py-2 text-sm font-medium text-gray-900 bg-gray-50 border-gray-200 hover:bg-gray-100 dark:text-white dark:bg-black dark:border-gray-600 dark:hover:bg-gray-900 {$glassmorphismMode
-            ? 'glassmorphism-button'
-            : ''} border rounded-lg transition-colors duration-200"
-          onclick={() => (showDropdown = !showDropdown)}
-        >
-          <span>{t('ui.profiles', currentLanguage)}</span>
-          <svg
-            class="w-4 h-4 transition-transform duration-200"
-            class:rotate-180={showDropdown}
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            viewBox="0 0 24 24"
-          >
-            <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+    <div class="px-3 pb-3 border-b border-gray-100 dark:border-gray-600 space-y-2">
+      <!-- Profile Management Button - styled differently -->
+      <a
+        href="/profiles"
+        class="flex items-center justify-between w-full px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white shadow-md hover:shadow-lg {$glassmorphismMode ? 'glassmorphism-button' : ''}"
+      >
+        <div class="flex items-center gap-2">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 19a2 2 0 01-2-2V7a2 2 0 012-2h4l2 2h4a2 2 0 012 2v1M5 19h14a2 2 0 002-2v-5a2 2 0 00-2-2H9a2 2 0 00-2 2v5a2 2 0 01-2 2z"/>
           </svg>
-        </button>
-
-        {#if showDropdown}
-          <div
-            class="mt-1 dark:bg-black dark:border-gray-600 bg-white border-gray-200 {$glassmorphismMode
-              ? 'glassmorphism-card'
-              : ''} border rounded-lg shadow-lg"
-            transition:slide={{ duration: 300, axis: 'y' }}
-          >
-            <div class="p-3 text-sm dark:text-gray-300 text-gray-800">
-              {t('ui.noProfilesAvailable', currentLanguage)}
-            </div>
-          </div>
-        {/if}
-      </div>
-
-      <!-- Import/Export and Disconnect Buttons -->
-      {#if !showDropdown}
-        <div class="grid grid-cols-2 gap-2 mb-2" transition:slide={{ duration: 300, axis: 'y' }}>
-          <button
-            class="px-3 py-2 text-xs font-medium border rounded-md transition-colors duration-200 text-white border-transparent bg-primary-500 hover:bg-primary-600 {$glassmorphismMode
-              ? 'glassmorphism-button'
-              : ''}"
-          >
-            {t('ui.import', currentLanguage)}
-          </button>
-          <button
-            class="px-3 py-2 text-xs font-medium border rounded-md transition-colors duration-200 text-white border-transparent bg-primary-500 hover:bg-primary-600 {$glassmorphismMode
-              ? 'glassmorphism-button'
-              : ''}"
-          >
-            {t('ui.export', currentLanguage)}
-          </button>
+          <span>{t('ui.profiles', currentLanguage)}</span>
         </div>
-
-        
-      {/if}
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+        </svg>
+      </a>
       
       <!-- Disconnect Button - only show when connected -->
       {#if keyboardAPI.shouldShowConfigurator}
@@ -559,8 +519,8 @@
       ? 'glassmorphism-main'
       : 'bg-primary-50/20 dark:bg-black/20'}"
   >
-    <!-- Layer selector and Layout toggle (only show when connected) -->
-    {#if keyboardAPI.shouldShowConfigurator && !isLoadingConfigurator}
+    <!-- Layer selector and Layout toggle (only show when connected and not on /about or /profiles) -->
+    {#if keyboardAPI.shouldShowConfigurator && !isLoadingConfigurator && !$page.url.pathname.includes('/about') && !$page.url.pathname.includes('/profiles')}
       <div class="flex items-center justify-between -mb-3">
         <div class="layer-selector flex items-center gap-2 px-4 py-2 h-12">
           {#if shouldShowLayerSelector()}
@@ -583,12 +543,19 @@
                 {layer}
               </button>
             {/each}
+          {:else}
+            <!-- Empty spacer when layer selector is not shown -->
+            <div></div>
           {/if}
         </div>
 
-        <!-- Layout Configuration Dropdown -->
-        <div class="relative px-4 py-2">
-          <button
+        <div class="flex items-center gap-3 px-4 py-2">
+          <!-- Profile Dropdown -->
+          <ProfileDropdown />
+
+          <!-- Layout Configuration Dropdown -->
+          <div class="relative">
+            <button
             class="flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-200 {$glassmorphismMode
               ? 'glassmorphism-button'
               : 'bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'}"
@@ -707,13 +674,14 @@
               </div>
             </div>
           {/if}
+          </div>
         </div>
       </div>
     {/if}
     <!-- Component for adjust part -->
 
-    <!-- Global KeyboardRender - only show when connected -->
-    {#if keyboardAPI.shouldShowConfigurator && !$page.url.pathname.includes('/about') && !isLoadingConfigurator}
+    <!-- Global KeyboardRender - only show when connected and not on /about or /profiles -->
+    {#if keyboardAPI.shouldShowConfigurator && !isLoadingConfigurator && !$page.url.pathname.includes('/about') && !$page.url.pathname.includes('/profiles')}
       <div class="relative">
         <KeyboardRender keys={keyboardKeys}/>
       </div>

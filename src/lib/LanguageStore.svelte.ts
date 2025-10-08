@@ -58,7 +58,7 @@ export const translations = {
     'ui.layer': 'Layer',
     'ui.update': 'Update',
     // Common
-    'common.zellia': 'Zellia Control',
+    'common.zellia': 'ZELLIA Control',
     'common.english': 'English',
     'common.chinese': '中文',
 
@@ -672,6 +672,26 @@ export const translations = {
 
     // Connection warnings
     'ui.usbHubWarning': 'Using USB Hub connections may cause connectivity issues. Direct connection recommended.',
+
+    // Profiles Page
+    'profiles.title': 'Profile Management',
+    'profiles.subtitle': 'Manage your keyboard profiles. You can import, export, and customize them.',
+    'profiles.createNew': 'Create New Profile',
+    'profiles.slot': 'Slot',
+    'profiles.active': 'Active',
+    'profiles.created': 'Created',
+    'profiles.modified': 'Modified',
+    'profiles.rename': 'Rename',
+    'profiles.duplicateFrom': 'Duplicate From',
+    'profiles.duplicate': 'Duplicate',
+    'profiles.restoreDefault': 'Restore Default',
+    'profiles.confirmRestore': 'Are you sure you want to restore this profile to default settings? This cannot be undone.',
+    'profiles.confirmDelete': 'Are you sure you want to delete this profile? This cannot be undone.',
+    'profiles.cannotDeleteActive': 'Cannot delete the active profile. Please switch to another profile first.',
+    'profiles.enterProfileName': 'Enter profile name',
+    'profiles.selectTargetSlot': 'Select an empty slot to duplicate this profile to:',
+    'profiles.manageAll': 'Manage All Profiles',
+    'profiles.noProfile': 'No Profile',
   },
   zh: {
     // Navigation
@@ -1263,6 +1283,26 @@ export const translations = {
 
     // Connection warnings
     'ui.usbHubWarning': '使用 USB Hub 连接设备可能会导致连接不稳定。',
+
+    // Profiles Page
+    'profiles.title': '配置文件管理',
+    'profiles.subtitle': '管理您的键盘配置文件。您可以导入、导出和自定义它们。',
+    'profiles.createNew': '创建新配置文件',
+    'profiles.slot': '插槽',
+    'profiles.active': '激活',
+    'profiles.created': '创建',
+    'profiles.modified': '修改',
+    'profiles.rename': '重命名',
+    'profiles.duplicateFrom': '复制自',
+    'profiles.duplicate': '复制',
+    'profiles.restoreDefault': '恢复默认',
+    'profiles.confirmRestore': '您确定要将此配置文件恢复为默认设置吗？此操作无法撤销。',
+    'profiles.confirmDelete': '您确定要删除此配置文件吗？此操作无法撤销。',
+    'profiles.cannotDeleteActive': '无法删除激活的配置文件。请先切换到另一个配置文件。',
+    'profiles.enterProfileName': '输入配置文件名称',
+    'profiles.selectTargetSlot': '选择一个空插槽来复制此配置文件：',
+    'profiles.manageAll': '管理所有配置文件',
+    'profiles.noProfile': '无配置文件',
   },
 };
 
