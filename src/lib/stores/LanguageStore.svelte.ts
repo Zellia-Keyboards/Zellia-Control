@@ -718,7 +718,7 @@ export const translations = {
     'ui.layer': '层级',
     'ui.update': '更新',
     // Common
-    'common.zellia': 'Zellia 控制',
+    'common.zellia': 'ZELLIA 控制',
     'common.english': 'English',
     'common.chinese': '中文',
     'common.apply': '应用',

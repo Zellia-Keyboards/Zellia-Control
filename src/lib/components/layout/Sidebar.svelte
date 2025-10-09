@@ -33,7 +33,7 @@
         ? ''
         : ''} text-center"
     >
-      <span class="italic">{currentLanguage === 'en' ? 'ZELLIA' : 'Zellia'}</span> {currentLanguage === 'en' ? 'Control' : '控制'}
+      <span class="italic">{currentLanguage === 'en' ? 'ZELLIA' : 'ZELLIA'}</span> {currentLanguage === 'en' ? 'Control' : '控制'}
     </h1>
     
     <!-- Connection Status -->
