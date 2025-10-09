@@ -10,8 +10,7 @@
     type KeyConfiguration,
     type DynamicKeystrokeConfiguration as GlobalDynamicKeystrokeConfiguration, // Alias to avoid conflict
     type KeyAction,
-  } from '$
-  lib/types/AdvancedKeyShared';
+  } from '$lib/types/AdvancedKeyShared';
 
   import Binding from './Binding.svelte';
   import Performance from './Performance.svelte';

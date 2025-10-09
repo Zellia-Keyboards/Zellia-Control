@@ -1,5 +1,9 @@
 import { writable } from 'svelte/store';
-import { Keycode, MouseKeycode, ConsumerKeycode, LayerControlKeycode, KeyModifier } from '../../src-controller/src/interface';
+import { Keycode, 
+         MouseKeycode, 
+         ConsumerKeycode, 
+         LayerControlKeycode, 
+         KeyModifier } from '../../../src-controller/src/interface';
 
 // Advanced key configuration types
 export enum DKSAction {
