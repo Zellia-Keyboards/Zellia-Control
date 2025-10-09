@@ -2,7 +2,7 @@
   import { createEventDispatcher } from 'svelte';
   import { flip } from 'svelte/animate';
   import Key from '$lib/components/Key.svelte';
-  import { setTotalKeys, toggleKey, selectedKeys } from '\$lib/stores/SelectedKeysStore';
+  import { setTotalKeys, toggleKey, selectedKeys } from '$lib/stores/SelectedKeysStore';
   // Assuming the kle-serial types are available in your project
   import type * as kle from '@ijprest/kle-serial';
 

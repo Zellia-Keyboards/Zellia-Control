@@ -1,7 +1,7 @@
 <script lang="ts">
-  import { profileStore } from '\$lib/stores/ProfileStore.svelte';
-  import { language, t } from '\$lib/stores/LanguageStore.svelte';
-  import { glassmorphismMode } from '\$lib/stores/DarkModeStore.svelte';
+  import { profileStore } from '$lib/stores/ProfileStore.svelte';
+  import { language, t } from '$lib/stores/LanguageStore.svelte';
+  import { glassmorphismMode } from '$lib/stores/DarkModeStore.svelte';
   import { Check } from 'lucide-svelte';
   import { slide } from 'svelte/transition';
   
