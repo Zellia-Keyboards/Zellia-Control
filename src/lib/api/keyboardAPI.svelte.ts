@@ -7,9 +7,9 @@ import {
   OholeoKeyboardController, 
   TrinityPadController,
   type IKeyboardController 
-} from '../../src-controller/src/index';
+} from '../../../src-controller/src/index';
 import { goto } from '$app/navigation';
-import * as api from '$lib/api.svelte';
+import * as api from '\$lib/api/api.svelte';
 
 export type KeyboardModel = 'zellia60he' | 'zellia80he' | 'oholeo' | 'trinity_pad';
 

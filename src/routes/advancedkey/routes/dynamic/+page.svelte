@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { glassmorphismMode } from '$lib/DarkModeStore.svelte';
-  import { language, t } from '$lib/LanguageStore.svelte';
+  import { glassmorphismMode } from '$lib/stores/DarkModeStore.svelte';
+  import { language, t } from '$lib/stores/LanguageStore.svelte';
   import {
     globalConfigurations,
     updateGlobalConfiguration,
@@ -10,7 +10,8 @@
     type KeyConfiguration,
     type DynamicKeystrokeConfiguration as GlobalDynamicKeystrokeConfiguration, // Alias to avoid conflict
     type KeyAction,
-  } from '$lib/AdvancedKeyShared';
+  } from '$
+  lib/types/AdvancedKeyShared';
 
   import Binding from './Binding.svelte';
   import Performance from './Performance.svelte';

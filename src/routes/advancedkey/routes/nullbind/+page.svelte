@@ -1,16 +1,16 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import { glassmorphismMode } from '$lib/DarkModeStore.svelte';
-  import { language, t } from '$lib/LanguageStore.svelte';
+  import { glassmorphismMode } from '$lib/stores/DarkModeStore.svelte';
+  import { language, t } from '$lib/stores/LanguageStore.svelte';
   import { AlertTriangle, Trash2 } from 'lucide-svelte';
   import {
     globalConfigurations,
     updateGlobalConfiguration,
     resetGlobalConfiguration,
     keyActions,
-  } from '$lib/AdvancedKeyShared';
-  import { selectedKeys, deselectAll, toggleKey } from '$lib/SelectedKeysStore';
-  import * as api from '$lib/api.svelte';
+  } from '$lib/types/AdvancedKeyShared';
+  import { selectedKeys, deselectAll, toggleKey } from '$lib/stores/SelectedKeysStore';
+  import * as api from '$lib/api/api.svelte';
   import { onMount, onDestroy } from 'svelte';
   import * as kle from '@ijprest/kle-serial';
 

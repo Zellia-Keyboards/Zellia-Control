@@ -1,9 +1,9 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import { glassmorphismMode } from '$lib/DarkModeStore.svelte';
-  import { keyboardAPI } from '$lib/keyboardAPI.svelte';
+  import { glassmorphismMode } from '$lib/stores/DarkModeStore.svelte';
+  import { keyboardAPI } from '$lib/api/keyboardAPI.svelte';
   import { LayoutTemplateIcon, ToggleLeftIcon, LayersIcon, MoveHorizontalIcon } from 'lucide-svelte';
-  import { language, t } from '$lib/LanguageStore.svelte';
+  import { language, t } from '$lib/stores/LanguageStore.svelte';
 
   let currentLanguage = $state($language);
 

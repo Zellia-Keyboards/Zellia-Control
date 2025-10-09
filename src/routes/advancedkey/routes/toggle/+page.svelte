@@ -1,16 +1,16 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import { glassmorphismMode } from '$lib/DarkModeStore.svelte';
-  import { language, t, tPlaceholder } from '$lib/LanguageStore.svelte';
+  import { glassmorphismMode } from '$lib/stores/DarkModeStore.svelte';
+  import { language, t, tPlaceholder } from '$lib/stores/LanguageStore.svelte';
   import {
     globalConfigurations,
     updateGlobalConfiguration,
     resetGlobalConfiguration,
     keyActions,
     type KeyConfiguration,
-  } from '$lib/AdvancedKeyShared';
-  import { selectedKeys } from '$lib/SelectedKeysStore';
-  import { keyboardAPI } from '$lib/keyboardAPI.svelte';
+  } from '$lib/types/AdvancedKeyShared';
+  import { selectedKeys } from '$lib/stores/SelectedKeysStore';
+  import { keyboardAPI } from '$lib/api/keyboardAPI.svelte';
   import { slide } from 'svelte/transition';
 
   let currentLanguage = $derived($language);

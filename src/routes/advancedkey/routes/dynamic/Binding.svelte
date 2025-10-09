@@ -1,7 +1,7 @@
 <script lang="ts">
-  import { glassmorphismMode } from '$lib/DarkModeStore.svelte';
-  import type { KeyAction } from '$lib/AdvancedKeyShared';
-  import { language, t } from '$lib/LanguageStore.svelte';
+  import { glassmorphismMode } from '$lib/stores/DarkModeStore.svelte';
+  import type { KeyAction } from '$lib/types/AdvancedKeyShared';
+  import { language, t } from '$lib/stores/LanguageStore.svelte';
 
   let currentLanguage = $derived($language);
 

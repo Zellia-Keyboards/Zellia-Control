@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { keyboardAPI } from '$lib/keyboardAPI.svelte';
-  import { language, t } from '$lib/LanguageStore.svelte';
+  import { keyboardAPI } from '$lib/api/keyboardAPI.svelte';
+  import { language, t } from '$lib/stores/LanguageStore.svelte';
   import KeyTracking from './KeyTracking.svelte';
 
   let currentLanguage = $derived($language);

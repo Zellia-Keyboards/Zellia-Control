@@ -1,8 +1,8 @@
 <script lang="ts">
-  import { glassmorphismMode, darkMode } from '$lib/DarkModeStore.svelte';
-  import { keyboardAPI, keyboardConnectionState } from '$lib/keyboardAPI.svelte';
-  import { language, t } from '$lib/LanguageStore.svelte';
-  import { selectedLayer } from '$lib/SelectedLayerStore.svelte';
+  import { glassmorphismMode, darkMode } from '$lib/stores/DarkModeStore.svelte';
+  import { keyboardAPI, keyboardConnectionState } from '$lib/api/keyboardAPI.svelte';
+  import { language, t } from '$lib/stores/LanguageStore.svelte';
+  import { selectedLayer } from '$lib/stores/SelectedLayerStore.svelte';
   import Basic from './Basic.svelte';
   import System from './System.svelte';
   import type { Component, Snippet } from 'svelte';
@@ -14,8 +14,8 @@
   import { X } from 'lucide-svelte';
   import { dev } from '$app/environment';
   import type { Keycode } from '../../../src-controller/src/interface';
-  import { selectedKeys } from '$lib/SelectedKeysStore';
-  import { selectedCount, toggleSelectAll, deselectAll } from '$lib/SelectedKeysStore';
+  import { selectedKeys } from '$lib/stores/SelectedKeysStore';
+  import { selectedCount, toggleSelectAll, deselectAll } from '$lib/stores/SelectedKeysStore';
 
   // Type for key information with keycode support
   type KeyInfo = {

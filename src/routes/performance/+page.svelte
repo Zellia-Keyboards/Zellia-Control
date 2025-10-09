@@ -1,12 +1,12 @@
 <script lang="ts">
-  import { glassmorphismMode } from '$lib/DarkModeStore.svelte';
-  import { keyboardAPI, keyboardConnectionState } from '$lib/keyboardAPI.svelte';
+  import { glassmorphismMode } from '$lib/stores/DarkModeStore.svelte';
+  import { keyboardAPI, keyboardConnectionState } from '$lib/api/keyboardAPI.svelte';
   import { AlertTriangle, AppleIcon, LetterText } from 'lucide-svelte';
-  import { language, t } from '$lib/LanguageStore.svelte';
-  import { selectedCount, toggleSelectAll, deselectAll } from '$lib/SelectedKeysStore';
+  import { language, t } from '$lib/stores/LanguageStore.svelte';
+  import { selectedCount, toggleSelectAll, deselectAll } from '$lib/stores/SelectedKeysStore';
   import * as ekc from 'emi-keyboard-controller';
-  import { advancedKeys } from '$lib/ControllerStore.svelte';
-  import { selectedKeys } from '$lib/SelectedKeysStore';
+  import { advancedKeys } from '$lib/stores/ControllerStore.svelte';
+  import { selectedKeys } from '$lib/stores/SelectedKeysStore';
 
   //let advancedKey : ekc.AdvancedKey = $derived.by(()=>{
   //  var k = new ekc.AdvancedKey();

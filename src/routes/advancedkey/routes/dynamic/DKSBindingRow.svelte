@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { Snippet } from 'svelte';
-  import { glassmorphismMode } from '$lib/DarkModeStore.svelte';
-  import type { DKSAction, KeyAction } from '$lib/AdvancedKeyShared'; // Assuming KeyAction is exported
+  import { glassmorphismMode } from '$lib/stores/DarkModeStore.svelte';
+  import type { DKSAction, KeyAction } from '$lib/types/AdvancedKeyShared'; // Assuming KeyAction is exported
 
   type Props = {
     bindingIndex: number;

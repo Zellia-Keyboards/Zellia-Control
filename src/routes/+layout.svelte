@@ -1,7 +1,7 @@
 <script lang="ts">
   import '../app.css';
-  import KeyboardRender from '$lib/KeyboardRender.svelte';
-  import { keyboardAPI, keyboardConnectionState } from '$lib/keyboardAPI.svelte';
+  import KeyboardRender from '$lib/components/KeyboardRender.svelte';
+  import { keyboardAPI, keyboardConnectionState } from '$lib/api/keyboardAPI.svelte';
   import * as kle from '@ijprest/kle-serial';
   import { page } from '$app/stores';
   import { goto } from '$app/navigation';
@@ -12,15 +12,15 @@
     type ThemeColorName,
     glassmorphismMode,
     updateThemeForDarkMode,
-  } from '$lib/DarkModeStore.svelte';
-  import { language, t, type Language } from '$lib/LanguageStore.svelte';
+  } from '$lib/stores/DarkModeStore.svelte';
+  import { language, t, type Language } from '$lib/stores/LanguageStore.svelte';
   import { Palette, Sun, Moon, Globe, Settings, AwardIcon } from 'lucide-svelte';
   import { slide, fade } from 'svelte/transition';
   import * as ekc from 'emi-keyboard-controller';
-  import { advancedKeys, rgbBaseConfig, rgbConfigs } from '$lib/ControllerStore.svelte';
-  import { selectedLayer } from '$lib/SelectedLayerStore.svelte';
-  import ProfileDropdown from '$lib/ProfileDropdown.svelte';
-  
+  import { advancedKeys, rgbBaseConfig, rgbConfigs } from '$lib/stores/ControllerStore.svelte';
+  import { selectedLayer } from '$lib/stores/SelectedLayerStore.svelte';
+  import ProfileDropdown from '$lib/components/ProfileDropdown.svelte';
+
   const NAVIGATE = [
     ['/performance', 'nav.performance'],
     ['/remap', 'nav.remap'],

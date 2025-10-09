@@ -1,14 +1,14 @@
 <script lang="ts">
   import { ArrowRight, ArrowLeft, ArrowDown, ArrowUp } from 'lucide-svelte';
-  import { keyboardAPI, keyboardConnectionState } from '$lib/keyboardAPI.svelte';
-  import { glassmorphismMode } from '$lib/DarkModeStore.svelte';
-  import { language, t } from '$lib/LanguageStore.svelte';
-  import { selectedKeys } from '$lib/SelectedKeysStore';
-  import { selectedCount, toggleSelectAll, deselectAll } from '$lib/SelectedKeysStore';
+  import { keyboardAPI, keyboardConnectionState } from '$lib/api/keyboardAPI.svelte';
+  import { glassmorphismMode } from '$lib/stores/DarkModeStore.svelte';
+  import { language, t } from '$lib/stores/LanguageStore.svelte';
+  import { selectedKeys } from '$lib/stores/SelectedKeysStore';
+  import { selectedCount, toggleSelectAll, deselectAll } from '$lib/stores/SelectedKeysStore';
   import * as ekc from 'emi-keyboard-controller';
   import { color } from 'chart.js/helpers';
   import tinycolor from "tinycolor2";
-  import { rgbBaseConfig, rgbConfigs } from '$lib/ControllerStore.svelte';
+  import { rgbBaseConfig, rgbConfigs } from '$lib/stores/ControllerStore.svelte';
 
   // Helper function for string formatting
   const formatString = (template: string, ...args: (string | number)[]): string => {
