@@ -24,7 +24,7 @@
     currentLanguage = value;
   });
 
-  let selectedGlobalEffect = $state('static');
+  let selectedGlobalEffect = $state('blank');
   let selectedEffect = $state('static');
   let brightness = $state(100); // Frontend display value (0-100)
   let speed = $state(50);
@@ -360,7 +360,7 @@
       </div>
 
       <!-- Speed (for animated effects) -->
-      {#if ['breathing', 'wave', 'rainbow'].includes(selectedGlobalEffect) || ['ripple'].includes(selectdEffect)}
+      {#if ['breathing', 'wave', 'rainbow'].includes(selectedGlobalEffect) || ['ripple'].includes(selectedEffect)}
         <div>
           <div class="flex justify-between text-xs text-gray-600 dark:text-gray-300 mb-1.5">
             <span>{t('lighting.speed', currentLanguage)}</span>
