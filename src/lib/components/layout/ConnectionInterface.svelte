@@ -5,6 +5,7 @@
   import { glassmorphismMode } from '$lib/stores/DarkModeStore.svelte';
   import { language, t } from '$lib/stores/LanguageStore.svelte';
   import { advancedKeys, rgbBaseConfig, rgbConfigs } from '$lib/stores/ControllerStore.svelte';
+  import { keyboardLayout } from '$lib/stores/LayoutStore.svelte';
   import { keyboardConnectionState } from '$lib/api/keyboardAPI.svelte';
   import * as ekc from 'emi-keyboard-controller';
   
@@ -15,6 +16,7 @@
   async function handleConnect() {
     const success = await keyboardAPI.connect();
     const layout = keyboardConnectionState.controller?.get_layout_json() as string;
+    keyboardLayout.set(layout || '[]');
     advancedKeys.set(keyboardConnectionState.controller?.get_advanced_keys() as ekc.IAdvancedKey[]);
     rgbConfigs.set(keyboardConnectionState.controller?.get_rgb_configs() as ekc.IRGBConfig[]);
     rgbBaseConfig.set(keyboardConnectionState.controller?.get_rgb_base_config() as ekc.IRGBBaseConfig);

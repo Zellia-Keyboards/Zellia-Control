@@ -9,6 +9,7 @@
   import { language, t } from '$lib/stores/LanguageStore.svelte';
   import * as ekc from 'emi-keyboard-controller';
   import { advancedKeys, rgbBaseConfig, rgbConfigs } from '$lib/stores/ControllerStore.svelte';
+  import { keyboardLayout as keyboardLayoutStore } from '$lib/stores/LayoutStore.svelte';
   import ProfileDropdown from '$lib/components/ProfileDropdown.svelte';
   import SmallScreenWarning from '$lib/components/layout/SmallScreenWarning.svelte';
   import Sidebar from '$lib/components/layout/Sidebar.svelte';
@@ -24,7 +25,7 @@
   let currentLanguage = $derived($language);
 
   // Keyboard layout for global KeyboardRender
-  let layout = $state(`[]`);
+  let layout = $derived($keyboardLayoutStore);
   let keyboardLayout : kle.Key[] = $derived(kle.Serial.deserialize(JSON.parse(layout)).keys);
   let keyboardKeys: kle.Key[] = $derived.by(() => {
         console.log(`isActive('/performance')?`, isActive('/performance'));
