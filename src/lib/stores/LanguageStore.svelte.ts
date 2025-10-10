@@ -93,7 +93,8 @@ export const translations = {
     'performance.low': 'LOW',
     'performance.directInput': 'Direct input',
     'performance.keyTravelDeadzones': 'Key Travel Deadzones',
-    'performance.keyTravelDeadzonesDesc': 'Adjust the start and bottom deadzone limits for rapid trigger activation.',
+    'performance.keyTravelDeadzonesDesc':
+      'Adjust the start and bottom deadzone limits for rapid trigger activation.',
 
     // Lighting Page
     'lighting.color': 'Color',
@@ -145,7 +146,7 @@ export const translations = {
     'lighting.allKeys': 'All Keys',
     'lighting.perKeyEffects': 'Per-Key Effects',
     'lighting.customizable': 'Customizable',
-    
+
     // Advanced Key Pages
     'advancedkey.title': 'Advanced Keys',
     'advancedkey.subtitle': 'Configure advanced keyboard behaviors for enhanced productivity',
@@ -519,7 +520,6 @@ export const translations = {
     'about.hardwareCalibration': 'Hardware calibration',
     'about.debugTools': 'Debug tools',
     'about.profileImportExport': 'Profile import/export',
-    
 
     // Lighting Page
     'lighting.title': 'Lighting',
@@ -573,7 +573,8 @@ export const translations = {
     'update.error': 'Error',
     'update.updateSystem': 'Update System',
     'update.masterMcuProgress': 'Master MCU Update Progress',
-    'update.connectedMcuNote': 'Connected MCUs will be updated automatically after Master MCU completes',
+    'update.connectedMcuNote':
+      'Connected MCUs will be updated automatically after Master MCU completes',
     'update.beingUpdatedByMaster': 'Being updated by Master',
     'update.updatedByMaster': '✓ Updated by Master MCU',
     'update.latestVersion': 'Latest version',
@@ -611,7 +612,8 @@ export const translations = {
     // Welcome Page
     'welcome.title': 'Zellia Control',
     'welcome.subtitle': 'Professional Keyboard Configurator',
-    'welcome.description': 'Configure your Zellia keyboard with advanced features including key remapping, performance tuning, lighting effects, and more.',
+    'welcome.description':
+      'Configure your Zellia keyboard with advanced features including key remapping, performance tuning, lighting effects, and more.',
     'welcome.connectKeyboard': 'Connect Keyboard',
     'welcome.connectDescription': 'Connect your Zellia keyboard to start configuring',
     'welcome.connecting': 'Connecting...',
@@ -631,7 +633,8 @@ export const translations = {
     // Demo Mode
     'demo.title': 'Demo Mode',
     'demo.selectKeyboard': 'Select Keyboard Layout',
-    'demo.selectDescription': 'Choose a keyboard layout to explore Zellia Control features in demo mode.',
+    'demo.selectDescription':
+      'Choose a keyboard layout to explore Zellia Control features in demo mode.',
     'demo.backToWelcome': 'Back to Welcome',
     'demo.keyboard60Description': 'Compact 60% layout perfect for gaming and minimalist setups.',
     'demo.keyboard80Description': 'Tenkeyless layout with function keys for balanced productivity.',
@@ -643,14 +646,17 @@ export const translations = {
     'demo.features.keys': 'Keys',
     'demo.enterDemo': 'Enter Demo Mode',
     'demo.entering': 'Entering...',
-    'demo.note': 'Demo mode allows you to explore all features without a physical keyboard connected.',
+    'demo.note':
+      'Demo mode allows you to explore all features without a physical keyboard connected.',
 
     // Connection warnings
-    'ui.usbHubWarning': 'Using USB Hub connections may cause connectivity issues. Direct connection recommended.',
+    'ui.usbHubWarning':
+      'Using USB Hub connections may cause connectivity issues. Direct connection recommended.',
 
     // Profiles Page
     'profiles.title': 'Profile Management',
-    'profiles.subtitle': 'Manage your keyboard profiles. You can import, export, and customize them.',
+    'profiles.subtitle':
+      'Manage your keyboard profiles. You can import, export, and customize them.',
     'profiles.createNew': 'Create New Profile',
     'profiles.slot': 'Slot',
     'profiles.active': 'Active',
@@ -660,9 +666,12 @@ export const translations = {
     'profiles.duplicateFrom': 'Duplicate From',
     'profiles.duplicate': 'Duplicate',
     'profiles.restoreDefault': 'Restore Default',
-    'profiles.confirmRestore': 'Are you sure you want to restore this profile to default settings? This cannot be undone.',
-    'profiles.confirmDelete': 'Are you sure you want to delete this profile? This cannot be undone.',
-    'profiles.cannotDeleteActive': 'Cannot delete the active profile. Please switch to another profile first.',
+    'profiles.confirmRestore':
+      'Are you sure you want to restore this profile to default settings? This cannot be undone.',
+    'profiles.confirmDelete':
+      'Are you sure you want to delete this profile? This cannot be undone.',
+    'profiles.cannotDeleteActive':
+      'Cannot delete the active profile. Please switch to another profile first.',
     'profiles.enterProfileName': 'Enter profile name',
     'profiles.selectTargetSlot': 'Select an empty slot to duplicate this profile to:',
     'profiles.manageAll': 'Manage All Profiles',
@@ -852,7 +861,7 @@ export const translations = {
     'about.hardwareCalibration': '硬件校准',
     'about.debugTools': '调试工具',
     'about.profileImportExport': '配置文件导入/导出',
-    
+
     // Lighting Page
     'lighting.title': '灯光',
     'lighting.subtitle': '自定义RGB灯光效果和颜色',
@@ -910,7 +919,7 @@ export const translations = {
     'lighting.allKeys': '全部按键',
     'lighting.perKeyEffects': '单键效果',
     'lighting.customizable': '可自定义',
-    
+
     // Remap Page
     'remap.title': '按键映射',
     'remap.subtitle': '重新映射按键以自定义键盘布局',
@@ -1224,7 +1233,8 @@ export const translations = {
     'welcome.demoDescription': '无需硬件即可探索功能',
     'welcome.getStarted': '开始使用',
     'welcome.poweredBy': '由 Tauri 驱动',
-    'welcome.description': '使用高级功能配置您的 Zellia 键盘，包括按键重映射、性能调优、灯光效果等。',
+    'welcome.description':
+      '使用高级功能配置您的 Zellia 键盘，包括按键重映射、性能调优、灯光效果等。',
     'welcome.connecting': '连接中...',
     'welcome.loadingConfigurator': '正在加载配置界面...',
     'welcome.supportedModels': '支持的型号',

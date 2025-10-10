@@ -1,17 +1,17 @@
 <script lang="ts">
   import { glassmorphismMode } from '$lib/stores/DarkModeStore.svelte';
   import { keyboardAPI } from '$lib/api/keyboardAPI.svelte';
-  import { 
-    Download, 
-    CheckCircle, 
-    AlertCircle, 
+  import {
+    Download,
+    CheckCircle,
+    AlertCircle,
     RotateCcw,
     Clock,
     Sparkles,
     Shield,
     ArrowUpCircle,
     Wifi,
-    FileText
+    FileText,
   } from 'lucide-svelte';
   import { language, t } from '$lib/stores/LanguageStore.svelte';
 
@@ -29,7 +29,7 @@
   // Simple update functions
   async function checkForUpdates() {
     updateStatus = 'checking';
-    
+
     // Simulate checking for updates
     setTimeout(() => {
       updateStatus = currentVersion !== latestVersion ? 'available' : 'idle';
@@ -38,10 +38,10 @@
 
   async function startUpdate() {
     if (updateStatus !== 'available') return;
-    
+
     updateStatus = 'updating';
     updateProgress = 0;
-    
+
     // Simulate update process
     const updateInterval = setInterval(() => {
       updateProgress += Math.random() * 10;
@@ -50,7 +50,7 @@
         updateStatus = 'success';
         currentVersion = latestVersion;
         clearInterval(updateInterval);
-        
+
         // Reset to idle after a few seconds
         setTimeout(() => {
           updateStatus = 'idle';
@@ -109,8 +109,11 @@
   }
 </script>
 
-
-<div class="rounded-2xl shadow p-4 mt-2 mb-4 grow bg-primary-50 dark:bg-black border border-gray-200 dark:border-gray-600 text-black dark:text-white h-full flex flex-col {$glassmorphismMode ? 'glassmorphism-card' : ''}">
+<div
+  class="rounded-2xl shadow p-4 mt-2 mb-4 grow bg-primary-50 dark:bg-black border border-gray-200 dark:border-gray-600 text-black dark:text-white h-full flex flex-col {$glassmorphismMode
+    ? 'glassmorphism-card'
+    : ''}"
+>
   <!-- Header -->
   <div class="flex items-center justify-between mb-4">
     <div>
@@ -121,50 +124,74 @@
         {t('update.subtitle', currentLanguage)}
       </p>
     </div>
-    
+
     <!-- Connection Status -->
-    <div class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-gray-100 dark:bg-gray-800 {$glassmorphismMode ? 'glassmorphism-card' : ''}">
+    <div
+      class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-gray-100 dark:bg-gray-800 {$glassmorphismMode
+        ? 'glassmorphism-card'
+        : ''}"
+    >
       <Wifi class="w-3 h-3 {isConnected ? 'text-green-500' : 'text-red-500'}" />
       <span class="text-xs font-medium">
-        {isConnected ? t('update.connected', currentLanguage) : t('update.disconnected', currentLanguage)}
+        {isConnected
+          ? t('update.connected', currentLanguage)
+          : t('update.disconnected', currentLanguage)}
       </span>
     </div>
   </div>
 
   <!-- Main Content - Single Row -->
   <div class="flex-1 grid grid-cols-12 gap-4">
-    
     <!-- Left Section - Update Status (5 columns) -->
     <div class="col-span-5">
-      <div class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 p-4 h-full {$glassmorphismMode ? 'glassmorphism-card' : ''}">
-        
+      <div
+        class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 p-4 h-full {$glassmorphismMode
+          ? 'glassmorphism-card'
+          : ''}"
+      >
         <div class="grid grid-cols-12 gap-4 h-full">
           <!-- Status Icon & Version (6 columns) -->
           <div class="col-span-6 flex flex-col justify-center items-center">
-            <div class="w-12 h-12 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center mb-2 {$glassmorphismMode ? 'glassmorphism-button' : ''}">
-              <svelte:component this={getStatusIcon()} class="w-6 h-6 text-primary-600 dark:text-primary-400 {updateStatus === 'checking' || updateStatus === 'updating' ? 'animate-spin' : ''}" />
+            <div
+              class="w-12 h-12 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center mb-2 {$glassmorphismMode
+                ? 'glassmorphism-button'
+                : ''}"
+            >
+              <svelte:component
+                this={getStatusIcon()}
+                class="w-6 h-6 text-primary-600 dark:text-primary-400 {updateStatus ===
+                  'checking' || updateStatus === 'updating'
+                  ? 'animate-spin'
+                  : ''}"
+              />
             </div>
-            
+
             <h3 class="text-sm font-semibold text-gray-900 dark:text-white text-center mb-2">
               {t('update.firmwareVersion', currentLanguage)}
             </h3>
-            
+
             <div class="flex items-center gap-2">
               <div class="text-center">
-                <p class="text-xs text-gray-600 dark:text-gray-400">{t('update.current', currentLanguage)}</p>
+                <p class="text-xs text-gray-600 dark:text-gray-400">
+                  {t('update.current', currentLanguage)}
+                </p>
                 <p class="text-sm font-bold text-gray-900 dark:text-white">v{currentVersion}</p>
               </div>
-              
+
               {#if updateStatus === 'available' || updateStatus === 'success'}
                 <ArrowUpCircle class="w-3 h-3 text-gray-400" />
                 <div class="text-center">
-                  <p class="text-xs text-gray-600 dark:text-gray-400">{t('update.latest', currentLanguage)}</p>
-                  <p class="text-sm font-bold text-primary-600 dark:text-primary-400">v{latestVersion}</p>
+                  <p class="text-xs text-gray-600 dark:text-gray-400">
+                    {t('update.latest', currentLanguage)}
+                  </p>
+                  <p class="text-sm font-bold text-primary-600 dark:text-primary-400">
+                    v{latestVersion}
+                  </p>
                 </div>
               {/if}
             </div>
           </div>
-          
+
           <!-- Status & Actions (6 columns) -->
           <div class="col-span-6 flex flex-col justify-center">
             <div class="flex items-center justify-center gap-2 mb-3">
@@ -173,16 +200,24 @@
                 {getStatusMessage()}
               </span>
             </div>
-            
+
             <!-- Progress Bar (only shown during update) -->
             {#if updateStatus === 'updating'}
               <div class="mb-3">
                 <div class="flex justify-between text-xs mb-1">
-                  <span class="text-gray-600 dark:text-gray-400">{t('update.progress', currentLanguage)}</span>
-                  <span class="font-medium text-gray-900 dark:text-white">{Math.round(updateProgress)}%</span>
+                  <span class="text-gray-600 dark:text-gray-400"
+                    >{t('update.progress', currentLanguage)}</span
+                  >
+                  <span class="font-medium text-gray-900 dark:text-white"
+                    >{Math.round(updateProgress)}%</span
+                  >
                 </div>
-                <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 {$glassmorphismMode ? 'glassmorphism-card' : ''}">
-                  <div 
+                <div
+                  class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 {$glassmorphismMode
+                    ? 'glassmorphism-card'
+                    : ''}"
+                >
+                  <div
                     class="bg-gradient-to-r from-primary-500 to-primary-600 h-2 rounded-full transition-all duration-500"
                     style="width: {updateProgress}%"
                   ></div>
@@ -194,7 +229,9 @@
             <div class="flex flex-col gap-2 mb-3">
               {#if updateStatus === 'available'}
                 <button
-                  class="w-full px-4 py-2 bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white rounded-lg text-sm font-medium transition-all duration-200 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl {$glassmorphismMode ? 'glassmorphism-button' : ''}"
+                  class="w-full px-4 py-2 bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white rounded-lg text-sm font-medium transition-all duration-200 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl {$glassmorphismMode
+                    ? 'glassmorphism-button'
+                    : ''}"
                   onclick={startUpdate}
                   disabled={!isConnected}
                 >
@@ -202,11 +239,15 @@
                   {t('update.updateNow', currentLanguage)}
                 </button>
               {/if}
-              
+
               <button
-                class="w-full px-4 py-2 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium transition-all duration-200 flex items-center justify-center gap-2 {$glassmorphismMode ? 'glassmorphism-button' : ''}"
+                class="w-full px-4 py-2 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium transition-all duration-200 flex items-center justify-center gap-2 {$glassmorphismMode
+                  ? 'glassmorphism-button'
+                  : ''}"
                 onclick={checkForUpdates}
-                disabled={updateStatus === 'updating' || updateStatus === 'checking' || !isConnected}
+                disabled={updateStatus === 'updating' ||
+                  updateStatus === 'checking' ||
+                  !isConnected}
               >
                 <RotateCcw class="w-3 h-3 {updateStatus === 'checking' ? 'animate-spin' : ''}" />
                 {t('update.checkForUpdates', currentLanguage)}
@@ -215,17 +256,29 @@
 
             <!-- Status Messages -->
             {#if updateStatus === 'updating'}
-              <div class="p-2 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg {$glassmorphismMode ? 'glassmorphism-card' : ''}">
+              <div
+                class="p-2 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg {$glassmorphismMode
+                  ? 'glassmorphism-card'
+                  : ''}"
+              >
                 <div class="flex items-center gap-2">
                   <Shield class="w-3 h-3 text-blue-500" />
-                  <h4 class="text-xs font-medium text-blue-900 dark:text-blue-100">{t('update.importantNote', currentLanguage)}</h4>
+                  <h4 class="text-xs font-medium text-blue-900 dark:text-blue-100">
+                    {t('update.importantNote', currentLanguage)}
+                  </h4>
                 </div>
               </div>
             {:else if updateStatus === 'success'}
-              <div class="p-2 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg {$glassmorphismMode ? 'glassmorphism-card' : ''}">
+              <div
+                class="p-2 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg {$glassmorphismMode
+                  ? 'glassmorphism-card'
+                  : ''}"
+              >
                 <div class="flex items-center gap-2">
                   <CheckCircle class="w-3 h-3 text-green-500" />
-                  <h4 class="text-xs font-medium text-green-900 dark:text-green-100">{t('update.success', currentLanguage)}</h4>
+                  <h4 class="text-xs font-medium text-green-900 dark:text-green-100">
+                    {t('update.success', currentLanguage)}
+                  </h4>
                 </div>
               </div>
             {/if}
@@ -236,19 +289,27 @@
 
     <!-- Right Section - Changelog (7 columns) -->
     <div class="col-span-7">
-      <div class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 p-4 h-full {$glassmorphismMode ? 'glassmorphism-card' : ''}">
+      <div
+        class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 p-4 h-full {$glassmorphismMode
+          ? 'glassmorphism-card'
+          : ''}"
+      >
         <div class="flex items-center gap-2 mb-4">
           <FileText class="w-5 h-5 text-gray-600 dark:text-gray-400" />
           <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
             {t('update.whatsNew', currentLanguage)}
           </h3>
         </div>
-        
+
         <!-- Changelog Content - This will be populated by your fetching system -->
         <div class="h-full overflow-y-auto space-y-3">
           <!-- Placeholder for dynamic changelog content -->
           <div class="text-center py-8">
-            <div class="w-12 h-12 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mx-auto mb-3 {$glassmorphismMode ? 'glassmorphism-button' : ''}">
+            <div
+              class="w-12 h-12 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mx-auto mb-3 {$glassmorphismMode
+                ? 'glassmorphism-button'
+                : ''}"
+            >
               <FileText class="w-6 h-6 text-gray-400" />
             </div>
             <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">

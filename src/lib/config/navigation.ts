@@ -24,8 +24,4 @@ export const SIDEBAR_PAGES = [
 ] as const;
 
 // Pages that should show the layer selector
-export const LAYER_SELECTOR_PAGES = [
-  '/performance',
-  '/remap',
-  '/advancedkey',
-] as const;
+export const LAYER_SELECTOR_PAGES = ['/performance', '/remap', '/advancedkey'] as const;

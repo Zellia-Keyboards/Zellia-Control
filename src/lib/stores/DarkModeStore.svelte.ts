@@ -40,7 +40,7 @@ const createDarkModeStore = () => {
       }
       if (browser) {
         localStorage.setItem('darkMode', (!isDark).toString());
-        
+
         // Update accent color if no theme is selected
         const storedTheme = localStorage.getItem('themeColor');
         if (storedTheme === 'null' || !storedTheme || !themeColors[storedTheme as ThemeColorName]) {
@@ -58,8 +58,12 @@ export const darkMode = createDarkModeStore();
 const createThemeColorStore = () => {
   const storedValue = browser ? localStorage.getItem('themeColor') : null;
   // Allow null value for no theme (plain black/white)
-  const initial: ThemeColorName | null = storedValue === 'null' || storedValue === '' ? null : 
-    (storedValue && themeColors[storedValue as ThemeColorName] ? storedValue as ThemeColorName : null);
+  const initial: ThemeColorName | null =
+    storedValue === 'null' || storedValue === ''
+      ? null
+      : storedValue && themeColors[storedValue as ThemeColorName]
+        ? (storedValue as ThemeColorName)
+        : null;
 
   const { subscribe, set } = writable<ThemeColorName | null>(initial);
 

@@ -2,9 +2,9 @@
   import { Sun, Moon } from 'lucide-svelte';
   import { glassmorphismMode, updateThemeForDarkMode } from '$lib/stores/DarkModeStore.svelte';
   import { language, t } from '$lib/stores/LanguageStore.svelte';
-  
+
   let currentLanguage = $derived($language);
-  
+
   function toggleDarkMode() {
     document.documentElement.classList.toggle('dark');
     updateThemeForDarkMode();

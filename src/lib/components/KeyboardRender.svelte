@@ -49,28 +49,28 @@
 <!-- The template uses Svelte's logic blocks like `#each` -->
 <div class="grid-container">
   <!-- Keyboard container with styling similar to NewZellia60HE -->
-    <div class="keyboard no-select" style="width: {minWidth}; height: {minHeight};">
-      <!-- 5. Svelte's `#each` block replaces `v-for`. The `(index)` is the key for the list. -->
-      {#each keys as key, index (index)}
-        <!-- 6. The `animate:flip` directive provides smooth reordering, replacing Vue's <TransitionGroup> -->
-        <div animate:flip={{ duration: 500 }}>
-          <Key
-            on:mousedown={(event) => handleMouseDown(event, index)}
-            on:mouseenter={(event) => handleMouseEnter(event, index)}
-            on:select={() => toggleKey(index)}
-            x={key.x}
-            y={key.y}
-            width={key.width}
-            height={key.height}
-            rotationX={key.rotation_x}
-            rotationY={key.rotation_y}
-            rotationAngle={key.rotation_angle}
-            labels={key.labels}
-            {index}
-            selected={$selectedKeys.includes(index)}
-          />
-        </div>
-      {/each}
+  <div class="keyboard no-select" style="width: {minWidth}; height: {minHeight};">
+    <!-- 5. Svelte's `#each` block replaces `v-for`. The `(index)` is the key for the list. -->
+    {#each keys as key, index (index)}
+      <!-- 6. The `animate:flip` directive provides smooth reordering, replacing Vue's <TransitionGroup> -->
+      <div animate:flip={{ duration: 500 }}>
+        <Key
+          on:mousedown={event => handleMouseDown(event, index)}
+          on:mouseenter={event => handleMouseEnter(event, index)}
+          on:select={() => toggleKey(index)}
+          x={key.x}
+          y={key.y}
+          width={key.width}
+          height={key.height}
+          rotationX={key.rotation_x}
+          rotationY={key.rotation_y}
+          rotationAngle={key.rotation_angle}
+          labels={key.labels}
+          {index}
+          selected={$selectedKeys.includes(index)}
+        />
+      </div>
+    {/each}
   </div>
 </div>
 
@@ -81,14 +81,12 @@
     place-items: center;
     width: 100%;
   }
-  
 
-  
   .keyboard {
     background-color: transparent;
     padding: 10px;
     /* position: relative is needed for the absolute positioning of children during animations */
-    position: relative; 
+    position: relative;
     transition: all 0.5s ease;
   }
 

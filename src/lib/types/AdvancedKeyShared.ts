@@ -1,9 +1,11 @@
 import { writable } from 'svelte/store';
-import { Keycode, 
-         MouseKeycode, 
-         ConsumerKeycode, 
-         LayerControlKeycode, 
-         KeyModifier } from '../../../src-controller/src/interface';
+import {
+  Keycode,
+  MouseKeycode,
+  ConsumerKeycode,
+  LayerControlKeycode,
+  KeyModifier,
+} from '../../../src-controller/src/interface';
 
 // Advanced key configuration types
 export enum DKSAction {
@@ -69,7 +71,7 @@ export const keyActions: KeyAction[] = [
   // Basic - Special Keys
   { keycode: Keycode.Escape, name: 'Esc', category: 'Basic' },
   { keycode: Keycode.NoEvent, name: 'None', category: 'Basic' },
-  
+
   // Function Keys (F1-F24)
   { keycode: Keycode.F1, name: 'F1', category: 'Basic' },
   { keycode: Keycode.F2, name: 'F2', category: 'Basic' },
@@ -95,7 +97,7 @@ export const keyActions: KeyAction[] = [
   { keycode: Keycode.F22, name: 'F22', category: 'Basic' },
   { keycode: Keycode.F23, name: 'F23', category: 'Basic' },
   { keycode: Keycode.F24, name: 'F24', category: 'Basic' },
-  
+
   // Numbers (0-9)
   { keycode: Keycode.Key1, name: '1', category: 'Basic' },
   { keycode: Keycode.Key2, name: '2', category: 'Basic' },
@@ -107,7 +109,7 @@ export const keyActions: KeyAction[] = [
   { keycode: Keycode.Key8, name: '8', category: 'Basic' },
   { keycode: Keycode.Key9, name: '9', category: 'Basic' },
   { keycode: Keycode.Key0, name: '0', category: 'Basic' },
-  
+
   // Letters (A-Z)
   { keycode: Keycode.A, name: 'A', category: 'Basic' },
   { keycode: Keycode.B, name: 'B', category: 'Basic' },
@@ -135,7 +137,7 @@ export const keyActions: KeyAction[] = [
   { keycode: Keycode.X, name: 'X', category: 'Basic' },
   { keycode: Keycode.Y, name: 'Y', category: 'Basic' },
   { keycode: Keycode.Z, name: 'Z', category: 'Basic' },
-  
+
   // Symbols & Punctuation
   { keycode: Keycode.Grave, name: '~', category: 'Basic' },
   { keycode: Keycode.Minus, name: '-', category: 'Basic' },
@@ -148,7 +150,7 @@ export const keyActions: KeyAction[] = [
   { keycode: Keycode.Comma, name: ',', category: 'Basic' },
   { keycode: Keycode.Dot, name: '.', category: 'Basic' },
   { keycode: Keycode.Slash, name: '/', category: 'Basic' },
-  
+
   // Navigation & Editing
   { keycode: Keycode.Insert, name: 'Insert', category: 'Basic' },
   { keycode: Keycode.Delete, name: 'Delete', category: 'Basic' },
@@ -160,7 +162,7 @@ export const keyActions: KeyAction[] = [
   { keycode: Keycode.DownArrow, name: '↓', category: 'Basic' },
   { keycode: Keycode.LeftArrow, name: '←', category: 'Basic' },
   { keycode: Keycode.RightArrow, name: '→', category: 'Basic' },
-  
+
   // Modifier Keys
   { keycode: KeyModifier.KeyLeftCtrl, name: 'Left Ctrl', category: 'Basic' },
   { keycode: KeyModifier.KeyRightCtrl, name: 'Right Ctrl', category: 'Basic' },
@@ -170,7 +172,7 @@ export const keyActions: KeyAction[] = [
   { keycode: KeyModifier.KeyRightAlt, name: 'Right Alt', category: 'Basic' },
   { keycode: KeyModifier.KeyLeftGui, name: 'Left Win', category: 'Basic' },
   { keycode: KeyModifier.KeyRightGui, name: 'Right Win', category: 'Basic' },
-  
+
   // Control Keys
   { keycode: Keycode.Tab, name: 'Tab', category: 'Basic' },
   { keycode: Keycode.CapsLock, name: 'Caps Lock', category: 'Basic' },
@@ -181,7 +183,7 @@ export const keyActions: KeyAction[] = [
   { keycode: Keycode.PrintScreen, name: 'Print Screen', category: 'Basic' },
   { keycode: Keycode.ScrollLock, name: 'Scroll Lock', category: 'Basic' },
   { keycode: Keycode.Pause, name: 'Pause', category: 'Basic' },
-  
+
   // Numpad
   { keycode: Keycode.NumLock, name: 'Num Lock', category: 'Basic' },
   { keycode: Keycode.KeypadDivide, name: 'KP /', category: 'Basic' },
@@ -200,7 +202,7 @@ export const keyActions: KeyAction[] = [
   { keycode: Keycode.Keypad8, name: 'KP 8', category: 'Basic' },
   { keycode: Keycode.Keypad9, name: 'KP 9', category: 'Basic' },
   { keycode: Keycode.KeypadDot, name: 'KP .', category: 'Basic' },
-  
+
   // International Keys
   { keycode: Keycode.NonUsHash, name: 'Non-US #', category: 'Basic' },
   { keycode: Keycode.NonUsBackslash, name: 'Non-US \\', category: 'Basic' },
@@ -211,47 +213,227 @@ export const keyActions: KeyAction[] = [
   { keycode: Keycode.Lang2, name: 'IME Off', category: 'Basic' },
 
   // Layer - Layer Control
-  { keycode: Keycode.LayerControl, name: 'MO(1)', category: 'Layer', subcode: LayerControlKeycode.LayerMomentary | (1 << 8) },
-  { keycode: Keycode.LayerControl, name: 'MO(2)', category: 'Layer', subcode: LayerControlKeycode.LayerMomentary | (2 << 8) },
-  { keycode: Keycode.LayerControl, name: 'MO(3)', category: 'Layer', subcode: LayerControlKeycode.LayerMomentary | (3 << 8) },
-  { keycode: Keycode.LayerControl, name: 'TO(0)', category: 'Layer', subcode: LayerControlKeycode.LayerTurnOn | (0 << 8) },
-  { keycode: Keycode.LayerControl, name: 'TO(1)', category: 'Layer', subcode: LayerControlKeycode.LayerTurnOn | (1 << 8) },
-  { keycode: Keycode.LayerControl, name: 'TO(2)', category: 'Layer', subcode: LayerControlKeycode.LayerTurnOn | (2 << 8) },
-  { keycode: Keycode.LayerControl, name: 'TO(3)', category: 'Layer', subcode: LayerControlKeycode.LayerTurnOn | (3 << 8) },
-  { keycode: Keycode.LayerControl, name: 'TG(0)', category: 'Layer', subcode: LayerControlKeycode.LayerToggle | (0 << 8) },
-  { keycode: Keycode.LayerControl, name: 'TG(1)', category: 'Layer', subcode: LayerControlKeycode.LayerToggle | (1 << 8) },
-  { keycode: Keycode.LayerControl, name: 'TG(2)', category: 'Layer', subcode: LayerControlKeycode.LayerToggle | (2 << 8) },
-  { keycode: Keycode.LayerControl, name: 'TG(3)', category: 'Layer', subcode: LayerControlKeycode.LayerToggle | (3 << 8) },
+  {
+    keycode: Keycode.LayerControl,
+    name: 'MO(1)',
+    category: 'Layer',
+    subcode: LayerControlKeycode.LayerMomentary | (1 << 8),
+  },
+  {
+    keycode: Keycode.LayerControl,
+    name: 'MO(2)',
+    category: 'Layer',
+    subcode: LayerControlKeycode.LayerMomentary | (2 << 8),
+  },
+  {
+    keycode: Keycode.LayerControl,
+    name: 'MO(3)',
+    category: 'Layer',
+    subcode: LayerControlKeycode.LayerMomentary | (3 << 8),
+  },
+  {
+    keycode: Keycode.LayerControl,
+    name: 'TO(0)',
+    category: 'Layer',
+    subcode: LayerControlKeycode.LayerTurnOn | (0 << 8),
+  },
+  {
+    keycode: Keycode.LayerControl,
+    name: 'TO(1)',
+    category: 'Layer',
+    subcode: LayerControlKeycode.LayerTurnOn | (1 << 8),
+  },
+  {
+    keycode: Keycode.LayerControl,
+    name: 'TO(2)',
+    category: 'Layer',
+    subcode: LayerControlKeycode.LayerTurnOn | (2 << 8),
+  },
+  {
+    keycode: Keycode.LayerControl,
+    name: 'TO(3)',
+    category: 'Layer',
+    subcode: LayerControlKeycode.LayerTurnOn | (3 << 8),
+  },
+  {
+    keycode: Keycode.LayerControl,
+    name: 'TG(0)',
+    category: 'Layer',
+    subcode: LayerControlKeycode.LayerToggle | (0 << 8),
+  },
+  {
+    keycode: Keycode.LayerControl,
+    name: 'TG(1)',
+    category: 'Layer',
+    subcode: LayerControlKeycode.LayerToggle | (1 << 8),
+  },
+  {
+    keycode: Keycode.LayerControl,
+    name: 'TG(2)',
+    category: 'Layer',
+    subcode: LayerControlKeycode.LayerToggle | (2 << 8),
+  },
+  {
+    keycode: Keycode.LayerControl,
+    name: 'TG(3)',
+    category: 'Layer',
+    subcode: LayerControlKeycode.LayerToggle | (3 << 8),
+  },
 
   // System - Media and Consumer Controls
-  { keycode: Keycode.ConsumerCollection, name: 'BRT-', category: 'System', subcode: ConsumerKeycode.ConsumerBrightnessDown },
-  { keycode: Keycode.ConsumerCollection, name: 'BRT+', category: 'System', subcode: ConsumerKeycode.ConsumerBrightnessUp },
-  { keycode: Keycode.ConsumerCollection, name: 'Vol-', category: 'System', subcode: ConsumerKeycode.ConsumerAudioVolDown },
-  { keycode: Keycode.ConsumerCollection, name: 'Vol+', category: 'System', subcode: ConsumerKeycode.ConsumerAudioVolUp },
-  { keycode: Keycode.ConsumerCollection, name: 'Mute', category: 'System', subcode: ConsumerKeycode.ConsumerAudioMute },
-  { keycode: Keycode.ConsumerCollection, name: 'Play/Pause', category: 'System', subcode: ConsumerKeycode.ConsumerTransportPlayPause },
-  { keycode: Keycode.ConsumerCollection, name: 'Stop', category: 'System', subcode: ConsumerKeycode.ConsumerTransportStop },
-  { keycode: Keycode.ConsumerCollection, name: 'Prev', category: 'System', subcode: ConsumerKeycode.ConsumerTransportPrevTrack },
-  { keycode: Keycode.ConsumerCollection, name: 'Next', category: 'System', subcode: ConsumerKeycode.ConsumerTransportNextTrack },
-  { keycode: Keycode.ConsumerCollection, name: 'Email', category: 'System', subcode: ConsumerKeycode.ConsumerAlEmail },
-  { keycode: Keycode.ConsumerCollection, name: 'Calculator', category: 'System', subcode: ConsumerKeycode.ConsumerAlCalculator },
-  { keycode: Keycode.ConsumerCollection, name: 'Explorer', category: 'System', subcode: ConsumerKeycode.ConsumerAlLocalBrowser },
+  {
+    keycode: Keycode.ConsumerCollection,
+    name: 'BRT-',
+    category: 'System',
+    subcode: ConsumerKeycode.ConsumerBrightnessDown,
+  },
+  {
+    keycode: Keycode.ConsumerCollection,
+    name: 'BRT+',
+    category: 'System',
+    subcode: ConsumerKeycode.ConsumerBrightnessUp,
+  },
+  {
+    keycode: Keycode.ConsumerCollection,
+    name: 'Vol-',
+    category: 'System',
+    subcode: ConsumerKeycode.ConsumerAudioVolDown,
+  },
+  {
+    keycode: Keycode.ConsumerCollection,
+    name: 'Vol+',
+    category: 'System',
+    subcode: ConsumerKeycode.ConsumerAudioVolUp,
+  },
+  {
+    keycode: Keycode.ConsumerCollection,
+    name: 'Mute',
+    category: 'System',
+    subcode: ConsumerKeycode.ConsumerAudioMute,
+  },
+  {
+    keycode: Keycode.ConsumerCollection,
+    name: 'Play/Pause',
+    category: 'System',
+    subcode: ConsumerKeycode.ConsumerTransportPlayPause,
+  },
+  {
+    keycode: Keycode.ConsumerCollection,
+    name: 'Stop',
+    category: 'System',
+    subcode: ConsumerKeycode.ConsumerTransportStop,
+  },
+  {
+    keycode: Keycode.ConsumerCollection,
+    name: 'Prev',
+    category: 'System',
+    subcode: ConsumerKeycode.ConsumerTransportPrevTrack,
+  },
+  {
+    keycode: Keycode.ConsumerCollection,
+    name: 'Next',
+    category: 'System',
+    subcode: ConsumerKeycode.ConsumerTransportNextTrack,
+  },
+  {
+    keycode: Keycode.ConsumerCollection,
+    name: 'Email',
+    category: 'System',
+    subcode: ConsumerKeycode.ConsumerAlEmail,
+  },
+  {
+    keycode: Keycode.ConsumerCollection,
+    name: 'Calculator',
+    category: 'System',
+    subcode: ConsumerKeycode.ConsumerAlCalculator,
+  },
+  {
+    keycode: Keycode.ConsumerCollection,
+    name: 'Explorer',
+    category: 'System',
+    subcode: ConsumerKeycode.ConsumerAlLocalBrowser,
+  },
 
   // Mouse - Mouse Buttons and Controls
-  { keycode: Keycode.MouseCollection, name: 'Mouse Left', category: 'Mouse', subcode: MouseKeycode.MouseLButton },
-  { keycode: Keycode.MouseCollection, name: 'Mouse Right', category: 'Mouse', subcode: MouseKeycode.MouseRButton },
-  { keycode: Keycode.MouseCollection, name: 'Mouse Middle', category: 'Mouse', subcode: MouseKeycode.MouseMButton },
-  { keycode: Keycode.MouseCollection, name: 'Mouse Forward', category: 'Mouse', subcode: MouseKeycode.MouseForward },
-  { keycode: Keycode.MouseCollection, name: 'Mouse Back', category: 'Mouse', subcode: MouseKeycode.MouseBack },
-  { keycode: Keycode.MouseCollection, name: 'Wheel Up', category: 'Mouse', subcode: MouseKeycode.MouseWheelUp },
-  { keycode: Keycode.MouseCollection, name: 'Wheel Down', category: 'Mouse', subcode: MouseKeycode.MouseWheelDown },
-  { keycode: Keycode.MouseCollection, name: 'Wheel Left', category: 'Mouse', subcode: MouseKeycode.MouseWheelLeft },
-  { keycode: Keycode.MouseCollection, name: 'Wheel Right', category: 'Mouse', subcode: MouseKeycode.MouseWheelRight },
-  { keycode: Keycode.MouseCollection, name: 'Move Up', category: 'Mouse', subcode: MouseKeycode.MouseMoveUp },
-  { keycode: Keycode.MouseCollection, name: 'Move Down', category: 'Mouse', subcode: MouseKeycode.MouseMoveDown },
-  { keycode: Keycode.MouseCollection, name: 'Move Left', category: 'Mouse', subcode: MouseKeycode.MouseMoveLeft },
-  { keycode: Keycode.MouseCollection, name: 'Move Right', category: 'Mouse', subcode: MouseKeycode.MouseMoveRight },
+  {
+    keycode: Keycode.MouseCollection,
+    name: 'Mouse Left',
+    category: 'Mouse',
+    subcode: MouseKeycode.MouseLButton,
+  },
+  {
+    keycode: Keycode.MouseCollection,
+    name: 'Mouse Right',
+    category: 'Mouse',
+    subcode: MouseKeycode.MouseRButton,
+  },
+  {
+    keycode: Keycode.MouseCollection,
+    name: 'Mouse Middle',
+    category: 'Mouse',
+    subcode: MouseKeycode.MouseMButton,
+  },
+  {
+    keycode: Keycode.MouseCollection,
+    name: 'Mouse Forward',
+    category: 'Mouse',
+    subcode: MouseKeycode.MouseForward,
+  },
+  {
+    keycode: Keycode.MouseCollection,
+    name: 'Mouse Back',
+    category: 'Mouse',
+    subcode: MouseKeycode.MouseBack,
+  },
+  {
+    keycode: Keycode.MouseCollection,
+    name: 'Wheel Up',
+    category: 'Mouse',
+    subcode: MouseKeycode.MouseWheelUp,
+  },
+  {
+    keycode: Keycode.MouseCollection,
+    name: 'Wheel Down',
+    category: 'Mouse',
+    subcode: MouseKeycode.MouseWheelDown,
+  },
+  {
+    keycode: Keycode.MouseCollection,
+    name: 'Wheel Left',
+    category: 'Mouse',
+    subcode: MouseKeycode.MouseWheelLeft,
+  },
+  {
+    keycode: Keycode.MouseCollection,
+    name: 'Wheel Right',
+    category: 'Mouse',
+    subcode: MouseKeycode.MouseWheelRight,
+  },
+  {
+    keycode: Keycode.MouseCollection,
+    name: 'Move Up',
+    category: 'Mouse',
+    subcode: MouseKeycode.MouseMoveUp,
+  },
+  {
+    keycode: Keycode.MouseCollection,
+    name: 'Move Down',
+    category: 'Mouse',
+    subcode: MouseKeycode.MouseMoveDown,
+  },
+  {
+    keycode: Keycode.MouseCollection,
+    name: 'Move Left',
+    category: 'Mouse',
+    subcode: MouseKeycode.MouseMoveLeft,
+  },
+  {
+    keycode: Keycode.MouseCollection,
+    name: 'Move Right',
+    category: 'Mouse',
+    subcode: MouseKeycode.MouseMoveRight,
+  },
 
-  // System - Special keys  
+  // System - Special keys
   { keycode: Keycode.KeyTransparent, name: 'Transparent', category: 'System' },
 ];

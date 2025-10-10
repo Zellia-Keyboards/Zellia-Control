@@ -2,7 +2,12 @@
   import { goto } from '$app/navigation';
   import { glassmorphismMode } from '$lib/stores/DarkModeStore.svelte';
   import { keyboardAPI } from '$lib/api/keyboardAPI.svelte';
-  import { LayoutTemplateIcon, ToggleLeftIcon, LayersIcon, MoveHorizontalIcon } from 'lucide-svelte';
+  import {
+    LayoutTemplateIcon,
+    ToggleLeftIcon,
+    LayersIcon,
+    MoveHorizontalIcon,
+  } from 'lucide-svelte';
   import { language, t } from '$lib/stores/LanguageStore.svelte';
 
   let currentLanguage = $state($language);
@@ -71,7 +76,6 @@
   }
 </script>
 
-
 <div
   class="rounded-2xl shadow p-8 mt-2 mb-4 grow {$glassmorphismMode
     ? 'glassmorphism-card'
@@ -89,9 +93,7 @@
   </div>
   <!-- Getting Started Section -->
   <div
-    class="rounded-xl p-6 border mb-4 {$glassmorphismMode
-      ? 'glassmorphism-card'
-      : ''}"
+    class="rounded-xl p-6 border mb-4 {$glassmorphismMode ? 'glassmorphism-card' : ''}"
     style="background: {'color-mix(in srgb, var(--theme-color-primary) 5%, #f9fafb) dark:color-mix(in srgb, var(--theme-color-primary) 8%, #111827)'};
                     border-color: {'color-mix(in srgb, var(--theme-color-primary) 10%, #e5e7eb) dark:color-mix(in srgb, var(--theme-color-primary) 15%, #374151)'};"
   >
@@ -160,14 +162,11 @@
             ? 'glassmorphism-card'
             : ''}"
           onclick={() => navigateToMode(mode.path)}
-        > 
+        >
           <!-- Mode Header -->
           <div class="flex items-center gap-4 mb-4">
             <div class="flex items-center justify-center w-10 h-10">
-              <svelte:component
-                this={mode.icon}
-                class="w-8 h-8 text-primary"
-              />
+              <svelte:component this={mode.icon} class="w-8 h-8 text-primary" />
             </div>
             <div class="flex-1">
               <h3

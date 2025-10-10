@@ -1,7 +1,7 @@
 <script lang="ts">
   import { selectedLayer } from '$lib/stores/SelectedLayerStore.svelte';
   import { glassmorphismMode } from '$lib/stores/DarkModeStore.svelte';
-  
+
   let { shouldShow = false } = $props();
 </script>
 
@@ -10,8 +10,7 @@
     <span
       class="font-semibold text-gray-900 dark:text-white mr-2 {$glassmorphismMode
         ? 'text-gray-800 dark:text-white'
-        : ''}"
-      >Layer:</span
+        : ''}">Layer:</span
     >
     {#each [1, 2, 3, 4] as layer}
       <button

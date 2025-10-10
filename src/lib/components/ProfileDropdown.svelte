@@ -4,28 +4,28 @@
   import { glassmorphismMode } from '$lib/stores/DarkModeStore.svelte';
   import { Check } from 'lucide-svelte';
   import { slide } from 'svelte/transition';
-  
+
   let currentLanguage = $derived($language);
   let profiles = $derived($profileStore.profiles);
   let activeProfileId = $derived($profileStore.activeProfileId);
   let activeProfile = $derived(profiles.find(p => p?.id === activeProfileId));
-  
+
   let showDropdown = $state(false);
-  
+
   function selectProfile(profileId: number) {
     profileStore.setActiveProfile(profileId);
     showDropdown = false;
   }
-  
+
   function toggleDropdown(event: MouseEvent) {
     event.stopPropagation();
     showDropdown = !showDropdown;
   }
-  
+
   function handleOutsideClick() {
     showDropdown = false;
   }
-  
+
   // Get non-null profiles
   let availableProfiles = $derived(profiles.filter(p => p !== null));
 </script>
@@ -49,7 +49,9 @@
       </span>
     </div>
     <svg
-      class="w-4 h-4 text-gray-600 dark:text-gray-400 transition-transform duration-200 {showDropdown ? 'rotate-180' : ''}"
+      class="w-4 h-4 text-gray-600 dark:text-gray-400 transition-transform duration-200 {showDropdown
+        ? 'rotate-180'
+        : ''}"
       fill="none"
       stroke="currentColor"
       stroke-width="2"
@@ -62,9 +64,11 @@
   <!-- Dropdown Menu -->
   {#if showDropdown}
     <div
-      class="absolute top-full mt-2 right-0 w-64 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50 overflow-hidden {$glassmorphismMode ? 'glassmorphism-card' : ''}"
+      class="absolute top-full mt-2 right-0 w-64 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50 overflow-hidden {$glassmorphismMode
+        ? 'glassmorphism-card'
+        : ''}"
       transition:slide={{ duration: 200, axis: 'y' }}
-      onclick={(e) => e.stopPropagation()}
+      onclick={e => e.stopPropagation()}
     >
       <div class="max-h-80 overflow-y-auto">
         {#if availableProfiles.length === 0}
@@ -82,10 +86,11 @@
                   {profile.name}
                 </div>
                 <div class="text-xs text-gray-500 dark:text-gray-400">
-                  {t('profiles.slot', currentLanguage)} {profile.id}
+                  {t('profiles.slot', currentLanguage)}
+                  {profile.id}
                 </div>
               </div>
-              
+
               {#if profile.id === activeProfileId}
                 <Check class="w-4 h-4 text-primary-500" />
               {/if}
@@ -93,7 +98,7 @@
           {/each}
         {/if}
       </div>
-      
+
       <div class="border-t border-gray-200 dark:border-gray-700">
         <a
           href="/profiles"

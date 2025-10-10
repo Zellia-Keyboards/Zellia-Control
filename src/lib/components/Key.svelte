@@ -50,7 +50,7 @@
 
   // 2. 订阅 store 来获取按键颜色
   //$: color = $rgb_configs[index] ? rgbToHex($rgb_configs[index].rgb) : '#aaaaaa';
-  
+
   // 3. 动态计算按键的字体颜色
   //$: textColor = getContrastColor(color);
 
@@ -65,7 +65,7 @@
     transform: rotate(${rotationAngle}deg);
     transition: all 0.3s ease-out;
   `;
-  
+
   // 5. 计算不同位置标签的样式 - 修复文本裁剪
   $: labelContainerStyle = `
     width: 100%;
@@ -74,11 +74,7 @@
 </script>
 
 <div class="key-container" style={keyStyle}>
-  <button 
-    class="keycap"
-    class:selected={selected}
-    on:mousedown={handleClick}
-  >
+  <button class="keycap" class:selected on:mousedown={handleClick}>
     <div class="label-grid" style={labelContainerStyle}>
       {#each Array(9) as _, i}
         <div class="label-cell label-cell-{i}">
@@ -101,8 +97,9 @@
     width: 100%;
     height: 100%;
     border-radius: 6px;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
-      Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+    font-family:
+      -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans',
+      'Helvetica Neue', sans-serif;
     font-weight: 500;
     cursor: pointer;
     /* Outline variant styling - transparent background with gray border */
@@ -160,19 +157,26 @@
   /* Selected state: subtle glow around the key border */
   .keycap.selected {
     /* Use theme color variable for glow */
-    box-shadow: 0 0 0 3px color-mix(in srgb, var(--theme-color-primary) 18%, transparent), 0 8px 22px color-mix(in srgb, var(--theme-color-primary) 12%, transparent);
+    box-shadow:
+      0 0 0 3px color-mix(in srgb, var(--theme-color-primary) 18%, transparent),
+      0 8px 22px color-mix(in srgb, var(--theme-color-primary) 12%, transparent);
     border-color: color-mix(in srgb, var(--theme-color-primary) 85%, black);
     position: relative;
     z-index: 6;
   }
 
   :global(.dark) .keycap.selected {
-    box-shadow: 0 0 0 3px color-mix(in srgb, var(--theme-color-primary) 16%, transparent), 0 8px 22px color-mix(in srgb, var(--theme-color-primary) 16%, transparent);
+    box-shadow:
+      0 0 0 3px color-mix(in srgb, var(--theme-color-primary) 16%, transparent),
+      0 8px 22px color-mix(in srgb, var(--theme-color-primary) 16%, transparent);
     border-color: color-mix(in srgb, var(--theme-color-primary) 85%, black);
   }
 
   .keycap {
-    transition: box-shadow 160ms ease, border-color 160ms ease, transform 80ms ease;
+    transition:
+      box-shadow 160ms ease,
+      border-color 160ms ease,
+      transform 80ms ease;
   }
 
   /* 使用 CSS Grid 实现九宫格标签布局 */
@@ -187,7 +191,7 @@
     padding: 0;
     gap: 1px;
   }
-  
+
   .label-cell {
     display: flex;
     overflow: visible;
@@ -198,13 +202,41 @@
   }
 
   /* 九宫格对齐 */
-  .label-cell-0 { justify-content: flex-start; align-items: flex-start; }
-  .label-cell-1 { justify-content: center; align-items: flex-start; }
-  .label-cell-2 { justify-content: flex-end; align-items: flex-start; }
-  .label-cell-3 { justify-content: flex-start; align-items: center; }
-  .label-cell-4 { justify-content: center; align-items: center; font-size: 18px; } /* 中间标签放大 */
-  .label-cell-5 { justify-content: flex-end; align-items: center; }
-  .label-cell-6 { justify-content: flex-start; align-items: flex-end; }
-  .label-cell-7 { justify-content: center; align-items: flex-end; }
-  .label-cell-8 { justify-content: flex-end; align-items: flex-end; }
+  .label-cell-0 {
+    justify-content: flex-start;
+    align-items: flex-start;
+  }
+  .label-cell-1 {
+    justify-content: center;
+    align-items: flex-start;
+  }
+  .label-cell-2 {
+    justify-content: flex-end;
+    align-items: flex-start;
+  }
+  .label-cell-3 {
+    justify-content: flex-start;
+    align-items: center;
+  }
+  .label-cell-4 {
+    justify-content: center;
+    align-items: center;
+    font-size: 18px;
+  } /* 中间标签放大 */
+  .label-cell-5 {
+    justify-content: flex-end;
+    align-items: center;
+  }
+  .label-cell-6 {
+    justify-content: flex-start;
+    align-items: flex-end;
+  }
+  .label-cell-7 {
+    justify-content: center;
+    align-items: flex-end;
+  }
+  .label-cell-8 {
+    justify-content: flex-end;
+    align-items: flex-end;
+  }
 </style>

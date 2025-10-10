@@ -15,20 +15,20 @@
   import * as kle from '@ijprest/kle-serial';
 
   let currentLanguage = $derived($language);
-  
+
   // Keyboard layout data - needed for getKeyLabel helper
   let keyboardKeys = $state<kle.Key[]>([]);
-  
+
   // Load keyboard layout on mount
   onMount(async () => {
     const layoutJson = await api.get_layout_json();
     const keyboard = kle.Serial.deserialize(JSON.parse(layoutJson));
     keyboardKeys = keyboard.keys;
-    
+
     // Clear any previous selections when entering the page
     deselectAll();
   });
-  
+
   // Clear selections when leaving the page
   onDestroy(() => {
     deselectAll();
@@ -113,7 +113,8 @@
       // KLE labels are in a 3x3 grid (9 positions)
       // Position 4 (center) is typically the main label
       // Fallback to position 0 (top-left) if position 4 is empty
-      const label = key.labels?.[4] || key.labels?.[0] || key.labels?.find(l => l && l.trim() !== '');
+      const label =
+        key.labels?.[4] || key.labels?.[0] || key.labels?.find(l => l && l.trim() !== '');
       return label || 'Unknown';
     }
     return 'Unknown';
@@ -245,7 +246,8 @@
         if (config.type === 'null-bind') {
           const nullConfig = config as NullBindConfiguration;
           if (
-            (nullConfig.pairedKeys[0] === pairKeys[0] && nullConfig.pairedKeys[1] === pairKeys[1]) ||
+            (nullConfig.pairedKeys[0] === pairKeys[0] &&
+              nullConfig.pairedKeys[1] === pairKeys[1]) ||
             (nullConfig.pairedKeys[0] === pairKeys[1] && nullConfig.pairedKeys[1] === pairKeys[0])
           ) {
             resetGlobalConfiguration(keyId);
@@ -265,7 +267,7 @@
     if (localSelectedKeys.length === 2) {
       const key1Label = getKeyLabel(localSelectedKeys[0]);
       const key2Label = getKeyLabel(localSelectedKeys[1]);
-      
+
       // Create both possible pair combinations since pairedKeys are sorted
       const pairId1 = `${key1Label}-${key2Label}`;
       const pairId2 = `${key2Label}-${key1Label}`;
@@ -304,8 +306,8 @@
     });
 
     return Array.from(uniquePairs.values());
-  }); 
-  
+  });
+
   // Check if we have exactly 2 keys selected
   const canConfigure = $derived(localSelectedKeys.length === 2);
 
@@ -352,7 +354,6 @@
     uiActuationPoint = actuationPoint;
   });
 </script>
-
 
 <div
   class="rounded-2xl shadow p-4 mt-2 mb-4 grow {$glassmorphismMode
@@ -405,7 +406,11 @@
   </div>
   <!-- Key Selection Section -->
   {#if !canConfigure}
-    <div class="p-6 {$glassmorphismMode ? '' : 'bg-primary-50 dark:bg-black border-primary-300 dark:border-gray-600'}">
+    <div
+      class="p-6 {$glassmorphismMode
+        ? ''
+        : 'bg-primary-50 dark:bg-black border-primary-300 dark:border-gray-600'}"
+    >
       <div class="max-w-4xl mx-auto">
         <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-3">
           {t('advancedkey.selectTwoKeys', currentLanguage)}

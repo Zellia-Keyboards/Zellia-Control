@@ -27,7 +27,6 @@
   };
 
   // Derived variable to determine which keyboard component to show
-  
 
   // Custom slide transition that moves instead of stretches
   function slideMove(node: Element, { duration = 400, direction = 1 }) {
@@ -140,21 +139,22 @@
   // Function to set key content/keycode for selected keys
   function setKeyContent(keyInfo: KeyInfo) {
     if ($selectedKeys.length === 0) return;
-        
+
     let keycode = keyInfo.keycode;
     if (keyInfo.subcode != undefined) {
       keycode |= keyInfo.subcode;
     }
     currentKeycode = keycode;
     const apiLayer = $selectedLayer - 1;
-    
+
     if (dev) {
-      console.log(`Setting keycode ${keycode} for keys ${$selectedKeys} on layer ${$selectedLayer} (API layer ${apiLayer})`);
+      console.log(
+        `Setting keycode ${keycode} for keys ${$selectedKeys} on layer ${$selectedLayer} (API layer ${apiLayer})`
+      );
     }
-    
+
     keyboardConnectionState.controller?.send_keymap_packet($selectedKeys, apiLayer, keycode);
   }
-
 
   let hasSelection = $state(false);
   $effect(() => {
@@ -167,8 +167,11 @@
       return;
     }
     hasSelection = isSelected;
-    keyboardConnectionState.controller?.send_keymap_packet($selectedKeys, $selectedLayer - 1, currentKeycode);
-    
+    keyboardConnectionState.controller?.send_keymap_packet(
+      $selectedKeys,
+      $selectedLayer - 1,
+      currentKeycode
+    );
   });
 
   $inspect(ActiveTabComponent, 'ActiveTabComponent');
@@ -186,19 +189,22 @@
   onclick={() => mainContainer?.focus()}
   style="outline: none;"
 >
-
   <!-- Tab Navigation -->
   <div class="flex items-center gap-0.5 -mt-4 mb-4 p-0.5 rounded-xl">
     {#each Tabs as tab}
       {@const isActive = activeTab === tab.name}
       <button
-        class="flex-1 text-xl font-medium px-2.5 py-2.5 rounded-lg transition-all duration-200 
+        class="flex-1 text-xl font-medium px-2.5 py-2.5 rounded-lg transition-all duration-200
                flex items-center justify-center gap-2
                {$glassmorphismMode ? 'glassmorphism-tab' : ''}
                {$glassmorphismMode && isActive ? 'active' : ''}
                {!$glassmorphismMode && isActive ? 'text-white shadow-sm' : ''}
-               {!$glassmorphismMode && !isActive ? 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-white dark:hover:bg-gray-800' : ''}"
-        style={!$glassmorphismMode && isActive ? 'background-color: var(--theme-color-primary);' : ''}
+               {!$glassmorphismMode && !isActive
+          ? 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-white dark:hover:bg-gray-800'
+          : ''}"
+        style={!$glassmorphismMode && isActive
+          ? 'background-color: var(--theme-color-primary);'
+          : ''}
         onclick={() => changeTab(tab.name)}
       >
         {#if tab.icon}
@@ -231,9 +237,11 @@
               onclick={() => {
                 if (selectedKeys.length === 0) {
                   showingNotification = true;
-                  setTimeout(() => showingNotification = false, 3000);
+                  setTimeout(() => (showingNotification = false), 3000);
                 } else {
-                  dev ? console.log(`Clicked key: ${keyInfo.label} (keycode: ${keyInfo.keycode})`) : null;
+                  dev
+                    ? console.log(`Clicked key: ${keyInfo.label} (keycode: ${keyInfo.keycode})`)
+                    : null;
                   setKeyContent(keyInfo);
                 }
               }}
@@ -251,8 +259,13 @@
 </div>
 
 {#if showingNotification}
-  <div class="fixed top-4 left-1/2 transform -translate-x-1/2 z-50" transition:fade={{ duration: 300 }}>
-    <div class="glassmorphism-card bg-gray-50 dark:bg-gray-900 p-4 rounded-lg shadow-lg border border-gray-200 dark:border-gray-600 text-black dark:text-white">
+  <div
+    class="fixed top-4 left-1/2 transform -translate-x-1/2 z-50"
+    transition:fade={{ duration: 300 }}
+  >
+    <div
+      class="glassmorphism-card bg-gray-50 dark:bg-gray-900 p-4 rounded-lg shadow-lg border border-gray-200 dark:border-gray-600 text-black dark:text-white"
+    >
       Select the key you want to remap first
     </div>
   </div>

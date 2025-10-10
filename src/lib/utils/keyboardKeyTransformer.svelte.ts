@@ -23,8 +23,8 @@ export function transformKeyboardKeys(
     newKeys.forEach((key, index) => {
       const advanced_key = advancedKeys[index];
       let labels = newKeys[index].labels;
-      labels = labels.map(() => "");
-      
+      labels = labels.map(() => '');
+
       switch (advanced_key.mode) {
         case ekc.KeyMode.KeyAnalogNormalMode: {
           labels[3] = `↓${Math.round(advanced_key.activation_value * 1000) / 10}\t↑${Math.round(advanced_key.deactivation_value * 1000) / 10}`;
@@ -51,7 +51,7 @@ export function transformKeyboardKeys(
   // Remap page transformations
   if (activePage === '/remap' || activePage.startsWith('/remap/')) {
     newKeys.forEach((key, index) => {
-      newKeys[index].labels[0] = "2";
+      newKeys[index].labels[0] = '2';
     });
   }
 
@@ -60,8 +60,8 @@ export function transformKeyboardKeys(
     newKeys.forEach((key, index) => {
       const rgb_config = rgbConfigs[index];
       let labels = newKeys[index].labels;
-      labels = labels.map(() => "");
-      
+      labels = labels.map(() => '');
+
       switch (rgb_config.mode) {
         case ekc.RGBMode.RgbModeStatic: {
           labels[3] = `Static`;

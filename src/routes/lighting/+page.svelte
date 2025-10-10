@@ -7,7 +7,7 @@
   import { selectedCount, toggleSelectAll, deselectAll } from '$lib/stores/SelectedKeysStore';
   import * as ekc from 'emi-keyboard-controller';
   import { color } from 'chart.js/helpers';
-  import tinycolor from "tinycolor2";
+  import tinycolor from 'tinycolor2';
   import { rgbBaseConfig, rgbConfigs } from '$lib/stores/ControllerStore.svelte';
 
   // Helper function for string formatting
@@ -112,16 +112,11 @@
       : null;
   }
 
-  function toggleKeySelection() {
-
-
-  }
+  function toggleKeySelection() {}
 
   function applyToSelectedKeys() {
     // Apply current color to selected keys
     console.log('Applying color to selected keys:', selectedKeys);
-
-    
   }
 
   function clearKeySelection() {
@@ -149,37 +144,36 @@
   function selectEffect(effectId: string, mode: 'global' | 'per-key') {
     if (mode == 'global') {
       selectedGlobalEffect = effectId;
-    }
-    else {
+    } else {
       selectedEffect = effectId;
     }
     effectMode = mode;
   }
 
-  let rGBBaseConfig : ekc.RGBBaseConfig = $derived.by(()=>{
+  let rGBBaseConfig: ekc.RGBBaseConfig = $derived.by(() => {
     var rgb = new ekc.RGBBaseConfig();
-    
+
     rgb.brightness = brightness;
-      switch (selectedGlobalEffect) {
-        case 'rainbow':
-          rgb.mode = ekc.RGBBaseMode.RgbBaseModeRainbow;
-          rgb.speed = speed;
-          rgb.density = 10;
-          break;
-        case 'wave':
-          rgb.mode = ekc.RGBBaseMode.RgbBaseModeWave;
-          rgb.speed = speed;
-          rgb.density = 10;
-          break;
-        case 'breathing':
-          rgb.mode = ekc.RGBBaseMode.RgbBaseModeWave;
-          rgb.speed = speed;
-          rgb.density = 0.001;
-          break;
-        default:
-          rgb.mode = ekc.RGBBaseMode.RgbBaseModeBlank;
-          break;
-      }
+    switch (selectedGlobalEffect) {
+      case 'rainbow':
+        rgb.mode = ekc.RGBBaseMode.RgbBaseModeRainbow;
+        rgb.speed = speed;
+        rgb.density = 10;
+        break;
+      case 'wave':
+        rgb.mode = ekc.RGBBaseMode.RgbBaseModeWave;
+        rgb.speed = speed;
+        rgb.density = 10;
+        break;
+      case 'breathing':
+        rgb.mode = ekc.RGBBaseMode.RgbBaseModeWave;
+        rgb.speed = speed;
+        rgb.density = 0.001;
+        break;
+      default:
+        rgb.mode = ekc.RGBBaseMode.RgbBaseModeBlank;
+        break;
+    }
     var c = tinycolor(staticColor).toRgb();
     rgb.rgb.red = c.r;
     rgb.rgb.green = c.g;
@@ -187,24 +181,24 @@
     return rgb;
   });
 
-  let rGBConfig : ekc.RGBConfig = $derived.by(()=>{
+  let rGBConfig: ekc.RGBConfig = $derived.by(() => {
     var rgb = new ekc.RGBConfig();
 
-      switch (selectedEffect) {
-        case 'static':
-          rgb.mode = ekc.RGBMode.RgbModeStatic;
-          break;
-        case 'reactive':
-          rgb.mode = ekc.RGBMode.RgbModeLinear;
-          break;
-        case 'ripple':
-          rgb.mode = ekc.RGBMode.RgbModeFadingDiamondRipple;
-          rgb.speed = 1;
-          break;
-        default:
-          rgb.mode = ekc.RGBMode.RgbModeLinear;
-          break;
-      }
+    switch (selectedEffect) {
+      case 'static':
+        rgb.mode = ekc.RGBMode.RgbModeStatic;
+        break;
+      case 'reactive':
+        rgb.mode = ekc.RGBMode.RgbModeLinear;
+        break;
+      case 'ripple':
+        rgb.mode = ekc.RGBMode.RgbModeFadingDiamondRipple;
+        rgb.speed = 1;
+        break;
+      default:
+        rgb.mode = ekc.RGBMode.RgbModeLinear;
+        break;
+    }
     var c = tinycolor(staticColor).toRgb();
     rgb.rgb.red = c.r;
     rgb.rgb.green = c.g;
@@ -219,18 +213,17 @@
     if (isSelected && !hasSelection) {
       let rgb = $rgbConfigs[$selectedKeys[0]];
       speed = rgb.speed;
-
     }
     // 只有在有按键被选中的时候才更新
     if (keysToUpdate.length === 0) {
       return;
     }
     hasSelection = isSelected;
-    
+
     // 更新 advancedKeys 存储
     rgbConfigs.update(currentKeys => {
       // 创建一个新的数组副本进行修改
-      const newKeys = [...currentKeys]; 
+      const newKeys = [...currentKeys];
       const config = rGBConfig;
 
       // 遍历所有选中的按键索引，将配置应用到对应位置
@@ -238,21 +231,21 @@
         // 确保索引在数组范围内，并应用新的配置
         if (index >= 0 && index < newKeys.length) {
           // 创建一个新对象以避免直接修改旧对象（保持不变性）
-          newKeys[index] = { ...config }; 
+          newKeys[index] = { ...config };
         }
       }
       return newKeys;
     });
     console.log(rGBConfig);
-    keyboardConnectionState.controller?.send_rgb_packet($selectedKeys,rGBConfig);
-
+    keyboardConnectionState.controller?.send_rgb_packet($selectedKeys, rGBConfig);
   });
   $effect(() => {
-    rgbBaseConfig.update(()=>{return rGBBaseConfig;});
+    rgbBaseConfig.update(() => {
+      return rGBBaseConfig;
+    });
     keyboardConnectionState.controller?.send_rgb_base_packet(rGBBaseConfig);
   });
 </script>
-
 
 <div
   class="rounded-2xl shadow p-8 mt-2 mb-4 grow bg-gray-50 dark:bg-black border border-gray-200 dark:border-gray-600 text-black dark:text-white h-full flex flex-col {$glassmorphismMode
@@ -286,15 +279,20 @@
       <!-- Global Effects (全键盘效果) -->
       <div class="mb-3">
         <div class="flex items-center gap-2 mb-2">
-          <h3 class="text-sm font-semibold text-black dark:text-white">{t('lighting.globalEffects', currentLanguage)}</h3>
-          <span class="text-xs px-1.5 py-0.5 rounded bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300">
+          <h3 class="text-sm font-semibold text-black dark:text-white">
+            {t('lighting.globalEffects', currentLanguage)}
+          </h3>
+          <span
+            class="text-xs px-1.5 py-0.5 rounded bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300"
+          >
             {t('lighting.allKeys', currentLanguage)}
           </span>
         </div>
         <div class="grid grid-cols-3 gap-2">
           {#each globalEffects as effect}
             <button
-              class="px-3 py-2 rounded-lg border-2 text-center transition-all duration-200 relative overflow-hidden {selectedGlobalEffect === effect.id
+              class="px-3 py-2 rounded-lg border-2 text-center transition-all duration-200 relative overflow-hidden {selectedGlobalEffect ===
+              effect.id
                 ? 'border-primary bg-primary/20 dark:bg-primary/30 shadow-lg'
                 : 'border-gray-300 dark:border-gray-600 hover:border-primary/50'} {$glassmorphismMode
                 ? 'glassmorphism-button'
@@ -302,9 +300,15 @@
               onclick={() => selectEffect(effect.id, effect.mode)}
             >
               {#if selectedGlobalEffect === effect.id}
-                <div class="absolute inset-0 bg-gradient-to-br from-primary/10 to-primary/20 dark:from-primary/20 dark:to-primary/30"></div>
+                <div
+                  class="absolute inset-0 bg-gradient-to-br from-primary/10 to-primary/20 dark:from-primary/20 dark:to-primary/30"
+                ></div>
               {/if}
-              <div class="relative z-10 text-xs font-medium {selectedGlobalEffect === effect.id ? 'text-primary-700 dark:text-primary-200' : 'text-black dark:text-white'}">
+              <div
+                class="relative z-10 text-xs font-medium {selectedGlobalEffect === effect.id
+                  ? 'text-primary-700 dark:text-primary-200'
+                  : 'text-black dark:text-white'}"
+              >
                 {effect.name}
               </div>
             </button>
@@ -315,15 +319,20 @@
       <!-- Per-Key Effects (单键效果) -->
       <div class="mb-3">
         <div class="flex items-center gap-2 mb-2">
-          <h3 class="text-sm font-semibold text-black dark:text-white">{t('lighting.perKeyEffects', currentLanguage)}</h3>
-          <span class="text-xs px-1.5 py-0.5 rounded bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300">
+          <h3 class="text-sm font-semibold text-black dark:text-white">
+            {t('lighting.perKeyEffects', currentLanguage)}
+          </h3>
+          <span
+            class="text-xs px-1.5 py-0.5 rounded bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300"
+          >
             {t('lighting.customizable', currentLanguage)}
           </span>
         </div>
         <div class="grid grid-cols-3 gap-2">
           {#each perKeyEffects as effect}
             <button
-              class="px-3 py-2 rounded-lg border-2 text-center transition-all duration-200 relative overflow-hidden {selectedEffect === effect.id
+              class="px-3 py-2 rounded-lg border-2 text-center transition-all duration-200 relative overflow-hidden {selectedEffect ===
+              effect.id
                 ? 'border-primary bg-primary/20 dark:bg-primary/30 shadow-lg'
                 : 'border-gray-300 dark:border-gray-600 hover:border-primary/50'} {$glassmorphismMode
                 ? 'glassmorphism-button'
@@ -331,9 +340,15 @@
               onclick={() => selectEffect(effect.id, effect.mode)}
             >
               {#if selectedEffect === effect.id}
-                <div class="absolute inset-0 bg-gradient-to-br from-primary/10 to-primary/20 dark:from-primary/20 dark:to-primary/30"></div>
+                <div
+                  class="absolute inset-0 bg-gradient-to-br from-primary/10 to-primary/20 dark:from-primary/20 dark:to-primary/30"
+                ></div>
               {/if}
-              <div class="relative z-10 text-xs font-medium {selectedEffect === effect.id ? 'text-primary-700 dark:text-primary-200' : 'text-black dark:text-white'}">
+              <div
+                class="relative z-10 text-xs font-medium {selectedEffect === effect.id
+                  ? 'text-primary-700 dark:text-primary-200'
+                  : 'text-black dark:text-white'}"
+              >
                 {effect.name}
               </div>
             </button>
@@ -377,24 +392,24 @@
       {/if}
 
       <!-- Color (for applicable effects) -->
-        <div>
-          <div class="text-xs text-gray-600 dark:text-gray-300 mb-1.5">
-            {t('lighting.color', currentLanguage)}
-          </div>
-          <div class="flex gap-2">
-            <input
-              type="color"
-              bind:value={staticColor}
-              class="w-10 h-9 rounded border-0 p-0 cursor-pointer overflow-hidden"
-            />
-            <input
-              type="text"
-              bind:value={staticColor}
-              class="flex-1 px-2 py-1.5 border border-gray-300 dark:border-white bg-white dark:bg-black text-black dark:text-white rounded-lg font-mono text-xs"
-              placeholder="#ff0000"
-            />
-          </div>
+      <div>
+        <div class="text-xs text-gray-600 dark:text-gray-300 mb-1.5">
+          {t('lighting.color', currentLanguage)}
         </div>
+        <div class="flex gap-2">
+          <input
+            type="color"
+            bind:value={staticColor}
+            class="w-10 h-9 rounded border-0 p-0 cursor-pointer overflow-hidden"
+          />
+          <input
+            type="text"
+            bind:value={staticColor}
+            class="flex-1 px-2 py-1.5 border border-gray-300 dark:border-white bg-white dark:bg-black text-black dark:text-white rounded-lg font-mono text-xs"
+            placeholder="#ff0000"
+          />
+        </div>
+      </div>
 
       <!-- Direction (for directional effects) -->
       {#if ['rainbow'].includes(selectedGlobalEffect)}
@@ -405,7 +420,8 @@
           <div class="grid grid-cols-4 gap-2">
             {#each directions as dir}
               <button
-                class="aspect-square p-3 rounded-lg border-2 flex flex-col items-center justify-center gap-1 transition-all duration-200 relative overflow-hidden {direction === dir.id
+                class="aspect-square p-3 rounded-lg border-2 flex flex-col items-center justify-center gap-1 transition-all duration-200 relative overflow-hidden {direction ===
+                dir.id
                   ? 'border-primary bg-primary/20 dark:bg-primary/30 shadow-lg'
                   : 'border-gray-300 dark:border-gray-600 hover:border-primary/50'} {$glassmorphismMode
                   ? 'glassmorphism-button'
@@ -413,13 +429,21 @@
                 onclick={() => (direction = dir.id)}
               >
                 {#if direction === dir.id}
-                  <div class="absolute inset-0 bg-gradient-to-br from-primary/10 to-primary/20 dark:from-primary/20 dark:to-primary/30"></div>
+                  <div
+                    class="absolute inset-0 bg-gradient-to-br from-primary/10 to-primary/20 dark:from-primary/20 dark:to-primary/30"
+                  ></div>
                 {/if}
-                <svelte:component 
-                  this={dir.icon} 
-                  class="relative z-10 w-6 h-6 {direction === dir.id ? 'text-primary-700 dark:text-primary-200' : 'text-black dark:text-white'}"
+                <svelte:component
+                  this={dir.icon}
+                  class="relative z-10 w-6 h-6 {direction === dir.id
+                    ? 'text-primary-700 dark:text-primary-200'
+                    : 'text-black dark:text-white'}"
                 />
-                <div class="relative z-10 text-xs font-medium text-center {direction === dir.id ? 'text-primary-700 dark:text-primary-200' : 'text-black dark:text-white'}">
+                <div
+                  class="relative z-10 text-xs font-medium text-center {direction === dir.id
+                    ? 'text-primary-700 dark:text-primary-200'
+                    : 'text-black dark:text-white'}"
+                >
                   {dir.name}
                 </div>
               </button>
@@ -455,7 +479,7 @@
   }
 
   /* Color input styling to fill containers */
-  input[type="color"] {
+  input[type='color'] {
     -webkit-appearance: none;
     -moz-appearance: none;
     appearance: none;
@@ -463,20 +487,20 @@
     border: none;
     cursor: pointer;
   }
-  
-  input[type="color"]::-webkit-color-swatch-wrapper {
+
+  input[type='color']::-webkit-color-swatch-wrapper {
     padding: 0;
     border: none;
     border-radius: inherit;
   }
-  
-  input[type="color"]::-webkit-color-swatch {
+
+  input[type='color']::-webkit-color-swatch {
     border: none;
     border-radius: inherit;
     padding: 0;
   }
-  
-  input[type="color"]::-moz-color-swatch {
+
+  input[type='color']::-moz-color-swatch {
     border: none;
     border-radius: inherit;
   }

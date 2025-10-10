@@ -21,9 +21,7 @@ export function shouldShowConfiguratorLayout(pathname: string): boolean {
  * Check if the current path should show the layer selector
  */
 export function shouldShowLayerSelector(pathname: string): boolean {
-  return LAYER_SELECTOR_PAGES.some(
-    page => pathname === page || pathname.startsWith(page + '/')
-  );
+  return LAYER_SELECTOR_PAGES.some(page => pathname === page || pathname.startsWith(page + '/'));
 }
 
 /**

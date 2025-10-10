@@ -25,7 +25,7 @@
 
   // Get the first selected key index (or null if none selected)
   let currentSelectedIndex = $derived($selectedKeys.length > 0 ? $selectedKeys[0] : null);
-  
+
   let tapAction = $state('KC_ESC');
   let holdAction = $state('KC_LCTL');
   let holdDelay = $state(200); // milliseconds
@@ -122,12 +122,12 @@
     if (currentSelectedIndex === null) return 'No key selected';
     const controller = keyboardAPI.state.controller;
     if (!controller) return 'Unknown';
-    
+
     try {
       const layoutJson = controller.get_layout_json();
       const layout = JSON.parse(layoutJson);
       const keys = layout;
-      
+
       if (keys && keys[currentSelectedIndex]) {
         const key = keys[currentSelectedIndex];
         // Return the first non-empty label
@@ -139,7 +139,7 @@
     } catch (e) {
       console.error('Error getting key label:', e);
     }
-    
+
     return `Key ${currentSelectedIndex}`;
   });
 
@@ -155,7 +155,7 @@
       }
     }
   });
-  
+
   // Expandable section state - separate for tap and hold actions
   let expandedTapSections: Record<string, boolean> = $state({
     Basic: true,
@@ -163,14 +163,14 @@
     System: false,
     Mouse: false,
   });
-  
+
   let expandedHoldSections: Record<string, boolean> = $state({
     Basic: false,
     Layer: false,
     System: false,
     Mouse: false,
   });
-  
+
   // Action categories - only 4 sections matching remap pages
   const actionCategories = $derived([
     {
@@ -373,21 +373,42 @@
 
               <div class="space-y-2">
                 {#each actionCategories as category}
-                  <div class="border rounded-lg {$glassmorphismMode ? 'glassmorphism-card' : 'border-primary-200 dark:border-primary-700'}">
+                  <div
+                    class="border rounded-lg {$glassmorphismMode
+                      ? 'glassmorphism-card'
+                      : 'border-primary-200 dark:border-primary-700'}"
+                  >
                     <button
-                      class="w-full px-4 py-3 flex items-center justify-between {$glassmorphismMode ? 'glassmorphism-button' : 'hover:bg-primary-100 dark:hover:bg-primary-900'} rounded-lg transition-colors"
-                      onclick={() => expandedTapSections[category.name] = !expandedTapSections[category.name]}
+                      class="w-full px-4 py-3 flex items-center justify-between {$glassmorphismMode
+                        ? 'glassmorphism-button'
+                        : 'hover:bg-primary-100 dark:hover:bg-primary-900'} rounded-lg transition-colors"
+                      onclick={() =>
+                        (expandedTapSections[category.name] = !expandedTapSections[category.name])}
                     >
                       <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300">
                         {category.name}
                       </h4>
-                      <svg class="w-4 h-4 transition-transform {expandedTapSections[category.name] ? 'rotate-180' : ''}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                      <svg
+                        class="w-4 h-4 transition-transform {expandedTapSections[category.name]
+                          ? 'rotate-180'
+                          : ''}"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M19 9l-7 7-7-7"
+                        />
                       </svg>
                     </button>
                     {#if expandedTapSections[category.name]}
                       <div class="px-4 pb-4 pt-2" transition:slide={{ duration: 300, axis: 'y' }}>
-                        <div class="grid grid-cols-6 sm:grid-cols-8 md:grid-cols-10 lg:grid-cols-12 gap-2">
+                        <div
+                          class="grid grid-cols-6 sm:grid-cols-8 md:grid-cols-10 lg:grid-cols-12 gap-2"
+                        >
                           {#each category.actions as action}
                             <button
                               class="aspect-square min-w-12 text-xs rounded-md border transition-all flex items-center justify-center p-1 whitespace-pre-line leading-tight {$glassmorphismMode
@@ -423,21 +444,43 @@
 
               <div class="space-y-2">
                 {#each actionCategories as category}
-                  <div class="border rounded-lg {$glassmorphismMode ? 'glassmorphism-card' : 'border-primary-200 dark:border-primary-700'}">
+                  <div
+                    class="border rounded-lg {$glassmorphismMode
+                      ? 'glassmorphism-card'
+                      : 'border-primary-200 dark:border-primary-700'}"
+                  >
                     <button
-                      class="w-full px-4 py-3 flex items-center justify-between {$glassmorphismMode ? 'glassmorphism-button' : 'hover:bg-primary-100 dark:hover:bg-primary-900'} rounded-lg transition-colors"
-                      onclick={() => expandedHoldSections[category.name] = !expandedHoldSections[category.name]}
+                      class="w-full px-4 py-3 flex items-center justify-between {$glassmorphismMode
+                        ? 'glassmorphism-button'
+                        : 'hover:bg-primary-100 dark:hover:bg-primary-900'} rounded-lg transition-colors"
+                      onclick={() =>
+                        (expandedHoldSections[category.name] =
+                          !expandedHoldSections[category.name])}
                     >
                       <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300">
                         {category.name}
                       </h4>
-                      <svg class="w-4 h-4 transition-transform {expandedHoldSections[category.name] ? 'rotate-180' : ''}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                      <svg
+                        class="w-4 h-4 transition-transform {expandedHoldSections[category.name]
+                          ? 'rotate-180'
+                          : ''}"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M19 9l-7 7-7-7"
+                        />
                       </svg>
                     </button>
                     {#if expandedHoldSections[category.name]}
                       <div class="px-4 pb-4 pt-2" transition:slide={{ duration: 300, axis: 'y' }}>
-                        <div class="grid grid-cols-6 sm:grid-cols-8 md:grid-cols-10 lg:grid-cols-12 gap-2">
+                        <div
+                          class="grid grid-cols-6 sm:grid-cols-8 md:grid-cols-10 lg:grid-cols-12 gap-2"
+                        >
                           {#each category.actions as action}
                             <button
                               class="aspect-square min-w-12 text-xs rounded-md border transition-all flex items-center justify-center p-1 whitespace-pre-line leading-tight {$glassmorphismMode
@@ -614,12 +657,12 @@
                     {@const keyName = (() => {
                       const controller = keyboardAPI.state.controller;
                       if (!controller) return t('common.unknown', currentLanguage);
-                      
+
                       try {
                         const layoutJson = controller.get_layout_json();
                         const layout = JSON.parse(layoutJson);
                         const keys = layout;
-                        
+
                         if (keys && keys[keyIndex]) {
                           const key = keys[keyIndex];
                           if (key.labels && key.labels.length > 0) {
@@ -630,7 +673,7 @@
                       } catch (e) {
                         console.error('Error getting key label:', e);
                       }
-                      
+
                       return `Key ${keyIndex}`;
                     })()}
                     {@const tapHoldConfig = config as TapHoldConfiguration}

@@ -6,7 +6,6 @@
 
   let currentLanguage = $derived($language);
 
-
   // Settings options - these will be translated in the template
   const settingsOptions = [
     {

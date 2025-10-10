@@ -12,13 +12,12 @@
     children,
     keyboardKeys = [] as kle.Key[],
     isLoadingConfigurator = false,
-    shouldShowLayerSelector = false
+    shouldShowLayerSelector = false,
   } = $props();
 
   // Helper to check if we should hide keyboard and toolbar
   let shouldHideKeyboardAndToolbar = $derived(
-    $page.url.pathname.includes('/about') || 
-    $page.url.pathname.includes('/profiles')
+    $page.url.pathname.includes('/about') || $page.url.pathname.includes('/profiles')
   );
 </script>
 
@@ -37,7 +36,7 @@
 <!-- Loading overlay while configurator is loading -->
 {#if isLoadingConfigurator}
   <LoadingOverlay />
-<!-- Connection Interface when not connected and on root page -->
+  <!-- Connection Interface when not connected and on root page -->
 {:else if !keyboardAPI.shouldShowConfigurator && $page.url.pathname === '/'}
   <ConnectionInterface />
 {:else if keyboardAPI.shouldShowConfigurator && !isLoadingConfigurator}

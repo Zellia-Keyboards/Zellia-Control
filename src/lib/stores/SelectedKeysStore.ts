@@ -46,7 +46,7 @@ export function toggleSelectAll() {
 }
 
 // Derived helpers
-export const selectedCount = derived(_selected, $ => $ .length);
+export const selectedCount = derived(_selected, $ => $.length);
 
 export function isSelected(index: number): Readable<boolean> {
   return derived(_selected, $ => $.includes(index));

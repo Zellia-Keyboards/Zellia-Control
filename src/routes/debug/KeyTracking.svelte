@@ -270,7 +270,9 @@
 </script>
 
 <!-- Key Tracking Section -->
-<div class="p-5 rounded-lg border glassmorphism-card border-gray-200 dark:border-gray-600 bg-primary-50 dark:bg-black">
+<div
+  class="p-5 rounded-lg border glassmorphism-card border-gray-200 dark:border-gray-600 bg-primary-50 dark:bg-black"
+>
   <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">
     {t('debug.keyTracking', currentLanguage)}
   </h3>
@@ -329,7 +331,9 @@
 
     <!-- Right column: chart -->
     <div class="flex-1 min-h-[400px]">
-      <div class="border glassmorphism-card border-gray-300 dark:border-gray-600 rounded-lg p-4 h-full bg-primary-25 dark:bg-primary-975">
+      <div
+        class="border glassmorphism-card border-gray-300 dark:border-gray-600 rounded-lg p-4 h-full bg-primary-25 dark:bg-primary-975"
+      >
         <canvas bind:this={chartCanvas} class="w-full h-full"></canvas>
       </div>
     </div>

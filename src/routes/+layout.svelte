@@ -13,7 +13,7 @@
   import MainContentArea from '$lib/components/layout/MainContentArea.svelte';
   import { shouldShowConfiguratorLayout, shouldShowLayerSelector } from '$lib/utils/layoutHelpers';
   import { transformKeyboardKeys } from '$lib/utils/keyboardKeyTransformer.svelte';
-  
+
   let { children } = $props();
   let showFirefoxWarning = $state(false);
   let firefoxWarningDismissed = $state(false);
@@ -23,16 +23,11 @@
   // Keyboard layout for global KeyboardRender
   let layout = $derived($keyboardLayoutStore);
   let keyboardLayout: kle.Key[] = $derived(kle.Serial.deserialize(JSON.parse(layout)).keys);
-  
+
   // Transform keyboard keys based on the active page
   let keyboardKeys: kle.Key[] = $derived.by(() => {
     console.log(`Active page: ${$page.url.pathname}`);
-    return transformKeyboardKeys(
-      keyboardLayout,
-      $advancedKeys,
-      $rgbConfigs,
-      $page.url.pathname
-    );
+    return transformKeyboardKeys(keyboardLayout, $advancedKeys, $rgbConfigs, $page.url.pathname);
   });
 
   // Derived variables for layout state
@@ -53,18 +48,18 @@
 
   // Centralized navigation logic - single source of truth
   let navigationInProgress = $state(false);
-  
+
   $effect(() => {
     if (navigationInProgress) return; // Prevent navigation loops
-    
+
     const path = $page.url.pathname;
     const shouldShowConfigurator = keyboardAPI.shouldShowConfigurator;
-    
+
     // Root page - redirect to remap only if connected
     if (path === '/' && shouldShowConfigurator) {
       navigationInProgress = true;
       goto('/remap', { replaceState: true });
-      setTimeout(() => navigationInProgress = false, 100);
+      setTimeout(() => (navigationInProgress = false), 100);
       return;
     }
   });
@@ -73,12 +68,18 @@
   $effect(() => {
     if (keyboardAPI.state.connectionStatus === 'connecting') {
       isLoadingConfigurator = true;
-    } else if (keyboardAPI.state.connectionStatus === 'connected' && keyboardAPI.shouldShowConfigurator) {
+    } else if (
+      keyboardAPI.state.connectionStatus === 'connected' &&
+      keyboardAPI.shouldShowConfigurator
+    ) {
       // Add a small delay to ensure everything is loaded before showing the configurator
       setTimeout(() => {
         isLoadingConfigurator = false;
       }, 400);
-    } else if (keyboardAPI.state.connectionStatus === 'error' || keyboardAPI.state.connectionStatus === 'disconnected') {
+    } else if (
+      keyboardAPI.state.connectionStatus === 'error' ||
+      keyboardAPI.state.connectionStatus === 'disconnected'
+    ) {
       isLoadingConfigurator = false;
     }
   });
@@ -93,16 +94,16 @@
   <div class="hidden xl:flex h-screen bg-gray-50 dark:bg-black">
     <!-- Sidebar -->
     <Sidebar />
-    
+
     <!-- Main Content -->
     <div
       class="flex-1 flex flex-col gap-4 px-4 overflow-y-scroll {$glassmorphismMode
         ? 'glassmorphism-main'
         : 'bg-primary-50/20 dark:bg-black/20'}"
     >
-      <MainContentArea 
-        {children} 
-        {keyboardKeys} 
+      <MainContentArea
+        {children}
+        {keyboardKeys}
         {isLoadingConfigurator}
         shouldShowLayerSelector={showLayerSelector}
       />

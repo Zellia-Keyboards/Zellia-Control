@@ -12,7 +12,7 @@
   --glass-backdrop-blur: 20px;
   --glass-border-opacity: 0.18;
   --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
-  --glass-vibrancy: contrast(1.0) saturate(0.9);
+  --glass-vibrancy: contrast(1) saturate(0.9);
 }
 
 /* Base layer using Tailwind 4.x layer system */
@@ -44,7 +44,16 @@
   }
 
   /* Additional scrollbar hiding for specific elements that might have overflow */
-  html, body, div, main, section, article, aside, nav, header, footer {
+  html,
+  body,
+  div,
+  main,
+  section,
+  article,
+  aside,
+  nav,
+  header,
+  footer {
     scrollbar-width: none !important;
     -ms-overflow-style: none !important;
   }
@@ -135,7 +144,6 @@
     color: rgb(17 24 39) !important; /* gray-900 for light mode */
   }
 
-
   /* Keep white text in dark mode for all scenarios */
   .dark p.bg-gray-50.text-white,
   .dark div.bg-gray-50.text-white,
@@ -162,9 +170,9 @@
 
   /* Dark mode glassmorphism */
   .glassmorphism .glassmorphism-sidebar {
-  background: color-mix(in srgb, var(--theme-color-primary) 8%, rgba(0, 0, 0, 0.3)) !important;
-  backdrop-filter: var(--glass-backdrop-blur) !important;
-  -webkit-backdrop-filter: var(--glass-backdrop-blur) !important;
+    background: color-mix(in srgb, var(--theme-color-primary) 8%, rgba(0, 0, 0, 0.3)) !important;
+    backdrop-filter: var(--glass-backdrop-blur) !important;
+    -webkit-backdrop-filter: var(--glass-backdrop-blur) !important;
     border: none !important;
     border-right: 1px solid
       color-mix(in srgb, var(--theme-color-primary) 30%, rgba(255, 255, 255, 0.2)) !important;
@@ -176,8 +184,8 @@
 
   .glassmorphism .glassmorphism-card {
     background: color-mix(in srgb, var(--theme-color-primary) 4%, rgba(0, 0, 0, 0.2)) !important;
-  backdrop-filter: saturate(120%) blur(15px) !important;
-  -webkit-backdrop-filter: saturate(120%) blur(15px) !important;
+    backdrop-filter: saturate(120%) blur(15px) !important;
+    -webkit-backdrop-filter: saturate(120%) blur(15px) !important;
     border: 1px solid color-mix(in srgb, var(--theme-color-primary) 12%, rgba(255, 255, 255, 0.08)) !important;
     box-shadow:
       0 4px 16px rgba(0, 0, 0, 0.1),
@@ -193,8 +201,8 @@
       var(--theme-color-primary) 3%,
       rgba(255, 255, 255, 0.04)
     ) !important;
-  backdrop-filter: saturate(120%) blur(12px) !important;
-  -webkit-backdrop-filter: saturate(120%) blur(12px) !important;
+    backdrop-filter: saturate(120%) blur(12px) !important;
+    -webkit-backdrop-filter: saturate(120%) blur(12px) !important;
     border: 1px solid color-mix(in srgb, var(--theme-color-primary) 8%, rgba(255, 255, 255, 0.06)) !important;
     /* Fix text blending */
     color: rgba(255, 255, 255, 0.9) !important;
@@ -230,8 +238,8 @@
       var(--theme-color-primary) 6%,
       rgba(255, 255, 255, 0.06)
     ) !important;
-  backdrop-filter: saturate(120%) blur(12px) !important;
-  -webkit-backdrop-filter: saturate(120%) blur(12px) !important;
+    backdrop-filter: saturate(120%) blur(12px) !important;
+    -webkit-backdrop-filter: saturate(120%) blur(12px) !important;
     border: 1px solid color-mix(in srgb, var(--theme-color-primary) 12%, rgba(255, 255, 255, 0.1)) !important;
     /* Fix text blending */
     color: rgba(255, 255, 255, 0.9) !important;
@@ -251,8 +259,8 @@
 
   .glassmorphism .glassmorphism-main {
     background: color-mix(in srgb, var(--theme-color-primary) 2%, rgba(0, 0, 0, 0.1)) !important;
-  backdrop-filter: saturate(120%) blur(10px) !important;
-  -webkit-backdrop-filter: saturate(120%) blur(10px) !important;
+    backdrop-filter: saturate(120%) blur(10px) !important;
+    -webkit-backdrop-filter: saturate(120%) blur(10px) !important;
   }
 
   /* Light mode glassmorphism with theme colors */
@@ -374,7 +382,7 @@
   /* Enhanced Apple-style glassmorphism effects */
   .glassmorphism {
     /* Enhanced vibrancy effect similar to Apple's implementations */
-  --glass-vibrancy: contrast(1.02) saturate(1.15);
+    --glass-vibrancy: contrast(1.02) saturate(1.15);
   }
 
   /* Ensure proper text contrast in glassmorphism mode */
@@ -432,14 +440,14 @@
   }
 
   .glassmorphism .glassmorphism-card {
-  backdrop-filter: var(--glass-vibrancy) saturate(120%) blur(15px) !important;
-  -webkit-backdrop-filter: var(--glass-vibrancy) saturate(120%) blur(15px) !important;
+    backdrop-filter: var(--glass-vibrancy) saturate(120%) blur(15px) !important;
+    -webkit-backdrop-filter: var(--glass-vibrancy) saturate(120%) blur(15px) !important;
   }
 
   .glassmorphism .glassmorphism-nav-item,
   .glassmorphism .glassmorphism-button {
-  backdrop-filter: var(--glass-vibrancy) saturate(120%) blur(12px) !important;
-  -webkit-backdrop-filter: var(--glass-vibrancy) saturate(120%) blur(12px) !important;
+    backdrop-filter: var(--glass-vibrancy) saturate(120%) blur(12px) !important;
+    -webkit-backdrop-filter: var(--glass-vibrancy) saturate(120%) blur(12px) !important;
   }
 
   /* Add smooth transitions for glassmorphism state changes */
@@ -485,7 +493,7 @@
   }
 
   100% {
-  --glass-backdrop-blur: saturate(120%) blur(20px);
+    --glass-backdrop-blur: saturate(120%) blur(20px);
     --glass-border-opacity: 0.18;
   }
 }
@@ -656,14 +664,14 @@
 @keyframes glassmorphism-content-fade-in {
   0% {
     opacity: 0;
-  backdrop-filter: saturate(120%) blur(5px);
-  -webkit-backdrop-filter: saturate(120%) blur(5px);
+    backdrop-filter: saturate(120%) blur(5px);
+    -webkit-backdrop-filter: saturate(120%) blur(5px);
   }
 
   100% {
     opacity: 1;
-  backdrop-filter: saturate(120%) blur(20px);
-  -webkit-backdrop-filter: saturate(120%) blur(20px);
+    backdrop-filter: saturate(120%) blur(20px);
+    -webkit-backdrop-filter: saturate(120%) blur(20px);
   }
 }
 
