@@ -7,7 +7,10 @@
     type ThemeColorName,
     glassmorphismMode,
   } from '$lib/stores/DarkModeStore.svelte';
-  import { language, t } from '$lib/stores/LanguageStore.svelte';
+  import { 
+    language, 
+    t
+  } from '$lib/stores/LanguageStore.svelte';
   
   let showThemeSelector = $state(false);
   let currentTheme = $state<ThemeColorName | null>(null);
@@ -52,6 +55,7 @@
   {#if showThemeSelector}
     <div class="grid grid-cols-4 gap-2 mt-2" transition:slide={{ duration: 300, axis: 'y' }}>
       {#each Object.entries(themeColors) as [name, color] (name)}
+        <!-- svelte-ignore a11y_consider_explicit_label -->
         <button
           title={name.charAt(0).toUpperCase() + name.slice(1) + (currentTheme === name ? ' (Click to deselect)' : '')}
           class="w-full h-7 rounded border transition-all duration-150
