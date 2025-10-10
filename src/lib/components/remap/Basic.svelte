@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { Snippet } from 'svelte';
-  import { Keycode } from '../../../src-controller/src/interface';
+  import { Keycode } from '../../../../src-controller/src/interface';
 
   // Map display text to keycode values
   type KeyInfo = {

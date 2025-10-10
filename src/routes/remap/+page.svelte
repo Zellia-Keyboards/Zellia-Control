@@ -1,21 +1,20 @@
 <script lang="ts">
   import { glassmorphismMode, darkMode } from '$lib/stores/DarkModeStore.svelte';
   import { keyboardAPI, keyboardConnectionState } from '$lib/api/keyboardAPI.svelte';
-  import { language, t } from '$lib/stores/LanguageStore.svelte';
   import { selectedLayer } from '$lib/stores/SelectedLayerStore.svelte';
-  import Basic from './Basic.svelte';
-  import System from './System.svelte';
-  import type { Component, Snippet } from 'svelte';
-  import Layer from './Layer.svelte';
-  import Profile from './Profile.svelte';
-  import Extension from './Extension.svelte';
-  import { cubicOut } from 'svelte/easing';
-  import { fade } from 'svelte/transition';
-  import { X } from 'lucide-svelte';
-  import { dev } from '$app/environment';
-  import type { Keycode } from '../../../src-controller/src/interface';
+  import Basic from '$lib/components/remap/Basic.svelte';
+  import System from '$lib/components/remap/System.svelte';
+  import Layer from '$lib/components/remap/Layer.svelte';
+  import Profile from '$lib/components/remap/Profile.svelte';
+  import Extension from '$lib/components/remap/Extension.svelte';
+  import TabNavigation from '$lib/components/remap/TabNavigation.svelte';
   import { selectedKeys } from '$lib/stores/SelectedKeysStore';
   import { selectedCount, toggleSelectAll, deselectAll } from '$lib/stores/SelectedKeysStore';
+  import type { Keycode } from '../../../src-controller/src/interface';
+  import type { Component, Snippet } from 'svelte';
+  import { cubicOut } from 'svelte/easing';
+  import { fade } from 'svelte/transition';
+  import { dev } from '$app/environment';
 
   // Type for key information with keycode support
   type KeyInfo = {
@@ -126,7 +125,7 @@
   }
 
   // Reference to the main container for focus management
-  let mainContainer: HTMLDivElement;
+  let mainContainer: HTMLElement;
 
   // Auto-focus the container when component mounts
   $effect(() => {
@@ -178,7 +177,7 @@
   $inspect(selectedKeys, 'selectedKeys');
 </script>
 
-<div
+<section
   bind:this={mainContainer}
   class="rounded-2xl shadow p-8 mt-2 mb- mb- grow border border-gray-200 dark:border-gray-600 text-black dark:text-white h-full flex flex-col {$glassmorphismMode
     ? 'glassmorphism-card bg-gray-50 dark:bg-gray-900'
@@ -190,32 +189,7 @@
   style="outline: none;"
 >
   <!-- Tab Navigation -->
-  <div class="flex items-center gap-0.5 -mt-4 mb-4 p-0.5 rounded-xl">
-    {#each Tabs as tab}
-      {@const isActive = activeTab === tab.name}
-      <button
-        class="flex-1 text-xl font-medium px-2.5 py-2.5 rounded-lg transition-all duration-200
-               flex items-center justify-center gap-2
-               {$glassmorphismMode ? 'glassmorphism-tab' : ''}
-               {$glassmorphismMode && isActive ? 'active' : ''}
-               {!$glassmorphismMode && isActive ? 'text-white shadow-sm' : ''}
-               {!$glassmorphismMode && !isActive
-          ? 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-white dark:hover:bg-gray-800'
-          : ''}"
-        style={!$glassmorphismMode && isActive
-          ? 'background-color: var(--theme-color-primary);'
-          : ''}
-        onclick={() => changeTab(tab.name)}
-      >
-        {#if tab.icon}
-          <div class="flex items-center justify-center" style="fill: currentColor">
-            {@html tab.icon}
-          </div>
-        {/if}
-        {tab.name}
-      </button>
-    {/each}
-  </div>
+  <TabNavigation tabs={Tabs} {activeTab} onTabChange={changeTab} />
 
   <!-- Tab Content -->
   <div class="flex-1 min-h-0 relative overflow-hidden">
@@ -235,7 +209,7 @@
           {#snippet keyslot(keyInfo: KeyInfo)}
             <button
               onclick={() => {
-                if (selectedKeys.length === 0) {
+                if ($selectedKeys.length === 0) {
                   showingNotification = true;
                   setTimeout(() => (showingNotification = false), 3000);
                 } else {
@@ -256,7 +230,7 @@
       </div>
     {/key}
   </div>
-</div>
+</section>
 
 {#if showingNotification}
   <div

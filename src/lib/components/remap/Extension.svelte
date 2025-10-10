@@ -6,7 +6,7 @@
     JoystickKeycode,
     KeyboardKeycode,
     KeyboardConfig,
-  } from '../../../src-controller/src/interface';
+  } from '../../../../src-controller/src/interface';
 
   type KeyInfo = {
     label: string;

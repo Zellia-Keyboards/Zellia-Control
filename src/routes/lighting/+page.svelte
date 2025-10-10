@@ -9,6 +9,11 @@
   import { color } from 'chart.js/helpers';
   import tinycolor from 'tinycolor2';
   import { rgbBaseConfig, rgbConfigs } from '$lib/stores/ControllerStore.svelte';
+  import EffectSelector from '$lib/components/lighting/EffectSelector.svelte';
+  import BrightnessControl from '$lib/components/lighting/BrightnessControl.svelte';
+  import SpeedControl from '$lib/components/lighting/SpeedControl.svelte';
+  import ColorPicker from '$lib/components/lighting/ColorPicker.svelte';
+  import DirectionSelector from '$lib/components/lighting/DirectionSelector.svelte';
 
   // Helper function for string formatting
   const formatString = (template: string, ...args: (string | number)[]): string => {
@@ -277,231 +282,50 @@
     <!-- Left: Effects Panel -->
     <div class="flex-1">
       <!-- Global Effects (全键盘效果) -->
-      <div class="mb-3">
-        <div class="flex items-center gap-2 mb-2">
-          <h3 class="text-sm font-semibold text-black dark:text-white">
-            {t('lighting.globalEffects', currentLanguage)}
-          </h3>
-          <span
-            class="text-xs px-1.5 py-0.5 rounded bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300"
-          >
-            {t('lighting.allKeys', currentLanguage)}
-          </span>
-        </div>
-        <div class="grid grid-cols-3 gap-2">
-          {#each globalEffects as effect}
-            <button
-              class="px-3 py-2 rounded-lg border-2 text-center transition-all duration-200 relative overflow-hidden {selectedGlobalEffect ===
-              effect.id
-                ? 'border-primary bg-primary/20 dark:bg-primary/30 shadow-lg'
-                : 'border-gray-300 dark:border-gray-600 hover:border-primary/50'} {$glassmorphismMode
-                ? 'glassmorphism-button'
-                : ''}"
-              onclick={() => selectEffect(effect.id, effect.mode)}
-            >
-              {#if selectedGlobalEffect === effect.id}
-                <div
-                  class="absolute inset-0 bg-gradient-to-br from-primary/10 to-primary/20 dark:from-primary/20 dark:to-primary/30"
-                ></div>
-              {/if}
-              <div
-                class="relative z-10 text-xs font-medium {selectedGlobalEffect === effect.id
-                  ? 'text-primary-700 dark:text-primary-200'
-                  : 'text-black dark:text-white'}"
-              >
-                {effect.name}
-              </div>
-            </button>
-          {/each}
-        </div>
-      </div>
+      <EffectSelector
+        effects={globalEffects}
+        selectedEffect={selectedGlobalEffect}
+        title={t('lighting.globalEffects', currentLanguage)}
+        badge="allKeys"
+        onSelectEffect={selectEffect}
+      />
 
       <!-- Per-Key Effects (单键效果) -->
-      <div class="mb-3">
-        <div class="flex items-center gap-2 mb-2">
-          <h3 class="text-sm font-semibold text-black dark:text-white">
-            {t('lighting.perKeyEffects', currentLanguage)}
-          </h3>
-          <span
-            class="text-xs px-1.5 py-0.5 rounded bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300"
-          >
-            {t('lighting.customizable', currentLanguage)}
-          </span>
-        </div>
-        <div class="grid grid-cols-3 gap-2">
-          {#each perKeyEffects as effect}
-            <button
-              class="px-3 py-2 rounded-lg border-2 text-center transition-all duration-200 relative overflow-hidden {selectedEffect ===
-              effect.id
-                ? 'border-primary bg-primary/20 dark:bg-primary/30 shadow-lg'
-                : 'border-gray-300 dark:border-gray-600 hover:border-primary/50'} {$glassmorphismMode
-                ? 'glassmorphism-button'
-                : ''}"
-              onclick={() => selectEffect(effect.id, effect.mode)}
-            >
-              {#if selectedEffect === effect.id}
-                <div
-                  class="absolute inset-0 bg-gradient-to-br from-primary/10 to-primary/20 dark:from-primary/20 dark:to-primary/30"
-                ></div>
-              {/if}
-              <div
-                class="relative z-10 text-xs font-medium {selectedEffect === effect.id
-                  ? 'text-primary-700 dark:text-primary-200'
-                  : 'text-black dark:text-white'}"
-              >
-                {effect.name}
-              </div>
-            </button>
-          {/each}
-        </div>
-      </div>
+      <EffectSelector
+        effects={perKeyEffects}
+        selectedEffect={selectedEffect}
+        title={t('lighting.perKeyEffects', currentLanguage)}
+        badge="customizable"
+        onSelectEffect={selectEffect}
+      />
     </div>
 
     <!-- Right: Settings Panel -->
     <div class="flex-1 space-y-3">
       <!-- Brightness -->
-      <div>
-        <div class="flex justify-between text-xs text-gray-600 dark:text-gray-300 mb-1.5">
-          <span>{t('lighting.brightness', currentLanguage)}</span>
-          <span class="font-semibold">{brightness}%</span>
-        </div>
-        <input
-          type="range"
-          min="0"
-          max="100"
-          bind:value={brightness}
-          class="w-full h-2 rounded-full bg-gray-300 dark:bg-gray-700 appearance-none slider-thumb"
-        />
-      </div>
+      <BrightnessControl
+        {brightness}
+        onBrightnessChange={(value) => (brightness = value)}
+      />
 
       <!-- Speed (for animated effects) -->
       {#if ['breathing', 'wave', 'rainbow'].includes(selectedGlobalEffect) || ['ripple'].includes(selectedEffect)}
-        <div>
-          <div class="flex justify-between text-xs text-gray-600 dark:text-gray-300 mb-1.5">
-            <span>{t('lighting.speed', currentLanguage)}</span>
-            <span class="font-semibold">{speed}%</span>
-          </div>
-          <input
-            type="range"
-            min="1"
-            max="100"
-            bind:value={speed}
-            class="w-full h-2 rounded-full bg-gray-300 dark:bg-gray-700 appearance-none slider-thumb"
-          />
-        </div>
+        <SpeedControl {speed} onSpeedChange={(value) => (speed = value)} />
       {/if}
 
       <!-- Color (for applicable effects) -->
-      <div>
-        <div class="text-xs text-gray-600 dark:text-gray-300 mb-1.5">
-          {t('lighting.color', currentLanguage)}
-        </div>
-        <div class="flex gap-2">
-          <input
-            type="color"
-            bind:value={staticColor}
-            class="w-10 h-9 rounded border-0 p-0 cursor-pointer overflow-hidden"
-          />
-          <input
-            type="text"
-            bind:value={staticColor}
-            class="flex-1 px-2 py-1.5 border border-gray-300 dark:border-white bg-white dark:bg-black text-black dark:text-white rounded-lg font-mono text-xs"
-            placeholder="#ff0000"
-          />
-        </div>
-      </div>
+      <ColorPicker color={staticColor} onColorChange={(value) => (staticColor = value)} />
 
       <!-- Direction (for directional effects) -->
       {#if ['rainbow'].includes(selectedGlobalEffect)}
-        <div>
-          <label class="block text-xs text-gray-600 dark:text-gray-300 mb-1.5"
-            >{t('lighting.direction', currentLanguage)}</label
-          >
-          <div class="grid grid-cols-4 gap-2">
-            {#each directions as dir}
-              <button
-                class="aspect-square p-3 rounded-lg border-2 flex flex-col items-center justify-center gap-1 transition-all duration-200 relative overflow-hidden {direction ===
-                dir.id
-                  ? 'border-primary bg-primary/20 dark:bg-primary/30 shadow-lg'
-                  : 'border-gray-300 dark:border-gray-600 hover:border-primary/50'} {$glassmorphismMode
-                  ? 'glassmorphism-button'
-                  : ''}"
-                onclick={() => (direction = dir.id)}
-              >
-                {#if direction === dir.id}
-                  <div
-                    class="absolute inset-0 bg-gradient-to-br from-primary/10 to-primary/20 dark:from-primary/20 dark:to-primary/30"
-                  ></div>
-                {/if}
-                <svelte:component
-                  this={dir.icon}
-                  class="relative z-10 w-6 h-6 {direction === dir.id
-                    ? 'text-primary-700 dark:text-primary-200'
-                    : 'text-black dark:text-white'}"
-                />
-                <div
-                  class="relative z-10 text-xs font-medium text-center {direction === dir.id
-                    ? 'text-primary-700 dark:text-primary-200'
-                    : 'text-black dark:text-white'}"
-                >
-                  {dir.name}
-                </div>
-              </button>
-            {/each}
-          </div>
-        </div>
+        <DirectionSelector
+          {directions}
+          selectedDirection={direction}
+          onDirectionChange={(value) => (direction = value)}
+        />
       {/if}
     </div>
   </div>
 </div>
 
-<style>
-  .slider-thumb {
-    appearance: none;
-  }
-  .slider-thumb::-webkit-slider-thumb {
-    appearance: none;
-    width: 16px;
-    height: 16px;
-    border-radius: 50%;
-    background: var(--theme-color-primary);
-    cursor: pointer;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
-  }
-  .slider-thumb::-moz-range-thumb {
-    width: 16px;
-    height: 16px;
-    border-radius: 50%;
-    background: var(--theme-color-primary);
-    cursor: pointer;
-    border: none;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
-  }
 
-  /* Color input styling to fill containers */
-  input[type='color'] {
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    appearance: none;
-    background-color: transparent;
-    border: none;
-    cursor: pointer;
-  }
-
-  input[type='color']::-webkit-color-swatch-wrapper {
-    padding: 0;
-    border: none;
-    border-radius: inherit;
-  }
-
-  input[type='color']::-webkit-color-swatch {
-    border: none;
-    border-radius: inherit;
-    padding: 0;
-  }
-
-  input[type='color']::-moz-color-swatch {
-    border: none;
-    border-radius: inherit;
-  }
-</style>

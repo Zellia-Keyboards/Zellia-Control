@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { Snippet } from 'svelte';
-  import { Keycode, LayerControlKeycode } from '../../../src-controller/src/interface';
+  import { Keycode, LayerControlKeycode } from '../../../../src-controller/src/interface';
 
   type KeyInfo = {
     label: string;
