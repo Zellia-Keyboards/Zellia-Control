@@ -63,6 +63,14 @@
   function handleFactoryReset() {
     // Implementation for factory reset
   }
+
+  function handleResetConfig() {
+    // Implementation for reset configuration
+  }
+
+  function handleRecoveryMode() {
+    // Implementation for recovery mode
+  }
 </script>
 
 <div
