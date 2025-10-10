@@ -1,7 +1,7 @@
 <script lang="ts">
   import { keyboardAPI } from '$lib/api/keyboardAPI.svelte';
   import { language, t } from '$lib/stores/LanguageStore.svelte';
-  import KeyTracking from './KeyTracking.svelte';
+  import KeyTracking from '$lib/components/debug/KeyTracking.svelte';
   import KeyPressReportingToggle from '$lib/components/debug/KeyPressReportingToggle.svelte';
 
   let currentLanguage = $derived($language);
