@@ -8,6 +8,7 @@
   import LanguageSwitch from './LanguageSwitch.svelte';
   import DarkModeToggle from './DarkModeToggle.svelte';
   import { NAVIGATE } from '$lib/config/navigation';
+  import { LogOut } from 'lucide-svelte';
 
   let currentLanguage = $derived($language);
 
@@ -43,13 +44,15 @@
         {#if keyboardAPI.shouldShowConfigurator}
           <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
           <span>
-            {keyboardAPI.state.isDemoMode
-              ? `Demo: ${keyboardAPI.state.selectedModel?.toUpperCase() || ''}`
-              : keyboardAPI.state.lastConnectedDevice || 'Connected'}
+            <i>
+              {keyboardAPI.state.isDemoMode
+                ? `Demo: ${keyboardAPI.state.selectedModel?.toUpperCase() || ''}`
+                : keyboardAPI.state.lastConnectedDevice || 'Connected'}
+            </i>
           </span>
         {:else}
           <div class="w-2 h-2 bg-gray-400 rounded-full"></div>
-          <span>Waiting to connect</span>
+          <span><i>Waiting to connect</i></span>
         {/if}
       </div>
     </div>
@@ -72,7 +75,7 @@
             d="M5 19a2 2 0 01-2-2V7a2 2 0 012-2h4l2 2h4a2 2 0 012 2v1M5 19h14a2 2 0 002-2v-5a2 2 0 00-2-2H9a2 2 0 00-2 2v5a2 2 0 01-2 2z"
           />
         </svg>
-        <span>{t('ui.profiles', currentLanguage)}</span>
+        <span><i>{t('ui.profiles', currentLanguage)}</i></span>
       </div>
       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
@@ -88,15 +91,8 @@
         onclick={handleDisconnect}
       >
         <div class="flex items-center justify-center gap-1">
-          <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M6 18L18 6M6 6l12 12"
-            />
-          </svg>
-          {t('ui.disconnect', currentLanguage)}
+          <LogOut class="w-3 h-3" />
+          <i>{t('ui.disconnect', currentLanguage)}</i>
         </div>
       </button>
     {/if}
@@ -113,7 +109,7 @@
             : ''}"
           data-active={isActive(href)}
         >
-          <span class="relative z-10">{t(name, currentLanguage)}</span>
+          <span class="relative z-10"><i>{t(name, currentLanguage)}</i></span>
         </a>
       {/each}
     </nav>
