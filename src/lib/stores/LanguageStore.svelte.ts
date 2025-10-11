@@ -955,8 +955,7 @@ export const translations = {
     'advancedkey.tapHoldFeature2': '可配置延迟的保持操作',
     'advancedkey.tapHoldFeature3': '完美适用于修饰键',
     'advancedkey.tapHoldFeature4': '可自定义时间',
-    'advancedkey.tapHoldTip':
-      '轻按保持按键非常适合既可作为修饰键又可在快速轻按时作为常规按键的功能',
+    'advancedkey.tapHoldTip':'轻按保持按键非常适合既可作为修饰键又可在快速轻按时作为常规按键的功能',
     'advancedkey.quickTap': '快速轻按（少于 {0} 毫秒）',
     'advancedkey.holdOver': '按住（超过 {0} 毫秒）',
 
