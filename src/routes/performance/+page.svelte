@@ -182,8 +182,8 @@
         {actuationPoint}
         {deactivationPoint}
         {keysSelected}
-        onActuationChange={(value) => (actuationPoint = value)}
-        onDeactivationChange={(value) => (deactivationPoint = value)}
+        onActuationChange={value => (actuationPoint = value)}
+        onDeactivationChange={value => (deactivationPoint = value)}
       />
     </div>
 
@@ -194,17 +194,14 @@
 
     <!-- 2nd Box: Rapid Trigger Toggle -->
     <div class="flex-1 min-w-[260px] flex flex-col">
-      <RapidTriggerToggle
-        {rapidTriggerEnabled}
-        onToggle={(value) => (rapidTriggerEnabled = value)}
-      />
+      <RapidTriggerToggle {rapidTriggerEnabled} onToggle={value => (rapidTriggerEnabled = value)} />
       <div class="flex-1">
         {#if rapidTriggerEnabled}
           <DeadzoneControl
             {upperDeadzone}
             {lowerDeadzone}
-            onUpperChange={(value) => (upperDeadzone = value)}
-            onLowerChange={(value) => (lowerDeadzone = value)}
+            onUpperChange={value => (upperDeadzone = value)}
+            onLowerChange={value => (lowerDeadzone = value)}
           />
         {/if}
       </div>
@@ -222,10 +219,10 @@
         {sensitivityValue}
         {pressSensitivity}
         {releaseSensitivity}
-        onToggleSeparate={(value) => (separateSensitivity = value)}
-        onSensitivityChange={(value) => (sensitivityValue = value)}
-        onPressChange={(value) => (pressSensitivity = value)}
-        onReleaseChange={(value) => (releaseSensitivity = value)}
+        onToggleSeparate={value => (separateSensitivity = value)}
+        onSensitivityChange={value => (sensitivityValue = value)}
+        onPressChange={value => (pressSensitivity = value)}
+        onReleaseChange={value => (releaseSensitivity = value)}
       />
     {/if}
   </div>

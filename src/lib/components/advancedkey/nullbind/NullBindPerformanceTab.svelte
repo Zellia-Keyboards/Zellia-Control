@@ -14,7 +14,16 @@
     onCommitActuationPoint: () => void;
   }
 
-  let { rtDown, actuationPoint, uiActuationPoint, bottomOutPoint, switchDistance, onRapidTriggerToggle, onActuationPointChange, onCommitActuationPoint }: Props = $props();
+  let {
+    rtDown,
+    actuationPoint,
+    uiActuationPoint,
+    bottomOutPoint,
+    switchDistance,
+    onRapidTriggerToggle,
+    onActuationPointChange,
+    onCommitActuationPoint,
+  }: Props = $props();
 
   let currentLanguage = $derived($language);
 </script>
@@ -38,9 +47,7 @@
       class="relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 {rtDown >
       0
         ? 'bg-primary-500'
-        : 'bg-gray-300 dark:bg-gray-600'} {$glassmorphismMode
-        ? 'glassmorphism-button'
-        : ''}"
+        : 'bg-gray-300 dark:bg-gray-600'} {$glassmorphismMode ? 'glassmorphism-button' : ''}"
       onclick={() => onRapidTriggerToggle(rtDown === 0)}
     >
       <span
@@ -114,9 +121,10 @@
     <div class="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-1">
       <span>0.01{t('units.mm', currentLanguage)}</span>
       <span
-        >{(bottomOutPoint > 0 ? bottomOutPoint - 0.1 : switchDistance).toFixed(
-          1
-        )}{t('units.mm', currentLanguage)}</span
+        >{(bottomOutPoint > 0 ? bottomOutPoint - 0.1 : switchDistance).toFixed(1)}{t(
+          'units.mm',
+          currentLanguage
+        )}</span
       >
     </div>
   </div>
@@ -145,9 +153,7 @@
         bind:value={rtDown}
         class="w-full h-2 rounded-full bg-gray-300 dark:bg-gray-600 appearance-none slider-thumb"
       />
-      <div
-        class="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-1"
-      >
+      <div class="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-1">
         <span>0.01{t('units.mm', currentLanguage)}</span>
         <span>1.00{t('units.mm', currentLanguage)}</span>
       </div>

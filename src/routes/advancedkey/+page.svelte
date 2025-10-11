@@ -113,7 +113,9 @@
 <div
   class="rounded-2xl shadow p-8 mt-2 mb-4 grow {$glassmorphismMode
     ? 'glassmorphism-card'
-    : ''} text-black bg-primary-100 dark:bg-black dark:text-white border-0 dark:border dark:border-gray-600 {selectedMode ? '' : 'h-full'} flex flex-col"
+    : ''} text-black bg-primary-100 dark:bg-black dark:text-white border-0 dark:border dark:border-gray-600 {selectedMode
+    ? ''
+    : 'h-full'} flex flex-col"
 >
   {#if selectedMode === null}
     <ModeSelectionView {keyModes} onSelectMode={selectMode} />

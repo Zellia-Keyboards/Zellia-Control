@@ -14,7 +14,16 @@
     onDelete: () => void;
   }
 
-  let { profileId, position, isActive, canDelete, onExport, onDuplicate, onRestore, onDelete }: Props = $props();
+  let {
+    profileId,
+    position,
+    isActive,
+    canDelete,
+    onExport,
+    onDuplicate,
+    onRestore,
+    onDelete,
+  }: Props = $props();
 </script>
 
 <div

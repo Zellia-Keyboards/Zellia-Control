@@ -52,7 +52,9 @@
         Cancel
       </button>
       <button
-        class="flex-1 px-4 py-2.5 rounded-lg font-medium transition-colors {colorClasses[confirmColor]}"
+        class="flex-1 px-4 py-2.5 rounded-lg font-medium transition-colors {colorClasses[
+          confirmColor
+        ]}"
         onclick={onConfirm}
       >
         {confirmText}

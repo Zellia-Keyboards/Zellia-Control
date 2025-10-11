@@ -209,7 +209,9 @@
 {#if showDuplicateModal && duplicateSourceId !== null}
   <ConfirmationModal
     title="Duplicate Profile"
-    message="Create a copy of <strong class='text-white'>{profiles.find(p => p?.id === duplicateSourceId)?.name}</strong> in the next available slot?"
+    message="Create a copy of <strong class='text-white'>{profiles.find(
+      p => p?.id === duplicateSourceId
+    )?.name}</strong> in the next available slot?"
     confirmText="Duplicate"
     confirmColor="blue"
     onConfirm={executeDuplicate}
@@ -221,7 +223,9 @@
 {#if showRestoreModal && restoreProfileId !== null}
   <ConfirmationModal
     title="Restore to Default"
-    message="Are you sure you want to restore <strong class='text-white'>{profiles.find(p => p?.id === restoreProfileId)?.name}</strong> to its default settings? This action cannot be undone."
+    message="Are you sure you want to restore <strong class='text-white'>{profiles.find(
+      p => p?.id === restoreProfileId
+    )?.name}</strong> to its default settings? This action cannot be undone."
     confirmText="Restore"
     confirmColor="orange"
     onConfirm={executeRestore}
@@ -233,7 +237,9 @@
 {#if showDeleteModal && deleteProfileId !== null}
   <ConfirmationModal
     title="Delete Profile"
-    message="Are you sure you want to delete <strong class='text-white'>{profiles.find(p => p?.id === deleteProfileId)?.name}</strong>? This action cannot be undone."
+    message="Are you sure you want to delete <strong class='text-white'>{profiles.find(
+      p => p?.id === deleteProfileId
+    )?.name}</strong>? This action cannot be undone."
     confirmText="Delete"
     confirmColor="red"
     onConfirm={executeDelete}

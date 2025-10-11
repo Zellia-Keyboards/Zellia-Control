@@ -40,9 +40,7 @@
         class="w-full h-2 rounded-full bg-gray-300 dark:bg-gray-700 appearance-none slider-thumb"
         style="--thumb-color: var(--theme-color-primary)"
       />
-      <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-        Time before hold action triggers
-      </p>
+      <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Time before hold action triggers</p>
     </div>
 
     <!-- Tap Timeout -->

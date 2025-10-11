@@ -162,7 +162,7 @@
 </script>
 
 <TapHoldHeader
-  currentSelectedIndex={currentSelectedIndex}
+  {currentSelectedIndex}
   onApply={applyConfiguration}
   onResetAll={resetAllConfigurations}
 />
@@ -178,7 +178,7 @@
             title="Tap Action"
             description="Select the action to perform when the key is tapped quickly"
             bind:selectedAction={tapAction}
-            onActionSelect={(action) => (tapAction = action)}
+            onActionSelect={action => (tapAction = action)}
             highlightColor="primary"
           />
 
@@ -186,7 +186,7 @@
             title="Hold Action"
             description="Select the action to perform when the key is held down"
             bind:selectedAction={holdAction}
-            onActionSelect={(action) => (holdAction = action)}
+            onActionSelect={action => (holdAction = action)}
             highlightColor="green"
           />
 

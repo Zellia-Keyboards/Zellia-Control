@@ -81,7 +81,8 @@
         <h3
           class="text-xl font-bold text-gray-900 dark:text-white mb-4 flex items-center justify-center gap-2"
         >
-          Made with <Heart class="w-5 h-5 text-gray-900 dark:text-white" /> for the Hall Effect keyboard community
+          Made with <Heart class="w-5 h-5 text-gray-900 dark:text-white" /> for the Hall Effect keyboard
+          community
         </h3>
         <p class="text-sm text-gray-500 dark:text-gray-400">
           © 2025 Zellia Control. All rights reserved

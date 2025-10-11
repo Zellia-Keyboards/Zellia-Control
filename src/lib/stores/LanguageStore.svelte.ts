@@ -946,7 +946,8 @@ export const translations = {
     'advancedkey.step2Desc': '在键盘布局中点击按键来配置它们',
     'advancedkey.step3Title': '应用设置',
     'advancedkey.step3Desc': '将配置保存到键盘',
-    'advancedkey.infoDesc': '动态按键配置允许您自定义单个按键的行为，超越标准打字。每种模式都提供独特的功能来增强您的键盘体验。',
+    'advancedkey.infoDesc':
+      '动态按键配置允许您自定义单个按键的行为，超越标准打字。每种模式都提供独特的功能来增强您的键盘体验。',
 
     // Advanced Key Modes
     'advancedkey.tapHold': '轻按保持',
@@ -955,7 +956,8 @@ export const translations = {
     'advancedkey.tapHoldFeature2': '可配置延迟的保持操作',
     'advancedkey.tapHoldFeature3': '完美适用于修饰键',
     'advancedkey.tapHoldFeature4': '可自定义时间',
-    'advancedkey.tapHoldTip':'轻按保持按键非常适合既可作为修饰键又可在快速轻按时作为常规按键的功能',
+    'advancedkey.tapHoldTip':
+      '轻按保持按键非常适合既可作为修饰键又可在快速轻按时作为常规按键的功能',
     'advancedkey.quickTap': '快速轻按（少于 {0} 毫秒）',
     'advancedkey.holdOver': '按住（超过 {0} 毫秒）',
 

@@ -133,11 +133,7 @@
         <!-- Action Arrow -->
         <div class="absolute top-6 right-6 text-gray-400 transition-colors duration-300 ease-in">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M9 5l7 7-7 7"
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"
             ></path>
           </svg>
         </div>

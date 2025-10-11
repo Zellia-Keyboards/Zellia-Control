@@ -11,7 +11,14 @@
     onCommitBottomOutPoint: () => void;
   }
 
-  let { bottomOutPoint, actuationPoint, uiBottomOutPoint, switchDistance, onBottomOutPointChange, onCommitBottomOutPoint }: Props = $props();
+  let {
+    bottomOutPoint,
+    actuationPoint,
+    uiBottomOutPoint,
+    switchDistance,
+    onBottomOutPointChange,
+    onCommitBottomOutPoint,
+  }: Props = $props();
 
   let currentLanguage = $derived($language);
 </script>

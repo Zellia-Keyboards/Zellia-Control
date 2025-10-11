@@ -13,7 +13,11 @@
   let currentLanguage = $derived($language);
 </script>
 
-<div class="border-t dark:border-white border-gray-200 pt-4 deadzone-container {$glassmorphismMode ? 'glassmorphism-card' : ''}">
+<div
+  class="border-t dark:border-white border-gray-200 pt-4 deadzone-container {$glassmorphismMode
+    ? 'glassmorphism-card'
+    : ''}"
+>
   <h4 class="text-lg font-medium text-gray-900 dark:text-white mb-3">
     {t('performance.keyTravelDeadzones', currentLanguage)}
   </h4>
@@ -31,7 +35,9 @@
     <!-- Dual-handle slider with visual feedback -->
     <div class="relative mb-4" style="height: 24px;">
       <!-- Background track with deadzone visualization -->
-      <div class="absolute top-1/2 -translate-y-1/2 w-full h-2 bg-gray-300 dark:bg-gray-700 rounded-full overflow-hidden">
+      <div
+        class="absolute top-1/2 -translate-y-1/2 w-full h-2 bg-gray-300 dark:bg-gray-700 rounded-full overflow-hidden"
+      >
         <!-- Deadzone before start (left side) -->
         <div
           class="absolute h-full rounded-l-full deadzone-pattern"
@@ -41,7 +47,9 @@
         <!-- Active range highlight -->
         <div
           class="absolute h-full"
-          style="background: linear-gradient(135deg, var(--theme-color-primary) 0%, color-mix(in srgb, var(--theme-color-primary) 80%, black) 100%); left: {(upperDeadzone / 4) * 100}%; width: {((lowerDeadzone - upperDeadzone) / 4) * 100}%;"
+          style="background: linear-gradient(135deg, var(--theme-color-primary) 0%, color-mix(in srgb, var(--theme-color-primary) 80%, black) 100%); left: {(upperDeadzone /
+            4) *
+            100}%; width: {((lowerDeadzone - upperDeadzone) / 4) * 100}%;"
         ></div>
 
         <!-- Deadzone after bottom (right side) -->
@@ -58,7 +66,7 @@
         max="4.000"
         step="0.005"
         value={upperDeadzone}
-        oninput={(e) => {
+        oninput={e => {
           const input = e.target as HTMLInputElement;
           let value = Math.round(Number(input.value) * 1000) / 1000;
           if (value > lowerDeadzone - 0.1) {
@@ -77,7 +85,7 @@
         max="4.000"
         step="0.005"
         value={lowerDeadzone}
-        oninput={(e) => {
+        oninput={e => {
           const input = e.target as HTMLInputElement;
           let value = Math.round(Number(input.value) * 1000) / 1000;
           if (value < upperDeadzone + 0.1) {
@@ -100,7 +108,7 @@
           max={lowerDeadzone - 0.1}
           step="0.005"
           value={upperDeadzone}
-          oninput={(e) => onUpperChange(Number((e.target as HTMLInputElement).value))}
+          oninput={e => onUpperChange(Number((e.target as HTMLInputElement).value))}
           class="w-20 px-2 py-1 text-sm border rounded dark:bg-gray-800 dark:border-gray-600 dark:text-white bg-white border-gray-300 text-gray-900"
         />
         <span class="text-sm text-gray-500 dark:text-gray-400">mm</span>
@@ -113,7 +121,7 @@
           max="4.000"
           step="0.005"
           value={lowerDeadzone}
-          oninput={(e) => onLowerChange(Number((e.target as HTMLInputElement).value))}
+          oninput={e => onLowerChange(Number((e.target as HTMLInputElement).value))}
           class="w-20 px-2 py-1 text-sm border rounded dark:bg-gray-800 dark:border-gray-600 dark:text-white bg-white border-gray-300 text-gray-900"
         />
         <span class="text-sm text-gray-500 dark:text-gray-400">mm</span>

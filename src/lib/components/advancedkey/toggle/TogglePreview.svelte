@@ -27,9 +27,7 @@
       class="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-600"
     >
       <span class="text-sm text-gray-600 dark:text-gray-400">Key</span>
-      <span class="font-mono font-medium text-gray-900 dark:text-white"
-        >{currentKeyName}</span
-      >
+      <span class="font-mono font-medium text-gray-900 dark:text-white">{currentKeyName}</span>
     </div>
     <div
       class="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-600"
@@ -55,9 +53,7 @@
         >{t('advancedkey.toggleState', currentLanguage)}</span
       >
       <span
-        class="font-medium {toggleState
-          ? 'text-green-600'
-          : 'text-gray-600 dark:text-gray-400'}"
+        class="font-medium {toggleState ? 'text-green-600' : 'text-gray-600 dark:text-gray-400'}"
       >
         {toggleState
           ? t('advancedkey.enabled', currentLanguage)

@@ -18,9 +18,7 @@
 </script>
 
 <div class="flex flex-col">
-  <p
-    class="text-sm font-semibold leading-none tracking-tight text-gray-900 dark:text-white"
-  >
+  <p class="text-sm font-semibold leading-none tracking-tight text-gray-900 dark:text-white">
     {t('advancedkey.configureNullBindBehavior', currentLanguage)}
   </p>
   <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
@@ -38,9 +36,7 @@
         onclick={() => onBehaviorSelect(behaviorMeta.behavior)}
       >
         <span class="absolute left-2 flex size-3.5 items-center justify-center">
-          <div
-            class="size-3 rounded-full border-2 border-current flex items-center justify-center"
-          >
+          <div class="size-3 rounded-full border-2 border-current flex items-center justify-center">
             {#if behavior === behaviorMeta.behavior}
               <div class="size-1.5 rounded-full bg-current"></div>
             {/if}
@@ -49,12 +45,7 @@
         {behaviorMeta.name}
         <span class="inline-flex flex-1 justify-end">
           <div class="group relative">
-            <svg
-              class="size-4 text-current"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
+            <svg class="size-4 text-current" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 stroke-linecap="round"
                 stroke-linejoin="round"

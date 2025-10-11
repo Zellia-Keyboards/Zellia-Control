@@ -84,9 +84,7 @@
             : ''} {isNewlyAdded ? 'animate-fade-in' : ''}"
         >
           <div class="flex items-center justify-between mb-2">
-            <span class="font-mono font-bold text-gray-900 dark:text-white text-sm"
-              >{keyName}</span
-            >
+            <span class="font-mono font-bold text-gray-900 dark:text-white text-sm">{keyName}</span>
             <button
               class="w-8 h-8 bg-red-500 hover:bg-red-600 rounded-lg flex items-center justify-center text-white transition-colors {$glassmorphismMode
                 ? 'glassmorphism-button'

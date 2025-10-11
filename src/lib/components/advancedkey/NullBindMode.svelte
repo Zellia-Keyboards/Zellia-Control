@@ -143,11 +143,18 @@
       const pairId2 = `${key2Label}-${key1Label}`;
       const sortedPairId = [key1Label, key2Label].sort().join('-');
 
-      nullBindNewlyAddedPairs = new Set([...nullBindNewlyAddedPairs, pairId1, pairId2, sortedPairId]);
+      nullBindNewlyAddedPairs = new Set([
+        ...nullBindNewlyAddedPairs,
+        pairId1,
+        pairId2,
+        sortedPairId,
+      ]);
 
       setTimeout(() => {
         nullBindNewlyAddedPairs = new Set(
-          [...nullBindNewlyAddedPairs].filter(id => id !== pairId1 && id !== pairId2 && id !== sortedPairId)
+          [...nullBindNewlyAddedPairs].filter(
+            id => id !== pairId1 && id !== pairId2 && id !== sortedPairId
+          )
         );
       }, 500);
     }
@@ -168,7 +175,9 @@
       if (keys && keys[keyIndex]) {
         const key = keys[keyIndex];
         const label =
-          key.labels?.[4] || key.labels?.[0] || key.labels?.find((l: string) => l && l.trim() !== '');
+          key.labels?.[4] ||
+          key.labels?.[0] ||
+          key.labels?.find((l: string) => l && l.trim() !== '');
         return label || 'Unknown';
       }
     } catch (e) {
@@ -246,17 +255,13 @@
   });
 </script>
 
-<NullBindHeader
-  {onBack}
-  onApply={applyNullBindConfiguration}
-  canApply={canConfigureNullBind}
-/>
+<NullBindHeader {onBack} onApply={applyNullBindConfiguration} canApply={canConfigureNullBind} />
 
 {#if !canConfigureNullBind}
   <NullBindKeySelection
     {localSelectedKeys}
     getKeyLabel={getNullBindKeyLabel}
-    onRemoveKey={(index) => {
+    onRemoveKey={index => {
       const keyIndexToRemove = localSelectedKeys[index];
       if (keyIndexToRemove !== undefined) {
         localSelectedKeys = localSelectedKeys.filter((_, i) => i !== index);
@@ -270,28 +275,22 @@
     <div class="max-w-7xl mx-auto">
       <div class="flex w-full gap-8">
         <div class="flex w-72 flex-col gap-4">
-          <NullBindSelectedKeysInfo
-            {localSelectedKeys}
-            getKeyLabel={getNullBindKeyLabel}
-          />
+          <NullBindSelectedKeysInfo {localSelectedKeys} getKeyLabel={getNullBindKeyLabel} />
 
           <NullBindBehaviorSelector
             {behavior}
             behaviorMetadata={NULL_BIND_BEHAVIOR_METADATA}
-            onBehaviorSelect={(b) => (behavior = b)}
+            onBehaviorSelect={b => (behavior = b)}
           />
 
-          <NullBindBottomOutControl
-            {bottomOutPoint}
-            onBottomOutToggle={updateNullBindBottomOut}
-          />
+          <NullBindBottomOutControl {bottomOutPoint} onBottomOutToggle={updateNullBindBottomOut} />
 
           <NullBindBottomOutSlider
             {bottomOutPoint}
             {actuationPoint}
             {uiBottomOutPoint}
             switchDistance={SWITCH_DISTANCE}
-            onBottomOutPointChange={(value) => (uiBottomOutPoint = value)}
+            onBottomOutPointChange={value => (uiBottomOutPoint = value)}
             onCommitBottomOutPoint={commitNullBindBottomOutPoint}
           />
         </div>
@@ -329,7 +328,7 @@
                 {bottomOutPoint}
                 switchDistance={SWITCH_DISTANCE}
                 onRapidTriggerToggle={updateNullBindRapidTrigger}
-                onActuationPointChange={(value) => (uiActuationPoint = value)}
+                onActuationPointChange={value => (uiActuationPoint = value)}
                 onCommitActuationPoint={commitNullBindActuationPoint}
               />
             {:else if activeTab === 'key-tester'}

@@ -11,7 +11,8 @@
     getBehaviorName: (behaviorValue: number) => string;
   }
 
-  let { localSelectedKeys, getKeyLabel, behavior, bottomOutPoint, rtDown, getBehaviorName }: Props = $props();
+  let { localSelectedKeys, getKeyLabel, behavior, bottomOutPoint, rtDown, getBehaviorName }: Props =
+    $props();
 
   let currentLanguage = $derived($language);
 </script>
@@ -35,9 +36,7 @@
           ? 'glassmorphism-card'
           : ''}"
       >
-        <div
-          class="text-2xl font-mono font-bold text-gray-900 dark:text-white mb-2"
-        >
+        <div class="text-2xl font-mono font-bold text-gray-900 dark:text-white mb-2">
           {getKeyLabel(localSelectedKeys[0])}
         </div>
         <div class="text-sm text-gray-600 dark:text-gray-400">
@@ -54,9 +53,7 @@
           ? 'glassmorphism-card'
           : ''}"
       >
-        <div
-          class="text-2xl font-mono font-bold text-gray-900 dark:text-white mb-2"
-        >
+        <div class="text-2xl font-mono font-bold text-gray-900 dark:text-white mb-2">
           {getKeyLabel(localSelectedKeys[1])}
         </div>
         <div class="text-sm text-gray-600 dark:text-gray-400">
@@ -73,9 +70,7 @@
     <div class="mt-6 p-4 glassmorphism-card rounded-lg">
       <div class="text-sm text-gray-600 dark:text-gray-400">
         {t('advancedkey.currentBehavior', currentLanguage)}
-        <span class="font-medium text-gray-900 dark:text-white"
-          >{getBehaviorName(behavior)}</span
-        >
+        <span class="font-medium text-gray-900 dark:text-white">{getBehaviorName(behavior)}</span>
       </div>
       <div class="text-sm text-gray-600 dark:text-gray-400 mt-1">
         {t('advancedkey.bottomOut', currentLanguage)}

@@ -103,9 +103,7 @@
         </button>
         {#if expandedSections[category.name]}
           <div class="px-4 pb-4 pt-2" transition:slide={{ duration: 300, axis: 'y' }}>
-            <div
-              class="grid grid-cols-6 sm:grid-cols-8 md:grid-cols-10 lg:grid-cols-12 gap-2"
-            >
+            <div class="grid grid-cols-6 sm:grid-cols-8 md:grid-cols-10 lg:grid-cols-12 gap-2">
               {#each category.actions as action}
                 <button
                   class="aspect-square min-w-12 text-xs rounded-md border transition-all flex items-center justify-center p-1 whitespace-pre-line leading-tight {$glassmorphismMode

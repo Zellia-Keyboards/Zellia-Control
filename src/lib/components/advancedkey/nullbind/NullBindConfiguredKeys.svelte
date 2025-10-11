@@ -11,7 +11,8 @@
     getBehaviorName: (behaviorValue: number) => string;
   }
 
-  let { configuredKeys, deletingPairs, newlyAddedPairs, onDeletePair, getBehaviorName }: Props = $props();
+  let { configuredKeys, deletingPairs, newlyAddedPairs, onDeletePair, getBehaviorName }: Props =
+    $props();
 
   let currentLanguage = $derived($language);
 </script>
@@ -171,10 +172,7 @@
               <div class="flex justify-between text-xs">
                 <span class="text-gray-500 dark:text-gray-400">Actuation</span>
                 <span class="text-gray-700 dark:text-gray-300"
-                  >{nullBindConfig.actuationPoint.toFixed(1)}{t(
-                    'units.mm',
-                    currentLanguage
-                  )}</span
+                  >{nullBindConfig.actuationPoint.toFixed(1)}{t('units.mm', currentLanguage)}</span
                 >
               </div>
               {#if nullBindConfig.bottomOutPoint > 0}

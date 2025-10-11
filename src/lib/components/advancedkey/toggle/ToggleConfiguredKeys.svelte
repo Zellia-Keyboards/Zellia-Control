@@ -65,14 +65,10 @@
       <div
         class="p-3 rounded-lg border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-800 transform transition-all duration-500 ease-out {$glassmorphismMode
           ? 'glassmorphism-card'
-          : ''} {isDeleting ? 'animate-fade-out' : ''} {isNewlyAdded
-          ? 'animate-fade-in'
-          : ''}"
+          : ''} {isDeleting ? 'animate-fade-out' : ''} {isNewlyAdded ? 'animate-fade-in' : ''}"
       >
         <div class="flex items-center justify-between mb-2">
-          <span class="font-mono font-bold text-gray-900 dark:text-white text-sm"
-            >{keyName}</span
-          >
+          <span class="font-mono font-bold text-gray-900 dark:text-white text-sm">{keyName}</span>
           <button
             class="w-8 h-8 bg-red-500 hover:bg-red-600 rounded-lg flex items-center justify-center text-white transition-colors {$glassmorphismMode
               ? 'glassmorphism-button'
@@ -116,9 +112,7 @@
             >
             <div class="flex items-center gap-1">
               <div
-                class="w-2 h-2 rounded-full {config.toggleState
-                  ? 'bg-green-500'
-                  : 'bg-gray-400'}"
+                class="w-2 h-2 rounded-full {config.toggleState ? 'bg-green-500' : 'bg-gray-400'}"
               ></div>
               <span
                 class="font-medium {config.toggleState

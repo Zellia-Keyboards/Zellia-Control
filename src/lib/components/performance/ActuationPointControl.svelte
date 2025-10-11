@@ -10,7 +10,13 @@
     onDeactivationChange: (value: number) => void;
   }
 
-  let { actuationPoint, deactivationPoint, keysSelected, onActuationChange, onDeactivationChange }: Props = $props();
+  let {
+    actuationPoint,
+    deactivationPoint,
+    keysSelected,
+    onActuationChange,
+    onDeactivationChange,
+  }: Props = $props();
   let currentLanguage = $derived($language);
 </script>
 
@@ -56,13 +62,17 @@
           <!-- Hysteresis zone (between deactivation and actuation) -->
           <div
             class="absolute h-full"
-            style="background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%); left: {(deactivationPoint / 4) * 100}%; width: {((actuationPoint - deactivationPoint) / 4) * 100}%;"
+            style="background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%); left: {(deactivationPoint /
+              4) *
+              100}%; width: {((actuationPoint - deactivationPoint) / 4) * 100}%;"
           ></div>
 
           <!-- Active region after actuation (right side) - GREEN -->
           <div
             class="absolute h-full rounded-r-full"
-            style="background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%); left: {(actuationPoint / 4) * 100}%; width: {((4 - actuationPoint) / 4) * 100}%;"
+            style="background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%); left: {(actuationPoint /
+              4) *
+              100}%; width: {((4 - actuationPoint) / 4) * 100}%;"
           ></div>
         </div>
 
@@ -73,7 +83,7 @@
           max="4.000"
           step="0.005"
           value={deactivationPoint}
-          oninput={(e) => {
+          oninput={e => {
             const input = e.target as HTMLInputElement;
             let value = Number(input.value);
             if (value > actuationPoint - 0.1) {
@@ -92,7 +102,7 @@
           max="4.000"
           step="0.005"
           value={actuationPoint}
-          oninput={(e) => {
+          oninput={e => {
             const input = e.target as HTMLInputElement;
             let value = Number(input.value);
             if (value < deactivationPoint + 0.1) {
@@ -115,7 +125,7 @@
             max={actuationPoint - 0.1}
             step="0.005"
             value={deactivationPoint}
-            oninput={(e) => onDeactivationChange(Number((e.target as HTMLInputElement).value))}
+            oninput={e => onDeactivationChange(Number((e.target as HTMLInputElement).value))}
             class="w-20 px-2 py-1 text-sm border rounded dark:bg-gray-800 dark:border-gray-600 dark:text-white bg-white border-gray-300 text-gray-900"
           />
           <span class="text-sm text-gray-500 dark:text-gray-400">mm</span>
@@ -128,7 +138,7 @@
             max="4.000"
             step="0.005"
             value={actuationPoint}
-            oninput={(e) => onActuationChange(Number((e.target as HTMLInputElement).value))}
+            oninput={e => onActuationChange(Number((e.target as HTMLInputElement).value))}
             class="w-20 px-2 py-1 text-sm border rounded dark:bg-gray-800 dark:border-gray-600 dark:text-white bg-white border-gray-300 text-gray-900"
           />
           <span class="text-sm text-gray-500 dark:text-gray-400">mm</span>

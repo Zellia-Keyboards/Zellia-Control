@@ -38,13 +38,9 @@
       <button
         class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 {toggleState
           ? 'bg-primary-600'
-          : 'bg-gray-300 dark:bg-gray-600'} {$glassmorphismMode
-          ? 'glassmorphism-button'
-          : ''}"
+          : 'bg-gray-300 dark:bg-gray-600'} {$glassmorphismMode ? 'glassmorphism-button' : ''}"
         onclick={onStateToggle}
-        aria-label={toggleState
-          ? 'Set toggle state to inactive'
-          : 'Set toggle state to active'}
+        aria-label={toggleState ? 'Set toggle state to inactive' : 'Set toggle state to active'}
       >
         <span
           class="inline-block h-4 w-4 transform rounded-full bg-white shadow-sm transition-transform {toggleState

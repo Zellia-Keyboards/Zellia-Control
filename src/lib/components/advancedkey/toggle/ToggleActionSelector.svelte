@@ -62,8 +62,7 @@
           class="w-full px-4 py-3 flex items-center justify-between {$glassmorphismMode
             ? 'glassmorphism-button'
             : 'hover:bg-primary-100 dark:hover:bg-primary-900'} rounded-lg transition-colors"
-          onclick={() =>
-            (expandedSections[category.name] = !expandedSections[category.name])}
+          onclick={() => (expandedSections[category.name] = !expandedSections[category.name])}
         >
           <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300">
             {category.name}
@@ -86,9 +85,7 @@
         </button>
         {#if expandedSections[category.name]}
           <div class="px-4 pb-4 pt-2" transition:slide={{ duration: 300, axis: 'y' }}>
-            <div
-              class="grid grid-cols-6 sm:grid-cols-8 md:grid-cols-10 lg:grid-cols-12 gap-2"
-            >
+            <div class="grid grid-cols-6 sm:grid-cols-8 md:grid-cols-10 lg:grid-cols-12 gap-2">
               {#each category.actions as action}
                 <button
                   class="aspect-square min-w-12 text-xs rounded-md border transition-all flex items-center justify-center p-1 whitespace-pre-line leading-tight {selectedToggleAction ===

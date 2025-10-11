@@ -258,7 +258,9 @@
     },
     {
       name: 'Modifiers',
-      actions: keyActions.filter(action => ['ctrl', 'shift', 'alt', 'win'].includes(String(action.keycode))),
+      actions: keyActions.filter(action =>
+        ['ctrl', 'shift', 'alt', 'win'].includes(String(action.keycode))
+      ),
     },
     {
       name: 'Function',
@@ -360,9 +362,9 @@
           ? 'glassmorphism-button'
           : ''} {'bg-primary-500 hover:bg-primary-600 focus-visible:ring-primary-300 dark:bg-gray-600 '}"
         style="width: {DKS_NODE_SIZE +
-          dksIntervalWidth(interval)}px; height: {DKS_NODE_SIZE}px; top: {DKS_NODE_TOP}px; left: {dksNodeLeft(
-          start
-        )}px;"
+          dksIntervalWidth(
+            interval
+          )}px; height: {DKS_NODE_SIZE}px; top: {DKS_NODE_TOP}px; left: {dksNodeLeft(start)}px;"
         onclick={() => dksDeleteInterval(bindingIndex, start)}
         title="Click to delete interval"
         aria-label="Delete interval"
@@ -576,7 +578,8 @@
           <div class="flex border-b mb-6 dark:border-primary-200 border-[#e5e5e5]">
             {#each [['bindings', t('advancedkey.bindings', currentLanguage)], ['performance', t('advancedkey.performance', currentLanguage)], ['key-tester', t('advancedkey.keyTester', currentLanguage)]] as [value, label]}
               <button
-                class="px-4 py-2 text-sm font-medium border-b-2 transition-colors {dksActiveTab === value
+                class="px-4 py-2 text-sm font-medium border-b-2 transition-colors {dksActiveTab ===
+                value
                   ? 'border-primary-500 text-primary-500'
                   : 'border-transparent text-gray-500 dark:text-gray-400'}"
                 onclick={() => (dksActiveTab = value)}
@@ -587,7 +590,11 @@
           </div>
 
           {#if dksActiveTab === 'bindings'}
-            <DKSBinding bind:selectedKeycodes={dksSelectedKeycodes} bind:selectedBindingIndex={dksSelectedBindingIndex} actionCategories={dksActionCategories} />
+            <DKSBinding
+              bind:selectedKeycodes={dksSelectedKeycodes}
+              bind:selectedBindingIndex={dksSelectedBindingIndex}
+              actionCategories={dksActionCategories}
+            />
           {:else if dksActiveTab === 'performance'}
             <DKSPerformance />
           {:else if dksActiveTab === 'key-tester'}

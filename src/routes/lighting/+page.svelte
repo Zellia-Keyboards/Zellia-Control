@@ -293,7 +293,7 @@
       <!-- Per-Key Effects (单键效果) -->
       <EffectSelector
         effects={perKeyEffects}
-        selectedEffect={selectedEffect}
+        {selectedEffect}
         title={t('lighting.perKeyEffects', currentLanguage)}
         badge="customizable"
         onSelectEffect={selectEffect}
@@ -303,29 +303,24 @@
     <!-- Right: Settings Panel -->
     <div class="flex-1 space-y-3">
       <!-- Brightness -->
-      <BrightnessControl
-        {brightness}
-        onBrightnessChange={(value) => (brightness = value)}
-      />
+      <BrightnessControl {brightness} onBrightnessChange={value => (brightness = value)} />
 
       <!-- Speed (for animated effects) -->
       {#if ['breathing', 'wave', 'rainbow'].includes(selectedGlobalEffect) || ['ripple'].includes(selectedEffect)}
-        <SpeedControl {speed} onSpeedChange={(value) => (speed = value)} />
+        <SpeedControl {speed} onSpeedChange={value => (speed = value)} />
       {/if}
 
       <!-- Color (for applicable effects) -->
-      <ColorPicker color={staticColor} onColorChange={(value) => (staticColor = value)} />
+      <ColorPicker color={staticColor} onColorChange={value => (staticColor = value)} />
 
       <!-- Direction (for directional effects) -->
       {#if ['rainbow'].includes(selectedGlobalEffect)}
         <DirectionSelector
           {directions}
           selectedDirection={direction}
-          onDirectionChange={(value) => (direction = value)}
+          onDirectionChange={value => (direction = value)}
         />
       {/if}
     </div>
   </div>
 </div>
-
-

@@ -26,9 +26,7 @@
             ? 'glassmorphism-button'
             : ''}"
         >
-          <span class="font-mono font-bold text-gray-900 dark:text-white"
-            >{currentKeyName}</span
-          >
+          <span class="font-mono font-bold text-gray-900 dark:text-white">{currentKeyName}</span>
         </div>
         <div>
           <h3 class="font-medium text-gray-900 dark:text-white">Selected Key</h3>
@@ -43,9 +41,7 @@
         >{t('advancedkey.toggleState', currentLanguage)}:</span
       >
       <div class="flex items-center gap-2">
-        <div
-          class="w-2 h-2 rounded-full {toggleState ? 'bg-green-500' : 'bg-gray-400'}"
-        ></div>
+        <div class="w-2 h-2 rounded-full {toggleState ? 'bg-green-500' : 'bg-gray-400'}"></div>
         <span
           class="text-sm font-medium {toggleState
             ? 'text-green-700'

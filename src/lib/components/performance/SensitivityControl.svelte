@@ -69,7 +69,7 @@
           max="2"
           step="0.01"
           value={pressSensitivity}
-          oninput={(e) => onPressChange(Number((e.target as HTMLInputElement).value))}
+          oninput={e => onPressChange(Number((e.target as HTMLInputElement).value))}
           class="w-full h-2 rounded-full bg-gray-300 dark:bg-gray-700 appearance-none slider-thumb"
         />
         <div class="flex justify-between text-sm dark:text-gray-400 text-gray-500 mt-1">
@@ -88,7 +88,7 @@
           max="2"
           step="0.01"
           value={releaseSensitivity}
-          oninput={(e) => onReleaseChange(Number((e.target as HTMLInputElement).value))}
+          oninput={e => onReleaseChange(Number((e.target as HTMLInputElement).value))}
           class="w-full h-2 rounded-full bg-gray-300 dark:bg-gray-700 appearance-none slider-thumb"
         />
         <div class="flex justify-between text-sm dark:text-gray-400 text-gray-500 mt-1">
@@ -108,7 +108,7 @@
           max="2"
           step="0.01"
           value={sensitivityValue}
-          oninput={(e) => onSensitivityChange(Number((e.target as HTMLInputElement).value))}
+          oninput={e => onSensitivityChange(Number((e.target as HTMLInputElement).value))}
           class="w-full h-2 rounded-full bg-gray-300 dark:bg-gray-700 appearance-none slider-thumb"
         />
         <div class="flex justify-between text-sm dark:text-gray-400 text-gray-500 mt-1">

@@ -165,18 +165,12 @@
         <div class="xl:col-span-2 space-y-6">
           <ToggleActionSelector
             {selectedToggleAction}
-            onActionSelect={(action) => (selectedToggleAction = action)}
+            onActionSelect={action => (selectedToggleAction = action)}
           />
 
-          <ToggleModeSelector
-            {toggleMode}
-            onModeSelect={(mode) => (toggleMode = mode)}
-          />
+          <ToggleModeSelector {toggleMode} onModeSelect={mode => (toggleMode = mode)} />
 
-          <ToggleStateControl
-            {toggleState}
-            onStateToggle={() => (toggleState = !toggleState)}
-          />
+          <ToggleStateControl {toggleState} onStateToggle={() => (toggleState = !toggleState)} />
         </div>
 
         <div class="xl:col-span-1 space-y-6">

@@ -20,7 +20,7 @@
     min="1"
     max="100"
     value={speed}
-    oninput={(e) => onSpeedChange(Number((e.target as HTMLInputElement).value))}
+    oninput={e => onSpeedChange(Number((e.target as HTMLInputElement).value))}
     class="w-full h-2 rounded-full bg-gray-300 dark:bg-gray-700 appearance-none slider-thumb"
   />
 </div>
