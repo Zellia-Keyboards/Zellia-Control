@@ -2,16 +2,15 @@
 
 <div align="center">
 <p>
-    Zellia Control is a powerful, cross-platform desktop application designed for configuring Zellia Hall Effect keyboards. 
-    Built with Tauri, SvelteKit, TypeScript, and Rust, it offers a seamless and intuitive user experience for customizing every aspect of your keyboard.
+    Zellia Control is a powerful, cross-platform Progressive Web App designed for configuring Zellia Hall Effect keyboards. 
+    Built with SvelteKit and TypeScript, it works directly in your browser with offline support, offering a seamless and intuitive user experience for customizing every aspect of your keyboard.
   </p>
 
   <!-- Badges -->
   <p>
-    <img src="https://img.shields.io/badge/Tauri-v2.x-blueviolet?style=for-the-badge&logo=tauri" alt="Tauri">
+    <img src="https://img.shields.io/badge/PWA-Offline-blueviolet?style=for-the-badge&logo=pwa" alt="PWA">
     <img src="https://img.shields.io/badge/SvelteKit-v5.x-orange?style=for-the-badge&logo=svelte" alt="SvelteKit">
     <img src="https://img.shields.io/badge/TypeScript-v5.x-blue?style=for-the-badge&logo=typescript" alt="TypeScript">
-    <img src="https://img.shields.io/badge/Rust-Stable-red?style=for-the-badge&logo=rust" alt="Rust">
     <br>
     <img src="https://img.shields.io/github/license/Zellia-Keyboards/Zellia-Control?style=for-the-badge" alt="License">
     <img src="https://img.shields.io/github/stars/Zellia-Keyboards/Zellia-Control?style=for-the-badge&logo=github" alt="GitHub Stars">
@@ -80,12 +79,12 @@ Zellia Control offers a rich set of features to unlock the full potential of you
 
 Zellia Control is built with a modern and robust technology stack:
 
-- **[Tauri](https://tauri.app/):** Backend framework for building lightweight, secure, and cross-platform desktop applications with Rust.
 - **[SvelteKit](https://kit.svelte.dev/):** Frontend framework for building fast and efficient web applications.
 - **[TypeScript](https://www.typescriptlang.org/):** Superset of JavaScript adding static typing for improved code quality and maintainability.
-- **[Rust](https://www.rust-lang.org/):** High-performance systems programming language used for the Tauri backend.
-- **[Tailwind CSS](https://tailwindcss.com/):** Utility-first CSS framework for rapid UI development.
 - **[Vite](https://vitejs.dev/):** Next-generation frontend tooling for fast development and optimized builds.
+- **[vite-plugin-pwa](https://vite-pwa-org.netlify.app/):** Plugin for progressive web app support enabling offline functionality and install capability.
+- **[Workbox](https://developers.google.com/web/tools/workbox):** Library for offline caching and service worker management.
+- **[Tailwind CSS](https://tailwindcss.com/):** Utility-first CSS framework for rapid UI development.
 
 ---
 
@@ -99,8 +98,6 @@ Ensure you have the following installed:
 
 - [Node.js](https://nodejs.org/) (v18.x or higher recommended)
 - [Yarn](https://yarnpkg.com/) (v1.x) or npm (v8.x or higher)
-- [Rust](https://www.rust-lang.org/tools/install) (latest stable version)
-- System dependencies for Tauri (see [Tauri prerequisites](https://tauri.app/v1/guides/getting-started/prerequisites/))
 
 ### Installation
 
@@ -121,15 +118,15 @@ Ensure you have the following installed:
 
 3. **Run in development mode:**
 
-   This command will start the SvelteKit frontend and the Tauri backend with hot-reloading.
+   This command will start the development server with hot-reloading.
 
    ```bash
-   yarn tauri dev
+   yarn dev
    # or
-   # npm run tauri dev
+   # npm run dev
    ```
 
-   The application will typically open automatically. If not, look for the development server URL in your terminal.
+   The application will be available at `http://localhost:5173` (or another port if 5173 is in use).
 
 ---
 
@@ -200,29 +197,29 @@ zellia-control/
 │   ├── src/                # Rust source files
 │   │   ├── lib.rs
 │   │   └── main.rs         # Main Rust application entry point
-│   └── tauri.conf.json     # Tauri application configuration
+│   └── DarkModeStore.svelte.ts  # Dark mode state management
 ├── jsconfig.json           # JavaScript/TypeScript configuration
 ├── package.json            # Node.js project metadata and dependencies
 ├── postcss.config.js       # PostCSS configuration
 ├── README.md               # This file
 ├── svelte.config.js        # SvelteKit configuration
 ├── tailwind.config.js      # Tailwind CSS configuration
-└── vite.config.js          # Vite configuration
+└── vite.config.js          # Vite and PWA configuration
 ```
 
 ---
 
 ## 📦 Building for Production
 
-To build the application for production, which will generate native installers or executables for your platform:
+To build the application for production as a Progressive Web App:
 
 ```bash
-yarn tauri build
+yarn build
 
-npm run tauri build
+npm run build
 ```
 
-Build artifacts will be located in `src-tauri/target/release/bundle/`. The specific subdirectory and file type will depend on your operating system (e.g., `.msi` for Windows, `.dmg` or `.app` for macOS, `.deb` or `.AppImage` for Linux).
+Build artifacts will be located in the `build/` directory. The application can be deployed to any static hosting service (Netlify, Vercel, GitHub Pages, etc.) and will work offline thanks to the PWA service worker.
 
 ---
 

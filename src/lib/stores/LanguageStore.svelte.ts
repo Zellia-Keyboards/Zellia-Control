@@ -490,7 +490,7 @@ export const translations = {
     'about.appDescription':
       'A powerful desktop application for configuring Zellia keyboards with Hall Effect switches. Built with modern web technologies for cross-platform compatibility and an intuitive user experience.',
     'about.version': 'Version 1.0.0',
-    'about.builtWith': 'Built with Tauri & SvelteKit',
+    'about.builtWith': 'Built with SvelteKit & PWA',
     'about.performance': 'Performance',
     'about.adjustableActuation': 'Adjustable actuation points (0-4mm)',
     'about.rapidTrigger': 'Rapid trigger technology',
@@ -621,7 +621,7 @@ export const translations = {
     'welcome.tryDemo': 'Try Demo Mode',
     'welcome.demoDescription': 'Explore features without hardware',
     'welcome.getStarted': 'Get Started',
-    'welcome.poweredBy': 'Powered by Tauri',
+    'welcome.poweredBy': 'Progressive Web App',
     'welcome.supportedModels': 'Supported Models',
     'welcome.features.keymapping': 'Key Mapping',
     'welcome.features.keymappingDesc': 'Customize every key to your preference',
@@ -831,7 +831,7 @@ export const translations = {
     'about.appDescription':
       '一个强大的桌面应用程序，用于配置带有霍尔效应开关的 Zellia 键盘。采用现代网络技术构建，具有跨平台兼容性和直观的用户体验。',
     'about.version': '版本 1.0.0',
-    'about.builtWith': '使用 Tauri 和 SvelteKit 构建',
+    'about.builtWith': '使用 SvelteKit 和 PWA 构建',
     'about.performance': '性能',
     'about.adjustableActuation': '可调节触发点 (0-4毫米)',
     'about.rapidTrigger': '快速触发技术',
@@ -1232,7 +1232,7 @@ export const translations = {
     'welcome.tryDemo': '尝试演示模式',
     'welcome.demoDescription': '无需硬件即可探索功能',
     'welcome.getStarted': '开始使用',
-    'welcome.poweredBy': '由 Tauri 驱动',
+    'welcome.poweredBy': '渐进式网络应用',
     'welcome.description':
       '使用高级功能配置您的 Zellia 键盘，包括按键重映射、性能调优、灯光效果等。',
     'welcome.connecting': '连接中...',
