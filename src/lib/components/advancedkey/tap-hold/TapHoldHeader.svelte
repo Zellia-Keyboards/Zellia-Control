@@ -1,32 +1,28 @@
 <script lang="ts">
-  import { goto } from '$app/navigation';
   import { glassmorphismMode } from '$lib/stores/DarkModeStore.svelte';
   import { language, t } from '$lib/stores/LanguageStore.svelte';
 
   interface Props {
     currentSelectedIndex: number | null;
+    onBack: () => void;
     onApply: () => void;
     onResetAll: () => void;
   }
 
-  let { currentSelectedIndex, onApply, onResetAll }: Props = $props();
+  let { currentSelectedIndex, onBack, onApply, onResetAll }: Props = $props();
   let currentLanguage = $derived($language);
-
-  function goBack(): void {
-    goto('/advancedkey');
-  }
 </script>
 
 <div
-  class="border-b px-6 py-4 {$glassmorphismMode
+  class="border-b px-6 py-4 -mx-8 -mt-8 mb-4 {$glassmorphismMode
     ? ''
     : 'bg-primary-25 dark:bg-primary-950 border-primary-200 dark:border-primary-800'}"
 >
   <div class="flex items-center justify-between">
     <div class="flex items-center gap-4">
       <button
-        class="flex items-center gap-2 text-gray-600 hover:text-gray-900 dark:text-gray-400 transition-colors"
-        onclick={goBack}
+        class="flex items-center gap-2 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors"
+        onclick={onBack}
       >
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path

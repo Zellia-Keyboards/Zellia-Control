@@ -15,7 +15,7 @@
 </script>
 
 <div
-  class="border-b px-6 py-4 {$glassmorphismMode
+  class="border-b px-6 py-4 -mx-8 -mt-8 mb-4 {$glassmorphismMode
     ? ''
     : 'bg-primary-25 dark:bg-primary-950 border-primary-200 dark:border-primary-800'}"
 >

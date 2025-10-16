@@ -5,10 +5,11 @@
   interface Props {
     onBack: () => void;
     onApply: () => void;
+    onReset: () => void;
     canApply: boolean;
   }
 
-  let { onBack, onApply, canApply }: Props = $props();
+  let { onBack, onApply, onReset, canApply }: Props = $props();
 
   let currentLanguage = $derived($language);
 </script>
@@ -36,18 +37,27 @@
       </button>
       <div>
         <h1 class="text-xl font-semibold text-gray-900 dark:text-white">
-          {t('advancedkey.nullBindTitle', currentLanguage)}
+          {t('advancedkey.dynamicTitle', currentLanguage)}
         </h1>
         <p class="text-sm text-gray-500 dark:text-gray-400">
-          {t('advancedkey.nullBindSubtitle', currentLanguage)}
+          {t('advancedkey.dynamicSubtitle', currentLanguage)}
         </p>
       </div>
     </div>
     <div class="flex gap-3">
       <button
-        class="px-4 py-2 text-white bg-primary-500 hover:bg-primary-600 rounded-md transition-colors text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed {$glassmorphismMode
+        class="px-4 py-2 text-white rounded-md transition-colors text-sm font-medium {$glassmorphismMode
           ? 'glassmorphism-button'
-          : ''}"
+          : ''} bg-red-600 hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-600"
+        onclick={onReset}
+        disabled={!canApply}
+      >
+        {t('advancedkey.resetConfiguration', currentLanguage)}
+      </button>
+      <button
+        class="px-4 py-2 rounded-md transition-colors text-sm font-medium text-white disabled:opacity-50 {$glassmorphismMode
+          ? 'glassmorphism-button'
+          : 'bg-primary-500 hover:bg-primary-600'}"
         onclick={onApply}
         disabled={!canApply}
       >

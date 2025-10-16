@@ -163,6 +163,7 @@
 
 <TapHoldHeader
   {currentSelectedIndex}
+  {onBack}
   onApply={applyConfiguration}
   onResetAll={resetAllConfigurations}
 />
