@@ -1,6 +1,7 @@
 <script lang="ts">
   import { glassmorphismMode } from '$lib/stores/DarkModeStore.svelte';
   import { language, t } from '$lib/stores/LanguageStore.svelte';
+  import { ArrowRight } from 'lucide-svelte';
   import type { ComponentType } from 'svelte';
 
   interface Props {
@@ -29,9 +30,9 @@
       : 'hover:border-primary-500 focus:border-primary-500 dark:hover:border-primary-400 dark:focus:border-primary-400'} border-gray-300 dark:border-gray-600"
     onclick={() => option.action()}
   >
-    <!-- Option Header -->
+    <!-- Option Header with Animated Icon -->
     <div class="flex items-center gap-4 mb-4">
-      <div class="flex items-center justify-center w-10 h-10">
+      <div class="flex items-center justify-center w-10 h-10 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-6">
         <IconComponent
           class="w-8 h-8 {option.type === 'danger'
             ? 'text-red-600'
@@ -64,19 +65,6 @@
           <span>{t(featureKey, currentLanguage)}</span>
         </div>
       {/each}
-    </div>
-    <!-- Action Arrow -->
-    <div
-      class="absolute top-6 right-6 text-gray-400 transition-colors pointer-events-none {option.type ===
-      'danger'
-        ? 'group-hover:text-red-600'
-        : 'group-hover:text-primary-500 dark:group-hover:text-primary-400'}"
-      role="presentation"
-      aria-hidden="true"
-    >
-      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-      </svg>
     </div>
   </button>
 </div>

@@ -16,7 +16,7 @@
   type ConfiguredDynamicKeyEntry = [string, DynamicKeystrokeConfiguration];
   type Props = {
     configuredDynamicKeys: ConfiguredDynamicKeyEntry[];
-    KeyboardDisplayValues: typeof KeyboardDisplayValuesType; // Store type
+    KeyboardDisplayValues: any; // Store type - accepts any store with keyboard display values
     resetAllDynamicKeys?: () => void; // Optional reset function
     onDeleteKey?: (keyId: string) => void; // New prop for deleting individual keys
   };
@@ -118,13 +118,13 @@
             </div>
             <div class="text-sm space-y-2">
               <div class="flex items-center justify-between">
-                <span class="text-gray-600" dark:text-gray-400
+                <span class="text-gray-600 dark:text-gray-400"
                   >{t('advancedkey.bindingsLabel', currentLanguage)}:</span
                 >
                 <span class={'text-gray-700 dark:text-gray-300'}>{config.keycodes.length}</span>
               </div>
               <div class="flex items-center justify-between">
-                <span class="text-gray-600" dark:text-gray-400
+                <span class="text-gray-600 dark:text-gray-400"
                   >{t('advancedkey.bottomOutLabel', currentLanguage)}:</span
                 >
                 <span class={'text-gray-700 dark:text-gray-300'}

@@ -567,6 +567,7 @@
         bind:this={dksConfiguredListRef}
         configuredDynamicKeys={dksConfiguredList}
         onDeleteKey={dksDeleteKey}
+        KeyboardDisplayValues={{}}
       />
     </div>
   {/if}
