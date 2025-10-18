@@ -27,14 +27,14 @@
 
   // Derived variable to determine which keyboard component to show
 
-  // Custom slide transition that moves instead of stretches
+  // Custom slide transition that moves vertically instead of horizontally
   function slideMove(node: Element, { duration = 400, direction = 1 }) {
     return {
       duration,
       easing: cubicOut,
       css: (t: number) => {
-        const x = (1 - t) * direction * 100;
-        return `transform: translateX(${x}%); opacity: ${t}`;
+        const y = (1 - t) * direction * 100;
+        return `transform: translateY(${y}%); opacity: ${t}`;
       },
     };
   }
@@ -177,23 +177,35 @@
   $inspect(selectedKeys, 'selectedKeys');
 </script>
 
-<section
+<div
   bind:this={mainContainer}
-  class="rounded-2xl shadow p-8 mt-2 mb- mb- grow border border-gray-200 dark:border-gray-600 text-black dark:text-white h-full flex flex-col {$glassmorphismMode
+  class="rounded-2xl shadow p-6 mt-2 mb-4 grow border border-gray-200 dark:border-gray-600 text-black dark:text-white h-full flex {$glassmorphismMode
     ? 'glassmorphism-card bg-gray-50 dark:bg-gray-900'
     : 'bg-[color-mix(in_srgb,var(--theme-color-primary)_10%,white)] dark:bg-[color-mix(in_srgb,var(--theme-color-primary)_5%,black)]'}"
   tabindex="-1"
   role="application"
   onkeydown={handleKeydown}
-  onclick={() => mainContainer?.focus()}
+  on:click={() => mainContainer?.focus()}
   style="outline: none;"
 >
-  <!-- Tab Navigation -->
-  <TabNavigation tabs={Tabs} {activeTab} onTabChange={changeTab} />
+  <!-- Sidebar with Tab Navigation -->
+  <aside class="w-56 flex-shrink-0 pr-6 relative">
+    <h2 class="text-xl font-semibold mb-4">Categories</h2>
+    <TabNavigation tabs={Tabs} {activeTab} onTabChange={changeTab} />
+    
+    <!-- Glassmorphism separator line -->
+    <div 
+      class="absolute top-0 right-0 bottom-0 w-px {$glassmorphismMode 
+        ? 'bg-gradient-to-b from-transparent via-white/20 to-transparent dark:via-white/10' 
+        : 'bg-gray-200 dark:bg-gray-600'}"
+      style={$glassmorphismMode ? 'box-shadow: 0 0 8px rgba(255, 255, 255, 0.1);' : ''}
+    ></div>
+  </aside>
 
-  <!-- Tab Content -->
-  <div class="flex-1 min-h-0 relative overflow-hidden">
-    {#key activeTab}
+  <!-- Main Content Area -->
+  <main class="flex-1 pl-6 flex flex-col min-w-0">
+    <div class="flex-1 min-h-0 relative overflow-hidden">
+      {#key activeTab}
       <div
         class="absolute inset-0 w-full h-full overflow-y-auto"
         in:slideMove={{
@@ -208,7 +220,7 @@
         <ActiveTabComponent>
           {#snippet keyslot(keyInfo: KeyInfo)}
             <button
-              onclick={() => {
+              on:click={() => {
                 if ($selectedKeys.length === 0) {
                   showingNotification = true;
                   setTimeout(() => (showingNotification = false), 3000);
@@ -229,8 +241,9 @@
         </ActiveTabComponent>
       </div>
     {/key}
-  </div>
-</section>
+    </div>
+  </main>
+</div>
 
 {#if showingNotification}
   <div
@@ -244,17 +257,3 @@
     </div>
   </div>
 {/if}
-
-<style>
-  .key-square {
-    aspect-ratio: 1 / 1;
-    width: 4rem;
-    min-width: 4rem;
-    max-width: 4rem;
-    min-height: 4rem;
-    max-height: 4rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-</style>
