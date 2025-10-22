@@ -547,6 +547,13 @@ export class LibampKeyboardController extends KeyboardController {
         let res = this.write(send_buf);
         console.debug("Wrote Factory Reset Command: {:?} byte(s)", res);
     }
+    enter_bootloader(): void {
+        let send_buf = new Uint8Array(63);
+        send_buf[0] = PacketCode.PacketCodeAction;
+        send_buf[1] = KeyboardKeycode.KeyboardBootloader;
+        let res = this.write(send_buf);
+        console.debug("Wrote Factory Reset Command: {:?} byte(s)", res);
+    }
     request_config(): void {
       this.read_advanced_keys();
       this.read_rgb_configs();

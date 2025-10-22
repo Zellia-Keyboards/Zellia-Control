@@ -803,6 +803,7 @@ export interface IKeyboardController{
     flash_config() : void;
     system_reset() : void;
     factory_reset() : void;
+    enter_bootloader(): void;
     request_config() : void;
     start_debug() : void;
     stop_debug() : void;
@@ -960,6 +961,10 @@ export abstract class KeyboardController implements IKeyboardController, EventTa
     factory_reset() : void
     {
 
+    }
+    enter_bootloader(): void
+    {
+        
     }
     request_config() : void
     {

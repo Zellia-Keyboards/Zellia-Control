@@ -1,9 +1,10 @@
 <script lang="ts">
   import { glassmorphismMode } from '$lib/stores/DarkModeStore.svelte';
-  import { keyboardAPI } from '$lib/api/keyboardAPI.svelte';
+  import { keyboardAPI, keyboardConnectionState } from '$lib/api/keyboardAPI.svelte';
   import { RotateCcw, Download, Trash2, Info } from 'lucide-svelte';
   import { language, t } from '$lib/stores/LanguageStore.svelte';
   import SettingsCard from '$lib/components/settings/SettingsCard.svelte';
+  import { KeyboardController } from 'emi-keyboard-controller';
 
   let currentLanguage = $derived($language);
 
@@ -54,14 +55,17 @@
   ];
 
   function handleRestart() {
+    keyboardConnectionState.controller?.system_reset();
     // Implementation for restart
   }
 
   function handleBootloader() {
+    keyboardConnectionState.controller?.enter_bootloader();
     // Implementation for bootloader
   }
 
   function handleFactoryReset() {
+    keyboardConnectionState.controller?.factory_reset();
     // Implementation for factory reset
   }
 
