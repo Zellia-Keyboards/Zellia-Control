@@ -14,6 +14,7 @@
   let trackingData: { x: number; y: number }[] = $state.raw([]);
   let trackingInterval: NodeJS.Timeout | null = null;
   let startTime = 0;
+  const WINDOW_MS = 30_000; // 滑动窗口大小（30秒）
   let timer : NodeJS.Timeout;
   let handleDataUpdate: (() => void) | null = null;
 
@@ -162,13 +163,35 @@
     trackingData = [];
     if (chart) {
       chart.data.datasets[0].data = [];
+      updateChart(); // 清空图表
       chart.update();
     }
   }
 
   function updateChart() {
     if (!chart) return;
-
+    
+    // 取最后一个时间作为“当前”
+    const lastX = trackingData.length ? trackingData[trackingData.length - 1].x : 0;
+    const cutoff = Math.max(0, lastX - WINDOW_MS);
+    
+    // 丢弃 30s 之前的数据（避免内存增长）
+    if (trackingData.length && trackingData[0].x < cutoff) {
+      const idx = trackingData.findIndex(p => p.x >= cutoff);
+      if (idx > 0) {
+        trackingData = trackingData.slice(idx);
+      }
+    }
+  
+    // 固定 x 轴显示范围到最近 30s
+    if (lastX > WINDOW_MS) {
+      chart.options.scales.x.min = cutoff;
+      chart.options.scales.x.max = lastX;
+    } else {
+      chart.options.scales.x.min = 0;
+      chart.options.scales.x.max = WINDOW_MS;
+    }
+  
     chart.data.datasets[0].data = trackingData;
     chart.update('none');
   }
@@ -292,8 +315,7 @@
               },
               limits: {
                 x: {
-                  min: 0,
-                  max: 30000,
+                  minRange: 500,
                 },
                 y: {
                   min: 0,
