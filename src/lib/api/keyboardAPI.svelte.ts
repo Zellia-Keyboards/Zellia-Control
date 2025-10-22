@@ -10,6 +10,7 @@ import {
 } from '../../../src-controller/src/index';
 import { goto } from '$app/navigation';
 import * as api from '$lib/api/api.svelte';
+import type { KeyboardController } from 'emi-keyboard-controller';
 
 export type KeyboardModel = 'zellia60he' | 'zellia80he' | 'oholeo' | 'trinity_pad';
 
@@ -26,7 +27,7 @@ export interface KeyboardConnectionState {
   connectionStatus: 'disconnected' | 'connecting' | 'connected' | 'error';
   lastConnectedDevice?: string;
   error?: string;
-  controller?: IKeyboardController;
+  controller?: KeyboardController;
   detectedDevices?: DetectedDevice[];
 }
 

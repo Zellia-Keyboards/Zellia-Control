@@ -11,10 +11,11 @@
   let selectedKeyName = $state('');
   let chartCanvas: HTMLCanvasElement;
   let chart: any;
-  let trackingData: { x: number; y: number }[] = $state([]);
+  let trackingData: { x: number; y: number }[] = $state.raw([]);
   let trackingInterval: NodeJS.Timeout | null = null;
   let startTime = 0;
   let timer : NodeJS.Timeout;
+  let handleDataUpdate: (() => void) | null = null;
 
   // Props
   interface Props {
@@ -24,72 +25,138 @@
 
   let { currentSelected, onSelectKey }: Props = $props();
 
-  // Generate test data for demonstration
-  function generateTestData() {
-    const data = [];
-    const duration = 30000;
-
-    for (let i = 0; i < duration; i += 10) {
-      let distance = 4.0;
-
-      if (Math.random() < 0.02) {
-        const pressDepth = Math.random() * 4.0;
-        distance = 4.0 - pressDepth;
-      }
-
-      distance += (Math.random() - 0.5) * 0.05;
-      distance = Math.max(0, Math.min(4.0, distance));
-
-      data.push({ x: i, y: distance });
-    }
-
-    return data;
+  function percentToMm(distance: number) {
+    return distance * 4.0;
   }
 
-  // Update selected key name when currentSelected changes
-  $effect(() => {
-    if (currentSelected) {
-      const keyPosition = `${currentSelected[0]},${currentSelected[1]}`;
-      selectedKeyName = `Key ${keyPosition}`;
-    }
-  });
 
-  $effect(() => {
-    const keysToUpdate = $selectedKeys;
-
-    timer = setInterval(() => {
-      keyboardConnectionState.controller?.request_debug_at([keysToUpdate[0]]);
-    }, 333);
-  });
   function startTracking() {
     if (!selectedKeyName) {
       alert('Please select a key first');
       return;
     }
 
+    const controller = keyboardConnectionState.controller;
+    const keyIndex = $selectedKeys[0]; // 假设我们只追踪第一个选中的键
+
+    if (!controller || keyIndex === undefined) {
+      alert('Controller not connected or no key index found.');
+      return;
+    }
+
     isTracking = true;
     startTime = Date.now();
     trackingData = [];
+    updateChart(); // 清空图表
 
-    if (browser) {
-      setTimeout(() => {
-        trackingData = generateTestData();
+    // 1. 创建事件监听器
+    handleDataUpdate = () => {
+      const keyData = controller.advanced_keys[keyIndex];
+      if (keyData) {
+        const elapsedTime = Date.now() - startTime;
+        // keyData.value 是来自控制器的实时距离值
+        trackingData = [...trackingData, { x: elapsedTime, y: keyData.value }];
+
+        // 限制数据点数量以提高性能（可选）
+        // if (trackingData.length > 500) {
+        //   trackingData.shift(); 
+        // }
+
         updateChart();
-
-        setTimeout(() => {
-          stopTracking();
-        }, 30000);
-      }, 100);
+      }
     }
   }
 
   function stopTracking() {
     isTracking = false;
+      if (trackingInterval) {
+        clearInterval(trackingInterval);
+        trackingInterval = null;
+      }
+      // 移除事件监听器
+      if (handleDataUpdate && keyboardConnectionState.controller) {
+        keyboardConnectionState.controller.removeEventListener('updateData', handleDataUpdate);
+        handleDataUpdate = null;
+    }
+  }
+
+  // 1. 停止调试的函数
+  function stopDebug() {
+    isTracking = false;
+    // 停止轮询
     if (trackingInterval) {
       clearInterval(trackingInterval);
       trackingInterval = null;
     }
+    // 移除事件监听器
+    if (handleDataUpdate && keyboardConnectionState.controller) {
+      keyboardConnectionState.controller.removeEventListener('updateData', handleDataUpdate);
+      handleDataUpdate = null;
+    }
+    console.log("Debug stopped.");
   }
+
+  // 2. 开始调试的函数
+  function startDebug(keyIndex: number) {
+    stopDebug(); // 先停止确保干净启动
+
+    const controller = keyboardConnectionState.controller;
+
+    if (!controller) {
+      console.error('Controller not connected.');
+      return;
+    }
+    
+    isTracking = true;
+    startTime = Date.now();
+    trackingData = [];
+    updateChart(); // 清空图表
+
+    // 创建事件监听器
+    handleDataUpdate = () => {
+      const keyData = controller.advanced_keys[keyIndex];
+      if (keyData) {
+        const elapsedTime = Date.now() - startTime;
+        // 使用 keyData.value 作为实时距离值
+        trackingData = [...trackingData, { x: elapsedTime, y: percentToMm(keyData.value) }];
+        updateChart();
+      }
+    };
+
+    // 注册监听器
+    controller.addEventListener('updateData', handleDataUpdate);
+
+    // 启动轮询以请求数据
+    trackingInterval = setInterval(() => {
+      // 检查 isTracking 状态以确保停止时清除 interval
+      if (!isTracking) {
+        clearInterval(trackingInterval!);
+        return;
+      }
+      controller.request_debug_at([keyIndex]);
+    }, 5); // 100 毫秒间隔
+    
+    console.log(`Debug started for key index: ${keyIndex}`);
+  }
+
+  // 3. 响应式副作用：监听选中的键
+  $effect(() => {
+    // 满足“selectedKeys只能是一个键”的要求
+    if ($selectedKeys.length === 1) {
+      const keyIndex = $selectedKeys[0];
+      const controller = keyboardConnectionState.controller;
+
+      if (controller) {
+        // 满足“选择该键后立即开始调试”的要求
+        startDebug(keyIndex);
+        selectedKeyName = `Key ${keyIndex}`; // 更新UI显示
+      }
+    } else {
+      // 如果没有键或选择了多个键，则停止调试
+      stopDebug();
+      selectedKeyName = '';
+    }
+  });
 
   function clearChart() {
     trackingData = [];
@@ -269,9 +336,7 @@
       if (chart) {
         chart.destroy();
       }
-      if (trackingInterval) {
-        clearInterval(trackingInterval);
-      }
+      stopDebug(); // 使用新的 stopDebug 函数进行清理
       if (themeObserver) {
         themeObserver.disconnect();
       }
@@ -293,14 +358,6 @@
   <div class="flex items-start gap-4 mb-4">
     <!-- Left column: controls -->
     <div class="flex flex-col gap-3 min-w-[200px]">
-      <!-- Select Key -->
-      <button
-        type="button"
-        class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors glassmorphism-button"
-        onclick={onSelectKey}
-      >
-        {t('debug.selectKey', currentLanguage)}
-      </button>
 
       <!-- Selected key display -->
       <div class="text-sm text-gray-700 dark:text-gray-300">
@@ -311,19 +368,13 @@
 
       <!-- Start/Stop Tracking -->
       {#if !isTracking}
-        <button
-          type="button"
-          class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-colors disabled:opacity-50 glassmorphism-button"
-          onclick={startTracking}
-          disabled={!selectedKeyName}
-        >
-          {t('debug.startTracking', currentLanguage)}
-        </button>
+        <div>
+        </div>
       {:else}
         <button
           type="button"
           class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors glassmorphism-button"
-          onclick={stopTracking}
+          onclick={stopDebug}
         >
           {t('debug.stopTracking', currentLanguage)}
         </button>

@@ -9,11 +9,6 @@
   let keyPressReporting = $state(false);
   let currentSelected = $state<[number, number] | null>(null);
 
-  function scrollToKeyboard() {
-    // TODO: Implement keyboard scrolling logic
-    console.log('Scroll to keyboard');
-  }
-
   function handleToggleReporting(value: boolean) {
     keyPressReporting = value;
   }
@@ -34,6 +29,6 @@
     <!-- Key Press Reporting -->
     <KeyPressReportingToggle {keyPressReporting} onToggle={handleToggleReporting} />
     <!-- Key Tracking Component -->
-    <KeyTracking {currentSelected} onSelectKey={scrollToKeyboard} />
+    <KeyTracking {currentSelected}/>
   </div>
 </div>

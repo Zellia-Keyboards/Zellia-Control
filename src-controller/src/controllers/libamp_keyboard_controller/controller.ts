@@ -510,6 +510,7 @@ export class LibampKeyboardController extends KeyboardController {
                 console.log(key_index, this.advanced_keys[key_index].raw);
             }
         }
+        this.dispatchEvent(new Event('updateData'));
       }
     }
 
