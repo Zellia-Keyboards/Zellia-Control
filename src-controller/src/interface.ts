@@ -817,6 +817,7 @@ export interface IKeyboardController{
     send_dynamic_key_packet(index: number, dynamic_key : IDynamicKey) : void;
     send_rgb_base_packet(rgb_base_config : IRGBBaseConfig) : void;
     send_rgb_packet(indexs: number[], rgb_config : IRGBConfig) : void;
+    request_debug_at(indexs: number[]) : void;
 }
 
 export abstract class KeyboardController implements IKeyboardController, EventTarget{
@@ -1011,6 +1012,9 @@ export abstract class KeyboardController implements IKeyboardController, EventTa
     }
     send_rgb_packet(indexs: number[], rgb_config: IRGBConfig): void {
         //throw new Error("Method not implemented.");
+    }
+    request_debug_at(indexs: number[]) : void {
+        
     }
 }
 

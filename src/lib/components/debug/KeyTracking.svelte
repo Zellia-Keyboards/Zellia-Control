@@ -2,6 +2,8 @@
   import { browser } from '$app/environment';
   import { onMount } from 'svelte';
   import { language, t } from '$lib/stores/LanguageStore.svelte';
+  import { keyboardAPI, keyboardConnectionState } from '$lib/api/keyboardAPI.svelte';
+  import { selectedKeys } from '$lib/stores/SelectedKeysStore';
 
   let currentLanguage = $derived($language);
 
@@ -12,6 +14,7 @@
   let trackingData: { x: number; y: number }[] = $state([]);
   let trackingInterval: NodeJS.Timeout | null = null;
   let startTime = 0;
+  let timer : NodeJS.Timeout;
 
   // Props
   interface Props {
@@ -51,6 +54,13 @@
     }
   });
 
+  $effect(() => {
+    const keysToUpdate = $selectedKeys;
+
+    timer = setInterval(() => {
+      keyboardConnectionState.controller?.request_debug_at([keysToUpdate[0]]);
+    }, 333);
+  });
   function startTracking() {
     if (!selectedKeyName) {
       alert('Please select a key first');

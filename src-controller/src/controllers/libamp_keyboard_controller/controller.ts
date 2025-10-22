@@ -886,4 +886,26 @@ export class LibampKeyboardController extends KeyboardController {
             console.debug("Wrote rgb: {:?} byte(s)", res);
         });
     }
+
+    request_debug_at(indexs: number[]) : void {
+        let send_buf = new Uint8Array(63);
+        send_buf[0] = PacketCode.PacketCodeGet;
+        send_buf[1] = PacketData.PacketDataDebug;
+        const advanced_keys_page_num = Math.ceil(indexs.length / 5);
+        for (var key_page_index = 0; key_page_index < advanced_keys_page_num; key_page_index+=1){
+            let page_length = (key_page_index + 1) * 5 > this.advanced_keys.length ? this.advanced_keys.length % 5 : 5;
+            send_buf[2] = page_length;
+            for (var j = 0; j < page_length; j += 1){
+                let dataView = new DataView(send_buf.buffer);
+                let key_index = indexs[key_page_index * 5 + j];
+                if (key_index < this.advanced_keys.length ){
+                    dataView.setUint16(3 + 0 + 12 * j,key_index,true);
+                }
+                console.log(key_index);
+            }
+            //console.debug(send_buf);
+            let res = this.write(send_buf);
+            //console.debug("Wrote RGB Configs: {:?} byte(s)", res);
+        }
+    }
 };
