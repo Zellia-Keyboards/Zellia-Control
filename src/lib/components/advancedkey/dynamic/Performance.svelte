@@ -2,11 +2,15 @@
   import { glassmorphismMode } from '$lib/stores/DarkModeStore.svelte';
   import { language, t } from '$lib/stores/LanguageStore.svelte';
   import { AlertTriangle } from 'lucide-svelte';
+  interface Props {
+    actuationPoint: number;
+  }
 
   let currentLanguage = $derived($language);
 
   // Add actuation point state
-  let actuationPoint = $state(1.5);
+  let {actuationPoint} : Props = $props();
+;
 </script>
 
 <div

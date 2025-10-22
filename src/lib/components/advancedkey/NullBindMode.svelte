@@ -1,12 +1,17 @@
 <script lang="ts">
   import { language, t } from '$lib/stores/LanguageStore.svelte';
   import { selectedKeys } from '$lib/stores/SelectedKeysStore';
-  import { keyboardAPI } from '$lib/api/keyboardAPI.svelte';
+  import { keyboardAPI,keyboardConnectionState } from '$lib/api/keyboardAPI.svelte';
+  import { selectedLayer } from '$lib/stores/SelectedLayerStore.svelte';
   import {
     globalConfigurations,
     updateGlobalConfiguration,
     resetGlobalConfiguration,
   } from '$lib/types/AdvancedKeyShared';
+  import * as ekc from 'emi-keyboard-controller';
+  import { advancedKeys, dyanmicKeys, rgbBaseConfig, rgbConfigs } from '$lib/stores/ControllerStore.svelte';
+  import Layer from '../remap/Layer.svelte';
+  import DynamicMode from './DynamicMode.svelte';
 
   import NullBindHeader from '$lib/components/advancedkey/nullbind/NullBindHeader.svelte';
   import NullBindKeySelection from '$lib/components/advancedkey/nullbind/NullBindKeySelection.svelte';
@@ -157,6 +162,20 @@
           )
         );
       }, 500);
+      let dynamic_key = new ekc.DynamicKeyMutex();
+      dynamic_key.type = ekc.DynamicKeyType.DynamicKeyMutex;
+      //dynamic_key.bindings[0] = ;
+      //dynamic_key.bindings[1] = ;
+      //dynamic_key.bindings[2] = ;
+      //dynamic_key.bindings[3] = ;
+      dynamic_key.target_keys_location[0].id = localSelectedKeys[0];
+      dynamic_key.target_keys_location[0].layer = $selectedLayer;
+      dynamic_key.target_keys_location[1].id = localSelectedKeys[1];
+      dynamic_key.target_keys_location[1].layer = $selectedLayer;
+      dynamic_key.key_id[0] = localSelectedKeys[0];
+      dynamic_key.key_id[1] = localSelectedKeys[1];
+      dynamic_key.mode = behavior;
+
     }
 
     // Clear selection

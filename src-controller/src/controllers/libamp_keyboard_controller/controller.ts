@@ -796,8 +796,52 @@ export class LibampKeyboardController extends KeyboardController {
         });
         //throw new Error("Method not implemented.");
     }
-    send_dynamic_key_packet(indexs: number[], dynamic_keys: IDynamicKey): void {
-        //throw new Error("Method not implemented.");
+    send_dynamic_key_packet(index: number, dynamic_key: IDynamicKey): void {
+        let send_buf = new Uint8Array(63);
+        let dataView = new DataView(send_buf.buffer);  
+            send_buf[2] = index;
+            const item = this.dynamic_keys[index];
+            console.debug(item);
+            switch (item.type) {
+                case DynamicKeyType.DynamicKeyStroke:
+                    const dynamic_key_stroke = item as DynamicKeyStroke4x4;
+                    dataView.setUint32(4,dynamic_key_stroke.type,true);
+                    dataView.setUint16(4+4+0,dynamic_key_stroke.bindings[0],true);
+                    dataView.setUint16(4+4+2,dynamic_key_stroke.bindings[1],true);
+                    dataView.setUint16(4+4+4,dynamic_key_stroke.bindings[2],true);
+                    dataView.setUint16(4+4+6,dynamic_key_stroke.bindings[3],true);
+                    dataView.setUint8(4+12+0,dynamic_key_stroke.key_control[0]);
+                    dataView.setUint8(4+12+1,dynamic_key_stroke.key_control[1]);
+                    dataView.setUint8(4+12+2,dynamic_key_stroke.key_control[2]);
+                    dataView.setUint8(4+12+3,dynamic_key_stroke.key_control[3]);
+                    dataView.setFloat32(4+16,dynamic_key_stroke.press_begin_distance,true);
+                    dataView.setFloat32(4+20,dynamic_key_stroke.press_fully_distance,true);
+                    dataView.setFloat32(4+24,dynamic_key_stroke.release_begin_distance,true);
+                    dataView.setFloat32(4+28,dynamic_key_stroke.release_fully_distance,true);
+                    break;
+                case DynamicKeyType.DynamicKeyModTap:
+                    const dynamic_key_mt = item as DynamicKeyModTap;
+                    dataView.setUint32(4,dynamic_key_mt.type,true);
+                    dataView.setUint16(4+4+0,dynamic_key_mt.bindings[0],true);
+                    dataView.setUint16(4+4+2,dynamic_key_mt.bindings[1],true);
+                    dataView.setUint32(4+8,dynamic_key_mt.duration,true);
+                    break;
+                case DynamicKeyType.DynamicKeyToggleKey:
+                    const dynamic_key_tk = item as DynamicKeyToggleKey;
+                    dataView.setUint32(4,dynamic_key_tk.type,true);
+                    dataView.setUint16(4+4+0,dynamic_key_tk.bindings[0],true);
+                    break;
+                case DynamicKeyType.DynamicKeyMutex:
+                    const dynamic_key_m = item as DynamicKeyMutex;
+                    dataView.setUint32(4,dynamic_key_m.type,true);
+                    dataView.setUint16(4+4+0,dynamic_key_m.bindings[0],true);
+                    dataView.setUint16(4+4+2,dynamic_key_m.bindings[1],true);
+                    dataView.setUint16(4+8+0,dynamic_key_m.key_id[0],true);
+                    dataView.setUint16(4+8+2,dynamic_key_m.key_id[1],true);
+                    dataView.setUint8(4+12,dynamic_key_m.mode);
+                default:
+                    break;
+            }
     }
     send_rgb_base_packet(rgb_base_config: IRGBBaseConfig): void {
         let send_buf = new Uint8Array(63);

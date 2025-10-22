@@ -1,6 +1,7 @@
 <script lang="ts">
   import { glassmorphismMode } from '$lib/stores/DarkModeStore.svelte';
   import { language, t } from '$lib/stores/LanguageStore.svelte';
+  import { selectedKeys } from '$lib/stores/SelectedKeysStore';
   import {
     globalConfigurations,
     updateGlobalConfiguration,
@@ -9,6 +10,10 @@
     DKSAction,
     type DynamicKeystrokeConfiguration as GlobalDynamicKeystrokeConfiguration,
   } from '$lib/types/AdvancedKeyShared';
+  import { advancedKeys, dyanmicKeys, rgbBaseConfig, rgbConfigs } from '$lib/stores/ControllerStore.svelte';
+  import * as ekc from 'emi-keyboard-controller';
+  import { selectedLayer } from '$lib/stores/SelectedLayerStore.svelte';
+  import { keyboardAPI,keyboardConnectionState } from '$lib/api/keyboardAPI.svelte';
 
   import DKSBinding from '$lib/components/advancedkey/dynamic/Binding.svelte';
   import DKSPerformance from '$lib/components/advancedkey/dynamic/Performance.svelte';
@@ -37,6 +42,15 @@
     bottomOutPoint: number;
   };
 
+  function mmToPercent(distance: number) {
+    return distance / 4.0;
+  }
+
+  function percentToMm(distance: number) {
+    return distance * 4.0;
+  }
+
+  let currentSelectedIndex = $derived($selectedKeys.length > 0 ? $selectedKeys[0] : null);
   let dksSelectedKeycodes = $state(['esc', '', '', '']);
   let dksSelectedBitmaps = $state<DKSAction[][]>([
     [DKSAction.PRESS, DKSAction.HOLD, DKSAction.HOLD, DKSAction.RELEASE],
@@ -45,6 +59,7 @@
     [DKSAction.RELEASE, DKSAction.RELEASE, DKSAction.RELEASE, DKSAction.RELEASE],
   ]);
   let dksBottomOutPoint = $state(4.0);
+  let actuationPoint = $state(1.5);
   let dksSelectedBindingIndex = $state<number | null>(null);
   let dksActiveTab = $state('bindings');
   let dksConfiguredSectionVisible = $state(false);
@@ -248,6 +263,20 @@
       const keyId = `${currentSelected[0]},${currentSelected[1]}`;
       dksConfiguredListRef.addNewKeyAnimation(keyId);
     }
+
+    let dynamic_key = new ekc.DynamicKeyStroke4x4();
+    dynamic_key.type = ekc.DynamicKeyType.DynamicKeyStroke;
+    //dynamic_key.bindings[0] = ;
+    //dynamic_key.bindings[1] = ;
+    //dynamic_key.bindings[2] = ;
+    //dynamic_key.bindings[3] = ;
+    dynamic_key.target_keys_location[0].id = currentSelected == null  ? 0 : currentSelected[0];
+    dynamic_key.target_keys_location[0].layer = $selectedLayer;
+    dynamic_key.press_begin_distance = mmToPercent(actuationPoint);
+    dynamic_key.press_fully_distance = mmToPercent(dksBottomOutPoint);
+    dynamic_key.release_begin_distance = mmToPercent(dksBottomOutPoint);
+    dynamic_key.release_fully_distance= mmToPercent(actuationPoint);
+    keyboardConnectionState.controller?.send_dynamic_key_packet(0, dynamic_key);
   }
 
   const dksActionCategories = $state([
@@ -551,7 +580,7 @@
               actionCategories={dksActionCategories}
             />
           {:else if dksActiveTab === 'performance'}
-            <DKSPerformance />
+            <DKSPerformance {actuationPoint}/>
           {:else if dksActiveTab === 'key-tester'}
             <DKSKeyTester {currentKeyName} />
           {/if}

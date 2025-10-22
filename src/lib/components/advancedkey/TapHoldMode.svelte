@@ -2,7 +2,8 @@
   import { glassmorphismMode } from '$lib/stores/DarkModeStore.svelte';
   import { language, t } from '$lib/stores/LanguageStore.svelte';
   import { selectedKeys } from '$lib/stores/SelectedKeysStore';
-  import { keyboardAPI } from '$lib/api/keyboardAPI.svelte';
+  import { keyboardAPI,keyboardConnectionState } from '$lib/api/keyboardAPI.svelte';
+  import { selectedLayer } from '$lib/stores/SelectedLayerStore.svelte';
   import {
     globalConfigurations,
     updateGlobalConfiguration,
@@ -17,6 +18,10 @@
   import TapHoldConfiguredKeys from '$lib/components/advancedkey/tap-hold/TapHoldConfiguredKeys.svelte';
   import TapHoldNoKeySelected from '$lib/components/advancedkey/tap-hold/TapHoldNoKeySelected.svelte';
   import TapHoldHeader from '$lib/components/advancedkey/tap-hold/TapHoldHeader.svelte';
+  import * as ekc from 'emi-keyboard-controller';
+  import { advancedKeys, dyanmicKeys, rgbBaseConfig, rgbConfigs } from '$lib/stores/ControllerStore.svelte';
+  import Layer from '../remap/Layer.svelte';
+  import DynamicMode from './DynamicMode.svelte';
 
   interface Props {
     onBack: () => void;
@@ -122,7 +127,16 @@
         newlyAddedKeys = new Set(newlyAddedKeys);
       }, 600);
     }
+    let dynamic_key = new ekc.DynamicKeyModTap();
+    //dynamic_key.bindings[0] = ; 
+    //dynamic_key.bindings[0] = ; 
+    dynamic_key.type = ekc.DynamicKeyType.DynamicKeyModTap;
+    dynamic_key.duration = tapTimeout;
+    dynamic_key.target_keys_location[0].id = currentSelectedIndex;
+    dynamic_key.target_keys_location[0].layer = $selectedLayer;
+    keyboardConnectionState.controller?.send_dynamic_key_packet(0, dynamic_key);
   }
+
 
   const currentKeyName = $derived.by(() => {
     if (currentSelectedIndex === null) return 'No key selected';

@@ -185,7 +185,7 @@
   tabindex="-1"
   role="application"
   onkeydown={handleKeydown}
-  on:click={() => mainContainer?.focus()}
+  onclick={() => mainContainer?.focus()}
   style="outline: none;"
 >
   <!-- Sidebar with Tab Navigation -->
@@ -220,7 +220,7 @@
         <ActiveTabComponent>
           {#snippet keyslot(keyInfo: KeyInfo)}
             <button
-              on:click={() => {
+              onclick={() => {
                 if ($selectedKeys.length === 0) {
                   showingNotification = true;
                   setTimeout(() => (showingNotification = false), 3000);
