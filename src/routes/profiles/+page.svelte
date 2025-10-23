@@ -5,6 +5,7 @@
   import ProfileMenu from '$lib/components/profiles/ProfileMenu.svelte';
   import ConfirmationModal from '$lib/components/profiles/ConfirmationModal.svelte';
   import ErrorModal from '$lib/components/profiles/ErrorModal.svelte';
+  import { keyboardAPI, keyboardConnectionState } from '$lib/api/keyboardAPI.svelte';
 
   let profiles = $derived($profileStore.profiles);
   let activeProfileId = $derived($profileStore.activeProfileId);
@@ -58,6 +59,7 @@
 
   function setActive(profileId: number) {
     profileStore.setActiveProfile(profileId);
+    keyboardConnectionState.controller?.set_config_file_index(profileId - 1);
     openMenuId = null;
   }
 
