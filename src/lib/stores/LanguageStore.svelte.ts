@@ -402,6 +402,7 @@ export const translations = {
     'common.edit': 'Edit',
     'common.add': 'Add',
     'common.remove': 'Remove',
+    'common.actions': 'Actions',
     'common.key': 'key',
     'common.keys': 'keys',
     'common.pair': 'pair',
@@ -425,7 +426,7 @@ export const translations = {
     'advancedkey.bottomOutLabel': 'Bottom Out',
 
     // Display messages
-    'ui.noProfilesAvailable': 'No profiles available',
+    'ui.noProfilesAvailable': 'No dynamic keys available',
     'ui.featuresRequiringLargerDisplay': 'Features requiring larger display:',
     'ui.keyboardLayoutVisualization': 'Keyboard layout visualization',
     'ui.advancedKeyConfigPanels': 'Advanced key configuration panels',
@@ -713,6 +714,7 @@ export const translations = {
     'common.edit': '编辑',
     'common.add': '添加',
     'common.remove': '移除',
+    'common.actions': '操作',
     'common.key': '按键',
     'common.keys': '按键',
     'common.pair': '对',
@@ -732,7 +734,7 @@ export const translations = {
     'ui.advancedKeyPanels': '高级按键配置面板',
     'ui.performanceTuning': '性能调优控制',
     'ui.lightingInterface': '灯光配置界面',
-    'ui.noProfilesAvailable': '无可用配置文件',
+    'ui.noProfilesAvailable': '无可用动态按键',
     'ui.featuresRequiringLargerDisplay': '需要更大显示的功能：',
     'ui.keyboardLayoutVisualization': '键盘布局可视化',
     'ui.advancedKeyConfigPanels': '高级按键配置面板',
