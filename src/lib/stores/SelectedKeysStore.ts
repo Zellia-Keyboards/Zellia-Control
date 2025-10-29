@@ -5,6 +5,7 @@ const _selected = writable<number[]>([]);
 
 export const selectedKeys = {
   subscribe: _selected.subscribe,
+  set: (keys: number[]) => _selected.set(keys),
 };
 
 // Number of keys currently known (set by KeyboardRender)

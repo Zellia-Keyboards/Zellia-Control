@@ -17,10 +17,10 @@ export enum DKSAction {
 
 export type KeyConfiguration = {
   type: string;
-  tapAction?: string;
-  holdAction?: string;
+  tapAction?: number;
+  holdAction?: number;
   holdDelay?: number;
-  toggleAction?: string;
+  toggleAction?: number;
   toggleMode?: string;
   toggleState?: boolean;
   keycodes?: string[];
@@ -42,6 +42,23 @@ export type KeyAction = {
   name: string;
   category: string;
   subcode?: MouseKeycode | ConsumerKeycode | LayerControlKeycode | number;
+};
+
+// Tap Hold Configuration type - using numeric keycode values directly
+export type TapHoldConfiguration = {
+  type: 'tap-hold';
+  tapAction: number;
+  holdAction: number;
+  holdDelay: number;
+  tapTimeout: number;
+};
+
+// Toggle Configuration type - using numeric keycode values directly
+export type ToggleConfiguration = {
+  type: 'toggle';
+  toggleAction: number;
+  toggleMode: string;
+  toggleState: boolean;
 };
 
 // Global configurations type

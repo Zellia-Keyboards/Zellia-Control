@@ -12,7 +12,7 @@
     ArrowLeftIcon,
   } from 'lucide-svelte';
   import { language, t } from '$lib/stores/LanguageStore.svelte';
-  import { selectedKeys } from '$lib/stores/SelectedKeysStore';
+  import { selectedKeys, deselectAll } from '$lib/stores/SelectedKeysStore';
   import { globalConfigurations, updateGlobalConfiguration, resetGlobalConfiguration } from '$lib/types/AdvancedKeyShared';
   import * as ekc from 'emi-keyboard-controller';
 
@@ -126,7 +126,9 @@
     config: any;
   }
 
-  const configuredKeys = $derived(() => {
+  let configuredKeys = $state<ConfiguredKeyRow[]>([]);
+
+  function updateConfiguredKeys() {
     const keys: ConfiguredKeyRow[] = [];
 
     Object.entries($globalConfigurations).forEach(([keyId, config]) => {
@@ -168,7 +170,11 @@
       }
     });
 
-    return keys.sort((a, b) => a.keyName.localeCompare(b.keyName));
+    configuredKeys = keys.sort((a, b) => a.keyName.localeCompare(b.keyName));
+  }
+
+  $effect(() => {
+    updateConfiguredKeys();
   });
 
   function editConfiguredKey(keyId: string) {
@@ -268,7 +274,7 @@
           : ''}">
           <div class="p-6 border-b border-gray-200 dark:border-gray-700">
             <h2 class="text-xl font-semibold text-gray-900 dark:text-white">
-              {t('advancedkey.configuredDynamicKeys', currentLanguage)} ({configuredKeys.length})
+              {t('advancedkey.configuredDynamicKeys', currentLanguage)} (configuredKeys.length)
             </h2>
             <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
               {t('advancedkey.infoDesc', currentLanguage)}
@@ -322,7 +328,7 @@
                         <td class="py-3 px-4">
                           <div class="text-sm text-gray-600 dark:text-gray-400">
                             {#if key.config.type === 'dynamic'}
-                              {key.config.keycodes.filter(k => k).length} bindings
+                              {key.config.keycodes.filter((k: any) => k).length} bindings
                             {:else if key.config.type === 'tap-hold'}
                               Tap: {key.config.tapAction || 'None'} / Hold: {key.config.holdAction || 'None'}
                             {:else if key.config.type === 'toggle'}

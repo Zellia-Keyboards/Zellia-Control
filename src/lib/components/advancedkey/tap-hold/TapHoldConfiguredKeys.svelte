@@ -2,6 +2,7 @@
   import { glassmorphismMode } from '$lib/stores/DarkModeStore.svelte';
   import { language, t } from '$lib/stores/LanguageStore.svelte';
   import { keyActions, globalConfigurations } from '$lib/types/AdvancedKeyShared';
+  import type { TapHoldConfiguration } from '$lib/types/AdvancedKeyShared';
   import { keyboardAPI } from '$lib/api/keyboardAPI.svelte';
 
   interface Props {
@@ -13,14 +14,7 @@
   let { deletingKeys, newlyAddedKeys, onDeleteKey }: Props = $props();
   let currentLanguage = $derived($language);
 
-  type TapHoldConfiguration = {
-    type: 'tap-hold';
-    tapAction: string;
-    holdAction: string;
-    holdDelay: number;
-    tapTimeout: number;
-  };
-
+  
   // Get configured tap-hold keys
   const configuredTapHoldKeys = $derived(
     Object.entries($globalConfigurations).filter(([_, config]) => config.type === 'tap-hold')
@@ -108,8 +102,8 @@
                 >{t('advancedkey.tap', currentLanguage)}:</span
               >
               <span class="font-medium text-primary-500"
-                >{keyActions.find(k => String(k.keycode) === tapHoldConfig.tapAction)?.name ||
-                  tapHoldConfig.tapAction}</span
+                >{keyActions.find(k => k.keycode === tapHoldConfig.tapAction)?.name ||
+                  `0x${tapHoldConfig.tapAction.toString(16).toUpperCase()}`}</span
               >
             </div>
             <div class="flex justify-between">
@@ -117,8 +111,8 @@
                 >{t('advancedkey.hold', currentLanguage)}:</span
               >
               <span class="font-medium text-green-500"
-                >{keyActions.find(k => String(k.keycode) === tapHoldConfig.holdAction)?.name ||
-                  tapHoldConfig.holdAction}</span
+                >{keyActions.find(k => k.keycode === tapHoldConfig.holdAction)?.name ||
+                  `0x${tapHoldConfig.holdAction.toString(16).toUpperCase()}`}</span
               >
             </div>
             <div class="flex justify-between">

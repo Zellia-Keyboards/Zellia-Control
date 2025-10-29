@@ -9,6 +9,7 @@
     updateGlobalConfiguration,
     resetGlobalConfiguration,
   } from '$lib/types/AdvancedKeyShared';
+  import type { TapHoldConfiguration } from '$lib/types/AdvancedKeyShared';
 
   import TapHoldSelectedKeyInfo from '$lib/components/advancedkey/tap-hold/TapHoldSelectedKeyInfo.svelte';
   import TapHoldActionSelector from '$lib/components/advancedkey/tap-hold/TapHoldActionSelector.svelte';
@@ -31,17 +32,10 @@
 
   let currentLanguage = $derived($language);
 
-  type TapHoldConfiguration = {
-    type: 'tap-hold';
-    tapAction: string;
-    holdAction: string;
-    holdDelay: number;
-    tapTimeout: number;
-  };
-
+  
   let currentSelectedIndex = $derived($selectedKeys.length > 0 ? $selectedKeys[0] : null);
-  let tapAction = $state('KC_ESC');
-  let holdAction = $state('KC_LCTL');
+  let tapAction = $state(0x29); // ESC
+  let holdAction = $state(0xE0); // Left Control
   let holdDelay = $state(200);
   let tapTimeout = $state(150);
   let deletingKeys = $state(new Set<string>());
@@ -166,8 +160,8 @@
     if (currentSelectedIndex !== null) {
       const config = getCurrentKeyConfiguration();
       if (config && $globalConfigurations[`${currentSelectedIndex}`]) {
-        tapAction = config.tapAction || 'KC_ESC';
-        holdAction = config.holdAction || 'KC_LCTL';
+        tapAction = config.tapAction || 0x29; // ESC
+        holdAction = config.holdAction || 0xE0; // Left Control
         holdDelay = config.holdDelay || 200;
         tapTimeout = config.tapTimeout || 150;
       }
@@ -209,8 +203,8 @@
         </div>
 
         <div class="xl:col-span-1 space-y-6">
-          <TapHoldPreview {currentKeyName} {tapAction} {holdAction} {holdDelay} />
-          <TapHoldInfoPanel {tapAction} {holdAction} {tapTimeout} {holdDelay} />
+          <TapHoldPreview {currentKeyName} tapAction={tapAction.toString()} holdAction={holdAction.toString()} {holdDelay} />
+          <TapHoldInfoPanel tapAction={tapAction.toString()} holdAction={holdAction.toString()} {tapTimeout} {holdDelay} />
           <TapHoldConfiguredKeys {deletingKeys} {newlyAddedKeys} onDeleteKey={deleteKey} />
         </div>
       </div>

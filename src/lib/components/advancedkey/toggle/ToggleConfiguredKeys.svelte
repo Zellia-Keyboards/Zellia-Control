@@ -2,7 +2,7 @@
   import { glassmorphismMode } from '$lib/stores/DarkModeStore.svelte';
   import { language, t } from '$lib/stores/LanguageStore.svelte';
   import { keyboardAPI } from '$lib/api/keyboardAPI.svelte';
-  import type { KeyConfiguration } from '$lib/types/AdvancedKeyShared';
+  import type { KeyConfiguration, ToggleConfiguration } from '$lib/types/AdvancedKeyShared';
   import { keyActions } from '$lib/types/AdvancedKeyShared';
 
   interface Props {
@@ -62,6 +62,7 @@
       {@const keyName = getKeyName(keyIndex)}
       {@const isDeleting = deletingKeys.has(keyId)}
       {@const isNewlyAdded = newlyAddedKeys.has(keyId)}
+      {@const toggleConfig = config as ToggleConfiguration}
       <div
         class="p-3 rounded-lg border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-800 transform transition-all duration-500 ease-out {$glassmorphismMode
           ? 'glassmorphism-card'
@@ -92,8 +93,8 @@
               >{t('advancedkey.actions', currentLanguage)}:</span
             >
             <span class="font-medium text-primary-600"
-              >{keyActions.find(k => k.keycode === config.toggleAction)?.name ||
-                config.toggleAction}</span
+              >{keyActions.find(k => k.keycode === toggleConfig.toggleAction)?.name ||
+                `0x${toggleConfig.toggleAction.toString(16).toUpperCase()}`}</span
             >
           </div>
           <div class="flex justify-between">
@@ -112,13 +113,13 @@
             >
             <div class="flex items-center gap-1">
               <div
-                class="w-2 h-2 rounded-full {config.toggleState ? 'bg-green-500' : 'bg-gray-400'}"
+                class="w-2 h-2 rounded-full {toggleConfig.toggleState ? 'bg-green-500' : 'bg-gray-400'}"
               ></div>
               <span
-                class="font-medium {config.toggleState
+                class="font-medium {toggleConfig.toggleState
                   ? 'text-green-600'
                   : 'text-gray-600 dark:text-gray-400'}"
-                >{config.toggleState
+                >{toggleConfig.toggleState
                   ? t('advancedkey.enabled', currentLanguage)
                   : t('advancedkey.disabled', currentLanguage)}</span
               >

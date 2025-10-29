@@ -7,6 +7,7 @@
     updateGlobalConfiguration,
     resetGlobalConfiguration,
   } from '$lib/types/AdvancedKeyShared';
+  import type { ToggleConfiguration } from '$lib/types/AdvancedKeyShared';
   import { advancedKeys, dyanmicKeys, rgbBaseConfig, rgbConfigs } from '$lib/stores/ControllerStore.svelte';
   import * as ekc from 'emi-keyboard-controller';
   import { selectedLayer } from '$lib/stores/SelectedLayerStore.svelte';
@@ -28,7 +29,7 @@
   let { onBack }: Props = $props();
 
   let currentSelectedIndex = $derived($selectedKeys.length > 0 ? $selectedKeys[0] : null);
-  let selectedToggleAction = $state('KC_CAPS');
+  let selectedToggleAction = $state(0x39); // CAPS LOCK
   let toggleMode = $state('press');
   let toggleState = $state(false);
   let toggleDeletingKeys = $state(new Set<string>());
@@ -38,12 +39,12 @@
     Object.entries($globalConfigurations).filter(([_, config]) => config.type === 'toggle')
   );
 
-  function getCurrentToggleConfiguration() {
+  function getCurrentToggleConfiguration(): ToggleConfiguration | null {
     if (currentSelectedIndex === null) return null;
     const keyId = `${currentSelectedIndex}`;
     const config = $globalConfigurations[keyId];
     if (config && config.type === 'toggle') {
-      return config;
+      return config as ToggleConfiguration;
     }
     return {
       type: 'toggle',
@@ -56,12 +57,13 @@
   function updateToggleConfiguration(): void {
     if (currentSelectedIndex === null) return;
     const keyId = `${currentSelectedIndex}`;
-    updateGlobalConfiguration(keyId, {
+    const config: ToggleConfiguration = {
       type: 'toggle',
       toggleAction: selectedToggleAction,
       toggleMode: toggleMode,
       toggleState: toggleState,
-    });
+    };
+    updateGlobalConfiguration(keyId, config);
   }
 
   function deleteToggleKey(keyId: string): void {
@@ -147,11 +149,11 @@
       const keyId = `${currentSelectedIndex}`;
       const config = $globalConfigurations[keyId];
       if (config && config.type === 'toggle') {
-        selectedToggleAction = config.toggleAction || 'KC_CAPS';
+        selectedToggleAction = config.toggleAction || 0x39; // CAPS LOCK
         toggleMode = config.toggleMode || 'press';
         toggleState = config.toggleState || false;
       } else {
-        selectedToggleAction = 'KC_CAPS';
+        selectedToggleAction = 0x39; // CAPS LOCK
         toggleMode = 'press';
         toggleState = false;
       }
@@ -184,8 +186,8 @@
         </div>
 
         <div class="xl:col-span-1 space-y-6">
-          <TogglePreview {currentKeyName} {selectedToggleAction} {toggleMode} {toggleState} />
-          <ToggleInfoPanel {selectedToggleAction} {toggleMode} />
+          <TogglePreview {currentKeyName} selectedToggleAction={selectedToggleAction.toString()} {toggleMode} {toggleState} />
+          <ToggleInfoPanel selectedToggleAction={selectedToggleAction.toString()} {toggleMode} />
 
           {#if configuredToggleKeys.length > 0}
             <ToggleConfiguredKeys
