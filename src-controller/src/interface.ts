@@ -1004,7 +1004,7 @@ export abstract class KeyboardController implements IKeyboardController, EventTa
     send_keymap_packet(indexs: number[], layer : number, keymap: number): void {
         //throw new Error("Method not implemented.");
     }
-    send_dynamic_key_packet(indexs: number, dynamic_key: IDynamicKey): void {
+    send_dynamic_key_packet(index: number, dynamic_key: IDynamicKey): void {
         //throw new Error("Method not implemented.");
     }
     send_rgb_base_packet(rgb_base_config: IRGBBaseConfig): void {
