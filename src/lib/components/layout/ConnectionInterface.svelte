@@ -4,7 +4,7 @@
   import { keyboardAPI } from '$lib/api/keyboardAPI.svelte';
   import { glassmorphismMode } from '$lib/stores/DarkModeStore.svelte';
   import { language, t } from '$lib/stores/LanguageStore.svelte';
-  import { advancedKeys, dyanmicKeys, rgbBaseConfig, rgbConfigs, keymap } from '$lib/stores/ControllerStore.svelte';
+  import { advancedKeys, dynamicKeys, rgbBaseConfig, rgbConfigs, keymap } from '$lib/stores/ControllerStore.svelte';
   import { keyboardLayout } from '$lib/stores/LayoutStore.svelte';
   import { keyboardConnectionState } from '$lib/api/keyboardAPI.svelte';
   import * as ekc from 'emi-keyboard-controller';
@@ -22,7 +22,7 @@
     rgbBaseConfig.set(
       keyboardConnectionState.controller?.get_rgb_base_config() as ekc.IRGBBaseConfig
     );
-    dyanmicKeys.set(
+    dynamicKeys.set(
       keyboardConnectionState.controller?.get_dynamic_keys() as ekc.IDynamicKey[]
     )
     keymap.set(

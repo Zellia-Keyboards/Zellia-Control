@@ -1,5 +1,5 @@
 import * as ekc from 'emi-keyboard-controller'
-import { advancedKeys, dyanmicKeys, rgbBaseConfig, rgbConfigs, keymap } from '$lib/stores/ControllerStore.svelte';
+import { advancedKeys, dynamicKeys, rgbBaseConfig, rgbConfigs, keymap } from '$lib/stores/ControllerStore.svelte';
 
 export function mapDynamicKey(keymap : number[][],dynamic_keys : ekc.IDynamicKey[]) : void{
   keymap.forEach((layer,layer_index)=>{

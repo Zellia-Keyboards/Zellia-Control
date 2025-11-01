@@ -20,7 +20,7 @@
   import TapHoldNoKeySelected from '$lib/components/advancedkey/tap-hold/TapHoldNoKeySelected.svelte';
   import TapHoldHeader from '$lib/components/advancedkey/tap-hold/TapHoldHeader.svelte';
   import * as ekc from 'emi-keyboard-controller';
-  import { advancedKeys, dyanmicKeys, keymap, rgbBaseConfig, rgbConfigs } from '$lib/stores/ControllerStore.svelte';
+  import { advancedKeys, dynamicKeys, keymap, rgbBaseConfig, rgbConfigs } from '$lib/stores/ControllerStore.svelte';
   import Layer from '../remap/Layer.svelte';
   import DynamicMode from './DynamicMode.svelte';
   import { Eclipse } from 'lucide-svelte';
@@ -129,9 +129,9 @@
     dynamic_key.duration = tapTimeout;
     dynamic_key.target_keys_location[0].id = currentSelectedIndex;
     dynamic_key.target_keys_location[0].layer = $selectedLayer;
-    let dynamic_key_index = $dyanmicKeys.findIndex(item => item.type == ekc.DynamicKeyType.DynamicKeyNone);
-    $dyanmicKeys[dynamic_key_index] = dynamic_key;
-    $dyanmicKeys = $dyanmicKeys;
+    let dynamic_key_index = $dynamicKeys.findIndex(item => item.type == ekc.DynamicKeyType.DynamicKeyNone);
+    $dynamicKeys[dynamic_key_index] = dynamic_key;
+    $dynamicKeys = $dynamicKeys;
     $keymap[$selectedLayer][currentSelectedIndex] = ekc.Keycode.DynamicKey | (dynamic_key_index << 8);
     keyboardConnectionState.controller?.send_keymap_packet([currentSelectedIndex],$selectedLayer,$keymap[$selectedLayer][currentSelectedIndex]);
     keyboardConnectionState.controller?.send_dynamic_key_packet(dynamic_key_index, dynamic_key);
