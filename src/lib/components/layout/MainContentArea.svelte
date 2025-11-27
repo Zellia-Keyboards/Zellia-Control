@@ -17,7 +17,9 @@
 
   // Helper to check if we should hide keyboard and toolbar
   let shouldHideKeyboardAndToolbar = $derived(
-    $page.url.pathname.includes('/about') || $page.url.pathname.includes('/profiles')
+    $page.url.pathname.includes('/about') || 
+    $page.url.pathname.includes('/profiles') ||
+    $page.url.pathname.includes('/debug')
   );
 </script>
 

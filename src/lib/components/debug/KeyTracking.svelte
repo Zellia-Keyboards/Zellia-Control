@@ -3,18 +3,20 @@
   import { onMount } from 'svelte';
   import { language, t } from '$lib/stores/LanguageStore.svelte';
   import { keyboardAPI, keyboardConnectionState } from '$lib/api/keyboardAPI.svelte';
-  import { selectedKeys } from '$lib/stores/SelectedKeysStore';
+  import { selectedKeys, deselectAll } from '$lib/stores/SelectedKeysStore';
+  import KeyboardSelector from './KeyboardSelector.svelte';
 
   let currentLanguage = $derived($language);
 
   let isTracking = $state(false);
   let selectedKeyName = $state('');
+  let isModalOpen = $state(false);
   let chartCanvas: HTMLCanvasElement;
   let chart: any;
   let trackingData: { x: number; y: number }[] = $state.raw([]);
   let trackingInterval: NodeJS.Timeout | null = null;
   let startTime = 0;
-  const WINDOW_MS = 30_000; // 滑动窗口大小（30秒）
+  const WINDOW_MS = 500; // 滑动窗口大小（0.5秒）
   let timer : NodeJS.Timeout;
   let handleDataUpdate: (() => void) | null = null;
 
@@ -25,6 +27,16 @@
   }
 
   let { currentSelected, onSelectKey }: Props = $props();
+
+  function openKeySelector() {
+    isModalOpen = true;
+  }
+
+  function handleKeySelected(event: CustomEvent<number>) {
+    const keyIndex = event.detail;
+    selectedKeyName = `Key ${keyIndex}`;
+    // The $effect watching $selectedKeys will handle starting the debug
+  }
 
   function percentToMm(distance: number) {
     return distance * 4.0;
@@ -161,9 +173,21 @@
 
   function clearChart() {
     trackingData = [];
+    selectedKeyName = '';
+    deselectAll();
+    stopDebug();
     if (chart) {
       chart.data.datasets[0].data = [];
-      updateChart(); // 清空图表
+      chart.resetZoom();
+      chart.update();
+    }
+  }
+
+  function resetZoom() {
+    if (chart) {
+      chart.resetZoom();
+      chart.options.scales.y.min = 0;
+      chart.options.scales.y.max = 4.0;
       chart.update();
     }
   }
@@ -175,13 +199,14 @@
     const lastX = trackingData.length ? trackingData[trackingData.length - 1].x : 0;
     const cutoff = Math.max(0, lastX - WINDOW_MS);
     
-    // 丢弃 30s 之前的数据（避免内存增长）
-    if (trackingData.length && trackingData[0].x < cutoff) {
-      const idx = trackingData.findIndex(p => p.x >= cutoff);
-      if (idx > 0) {
-        trackingData = trackingData.slice(idx);
-      }
-    }
+    // 丢弃 30s 之前的数据（避免内存增长）- DISABLED to preserve all data
+    // User can pan/zoom to see historical data
+    // if (trackingData.length && trackingData[0].x < cutoff) {
+    //   const idx = trackingData.findIndex(p => p.x >= cutoff);
+    //   if (idx > 0) {
+    //     trackingData = trackingData.slice(idx);
+    //   }
+    // }
   
     // 固定 x 轴显示范围到最近 30s
     if (lastX > WINDOW_MS) {
@@ -262,7 +287,7 @@
               type: 'linear',
               position: 'bottom',
               min: 0,
-              max: 30000,
+              max: 500,
               title: {
                 display: true,
                 text: t('debug.timeLabel', currentLanguage),
@@ -286,8 +311,9 @@
               },
               ticks: {
                 color: textColor,
+                stepSize: 0.2,
                 callback: function (value) {
-                  return (value as number).toFixed(1) + t('units.mm', currentLanguage);
+                  return (value as number).toFixed(3) + t('units.mm', currentLanguage);
                 },
               },
               grid: {
@@ -367,66 +393,137 @@
 </script>
 
 <!-- Key Tracking Section -->
-<div
-  class="p-5 rounded-lg border glassmorphism-card border-gray-200 dark:border-gray-600 bg-primary-50 dark:bg-black"
->
-  <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">
-    {t('debug.keyTracking', currentLanguage)}
-  </h3>
-  <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
-    {t('debug.keyTrackingDesc', currentLanguage)}
-  </p>
+<div class="flex gap-6 h-[600px]">
+  <!-- Left Sidebar - Two info panels -->
+  <div class="w-[320px] flex flex-col gap-4 shrink-0">
+    <!-- Description Panel -->
+    <div class="p-5 rounded-xl glassmorphism-card flex-1 overflow-auto">
+      <p class="text-sm text-gray-300 dark:text-gray-300 leading-relaxed mb-4">
+        This tool allows you to track the pressing distance of a key in real time and visualize it in a chart for observation and analysis.
+      </p>
+      
+      <p class="text-sm text-gray-300 dark:text-gray-300 leading-relaxed mb-4">
+        Due to fundamental limitations, the keyboard itself cannot distinguish 'normal pressing' from the following objectively existing conditions (including but not limited to). When parameters are set extremely low (e.g., around 0.01mm or even lower), the impact of these conditions becomes very significant.
+      </p>
+      
+      <ul class="space-y-2 text-sm text-gray-300 dark:text-gray-300">
+        <li class="flex items-start gap-2">
+          <span class="text-gray-500">•</span>
+          <span>Hand movement during key press <span class="text-gray-500 cursor-help">ⓘ</span></span>
+        </li>
+        <li class="flex items-start gap-2">
+          <span class="text-gray-500">•</span>
+          <span>Force changes after the key bottoms out <span class="text-gray-500 cursor-help">ⓘ</span></span>
+        </li>
+        <li class="flex items-start gap-2">
+          <span class="text-gray-500">•</span>
+          <span>Pressing the key with greater force (compared to a 'normal press') <span class="text-gray-500 cursor-help">ⓘ</span></span>
+        </li>
+      </ul>
+      
+      <p class="text-sm text-gray-300 dark:text-gray-300 leading-relaxed mt-4">
+        Since the above factors are unavoidable during manual operation, unintended key releases under extremely low settings are considered normal and do not indicate an issue with the keyboard itself.
+      </p>
+      
+      <p class="text-sm text-gray-300 dark:text-gray-300 leading-relaxed mt-4">
+        You can simulate in-game operations and compare
+      </p>
+    </div>
 
-  <div class="flex items-start gap-4 mb-4">
-    <!-- Left column: controls -->
-    <div class="flex flex-col gap-3 min-w-[200px]">
-
-      <!-- Selected key display -->
-      <div class="text-sm text-gray-700 dark:text-gray-300">
-        {selectedKeyName
-          ? `${t('debug.selectedKey', currentLanguage)}: ${selectedKeyName}`
-          : t('debug.noKeySelected', currentLanguage)}
-      </div>
-
-      <!-- Start/Stop Tracking -->
-      {#if !isTracking}
-        <div>
-        </div>
-      {:else}
-        <button
-          type="button"
-          class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors glassmorphism-button"
-          onclick={stopDebug}
-        >
-          {t('debug.stopTracking', currentLanguage)}
-        </button>
-      {/if}
-
-      <!-- Clear button -->
+    <!-- Troubleshooting Panel -->
+    <div class="p-5 rounded-xl glassmorphism-card">
+      <p class="text-sm text-gray-300 dark:text-gray-300 leading-relaxed">
+        You can zoom in and out of the chart using the mouse scroll wheel to closely observe changes during triggers or resets. Unintended triggers and resets caused by the mentioned objective factors usually happen very quickly and subtly, requiring zooming in to be properly seen.
+      </p>
+      
       <button
         type="button"
-        class="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700 transition-colors glassmorphism-button"
+        class="mt-4 px-6 py-2 glassmorphism-button rounded-lg text-sm font-medium"
         onclick={clearChart}
       >
-        {t('debug.clearChart', currentLanguage)}
+        Clear
       </button>
     </div>
+  </div>
 
-    <!-- Right column: chart -->
-    <div class="flex-1 min-h-[400px]">
-      <div
-        class="border glassmorphism-card border-gray-300 dark:border-gray-600 rounded-lg p-4 h-full bg-primary-25 dark:bg-primary-975"
-      >
-        <canvas bind:this={chartCanvas} class="w-full h-full"></canvas>
-      </div>
+  <!-- Right Side - Chart Area -->
+  <div class="flex-1 flex flex-col min-w-0">
+    <!-- Chart Container -->
+    <div class="flex-1 rounded-xl glassmorphism-card p-4 min-h-0">
+      <canvas bind:this={chartCanvas} class="w-full h-full"></canvas>
     </div>
   </div>
+</div>
 
-  <!-- Chart controls -->
-  <div class="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400">
-    <span>💡 Tip: Use mouse wheel to zoom horizontally, drag to pan</span>
+<!-- Bottom Controls Bar -->
+<div class="mt-4 flex items-center gap-4 flex-wrap">
+  <!-- Key selection -->
+  <div class="flex items-center gap-3">
+    <span class="text-sm text-gray-400 dark:text-gray-400">Select the key to track</span>
+    <button
+      onclick={openKeySelector}
+      class="px-4 py-2 text-sm font-medium glassmorphism-button rounded-lg min-w-[80px]"
+      disabled={!keyboardConnectionState.controller}
+    >
+      {selectedKeyName || 'None'}
+    </button>
+  </div>
+  
+  <!-- Spacer -->
+  <div class="flex-1"></div>
+  
+  <!-- Action buttons -->
+  <div class="flex items-center gap-2">
+    {#if !isTracking}
+      <button
+        type="button"
+        class="px-4 py-2 text-sm font-medium glassmorphism-button rounded-lg {!selectedKeyName ? 'opacity-50 cursor-not-allowed' : ''}"
+        disabled={!selectedKeyName}
+        onclick={() => {
+          const keyIndex = $selectedKeys[0];
+          if (keyIndex !== undefined) startDebug(keyIndex);
+        }}
+      >
+        Start
+      </button>
+    {:else}
+      <button
+        type="button"
+        class="px-4 py-2 text-sm font-medium glassmorphism-button rounded-lg"
+        onclick={stopDebug}
+      >
+        Stop
+      </button>
+    {/if}
+  </div>
+  
+  <!-- Zoom controls -->
+  <div class="flex items-center gap-2">
+    <button
+      type="button"
+      class="px-4 py-2 text-sm font-medium glassmorphism-button rounded-lg"
+      onclick={resetZoom}
+    >
+      Reset zoom
+    </button>
+    <button
+      type="button"
+      class="px-4 py-2 text-sm font-medium glassmorphism-button rounded-lg"
+      onclick={() => {
+        if (chart) {
+          chart.options.scales.y.min = 3.9;
+          chart.options.scales.y.max = 4.0;
+          chart.update();
+        }
+      }}
+    >
+      Zoom to the bottom 0.1mm
+    </button>
   </div>
 </div>
+
+<!-- Keyboard Selector Modal -->
+<KeyboardSelector bind:isOpen={isModalOpen} on:selectKey={handleKeySelected} />
 
 <style>
   :global(:root) {
