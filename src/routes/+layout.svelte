@@ -97,9 +97,10 @@
 
     <!-- Main Content -->
     <div
-      class="flex-1 flex flex-col gap-4 px-4 overflow-y-scroll {$glassmorphismMode
+      class="flex-1 flex flex-col overflow-y-scroll {$glassmorphismMode
         ? 'glassmorphism-main'
         : 'bg-primary-50/20 dark:bg-black/20'}"
+      style="gap: calc(1rem * var(--ui-scale, 1)); padding: calc(1rem * var(--ui-scale, 1));"
     >
       <MainContentArea
         {children}

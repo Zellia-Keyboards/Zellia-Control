@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte';
+  import { createEventDispatcher, onMount } from 'svelte';
   import { flip } from 'svelte/animate';
   import Key from '$lib/components/Key.svelte';
   import { setTotalKeys, toggleKey, selectedKeys } from '$lib/stores/SelectedKeysStore';
@@ -12,8 +12,24 @@
   // 2. The event dispatcher replaces Vue's `emit`
   const dispatch = createEventDispatcher<{ select: number }>();
 
-  // 3. A regular `let` variable is reactive within the component
-  let usize = 59; // Match the Key.svelte size
+  // 3. Key unit size - responsive via CSS variable
+  let usize = 59;
+
+  // Read CSS variable for responsive scaling
+  onMount(() => {
+    const updateSize = () => {
+      const root = document.documentElement;
+      const cssSize = getComputedStyle(root).getPropertyValue('--key-unit-size');
+      if (cssSize) {
+        usize = parseInt(cssSize, 10) || 59;
+      }
+    };
+    updateSize();
+    
+    // Update on resize for responsive changes
+    window.addEventListener('resize', updateSize);
+    return () => window.removeEventListener('resize', updateSize);
+  });
 
   // 4. Reactive statements (`$:`) are the Svelte equivalent of Vue's `computed` properties.
   // They automatically recalculate when their dependencies (like `keys` or `usize`) change.

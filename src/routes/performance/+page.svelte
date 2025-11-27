@@ -137,12 +137,13 @@
 </script>
 
 <div
-  class="rounded-2xl shadow p-8 mt-2 mb-4 grow bg-primary-100 dark:bg-black border border-transparent dark:border-gray-600 text-black dark:text-white h-full flex flex-col {$glassmorphismMode
+  class="rounded-2xl shadow mt-2 mb-4 grow bg-primary-100 dark:bg-black border border-transparent dark:border-gray-600 text-black dark:text-white h-full flex flex-col {$glassmorphismMode
     ? 'glassmorphism-card'
     : ''}"
+  style="padding: calc(2rem * var(--ui-scale, 1));"
 >
-  <div class="flex items-center justify-between mb-4">
-    <h2 class="text-2xl font-bold text-gray-900 dark:text-white">
+  <div class="flex items-center justify-between" style="margin-bottom: calc(1rem * var(--ui-scale, 1));">
+    <h2 class="font-bold text-gray-900 dark:text-white" style="font-size: calc(1.5rem * var(--ui-scale, 1));">
       {t('performance.title', currentLanguage)}
     </h2>
     <div class="flex gap-2">
@@ -172,9 +173,10 @@
     </div>
   </div>
   <div
-    class="rounded-xl shadow p-5 flex flex-col md:flex-row gap-5 flex-1 {$glassmorphismMode
+    class="rounded-xl shadow flex flex-col md:flex-row flex-1 {$glassmorphismMode
       ? 'glassmorphism-card'
       : ''}"
+    style="padding: calc(1.25rem * var(--ui-scale, 1)); gap: calc(1.25rem * var(--ui-scale, 1));"
   >
     <!-- 1st Box: Actuation Point (with slide-out animation) -->
     <div class="actuation-point-container" class:slide-out={rapidTriggerEnabled}>

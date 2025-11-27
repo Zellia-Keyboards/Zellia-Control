@@ -253,20 +253,21 @@
 </script>
 
 <div
-  class="rounded-2xl shadow p-8 mt-2 mb-4 grow bg-gray-50 dark:bg-black border border-gray-200 dark:border-gray-600 text-black dark:text-white h-full flex flex-col {$glassmorphismMode
+  class="rounded-2xl shadow mt-2 mb-4 grow bg-gray-50 dark:bg-black border border-gray-200 dark:border-gray-600 text-black dark:text-white h-full flex flex-col {$glassmorphismMode
     ? 'glassmorphism-card'
     : ''}"
+  style="padding: calc(2rem * var(--ui-scale, 1));"
 >
-  <div class="flex items-center justify-between -mt-4 mb-2">
-    <h2 class="text-2xl font-bold text-black dark:text-white">
+  <div class="flex items-center justify-between -mt-4" style="margin-bottom: calc(0.5rem * var(--ui-scale, 1));">
+    <h2 class="font-bold text-black dark:text-white" style="font-size: calc(1.5rem * var(--ui-scale, 1));">
       {t('lighting.title', currentLanguage)}
     </h2>
     <div class="flex gap-2 mb-2">
       <button
-        class="px-4 py-2 rounded transition-colors text-white {$glassmorphismMode
+        class="rounded transition-colors text-white {$glassmorphismMode
           ? 'glassmorphism-button'
           : ''}"
-        style="background-color: var(--theme-color-primary);"
+        style="background-color: var(--theme-color-primary); padding: calc(0.5rem * var(--ui-scale, 1)) calc(1rem * var(--ui-scale, 1));"
         onclick={applySettings}
       >
         {t('lighting.applySettings', currentLanguage)}
@@ -275,9 +276,10 @@
   </div>
 
   <div
-    class="rounded-xl shadow p-4 flex flex-col lg:flex-row gap-4 flex-1 {$glassmorphismMode
+    class="rounded-xl shadow flex flex-col lg:flex-row flex-1 {$glassmorphismMode
       ? 'glassmorphism-card'
       : ''}"
+    style="padding: calc(1rem * var(--ui-scale, 1)); gap: calc(1rem * var(--ui-scale, 1));"
   >
     <!-- Left: Effects Panel -->
     <div class="flex-1">

@@ -179,18 +179,18 @@
 
 <div
   bind:this={mainContainer}
-  class="rounded-2xl shadow p-6 mt-2 mb-4 grow border border-gray-200 dark:border-gray-600 text-black dark:text-white h-full flex {$glassmorphismMode
+  class="rounded-2xl shadow mt-2 mb-4 grow border border-gray-200 dark:border-gray-600 text-black dark:text-white h-full flex {$glassmorphismMode
     ? 'glassmorphism-card bg-gray-50 dark:bg-gray-900'
     : 'bg-[color-mix(in_srgb,var(--theme-color-primary)_10%,white)] dark:bg-[color-mix(in_srgb,var(--theme-color-primary)_5%,black)]'}"
   tabindex="-1"
   role="application"
   onkeydown={handleKeydown}
   onclick={() => mainContainer?.focus()}
-  style="outline: none;"
+  style="outline: none; padding: calc(1.5rem * var(--ui-scale, 1));"
 >
   <!-- Sidebar with Tab Navigation -->
-  <aside class="w-56 flex-shrink-0 pr-6 relative">
-    <h2 class="text-xl font-semibold mb-4">Categories</h2>
+  <aside class="flex-shrink-0 relative" style="width: calc(14rem * var(--ui-scale, 1)); padding-right: calc(1.5rem * var(--ui-scale, 1));">
+    <h2 class="font-semibold mb-4" style="font-size: calc(1.25rem * var(--ui-scale, 1));">Categories</h2>
     <TabNavigation tabs={Tabs} {activeTab} onTabChange={changeTab} />
     
     <!-- Glassmorphism separator line -->
@@ -203,7 +203,7 @@
   </aside>
 
   <!-- Main Content Area -->
-  <main class="flex-1 pl-6 flex flex-col min-w-0">
+  <main class="flex-1 flex flex-col min-w-0" style="padding-left: calc(1.5rem * var(--ui-scale, 1));">
     <div class="flex-1 min-h-0 relative overflow-hidden">
       {#key activeTab}
       <div

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte';
+  import { createEventDispatcher, onMount } from 'svelte';
 
   // --- Props (由父组件传入的属性) ---
   export let x: number = 0;
@@ -14,7 +14,24 @@
   export let selected: boolean = false;
 
   // --- 内部状态 ---
-  const usize = 59; // 按键的基础单位尺寸 (1U)
+  // Key unit size - will be read from CSS variable for responsive scaling
+  let usize = 59;
+
+  // Read CSS variable for responsive scaling
+  onMount(() => {
+    const updateSize = () => {
+      const root = document.documentElement;
+      const cssSize = getComputedStyle(root).getPropertyValue('--key-unit-size');
+      if (cssSize) {
+        usize = parseInt(cssSize, 10) || 59;
+      }
+    };
+    updateSize();
+    
+    // Update on resize for responsive changes
+    window.addEventListener('resize', updateSize);
+    return () => window.removeEventListener('resize', updateSize);
+  });
 
   // --- 事件派发器 ---
   // 用于向父组件发送消息
@@ -89,14 +106,14 @@
   .key-container {
     /* 用于定位和旋转 */
     box-sizing: border-box;
-    padding: 2px;
+    padding: calc(2px * var(--ui-scale, 1));
   }
 
   .keycap {
     /* 按键本身的美化样式 - 基于 toggleVariants outline 风格 */
     width: 100%;
     height: 100%;
-    border-radius: 6px;
+    border-radius: calc(6px * var(--ui-scale, 1));
     font-family:
       -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans',
       'Helvetica Neue', sans-serif;
@@ -107,7 +124,7 @@
     border: 1px solid #d1d5db; /* gray-300 */
     color: hsl(var(--foreground, 222.2 84% 4.9%));
     transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
-    padding: 4px;
+    padding: calc(4px * var(--ui-scale, 1));
     display: flex;
     align-items: center;
     justify-content: center;
@@ -186,7 +203,7 @@
     grid-template-rows: 1fr auto 1fr;
     width: 100%;
     height: 100%;
-    font-size: 14px;
+    font-size: calc(14px * var(--ui-scale, 1));
     box-sizing: border-box;
     padding: 0;
     gap: 1px;
@@ -221,7 +238,7 @@
   .label-cell-4 {
     justify-content: center;
     align-items: center;
-    font-size: 18px;
+    font-size: calc(18px * var(--ui-scale, 1));
   } /* 中间标签放大 */
   .label-cell-5 {
     justify-content: flex-end;

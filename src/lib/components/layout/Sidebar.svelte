@@ -23,9 +23,10 @@
 </script>
 
 <div
-  class="sidebar flex flex-col w-52 dark:bg-black dark:border-gray-600 bg-white border-gray-200 {$glassmorphismMode
+  class="sidebar flex flex-col dark:bg-black dark:border-gray-600 bg-white border-gray-200 {$glassmorphismMode
     ? 'glassmorphism-sidebar'
     : ''} shadow-xl h-full overflow-y-auto border-r"
+  style="width: var(--sidebar-width, 13rem);"
 >
   <!-- Header -->
   <div class="p-4">
