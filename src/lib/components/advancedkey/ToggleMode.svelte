@@ -8,7 +8,7 @@
     resetGlobalConfiguration,
   } from '$lib/types/AdvancedKeyShared';
   import type { ToggleConfiguration } from '$lib/types/AdvancedKeyShared';
-  import { advancedKeys, dyanmicKeys, rgbBaseConfig, rgbConfigs } from '$lib/stores/ControllerStore.svelte';
+  import { advancedKeys, dynamicKeys, keymap, rgbBaseConfig, rgbConfigs } from '$lib/stores/ControllerStore.svelte';
   import * as ekc from 'emi-keyboard-controller';
   import { selectedLayer } from '$lib/stores/SelectedLayerStore.svelte';
 
@@ -114,10 +114,15 @@
 
     let dynamic_key = new ekc.DynamicKeyToggleKey();
     dynamic_key.type = ekc.DynamicKeyType.DynamicKeyToggleKey;
-    //dynamic_key.bindings[0] = ;
+    dynamic_key.bindings[0] = selectedToggleAction;
     dynamic_key.target_keys_location[0].id = currentSelectedIndex;
     dynamic_key.target_keys_location[0].layer = $selectedLayer;
-    keyboardConnectionState.controller?.send_dynamic_key_packet(0, dynamic_key);
+    let dynamic_key_index = $dynamicKeys.findIndex(item => item.type == ekc.DynamicKeyType.DynamicKeyNone);
+    $dynamicKeys[dynamic_key_index] = dynamic_key;
+    $dynamicKeys = $dynamicKeys;
+    $keymap[$selectedLayer][currentSelectedIndex] = ekc.Keycode.DynamicKey | (dynamic_key_index << 8);
+    keyboardConnectionState.controller?.send_keymap_packet([currentSelectedIndex],$selectedLayer,$keymap[$selectedLayer][currentSelectedIndex]);
+    keyboardConnectionState.controller?.send_dynamic_key_packet(dynamic_key_index, dynamic_key);
   }
 
   const currentKeyName = $derived.by(() => {

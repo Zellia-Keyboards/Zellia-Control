@@ -10,7 +10,7 @@
     DKSAction,
     type DynamicKeystrokeConfiguration as GlobalDynamicKeystrokeConfiguration,
   } from '$lib/types/AdvancedKeyShared';
-  import { advancedKeys, dyanmicKeys, rgbBaseConfig, rgbConfigs } from '$lib/stores/ControllerStore.svelte';
+  import { advancedKeys, dynamicKeys, rgbBaseConfig, rgbConfigs } from '$lib/stores/ControllerStore.svelte';
   import * as ekc from 'emi-keyboard-controller';
   import { selectedLayer } from '$lib/stores/SelectedLayerStore.svelte';
   import { keyboardAPI,keyboardConnectionState } from '$lib/api/keyboardAPI.svelte';

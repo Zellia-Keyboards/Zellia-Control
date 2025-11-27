@@ -9,7 +9,7 @@
     resetGlobalConfiguration,
   } from '$lib/types/AdvancedKeyShared';
   import * as ekc from 'emi-keyboard-controller';
-  import { advancedKeys, dyanmicKeys, rgbBaseConfig, rgbConfigs } from '$lib/stores/ControllerStore.svelte';
+  import { advancedKeys, dynamicKeys, rgbBaseConfig, rgbConfigs } from '$lib/stores/ControllerStore.svelte';
   import Layer from '../remap/Layer.svelte';
   import DynamicMode from './DynamicMode.svelte';
 
