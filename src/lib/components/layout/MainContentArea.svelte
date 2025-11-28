@@ -19,7 +19,13 @@
   let shouldHideKeyboardAndToolbar = $derived(
     $page.url.pathname.includes('/about') || 
     $page.url.pathname.includes('/profiles') ||
-    $page.url.pathname.includes('/debug')
+    $page.url.pathname.includes('/debug') ||
+    $page.url.pathname.includes('/settings')
+  );
+
+  // Helper to check if we're on performance page (for smaller key labels)
+  let isPerformancePage = $derived(
+    $page.url.pathname.includes('/performance')
   );
 </script>
 
@@ -30,7 +36,7 @@
 
 <!-- Global KeyboardRender - only show when connected and not on /about or /profiles -->
 {#if keyboardAPI.shouldShowConfigurator && !isLoadingConfigurator && !shouldHideKeyboardAndToolbar}
-  <div class="relative">
+  <div class="relative" class:performance-page-keys={isPerformancePage}>
     <KeyboardRender keys={keyboardKeys} />
   </div>
 {/if}

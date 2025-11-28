@@ -60,7 +60,7 @@
     {#if separateSensitivity}
       <div class="mb-4">
         <div class="flex justify-between text-sm dark:text-gray-400 text-gray-500 mb-1">
-          <div>{t('performance.pressSensitivityLabel', currentLanguage)}</div>
+          <div>↓ {t('performance.pressSensitivityLabel', currentLanguage)}</div>
           <div>{pressSensitivity.toFixed(2)} mm</div>
         </div>
         <input
@@ -79,7 +79,7 @@
       </div>
       <div>
         <div class="flex justify-between text-sm dark:text-gray-400 text-gray-500 mb-1">
-          <div>{t('performance.releaseSensitivityLabel', currentLanguage)}</div>
+          <div>↑ {t('performance.releaseSensitivityLabel', currentLanguage)}</div>
           <div>{releaseSensitivity.toFixed(2)} mm</div>
         </div>
         <input
@@ -99,7 +99,7 @@
     {:else}
       <div>
         <div class="flex justify-between text-sm dark:text-gray-400 text-gray-500 mb-1">
-          <div>{t('performance.sensitivityLabel', currentLanguage)}</div>
+          <div>⇅ {t('performance.sensitivityLabel', currentLanguage)}</div>
           <div>{sensitivityValue.toFixed(2)} mm</div>
         </div>
         <input

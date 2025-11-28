@@ -25,19 +25,56 @@ export function transformKeyboardKeys(
       let labels = newKeys[index].labels;
       labels = labels.map(() => '');
 
+      // Helper to convert percentage (0-1) to mm and format nicely
+      const toMm = (val: number) => (val * 4.0).toFixed(3);
+
+      // KLE label positions:
+      // 0=top-left, 1=top-center, 2=top-right
+      // 3=center-left, 4=center, 5=center-right
+      // 6=bottom-left, 7=bottom-center, 8=bottom-right
+
       switch (advanced_key.mode) {
         case ekc.KeyMode.KeyAnalogNormalMode: {
-          labels[3] = `↓${Math.round(advanced_key.activation_value * 1000) / 10}\t↑${Math.round(advanced_key.deactivation_value * 1000) / 10}`;
+          const activationMm = toMm(advanced_key.activation_value);
+          const deactivationMm = toMm(advanced_key.deactivation_value);
+          // If activation and deactivation are the same, show single value with ⇅ in center
+          if (activationMm === deactivationMm) {
+            labels[4] = `⇅${activationMm}`;
+          } else {
+            labels[1] = `↓${activationMm}`; // press at top-center
+            labels[7] = `↑${deactivationMm}`; // release at bottom-center
+          }
           break;
         }
         case ekc.KeyMode.KeyAnalogRapidMode: {
-          labels[3] = `↓${Math.round(advanced_key.trigger_distance * 1000) / 10}\t↑${Math.round(advanced_key.release_distance * 1000) / 10}`;
-          labels[6] = `↧${Math.round(advanced_key.upper_deadzone * 1000) / 10}\t↥${Math.round(advanced_key.lower_deadzone * 1000) / 10}`;
+          const triggerMm = toMm(advanced_key.trigger_distance);
+          const releaseMm = toMm(advanced_key.release_distance);
+          const upperDz = toMm(advanced_key.upper_deadzone);
+          const lowerDz = toMm(advanced_key.lower_deadzone);
+          // If trigger and release distances are the same, show single value with ⇅ in center
+          if (triggerMm === releaseMm) {
+            labels[4] = `⇅${triggerMm}`;
+          } else {
+            labels[7] = `↑${releaseMm}`; // release at bottom-center
+            labels[1] = `↓${triggerMm}`; // press at top-center
+          }
+          labels[0] = `↧${upperDz}`; // upper deadzone at top-left
+          labels[8] = `↥${lowerDz}`; // lower deadzone at bottom-right
           break;
         }
         case ekc.KeyMode.KeyAnalogSpeedMode: {
-          labels[3] = `↓${Math.round(advanced_key.trigger_speed * 1000) / 10}\t↑${Math.round(advanced_key.release_speed * 1000) / 10}`;
-          labels[6] = `↧${Math.round(advanced_key.upper_deadzone * 1000) / 10}\t↥${Math.round(advanced_key.lower_deadzone * 1000) / 10}`;
+          const triggerSpd = toMm(advanced_key.trigger_speed);
+          const releaseSpd = toMm(advanced_key.release_speed);
+          const upperDz = toMm(advanced_key.upper_deadzone);
+          const lowerDz = toMm(advanced_key.lower_deadzone);
+          if (triggerSpd === releaseSpd) {
+            labels[4] = `⇅${triggerSpd}`;
+          } else {
+            labels[1] = `↓${triggerSpd}`; // press at top-center
+            labels[7] = `↑${releaseSpd}`; // release at bottom-center
+          }
+          labels[0] = `↧${upperDz}`; // upper deadzone at top-left
+          labels[8] = `↥${lowerDz}`; // lower deadzone at bottom-right
           break;
         }
         default: {
@@ -51,7 +88,7 @@ export function transformKeyboardKeys(
   // Remap page transformations
   if (activePage === '/remap' || activePage.startsWith('/remap/')) {
     newKeys.forEach((key, index) => {
-      newKeys[index].labels[0] = '2';
+      newKeys[index].labels[0];
     });
   }
 

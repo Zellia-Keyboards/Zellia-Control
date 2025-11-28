@@ -19,6 +19,8 @@
   --key-unit-size: 59px;
   --sidebar-width: 13rem;
   --font-scale: 1;
+  --key-font-size: 14px;
+  --key-font-size-center: 18px;
 }
 
 /* 2K displays (2560x1440 and similar) */
@@ -242,6 +244,12 @@
   }
   .scaled-text-2xl {
     font-size: calc(1.5rem * var(--ui-scale, 1));
+  }
+
+  /* Performance page uses smaller key labels */
+  .performance-page-keys {
+    --key-font-size: 10px;
+    --key-font-size-center: 11px;
   }
 }
 
