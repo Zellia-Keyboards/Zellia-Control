@@ -22,7 +22,6 @@ export interface DetectedDevice {
 
 export interface KeyboardConnectionState {
   isConnected: boolean;
-  isDemoMode: boolean;
   selectedModel: KeyboardModel | null;
   connectionStatus: 'disconnected' | 'connecting' | 'connected' | 'error';
   lastConnectedDevice?: string;
@@ -33,7 +32,6 @@ export interface KeyboardConnectionState {
 
 const defaultState: KeyboardConnectionState = {
   isConnected: false,
-  isDemoMode: false,
   selectedModel: null,
   connectionStatus: 'disconnected',
 };
@@ -118,7 +116,6 @@ export const keyboardAPI = {
 
       // Update state
       keyboardConnectionState.isConnected = true;
-      keyboardConnectionState.isDemoMode = false;
       keyboardConnectionState.connectionStatus = 'connected';
       keyboardConnectionState.lastConnectedDevice = deviceName;
       keyboardConnectionState.selectedModel = selectedModel;
@@ -138,25 +135,6 @@ export const keyboardAPI = {
       keyboardConnectionState.controller = undefined;
       return false;
     }
-  },
-
-  // Enter demo mode with selected keyboard model
-  enterDemoMode(model: KeyboardModel): void {
-    // Clear any existing controller when entering demo mode
-    if (keyboardConnectionState.controller) {
-      keyboardConnectionState.controller.disconnect();
-    }
-
-    keyboardConnectionState.isConnected = true;
-    keyboardConnectionState.isDemoMode = true;
-    keyboardConnectionState.selectedModel = model;
-    keyboardConnectionState.connectionStatus = 'connected';
-    keyboardConnectionState.lastConnectedDevice = `Demo ${model.toUpperCase()}`;
-    keyboardConnectionState.controller = undefined;
-    keyboardConnectionState.error = undefined;
-
-    // Redirect to remap page after entering demo mode
-    goto('/remap');
   },
 
   // Check if a device matches a controller (simplified matching)
@@ -198,14 +176,6 @@ export const keyboardAPI = {
     console.log('Keyboard disconnected and all data cleared');
   },
 
-  // Switch keyboard model (for demo mode)
-  switchModel(model: KeyboardModel): void {
-    if (keyboardConnectionState.isDemoMode) {
-      keyboardConnectionState.selectedModel = model;
-      keyboardConnectionState.lastConnectedDevice = `Demo ${model.toUpperCase()}`;
-    }
-  },
-
   // Get the active keyboard controller
   getController(): IKeyboardController | undefined {
     return keyboardConnectionState.controller;
@@ -213,7 +183,7 @@ export const keyboardAPI = {
 
   // Send configuration to keyboard (if connected)
   async saveConfiguration(): Promise<boolean> {
-    if (!keyboardConnectionState.controller || keyboardConnectionState.isDemoMode) {
+    if (!keyboardConnectionState.controller) {
       return false;
     }
 
@@ -229,7 +199,7 @@ export const keyboardAPI = {
 
   // Flash configuration to keyboard firmware
   async flashConfiguration(): Promise<boolean> {
-    if (!keyboardConnectionState.controller || keyboardConnectionState.isDemoMode) {
+    if (!keyboardConnectionState.controller) {
       return false;
     }
 
@@ -245,7 +215,7 @@ export const keyboardAPI = {
 
   // Reset keyboard to factory defaults
   async factoryReset(): Promise<boolean> {
-    if (!keyboardConnectionState.controller || keyboardConnectionState.isDemoMode) {
+    if (!keyboardConnectionState.controller) {
       return false;
     }
 
@@ -276,7 +246,6 @@ export const isKeyboard80HE = () => keyboardConnectionState.selectedModel === 'z
 export const isOholeoKeyboard = () => keyboardConnectionState.selectedModel === 'oholeo';
 export const isTrinityPad = () => keyboardConnectionState.selectedModel === 'trinity_pad';
 export const isConnected = () => keyboardConnectionState.isConnected;
-export const isDemoMode = () => keyboardConnectionState.isDemoMode;
 export const getSelectedModel = () => keyboardConnectionState.selectedModel;
 export const getConnectionStatus = () => keyboardConnectionState.connectionStatus;
 export const getLastError = () => keyboardConnectionState.error;

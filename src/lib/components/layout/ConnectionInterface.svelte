@@ -10,8 +10,27 @@
   import * as ekc from 'emi-keyboard-controller';
 
   let currentLanguage = $derived($language);
-  let showDemoDropdown = $state(false);
-  let isEnteringDemo = $state(false);
+
+  // Liquid glass effect
+  let buttonElement: HTMLButtonElement;
+  let mouseX = $state(0);
+  let mouseY = $state(0);
+  let isHoveringButton = $state(false);
+
+  function handleMouseMove(event: MouseEvent) {
+    if (!buttonElement) return;
+    const rect = buttonElement.getBoundingClientRect();
+    mouseX = event.clientX - rect.left;
+    mouseY = event.clientY - rect.top;
+  }
+
+  function handleMouseEnter() {
+    isHoveringButton = true;
+  }
+
+  function handleMouseLeave() {
+    isHoveringButton = false;
+  }
 
   async function handleConnect() {
     const success = await keyboardAPI.connect();
@@ -29,36 +48,61 @@
       keyboardConnectionState.controller?.get_keymap() as number[][]
     )
   }
-
-  async function enterDemo(model: 'zellia60he' | 'zellia80he') {
-    isEnteringDemo = true;
-    showDemoDropdown = false;
-
-    await new Promise(resolve => setTimeout(resolve, 300));
-    keyboardAPI.enterDemoMode(model);
-
-    setTimeout(() => {
-      isEnteringDemo = false;
-    }, 800);
-  }
 </script>
 
-<div class="flex-1 flex items-center justify-center p-8">
-  <div class="w-full max-w-2xl mx-auto">
-    <!-- Connection Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-      <!-- Connect Physical Device -->
-      <div
-        class="p-6 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 {$glassmorphismMode
-          ? 'glassmorphism-card'
-          : ''} transition-all duration-200 hover:shadow-lg flex flex-col"
+<div class="flex-1 flex items-center justify-center p-8 relative overflow-hidden">
+  <!-- Animated Background Elements -->
+  <div class="absolute inset-0 pointer-events-none">
+    <div class="absolute top-1/4 left-1/4 w-64 h-64 bg-primary-500/5 rounded-full blur-3xl animate-pulse"></div>
+    <div class="absolute bottom-1/4 right-1/4 w-64 h-64 bg-primary-600/5 rounded-full blur-3xl animate-pulse" style="animation-delay: 1s"></div>
+  </div>
+
+  <div class="w-full max-w-lg mx-auto relative z-10">
+    <!-- Big Title -->
+    <div class="text-center mb-12 animate-fade-in-up">
+      <h1 class=" text-6xl font-bold text-gray-900 dark:text-white mb-2 tracking-tight">
+        <i>ZELLIA</i> Control
+      </h1>
+    </div>
+
+    <!-- Animated Button -->
+    <div class="text-center animate-fade-in-up" style="animation-delay: 0.2s">
+      <button
+        bind:this={buttonElement}
+        onmousemove={handleMouseMove}
+        onmouseenter={handleMouseEnter}
+        onmouseleave={handleMouseLeave}
+        class="group relative px-12 py-4 bg-primary-600/80 backdrop-blur-xl text-white rounded-full font-medium text-lg overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-primary-500/30 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 border border-white/20"
+        style={`background: radial-gradient(circle 120px at ${mouseX}px ${mouseY}px, rgba(255,255,255,0.3), transparent), linear-gradient(to right, var(--color-primary-600), var(--color-primary-500), var(--color-primary-600)); background-size: 100% 100%, 200% 100%; animation: shimmer 3s linear infinite;`}
+        onclick={handleConnect}
+        disabled={keyboardAPI.state.connectionStatus === 'connecting'}
       >
-        <div class="text-center mb-4 flex-1">
-          <div
-            class="w-12 h-12 bg-primary-100 dark:bg-primary-900 rounded-xl flex items-center justify-center mx-auto mb-3"
-          >
+        <!-- Liquid Glass Glow -->
+        <div
+          class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
+          style={`background: radial-gradient(circle 150px at ${mouseX}px ${mouseY}px, rgba(255,255,255,0.4), transparent); transition: background 0.1s ease-out;`}
+        ></div>
+
+        <!-- Button Content -->
+        <div class="relative z-10 flex items-center justify-center gap-3">
+          {#if keyboardAPI.state.connectionStatus === 'connecting'}
             <svg
-              class="w-6 h-6 text-primary-600 dark:text-primary-400"
+              class="w-5 h-5 animate-spin"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+              />
+            </svg>
+            {t('welcome.connecting', currentLanguage)}
+          {:else}
+            <svg
+              class="w-5 h-5 transition-transform duration-300 group-hover:translate-x-1"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -70,99 +114,9 @@
                 d="M13 10V3L4 14h7v7l9-11h-7z"
               />
             </svg>
-          </div>
-          <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-            {t('welcome.connectKeyboard', currentLanguage)}
-          </h3>
-          <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
-            {t('welcome.connectDescription', currentLanguage)}
-          </p>
-        </div>
-
-        <button
-          class="w-full px-4 py-2 bg-primary-500 hover:bg-primary-600 text-white rounded-lg font-medium transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed {$glassmorphismMode
-            ? 'glassmorphism-button'
-            : ''}"
-          onclick={handleConnect}
-          disabled={keyboardAPI.state.connectionStatus === 'connecting' || isEnteringDemo}
-        >
-          {#if keyboardAPI.state.connectionStatus === 'connecting'}
-            <div class="flex items-center justify-center gap-2">
-              <svg
-                class="w-4 h-4 animate-spin"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-                />
-              </svg>
-              {t('welcome.connecting', currentLanguage)}
-            </div>
-          {:else}
             {t('welcome.getStarted', currentLanguage)}
-          {/if}
-        </button>
-      </div>
-
-      <!-- Demo Mode -->
-      <div
-        class="p-6 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 {$glassmorphismMode
-          ? 'glassmorphism-card'
-          : ''} transition-all duration-200 hover:shadow-lg relative flex flex-col"
-      >
-        <div class="text-center mb-4 flex-1">
-          <div
-            class="w-12 h-12 bg-primary-100 dark:bg-primary-900 rounded-xl flex items-center justify-center mx-auto mb-3"
-          >
             <svg
-              class="w-6 h-6 text-primary-600 dark:text-primary-400"
-              viewBox="0 0 512 512"
-              fill="currentColor"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="m354.2,247.4l-135.1-92.4c-4.2-3.1-15.4-3.1-16.3,8.6v184.8c1,11.7 12.4,11.9 16.3,8.6l135.1-92.4c3.5-2.1 8.3-10.7 0-17.2zm-130.5,81.3v-145.4l106.1,72.7-106.1,72.7z"
-              />
-              <path
-                d="M256,11C120.9,11,11,120.9,11,256s109.9,245,245,245s245-109.9,245-245S391.1,11,256,11z M256,480.1    C132.4,480.1,31.9,379.6,31.9,256S132.4,31.9,256,31.9S480.1,132.4,480.1,256S379.6,480.1,256,480.1z"
-              />
-            </svg>
-          </div>
-          <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-            {t('welcome.tryDemo', currentLanguage)}
-          </h3>
-          <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
-            {t('welcome.demoDescription', currentLanguage)}
-          </p>
-        </div>
-
-        <button
-          class="w-full px-4 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg font-medium transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed {$glassmorphismMode
-            ? 'glassmorphism-button'
-            : ''} flex items-center justify-center gap-2"
-          onclick={() => (showDemoDropdown = !showDemoDropdown)}
-          disabled={keyboardAPI.state.connectionStatus === 'connecting' || isEnteringDemo}
-        >
-          {#if isEnteringDemo}
-            <svg class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-              />
-            </svg>
-            {t('demo.entering', currentLanguage)}
-          {:else}
-            {t('demo.selectKeyboard', currentLanguage)}
-            <svg
-              class="w-4 h-4 transition-transform duration-200"
-              class:rotate-180={showDemoDropdown}
+              class="w-5 h-5 transition-transform duration-300 group-hover:translate-x-1"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -171,63 +125,22 @@
                 stroke-linecap="round"
                 stroke-linejoin="round"
                 stroke-width="2"
-                d="M19 9l-7 7-7-7"
+                d="M9 5l7 7-7 7"
               />
             </svg>
           {/if}
-        </button>
-
-        <!-- Demo Dropdown -->
-        {#if showDemoDropdown && !isEnteringDemo}
-          <div
-            class="absolute top-full left-6 right-6 mt-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-10 {$glassmorphismMode
-              ? 'glassmorphism-card'
-              : ''}"
-            transition:slide={{ duration: 300, axis: 'y' }}
-          >
-            <div class="p-2">
-              <button
-                class="w-full p-3 text-left hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors duration-200 disabled:opacity-50"
-                disabled={isEnteringDemo}
-                onclick={() => enterDemo('zellia60he')}
-              >
-                <div class="flex items-center gap-3">
-                  <div>
-                    <div class="font-medium text-gray-900 dark:text-white">Zellia 60HE</div>
-                    <div class="text-sm text-gray-500 dark:text-gray-400">
-                      {t('demo.zellia60.description', currentLanguage)}
-                    </div>
-                  </div>
-                </div>
-              </button>
-
-              <button
-                class="w-full p-3 text-left hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors duration-200 disabled:opacity-50"
-                disabled={isEnteringDemo}
-                onclick={() => enterDemo('zellia80he')}
-              >
-                <div class="flex items-center gap-3">
-                  <div>
-                    <div class="font-medium text-gray-900 dark:text-white">Zellia 80HE</div>
-                    <div class="text-sm text-gray-500 dark:text-gray-400">
-                      {t('demo.zellia80.description', currentLanguage)}
-                    </div>
-                  </div>
-                </div>
-              </button>
-            </div>
-          </div>
-        {/if}
-      </div>
+        </div>
+      </button>
     </div>
 
-    <!-- Connection Error Display -->
+    <!-- Error Display -->
     {#if keyboardAPI.state.error}
       <div
-        class="mt-6 p-4 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800"
+        class="mt-8 text-center animate-shake"
+        transition:fade={{ duration: 300 }}
       >
-        <div class="flex items-center gap-3">
-          <svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div class="inline-flex items-center gap-2 text-red-500 text-sm">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
               stroke-linecap="round"
               stroke-linejoin="round"
@@ -235,31 +148,90 @@
               d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
             />
           </svg>
-          <div>
-            <div class="text-sm font-medium text-red-800 dark:text-red-200">Connection Failed</div>
-            <div class="text-sm text-red-600 dark:text-red-300">{keyboardAPI.state.error}</div>
-          </div>
+          <span class="font-medium">{keyboardAPI.state.error}</span>
         </div>
       </div>
     {/if}
 
-    <!-- USB HID Warning -->
-    <div
-      class="mt-6 p-4 rounded-lg bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700"
-    >
-      <div class="flex items-center gap-3">
-        <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-          />
-        </svg>
-        <div class="text-sm text-gray-600 dark:text-gray-400">
-          {t('ui.usbHubWarning', currentLanguage)}
-        </div>
-      </div>
+    <!-- USB Warning - Minimal -->
+    <div class="mt-8 text-center animate-fade-in-up" style="animation-delay: 0.3s">
+      <p class="text-xs text-gray-400 dark:text-gray-500">
+        {t('ui.usbHubWarning', currentLanguage)}
+      </p>
     </div>
   </div>
 </div>
+
+<style>
+  @keyframes fade-in-up {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes float {
+    0%, 100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-8px);
+    }
+  }
+
+  @keyframes shimmer {
+    0% {
+      background-position: -200% center;
+    }
+    100% {
+      background-position: 200% center;
+    }
+  }
+
+  @keyframes shine {
+    0% {
+      transform: translateX(-100%);
+    }
+    100% {
+      transform: translateX(100%);
+    }
+  }
+
+  @keyframes shake {
+    0%, 100% {
+      transform: translateX(0);
+    }
+    10%, 30%, 50%, 70%, 90% {
+      transform: translateX(-5px);
+    }
+    20%, 40%, 60%, 80% {
+      transform: translateX(5px);
+    }
+  }
+
+  .animate-fade-in-up {
+    animation: fade-in-up 0.6s ease-out forwards;
+    opacity: 0;
+  }
+
+  .animate-float {
+    animation: float 3s ease-in-out infinite;
+  }
+
+  .animate-shimmer {
+    background-size: 200% 100%;
+    animation: shimmer 3s linear infinite;
+  }
+
+  .animate-shine {
+    animation: shine 0.6s ease-in-out;
+  }
+
+  .animate-shake {
+    animation: shake 0.5s ease-in-out;
+  }
+</style>

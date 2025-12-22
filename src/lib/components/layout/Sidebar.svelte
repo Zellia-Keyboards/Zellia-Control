@@ -46,9 +46,7 @@
           <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
           <span>
             <i>
-              {keyboardAPI.state.isDemoMode
-                ? `Demo: ${keyboardAPI.state.selectedModel?.toUpperCase() || ''}`
-                : keyboardAPI.state.lastConnectedDevice || 'Connected'}
+              {keyboardAPI.state.lastConnectedDevice || 'Connected'}
             </i>
           </span>
         {:else}

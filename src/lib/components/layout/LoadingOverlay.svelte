@@ -7,18 +7,12 @@
 </script>
 
 <div class="flex-1 flex items-center justify-center p-8">
-  <div
-    class="text-center p-8 rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 {$glassmorphismMode
-      ? 'glassmorphism-card'
-      : ''} shadow-xl"
-  >
-    <div
-      class="w-16 h-16 bg-primary-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg animate-pulse {$glassmorphismMode
-        ? 'glassmorphism-button'
-        : ''}"
-    >
+  <div class="text-center">
+    <div class="w-16 h-16 mx-auto mb-4 relative">
+
+      <!-- Spinner -->
       <svg
-        class="w-8 h-8 text-white animate-spin"
+        class="w-12 h-12 text-primary-600 dark:text-primary-400 animate-spin relative z-10"
         fill="none"
         stroke="currentColor"
         viewBox="0 0 24 24"
@@ -31,13 +25,8 @@
         />
       </svg>
     </div>
-    <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-      {keyboardAPI.state.isDemoMode
-        ? t('demo.entering', currentLanguage)
-        : t('welcome.connecting', currentLanguage)}
-    </h3>
-    <p class="text-sm text-gray-600 dark:text-gray-400">
+    <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-2 animate-pulse">
       {t('welcome.loadingConfigurator', currentLanguage)}
-    </p>
+    </h3>
   </div>
 </div>
