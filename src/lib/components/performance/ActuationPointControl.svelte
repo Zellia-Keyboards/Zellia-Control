@@ -6,6 +6,7 @@
     actuationPoint: number;
     deactivationPoint: number;
     keysSelected: number;
+    maxTravelDistance: number;
     onActuationChange: (value: number) => void;
     onDeactivationChange: (value: number) => void;
   }
@@ -14,6 +15,7 @@
     actuationPoint,
     deactivationPoint,
     keysSelected,
+    maxTravelDistance,
     onActuationChange,
     onDeactivationChange,
   }: Props = $props();
@@ -56,23 +58,23 @@
           <!-- Deadzone region before deactivation (left side) - RED -->
           <div
             class="absolute h-full rounded-l-full deadzone-pattern"
-            style="left: 0%; width: {(deactivationPoint / 4) * 100}%;"
+            style="left: 0%; width: {(deactivationPoint / maxTravelDistance) * 100}%;"
           ></div>
 
           <!-- Hysteresis zone (between deactivation and actuation) -->
           <div
             class="absolute h-full"
             style="background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%); left: {(deactivationPoint /
-              4) *
-              100}%; width: {((actuationPoint - deactivationPoint) / 4) * 100}%;"
+              maxTravelDistance) *
+              100}%; width: {((actuationPoint - deactivationPoint) / maxTravelDistance) * 100}%;"
           ></div>
 
           <!-- Active region after actuation (right side) - GREEN -->
           <div
             class="absolute h-full rounded-r-full"
             style="background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%); left: {(actuationPoint /
-              4) *
-              100}%; width: {((4 - actuationPoint) / 4) * 100}%;"
+              maxTravelDistance) *
+              100}%; width: {((maxTravelDistance - actuationPoint) / maxTravelDistance) * 100}%;"
           ></div>
         </div>
 
@@ -80,7 +82,7 @@
         <input
           type="range"
           min="0.005"
-          max="4.000"
+          max={maxTravelDistance}
           step="0.005"
           value={deactivationPoint}
           oninput={e => {
@@ -99,7 +101,7 @@
         <input
           type="range"
           min="0.005"
-          max="4.000"
+          max={maxTravelDistance}
           step="0.005"
           value={actuationPoint}
           oninput={e => {
@@ -107,6 +109,10 @@
             let value = Number(input.value);
             if (value < deactivationPoint + 0.1) {
               value = deactivationPoint + 0.1;
+              input.value = String(value);
+            }
+            if (value > maxTravelDistance) {
+              value = maxTravelDistance;
               input.value = String(value);
             }
             onActuationChange(value);
@@ -125,7 +131,12 @@
             max={actuationPoint - 0.1}
             step="0.005"
             value={deactivationPoint}
-            oninput={e => onDeactivationChange(Number((e.target as HTMLInputElement).value))}
+            oninput={e => {
+              let value = Number((e.target as HTMLInputElement).value);
+              if (value < 0.005) value = 0.005;
+              if (value > actuationPoint - 0.1) value = actuationPoint - 0.1;
+              onDeactivationChange(value);
+            }}
             class="w-20 px-2 py-1 text-sm border rounded dark:bg-gray-800 dark:border-gray-600 dark:text-white bg-white border-gray-300 text-gray-900"
           />
           <span class="text-sm text-gray-500 dark:text-gray-400">mm</span>
@@ -135,10 +146,15 @@
           <input
             type="number"
             min={deactivationPoint + 0.1}
-            max="4.000"
+            max={maxTravelDistance}
             step="0.005"
             value={actuationPoint}
-            oninput={e => onActuationChange(Number((e.target as HTMLInputElement).value))}
+            oninput={e => {
+              let value = Number((e.target as HTMLInputElement).value);
+              if (value < deactivationPoint + 0.1) value = deactivationPoint + 0.1;
+              if (value > maxTravelDistance) value = maxTravelDistance;
+              onActuationChange(value);
+            }}
             class="w-20 px-2 py-1 text-sm border rounded dark:bg-gray-800 dark:border-gray-600 dark:text-white bg-white border-gray-300 text-gray-900"
           />
           <span class="text-sm text-gray-500 dark:text-gray-400">mm</span>

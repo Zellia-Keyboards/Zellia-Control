@@ -240,15 +240,18 @@
   /* Base label cell styling */
   [class^="label-cell-"] {
     display: flex;
-    overflow: hidden;
-    white-space: nowrap;
-    line-height: 1;
+    overflow: visible;
+    white-space: normal;
+    line-height: 1.1;
     min-height: 0;
     min-width: 0;
     background: transparent !important;
     background-color: transparent !important;
     background-image: none !important;
     color: inherit;
+    text-align: center;
+    word-wrap: break-word;
+    hyphens: auto;
   }
 
   /* 九宫格对齐 - using grid-area for proper placement */

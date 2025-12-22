@@ -1,5 +1,6 @@
 import * as kle from '@ijprest/kle-serial';
 import * as ekc from 'emi-keyboard-controller';
+import { Keycode } from '../../../src-controller/src/interface';
 
 /**
  * Transforms keyboard keys based on the current page/mode
@@ -7,13 +8,15 @@ import * as ekc from 'emi-keyboard-controller';
  * @param advancedKeys - Advanced key configurations
  * @param rgbConfigs - RGB configurations
  * @param activePage - The current active page path
+ * @param keymap - Current keyboard keymap data
  * @returns Transformed keys with appropriate labels
  */
 export function transformKeyboardKeys(
   keys: kle.Key[],
   advancedKeys: any[],
   rgbConfigs: any[],
-  activePage: string
+  activePage: string,
+  keymap?: number[][]
 ): kle.Key[] {
   // Deep clone the keys to avoid mutation
   let newKeys = keys.map(key => JSON.parse(JSON.stringify(key)));

@@ -251,6 +251,19 @@
     --key-font-size: 10px;
     --key-font-size-center: 11px;
   }
+
+  /* Lighting page uses even smaller key labels */
+  .lighting-page-keys {
+    --key-font-size: 12px;
+  }
+
+  /* Prevent text breaking in lighting page keys */
+  .lighting-page-keys [class^="label-cell-"] {
+    white-space: nowrap !important;
+    word-break: keep-all !important;
+    text-overflow: ellipsis !important;
+    hyphens: manual !important;
+  }
 }
 
 @layer components {

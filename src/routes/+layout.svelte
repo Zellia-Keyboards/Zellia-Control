@@ -6,7 +6,7 @@
   import { goto } from '$app/navigation';
   import { glassmorphismMode } from '$lib/stores/DarkModeStore.svelte';
   import { language } from '$lib/stores/LanguageStore.svelte';
-  import { advancedKeys, rgbConfigs } from '$lib/stores/ControllerStore.svelte';
+  import { advancedKeys, rgbConfigs, keymap } from '$lib/stores/ControllerStore.svelte';
   import { keyboardLayout as keyboardLayoutStore } from '$lib/stores/LayoutStore.svelte';
   import SmallScreenWarning from '$lib/components/layout/SmallScreenWarning.svelte';
   import Sidebar from '$lib/components/layout/Sidebar.svelte';

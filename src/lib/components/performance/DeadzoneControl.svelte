@@ -5,11 +5,12 @@
   interface Props {
     upperDeadzone: number;
     lowerDeadzone: number;
+    maxTravelDistance: number;
     onUpperChange: (value: number) => void;
     onLowerChange: (value: number) => void;
   }
 
-  let { upperDeadzone, lowerDeadzone, onUpperChange, onLowerChange }: Props = $props();
+  let { upperDeadzone, lowerDeadzone, maxTravelDistance, onUpperChange, onLowerChange }: Props = $props();
   let currentLanguage = $derived($language);
 </script>
 
@@ -41,21 +42,21 @@
         <!-- Deadzone before start (left side) -->
         <div
           class="absolute h-full rounded-l-full deadzone-pattern"
-          style="left: 0%; width: {(upperDeadzone / 4) * 100}%;"
+          style="left: 0%; width: {(upperDeadzone / maxTravelDistance) * 100}%;"
         ></div>
 
         <!-- Active range highlight -->
         <div
           class="absolute h-full"
           style="background: linear-gradient(135deg, var(--theme-color-primary) 0%, color-mix(in srgb, var(--theme-color-primary) 80%, black) 100%); left: {(upperDeadzone /
-            4) *
-            100}%; width: {((lowerDeadzone - upperDeadzone) / 4) * 100}%;"
+            maxTravelDistance) *
+            100}%; width: {((lowerDeadzone - upperDeadzone) / maxTravelDistance) * 100}%;"
         ></div>
 
         <!-- Deadzone after bottom (right side) -->
         <div
           class="absolute h-full rounded-r-full deadzone-pattern"
-          style="left: {(lowerDeadzone / 4) * 100}%; width: {((4 - lowerDeadzone) / 4) * 100}%;"
+          style="left: {(lowerDeadzone / maxTravelDistance) * 100}%; width: {((maxTravelDistance - lowerDeadzone) / maxTravelDistance) * 100}%;"
         ></div>
       </div>
 
@@ -63,7 +64,7 @@
       <input
         type="range"
         min="0.005"
-        max="4.000"
+        max={maxTravelDistance}
         step="0.005"
         value={upperDeadzone}
         oninput={e => {
@@ -82,7 +83,7 @@
       <input
         type="range"
         min="0.005"
-        max="4.000"
+        max={maxTravelDistance}
         step="0.005"
         value={lowerDeadzone}
         oninput={e => {
@@ -90,6 +91,10 @@
           let value = Math.round(Number(input.value) * 1000) / 1000;
           if (value < upperDeadzone + 0.1) {
             value = upperDeadzone + 0.1;
+            input.value = String(value);
+          }
+          if (value > maxTravelDistance) {
+            value = maxTravelDistance;
             input.value = String(value);
           }
           onLowerChange(value);
@@ -108,7 +113,12 @@
           max={lowerDeadzone - 0.1}
           step="0.005"
           value={upperDeadzone}
-          oninput={e => onUpperChange(Number((e.target as HTMLInputElement).value))}
+          oninput={e => {
+            let value = Number((e.target as HTMLInputElement).value);
+            if (value < 0.005) value = 0.005;
+            if (value > lowerDeadzone - 0.1) value = lowerDeadzone - 0.1;
+            onUpperChange(value);
+          }}
           class="w-20 px-2 py-1 text-sm border rounded dark:bg-gray-800 dark:border-gray-600 dark:text-white bg-white border-gray-300 text-gray-900"
         />
         <span class="text-sm text-gray-500 dark:text-gray-400">mm</span>
@@ -118,10 +128,15 @@
         <input
           type="number"
           min={upperDeadzone + 0.1}
-          max="4.000"
+          max={maxTravelDistance}
           step="0.005"
           value={lowerDeadzone}
-          oninput={e => onLowerChange(Number((e.target as HTMLInputElement).value))}
+          oninput={e => {
+            let value = Number((e.target as HTMLInputElement).value);
+            if (value < upperDeadzone + 0.1) value = upperDeadzone + 0.1;
+            if (value > maxTravelDistance) value = maxTravelDistance;
+            onLowerChange(value);
+          }}
           class="w-20 px-2 py-1 text-sm border rounded dark:bg-gray-800 dark:border-gray-600 dark:text-white bg-white border-gray-300 text-gray-900"
         />
         <span class="text-sm text-gray-500 dark:text-gray-400">mm</span>

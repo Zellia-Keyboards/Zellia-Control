@@ -39,7 +39,7 @@
   <div class="grid grid-cols-3 gap-2">
     {#each effects as effect}
       <button
-        class="px-3 py-2 rounded-lg border-2 text-center transition-all duration-200 relative overflow-hidden {selectedEffect ===
+        class="px-2 py-2 rounded-lg border-2 text-center transition-all duration-200 relative overflow-hidden {selectedEffect ===
         effect.id
           ? 'border-primary bg-primary/20 dark:bg-primary/30 shadow-lg'
           : 'border-gray-300 dark:border-gray-600 hover:border-primary/50'} {$glassmorphismMode
@@ -53,7 +53,7 @@
           ></div>
         {/if}
         <div
-          class="relative z-10 text-xs font-medium {selectedEffect === effect.id
+          class="relative z-10 text-xs font-medium whitespace-nowrap overflow-hidden text-ellipsis {selectedEffect === effect.id
             ? 'text-primary-700 dark:text-primary-200'
             : 'text-black dark:text-white'}"
         >

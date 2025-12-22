@@ -10,6 +10,7 @@
   import TabNavigation from '$lib/components/remap/TabNavigation.svelte';
   import { selectedKeys } from '$lib/stores/SelectedKeysStore';
   import { selectedCount, toggleSelectAll, deselectAll } from '$lib/stores/SelectedKeysStore';
+  import { keymap } from '$lib/stores/ControllerStore.svelte';
   import type { Keycode } from '../../../src-controller/src/interface';
   import type { Component, Snippet } from 'svelte';
   import { cubicOut } from 'svelte/easing';

@@ -11,24 +11,12 @@
 </script>
 
 <div>
-  <div class="text-xs text-gray-600 dark:text-gray-300 mb-1.5">
-    {t('lighting.color', currentLanguage)}
-  </div>
-  <div class="flex gap-2">
-    <input
-      type="color"
-      value={color}
-      oninput={e => onColorChange((e.target as HTMLInputElement).value)}
-      class="w-10 h-9 rounded border-0 p-0 cursor-pointer overflow-hidden"
-    />
-    <input
-      type="text"
-      value={color}
-      oninput={e => onColorChange((e.target as HTMLInputElement).value)}
-      class="flex-1 px-2 py-1.5 border border-gray-300 dark:border-white bg-white dark:bg-black text-black dark:text-white rounded-lg font-mono text-xs"
-      placeholder="#ff0000"
-    />
-  </div>
+  <input
+    type="color"
+    value={color}
+    oninput={e => onColorChange((e.target as HTMLInputElement).value)}
+    class="w-8 h-8 rounded border border-gray-300 dark:border-gray-600 p-0 cursor-pointer overflow-hidden"
+  />
 </div>
 
 <style>
