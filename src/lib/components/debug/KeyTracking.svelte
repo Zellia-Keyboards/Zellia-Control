@@ -260,12 +260,16 @@
             {
               label: t('debug.keyDistance', currentLanguage),
               data: [],
-              borderColor: 'rgb(34, 197, 94)',
-              backgroundColor: 'rgba(34, 197, 94, 0.1)',
-              borderWidth: 1,
+              borderColor: '#22c55e',
+              backgroundColor: 'rgba(34, 197, 94, 0.15)',
+              borderWidth: 2,
               pointRadius: 0,
-              pointHoverRadius: 3,
+              pointHoverRadius: 4,
+              pointHoverBackgroundColor: '#22c55e',
+              pointHoverBorderColor: '#ffffff',
+              pointHoverBorderWidth: 2,
               tension: 0.1,
+              fill: true,
             },
           ],
         },
@@ -384,132 +388,106 @@
 </script>
 
 <!-- Key Tracking Section -->
-<div class="flex gap-6 h-[600px]">
-  <!-- Left Sidebar - Two info panels -->
-  <div class="w-[320px] flex flex-col gap-4 shrink-0">
-    <!-- Description Panel -->
-    <div class="p-5 rounded-xl glassmorphism-card flex-1 overflow-auto">
-      <p class="text-sm text-gray-300 dark:text-gray-300 leading-relaxed mb-4">
-        This tool allows you to track the pressing distance of a key in real time and visualize it in a chart for observation and analysis.
-      </p>
-      
-      <p class="text-sm text-gray-300 dark:text-gray-300 leading-relaxed mb-4">
-        Due to fundamental limitations, the keyboard itself cannot distinguish 'normal pressing' from the following objectively existing conditions (including but not limited to). When parameters are set extremely low (e.g., around 0.01mm or even lower), the impact of these conditions becomes very significant.
-      </p>
-      
-      <ul class="space-y-2 text-sm text-gray-300 dark:text-gray-300">
-        <li class="flex items-start gap-2">
-          <span class="text-gray-500">•</span>
-          <span>Hand movement during key press <span class="text-gray-500 cursor-help">ⓘ</span></span>
-        </li>
-        <li class="flex items-start gap-2">
-          <span class="text-gray-500">•</span>
-          <span>Force changes after the key bottoms out <span class="text-gray-500 cursor-help">ⓘ</span></span>
-        </li>
-        <li class="flex items-start gap-2">
-          <span class="text-gray-500">•</span>
-          <span>Pressing the key with greater force (compared to a 'normal press') <span class="text-gray-500 cursor-help">ⓘ</span></span>
-        </li>
-      </ul>
-      
-      <p class="text-sm text-gray-300 dark:text-gray-300 leading-relaxed mt-4">
-        Since the above factors are unavoidable during manual operation, unintended key releases under extremely low settings are considered normal and do not indicate an issue with the keyboard itself.
-      </p>
-      
-      <p class="text-sm text-gray-300 dark:text-gray-300 leading-relaxed mt-4">
-        You can simulate in-game operations and compare
-      </p>
+<div class="flex gap-4 h-full min-h-0">
+  <!-- Left Sidebar - Info panel and select key -->
+  <div class="w-[200px] shrink-0 flex flex-col gap-3">
+    <!-- Info Panel -->
+    <div class="p-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/50">
+      <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-3">About This Tool</h3>
+      <div class="text-xs text-gray-600 dark:text-gray-400 leading-relaxed space-y-2">
+        <p>
+          This tool allows you to track the pressing distance of a key in real time and visualize it in a chart.
+        </p>
+
+        <p>
+          Due to fundamental limitations, the keyboard cannot distinguish 'normal pressing' from conditions like hand movement, force changes after bottom-out, and pressing with greater force.
+        </p>
+
+        <p>
+          When parameters are set extremely low (~0.01mm), these factors become significant. Unintended key releases under such settings are considered normal.
+        </p>
+
+        <p>
+          Zoom in/out with mouse scroll to observe trigger/reset changes closely.
+        </p>
+      </div>
     </div>
 
-    <!-- Troubleshooting Panel -->
-    <div class="p-5 rounded-xl glassmorphism-card">
-      <p class="text-sm text-gray-300 dark:text-gray-300 leading-relaxed">
-        You can zoom in and out of the chart using the mouse scroll wheel to closely observe changes during triggers or resets. Unintended triggers and resets caused by the mentioned objective factors usually happen very quickly and subtly, requiring zooming in to be properly seen.
-      </p>
-      
+    <!-- Buttons Column -->
+    <div class="flex flex-col gap-2">
       <button
         type="button"
-        class="mt-4 px-6 py-2 glassmorphism-button rounded-lg text-sm font-medium"
+        class="px-4 py-2 glassmorphism-button rounded-lg text-sm font-medium"
         onclick={clearChart}
       >
-        Clear
+        Clear Chart
+      </button>
+
+      <button
+        onclick={openKeySelector}
+        class="px-4 py-2 glassmorphism-button rounded-lg text-sm font-medium text-left"
+        disabled={!keyboardConnectionState.controller}
+      >
+        {selectedKeyName || 'Select Key'}
       </button>
     </div>
   </div>
 
-  <!-- Right Side - Chart Area -->
-  <div class="flex-1 flex flex-col min-w-0">
-    <!-- Chart Container -->
-    <div class="flex-1 rounded-xl glassmorphism-card p-4 min-h-0">
-      <canvas bind:this={chartCanvas} class="w-full h-full"></canvas>
-    </div>
-  </div>
-</div>
+  <!-- Right Side - Chart Area with controls on left -->
+  <div class="flex-1 min-w-0 flex gap-3">
+    <!-- Chart Control Buttons - Left of chart -->
+    <div class="flex flex-col gap-2 self-center">
+      {#if !isTracking}
+        <button
+          type="button"
+          class="px-4 py-2 glassmorphism-button rounded-lg text-sm font-medium {!selectedKeyName ? 'opacity-50 cursor-not-allowed' : ''}"
+          disabled={!selectedKeyName}
+          onclick={() => {
+            const keyIndex = $selectedKeys[0];
+            if (keyIndex !== undefined) startDebug(keyIndex);
+          }}
+        >
+          Start
+        </button>
+      {:else}
+        <button
+          type="button"
+          class="px-4 py-2 glassmorphism-button rounded-lg text-sm font-medium"
+          onclick={stopDebug}
+        >
+          Stop
+        </button>
+      {/if}
 
-<!-- Bottom Controls Bar -->
-<div class="mt-4 flex items-center gap-4 flex-wrap">
-  <!-- Key selection -->
-  <div class="flex items-center gap-3">
-    <span class="text-sm text-gray-400 dark:text-gray-400">Select the key to track</span>
-    <button
-      onclick={openKeySelector}
-      class="px-4 py-2 text-sm font-medium glassmorphism-button rounded-lg min-w-[80px]"
-      disabled={!keyboardConnectionState.controller}
-    >
-      {selectedKeyName || 'None'}
-    </button>
-  </div>
-  
-  <!-- Spacer -->
-  <div class="flex-1"></div>
-  
-  <!-- Action buttons -->
-  <div class="flex items-center gap-2">
-    {#if !isTracking}
       <button
         type="button"
-        class="px-4 py-2 text-sm font-medium glassmorphism-button rounded-lg {!selectedKeyName ? 'opacity-50 cursor-not-allowed' : ''}"
-        disabled={!selectedKeyName}
+        class="px-4 py-2 glassmorphism-button rounded-lg text-sm font-medium"
+        onclick={resetZoom}
+      >
+        Reset Zoom
+      </button>
+
+      <button
+        type="button"
+        class="px-4 py-2 glassmorphism-button rounded-lg text-sm font-medium"
         onclick={() => {
-          const keyIndex = $selectedKeys[0];
-          if (keyIndex !== undefined) startDebug(keyIndex);
+          if (chart) {
+            chart.options.scales.y.min = 3.9;
+            chart.options.scales.y.max = 4.0;
+            chart.update();
+          }
         }}
       >
-        Start
+        Zoom 0.1mm
       </button>
-    {:else}
-      <button
-        type="button"
-        class="px-4 py-2 text-sm font-medium glassmorphism-button rounded-lg"
-        onclick={stopDebug}
-      >
-        Stop
-      </button>
-    {/if}
-  </div>
-  
-  <!-- Zoom controls -->
-  <div class="flex items-center gap-2">
-    <button
-      type="button"
-      class="px-4 py-2 text-sm font-medium glassmorphism-button rounded-lg"
-      onclick={resetZoom}
-    >
-      Reset zoom
-    </button>
-    <button
-      type="button"
-      class="px-4 py-2 text-sm font-medium glassmorphism-button rounded-lg"
-      onclick={() => {
-        if (chart) {
-          chart.options.scales.y.min = 3.9;
-          chart.options.scales.y.max = 4.0;
-          chart.update();
-        }
-      }}
-    >
-      Zoom to the bottom 0.1mm
-    </button>
+    </div>
+
+    <!-- Chart Container -->
+    <div class="flex-1">
+      <div class="aspect-square w-[1000px] max-h-[600px] p-4 ml-auto">
+        <canvas bind:this={chartCanvas} class="w-full h-full"></canvas>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -518,8 +496,8 @@
 
 <style>
   :global(:root) {
-    --chart-text-color: #6b7280; /* gray-500 */
-    --chart-grid-color: #e5e7eb; /* gray-200 */
+    --chart-text-color: #9ca3af; /* gray-400 */
+    --chart-grid-color: #374151; /* gray-700 */
   }
 
   :global(.dark) {

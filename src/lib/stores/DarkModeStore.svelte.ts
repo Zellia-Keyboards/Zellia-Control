@@ -16,6 +16,20 @@ export const themeColors = {
 
 export type ThemeColorName = keyof typeof themeColors;
 
+// Helper function for instant color changes (no transition)
+function setInstantColor(fn: () => void) {
+  if (!browser) {
+    fn();
+    return;
+  }
+  document.documentElement.classList.add('no-transition');
+  fn();
+  void document.documentElement.offsetHeight;
+  requestAnimationFrame(() => {
+    document.documentElement.classList.remove('no-transition');
+  });
+}
+
 // Initialize dark mode as default (true)
 const createDarkModeStore = () => {
   // Get stored value from localStorage if in browser, otherwise use OS preference
@@ -33,20 +47,29 @@ const createDarkModeStore = () => {
   return {
     toggle: () => {
       const isDark = document.documentElement.classList.contains('dark');
+      localStorage.setItem('darkMode',(!isDark).toString());
+
+      if (!browser) {
+        if (isDark) {
+          document.documentElement.classList.remove('dark');
+        } else {
+          document.documentElement.classList.add('dark');
+        }
+        return;
+      }
+
+      // First update color instantly
+      const storedTheme = localStorage.getItem('themeColor');
+      if (storedTheme === 'null' || !storedTheme || !themeColors[storedTheme as ThemeColorName]) {
+        const plainColor = !isDark ? '#fafafafa' : '#000000';
+        document.documentElement.style.setProperty('--color-primary', plainColor);
+      }
+
+      // Then toggle dark mode with smooth transition
       if (isDark) {
         document.documentElement.classList.remove('dark');
       } else {
         document.documentElement.classList.add('dark');
-      }
-      if (browser) {
-        localStorage.setItem('darkMode', (!isDark).toString());
-
-        // Update accent color if no theme is selected
-        const storedTheme = localStorage.getItem('themeColor');
-        if (storedTheme === 'null' || !storedTheme || !themeColors[storedTheme as ThemeColorName]) {
-          const plainColor = !isDark ? '#fafafafa' : '#000000'; // Inverted because we just toggled
-          document.documentElement.style.setProperty('--color-primary', plainColor);
-        }
       }
     },
   };
@@ -70,21 +93,23 @@ const createThemeColorStore = () => {
   return {
     subscribe,
     set: (colorName: ThemeColorName | null) => {
-      if (browser) {
-        if (colorName === null) {
-          localStorage.setItem('themeColor', 'null');
-          // Set pure white/black based on current dark mode state
-          const isDark = document.documentElement.classList.contains('dark');
-          const plainColor = isDark ? '#fafafafa' : '#000000';
-          document.documentElement.style.setProperty('--color-primary', plainColor);
-        } else {
-          localStorage.setItem('themeColor', colorName);
-          // Apply theme color CSS variables to the document root
-          const selectedColor = themeColors[colorName];
-          document.documentElement.style.setProperty('--color-primary', selectedColor);
+      setInstantColor(() => {
+        if (browser) {
+          if (colorName === null) {
+            localStorage.setItem('themeColor', 'null');
+            // Set pure white/black based on current dark mode state
+            const isDark = document.documentElement.classList.contains('dark');
+            const plainColor = isDark ? '#fafafafa' : '#000000';
+            document.documentElement.style.setProperty('--color-primary', plainColor);
+          } else {
+            localStorage.setItem('themeColor', colorName);
+            // Apply theme color CSS variables to the document root
+            const selectedColor = themeColors[colorName];
+            document.documentElement.style.setProperty('--color-primary', selectedColor);
+          }
         }
-      }
-      set(colorName);
+        set(colorName);
+      });
     },
   };
 };
@@ -93,15 +118,17 @@ export const selectedThemeColor = createThemeColorStore();
 
 // Function to update theme color based on current dark mode (for when dark mode toggles)
 export const updateThemeForDarkMode = () => {
-  if (browser) {
-    const storedTheme = localStorage.getItem('themeColor');
-    if (storedTheme === 'null' || !storedTheme || !themeColors[storedTheme as ThemeColorName]) {
-      // No theme selected, update to appropriate plain color
-      const isDark = document.documentElement.classList.contains('dark');
-      const plainColor = isDark ? '#fafafafa' : '#000000';
-      document.documentElement.style.setProperty('--color-primary', plainColor);
+  setInstantColor(() => {
+    if (browser) {
+      const storedTheme = localStorage.getItem('themeColor');
+      if (storedTheme === 'null' || !storedTheme || !themeColors[storedTheme as ThemeColorName]) {
+        // No theme selected, update to appropriate plain color
+        const isDark = document.documentElement.classList.contains('dark');
+        const plainColor = isDark ? '#fafafafa' : '#000000';
+        document.documentElement.style.setProperty('--color-primary', plainColor);
+      }
     }
-  }
+  });
 };
 
 // Create a store for glassmorphism mode
@@ -137,7 +164,7 @@ export const glassmorphismMode = createGlassmorphismStore();
 // Initialize dark class and theme color on document load if in browser
 if (browser) {
   // Disable transitions during initial load
-  document.documentElement.classList.add('no-transition');
+  
 
   const storedDarkMode = localStorage.getItem('darkMode');
   const isDark = storedDarkMode !== null ? storedDarkMode === 'true' : true; // Default to dark
@@ -157,10 +184,6 @@ if (browser) {
     document.documentElement.style.setProperty('--color-primary', plainColor);
   }
 
-  // Re-enable transitions after a brief delay to prevent flash
-  setTimeout(() => {
-    document.documentElement.classList.remove('no-transition');
-  }, 100);
 
   // Always enable glassmorphism mode
   document.documentElement.classList.add('glassmorphism');

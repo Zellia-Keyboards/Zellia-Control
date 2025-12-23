@@ -4,6 +4,7 @@
   import * as kle from '@ijprest/kle-serial';
   import { page } from '$app/stores';
   import { goto } from '$app/navigation';
+  import { beforeNavigate, afterNavigate } from '$app/navigation';
   import { glassmorphismMode } from '$lib/stores/DarkModeStore.svelte';
   import { language } from '$lib/stores/LanguageStore.svelte';
   import { advancedKeys, rgbConfigs, keymap } from '$lib/stores/ControllerStore.svelte';
@@ -13,12 +14,19 @@
   import MainContentArea from '$lib/components/layout/MainContentArea.svelte';
   import { shouldShowConfiguratorLayout, shouldShowLayerSelector } from '$lib/utils/layoutHelpers';
   import { transformKeyboardKeys } from '$lib/utils/keyboardKeyTransformer.svelte';
+  import { slide } from 'svelte/transition';
+  import { quintOut } from 'svelte/easing';
 
   let { children } = $props();
   let showFirefoxWarning = $state(false);
   let firefoxWarningDismissed = $state(false);
   let isLoadingConfigurator = $state(false);
   let currentLanguage = $derived($language);
+
+  // Slide animation state
+  let slideDirection = $state(1);
+  let isAnimating = $state(false);
+  let previousPath = $state($page.url.pathname);
 
   // Keyboard layout for global KeyboardRender
   let layout = $derived($keyboardLayoutStore);
@@ -72,10 +80,10 @@
       keyboardAPI.state.connectionStatus === 'connected' &&
       keyboardAPI.shouldShowConfigurator
     ) {
-      // Add a small delay to ensure everything is loaded before showing the configurator
+      // Small delay to let loading animation complete
       setTimeout(() => {
         isLoadingConfigurator = false;
-      }, 400);
+      }, 10);
     } else if (
       keyboardAPI.state.connectionStatus === 'error' ||
       keyboardAPI.state.connectionStatus === 'disconnected'

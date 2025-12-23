@@ -67,8 +67,4 @@
     }
   }
 
-  .animate-shimmer {
-    background-size: 200% 100%;
-    animation: shimmer 3s linear infinite;
-  }
 </style>

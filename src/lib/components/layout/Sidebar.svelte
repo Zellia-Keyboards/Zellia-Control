@@ -9,6 +9,7 @@
   import DarkModeToggle from './DarkModeToggle.svelte';
   import { NAVIGATE } from '$lib/config/navigation';
   import { LogOut } from 'lucide-svelte';
+  import { slide, fade } from 'svelte/transition';
 
   let currentLanguage = $derived($language);
 
@@ -83,17 +84,21 @@
 
     <!-- Disconnect Button -->
     {#if keyboardAPI.shouldShowConfigurator}
-      <button
-        class="w-full px-3 py-2 text-xs font-medium border rounded-md transition-colors duration-200 text-red-600 dark:text-red-400 border-red-300 dark:border-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 {$glassmorphismMode
-          ? 'glassmorphism-button'
-          : ''}"
-        onclick={handleDisconnect}
-      >
-        <div class="flex items-center justify-center gap-1">
-          <LogOut class="w-3 h-3" />
-          <i>{t('ui.disconnect', currentLanguage)}</i>
+      <div in:slide|global={{ duration: 300, easing: (t) => t * (2 - t), axis: 'y' }}>
+        <div out:fade|global={{ duration: 200 }}>
+          <button
+            class="w-full px-3 py-2 text-xs font-medium border rounded-md transition-colors duration-200 text-red-600 dark:text-red-400 border-red-300 dark:border-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 {$glassmorphismMode
+              ? 'glassmorphism-button'
+              : ''}"
+            onclick={handleDisconnect}
+          >
+            <div class="flex items-center justify-center gap-1">
+              <LogOut class="w-3 h-3" />
+              <i>{t('ui.disconnect', currentLanguage)}</i>
+            </div>
+          </button>
         </div>
-      </button>
+      </div>
     {/if}
   </div>
 

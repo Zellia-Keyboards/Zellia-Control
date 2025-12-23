@@ -1,8 +1,6 @@
 <script lang="ts">
-  import { slide } from 'svelte/transition';
-  import { goto } from '$app/navigation';
+  import { fade } from 'svelte/transition';
   import { keyboardAPI } from '$lib/api/keyboardAPI.svelte';
-  import { glassmorphismMode } from '$lib/stores/DarkModeStore.svelte';
   import { language, t } from '$lib/stores/LanguageStore.svelte';
   import { advancedKeys, dynamicKeys, rgbBaseConfig, rgbConfigs, keymap } from '$lib/stores/ControllerStore.svelte';
   import { keyboardLayout } from '$lib/stores/LayoutStore.svelte';
@@ -50,7 +48,7 @@
   }
 </script>
 
-<div class="flex-1 flex items-center justify-center p-8 relative overflow-hidden">
+<div class="flex-1 flex items-center justify-center p-8 relative overflow-visible">
   <!-- Animated Background Elements -->
   <div class="absolute inset-0 pointer-events-none">
     <div class="absolute top-1/4 left-1/4 w-64 h-64 bg-primary-500/5 rounded-full blur-3xl animate-pulse"></div>
@@ -216,19 +214,6 @@
   .animate-fade-in-up {
     animation: fade-in-up 0.6s ease-out forwards;
     opacity: 0;
-  }
-
-  .animate-float {
-    animation: float 3s ease-in-out infinite;
-  }
-
-  .animate-shimmer {
-    background-size: 200% 100%;
-    animation: shimmer 3s linear infinite;
-  }
-
-  .animate-shine {
-    animation: shine 0.6s ease-in-out;
   }
 
   .animate-shake {

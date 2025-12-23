@@ -30,9 +30,6 @@
   let showRestoreModal = $state(false);
   let restoreProfileId = $state<number | null>(null);
 
-  let showDeleteModal = $state(false);
-  let deleteProfileId = $state<number | null>(null);
-
   let showErrorModal = $state(false);
   let errorMessage = $state('');
 
@@ -125,7 +122,7 @@
     restoreProfileId = null;
   }
 
-  function showDeleteDialog(profileId: number) {
+  function deleteProfile(profileId: number) {
     if (profileId === activeProfileId) {
       errorMessage = 'Cannot delete the active profile. Please activate another profile first.';
       showErrorModal = true;
@@ -138,16 +135,8 @@
       return;
     }
 
-    deleteProfileId = profileId;
-    showDeleteModal = true;
+    profileStore.deleteProfile(profileId);
     openMenuId = null;
-  }
-
-  function executeDelete() {
-    if (deleteProfileId === null) return;
-    profileStore.deleteProfile(deleteProfileId);
-    showDeleteModal = false;
-    deleteProfileId = null;
   }
 </script>
 
@@ -203,7 +192,7 @@
     onExport={() => exportProfile(openMenuId)}
     onDuplicate={() => showDuplicateDialog(openMenuId)}
     onRestore={() => showRestoreDialog(openMenuId)}
-    onDelete={() => showDeleteDialog(openMenuId)}
+    onDelete={() => deleteProfile(openMenuId)}
   />
 {/if}
 
@@ -232,20 +221,6 @@
     confirmColor="orange"
     onConfirm={executeRestore}
     onCancel={() => (showRestoreModal = false)}
-  />
-{/if}
-
-<!-- Delete Modal -->
-{#if showDeleteModal && deleteProfileId !== null}
-  <ConfirmationModal
-    title="Delete Profile"
-    message="Are you sure you want to delete <strong class='text-white'>{profiles.find(
-      p => p?.id === deleteProfileId
-    )?.name}</strong>? This action cannot be undone."
-    confirmText="Delete"
-    confirmColor="red"
-    onConfirm={executeDelete}
-    onCancel={() => (showDeleteModal = false)}
   />
 {/if}
 
