@@ -198,15 +198,6 @@
     // 取最后一个时间作为“当前”
     const lastX = trackingData.length ? trackingData[trackingData.length - 1].x : 0;
     const cutoff = Math.max(0, lastX - WINDOW_MS);
-    
-    // 丢弃 30s 之前的数据（避免内存增长）- DISABLED to preserve all data
-    // User can pan/zoom to see historical data
-    // if (trackingData.length && trackingData[0].x < cutoff) {
-    //   const idx = trackingData.findIndex(p => p.x >= cutoff);
-    //   if (idx > 0) {
-    //     trackingData = trackingData.slice(idx);
-    //   }
-    // }
   
     // 固定 x 轴显示范围到最近 30s
     if (lastX > WINDOW_MS) {
