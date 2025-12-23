@@ -44,7 +44,7 @@ const createDarkModeStore = () => {
         // Update accent color if no theme is selected
         const storedTheme = localStorage.getItem('themeColor');
         if (storedTheme === 'null' || !storedTheme || !themeColors[storedTheme as ThemeColorName]) {
-          const plainColor = !isDark ? '#ffffff' : '#000000'; // Inverted because we just toggled
+          const plainColor = !isDark ? '#fafafafa' : '#000000'; // Inverted because we just toggled
           document.documentElement.style.setProperty('--color-primary', plainColor);
         }
       }
@@ -75,7 +75,7 @@ const createThemeColorStore = () => {
           localStorage.setItem('themeColor', 'null');
           // Set pure white/black based on current dark mode state
           const isDark = document.documentElement.classList.contains('dark');
-          const plainColor = isDark ? '#ffffff' : '#000000';
+          const plainColor = isDark ? '#fafafafa' : '#000000';
           document.documentElement.style.setProperty('--color-primary', plainColor);
         } else {
           localStorage.setItem('themeColor', colorName);
@@ -98,7 +98,7 @@ export const updateThemeForDarkMode = () => {
     if (storedTheme === 'null' || !storedTheme || !themeColors[storedTheme as ThemeColorName]) {
       // No theme selected, update to appropriate plain color
       const isDark = document.documentElement.classList.contains('dark');
-      const plainColor = isDark ? '#ffffff' : '#000000';
+      const plainColor = isDark ? '#fafafafa' : '#000000';
       document.documentElement.style.setProperty('--color-primary', plainColor);
     }
   }
@@ -153,7 +153,7 @@ if (browser) {
     document.documentElement.style.setProperty('--color-primary', selectedColor);
   } else {
     // No theme selected, use pure white/black based on dark mode
-    const plainColor = isDark ? '#ffffff' : '#000000';
+    const plainColor = isDark ? '#fafafafa' : '#000000';
     document.documentElement.style.setProperty('--color-primary', plainColor);
   }
 
