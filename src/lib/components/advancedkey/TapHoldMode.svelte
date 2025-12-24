@@ -123,6 +123,7 @@
       }, 600);
     }
     let dynamic_key = new ekc.DynamicKeyModTap();
+    console.log(dynamic_key);
     dynamic_key.bindings[0] = tapAction; 
     dynamic_key.bindings[1] = holdAction; 
     dynamic_key.type = ekc.DynamicKeyType.DynamicKeyModTap;
