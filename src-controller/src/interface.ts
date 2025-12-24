@@ -123,7 +123,6 @@ export interface IDynamicKeyToggleKey extends IDynamicKey {
 }
 
 export interface IDynamicKeyMutex extends IDynamicKey {
-    key_id : number[];
     mode : (DynamicKeyMutexMode | number);
 }
 
@@ -222,7 +221,7 @@ export class DynamicKeyStroke4x4 implements IDynamicKeyStroke4x4{
     constructor()
     {
         this.type = DynamicKeyType.DynamicKeyStroke;
-        this.target_keys_location = [];
+        this.target_keys_location = [new KeyLocation()];
         this.bindings = [0,0,0,0];
         this.key_control = [0,0,0,0];
         this.press_begin_distance = 0.25;
@@ -246,7 +245,7 @@ export class DynamicKeyModTap implements IDynamicKeyModTap {
     constructor()
     {
         this.type = DynamicKeyType.DynamicKeyModTap;
-        this.target_keys_location = [];
+        this.target_keys_location = [new KeyLocation()];
         this.bindings = [0,0];
         this.duration = 100;
     }
@@ -266,7 +265,7 @@ export class DynamicKeyToggleKey implements IDynamicKeyToggleKey {
     constructor()
     {
         this.type = DynamicKeyType.DynamicKeyToggleKey;
-        this.target_keys_location = [];
+        this.target_keys_location = [new KeyLocation()];
         this.bindings = [0];
     }
     get_primary_binding(): number {
@@ -279,7 +278,6 @@ export class DynamicKeyToggleKey implements IDynamicKeyToggleKey {
 }
 
 export class DynamicKeyMutex implements IDynamicKeyMutex {
-    key_id: number[];
     bindings: number[];
     mode: number;
     type: number;
@@ -288,9 +286,8 @@ export class DynamicKeyMutex implements IDynamicKeyMutex {
     constructor() 
     {
         this.type = DynamicKeyType.DynamicKeyMutex;
-        this.target_keys_location = [];
+        this.target_keys_location = [new KeyLocation(),new KeyLocation()];
         this.bindings = [0,0];
-        this.key_id = [0,0];
         this.mode = DynamicKeyMutexMode.DKMutexDistancePriority;
         this.is_key2_primary = false;
     }
@@ -413,6 +410,7 @@ export enum Keycode {
     JoystickCollection = 0xaa,
     MIDICollection = 0xab,
     MIDINote = 0xac,
+    MacroCollection = 0xad,
     KeyUser = 0xFD,
     KeyboardOperation = 0xFE,
     KeyTransparent = 0xFF,
@@ -710,6 +708,20 @@ export enum MIDIKeycode {
     PitchBendUp = 0x8F,
 }
   
+export enum MacroKeycode {
+
+    MacroEnd                             = 0x0,
+    MacroRecordingStart                 = 0x1,
+    MacroRecordingStop                  = 0x2,
+    MacroRecordingToggle                = 0x3,
+    MacroPlayingStartOnce              = 0x4,
+    MacroPlayingStartCircularly        = 0x5,
+    MacroPlayingStartOnceNoGap       = 0x6,
+    MacroPlayingStartCircularlyNoGap = 0x7,
+    MacroPlayingStop                    = 0x8,
+    MacroPlayingPause                   = 0x9,
+    MacroBegin                           = 0xf,
+}
 
 
 // Generic color interfaces
