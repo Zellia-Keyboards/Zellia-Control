@@ -270,6 +270,7 @@
     //dynamic_key.bindings[1] = ;
     //dynamic_key.bindings[2] = ;
     //dynamic_key.bindings[3] = ;
+    dynamic_key.target_keys_location[0] = new ekc.KeyLocation();
     dynamic_key.target_keys_location[0].id = currentSelected == null  ? 0 : currentSelected[0];
     dynamic_key.target_keys_location[0].layer = $selectedLayer;
     dynamic_key.press_begin_distance = mmToPercent(actuationPoint);

@@ -2,6 +2,7 @@ import { defineConfig } from 'vite';
 import { sveltekit } from '@sveltejs/kit/vite';
 import tailwindcss from '@tailwindcss/vite';
 import { VitePWA } from 'vite-plugin-pwa';
+import path from 'path';
 
 // https://vitejs.dev/config/
 export default defineConfig(async () => ({
@@ -61,14 +62,15 @@ export default defineConfig(async () => ({
     }),
   ],
 
+  resolve: {
+		alias: {
+			'emi-keyboard-controller': path.resolve(__dirname, './src-controller/src/index.ts')
+		}
+	},
   server: {
     fs: {
       // Allow serving files from the src-controller directory
-      allow: ['..', 'src-controller'],
-    },
-    watch: {
-      // Ignore watching src-tauri (now removed)
-      ignored: [],
-    },
+      allow: ['.', './src-controller'],
+    }
   },
 }));

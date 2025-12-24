@@ -168,6 +168,9 @@
       //dynamic_key.bindings[1] = ;
       //dynamic_key.bindings[2] = ;
       //dynamic_key.bindings[3] = ;
+
+      dynamic_key.target_keys_location[0] = new ekc.KeyLocation();
+      dynamic_key.target_keys_location[1] = new ekc.KeyLocation();
       dynamic_key.target_keys_location[0].id = localSelectedKeys[0];
       dynamic_key.target_keys_location[0].layer = $selectedLayer;
       dynamic_key.target_keys_location[1].id = localSelectedKeys[1];

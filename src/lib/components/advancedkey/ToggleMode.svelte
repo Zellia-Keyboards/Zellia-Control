@@ -115,13 +115,15 @@
     let dynamic_key = new ekc.DynamicKeyToggleKey();
     dynamic_key.type = ekc.DynamicKeyType.DynamicKeyToggleKey;
     dynamic_key.bindings[0] = selectedToggleAction;
+    dynamic_key.target_keys_location[0] = new ekc.KeyLocation();
     dynamic_key.target_keys_location[0].id = currentSelectedIndex;
-    dynamic_key.target_keys_location[0].layer = $selectedLayer;
+    dynamic_key.target_keys_location[0].layer = $selectedLayer - 1;
     let dynamic_key_index = $dynamicKeys.findIndex(item => item.type == ekc.DynamicKeyType.DynamicKeyNone);
     $dynamicKeys[dynamic_key_index] = dynamic_key;
     $dynamicKeys = $dynamicKeys;
-    $keymap[$selectedLayer][currentSelectedIndex] = ekc.Keycode.DynamicKey | (dynamic_key_index << 8);
-    keyboardConnectionState.controller?.send_keymap_packet([currentSelectedIndex],$selectedLayer,$keymap[$selectedLayer][currentSelectedIndex]);
+    $keymap[$selectedLayer - 1][currentSelectedIndex] = ekc.Keycode.DynamicKey | (dynamic_key_index << 8);
+    keyboardConnectionState.controller?.set_dynamic_keys($dynamicKeys);
+    keyboardConnectionState.controller?.send_keymap_packet([currentSelectedIndex],$selectedLayer - 1,$keymap[$selectedLayer - 1][currentSelectedIndex]);
     keyboardConnectionState.controller?.send_dynamic_key_packet(dynamic_key_index, dynamic_key);
   }
 
