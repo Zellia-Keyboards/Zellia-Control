@@ -47,7 +47,7 @@ const createDarkModeStore = () => {
   return {
     toggle: () => {
       const isDark = document.documentElement.classList.contains('dark');
-      localStorage.setItem('darkMode',(!isDark).toString());
+      localStorage.setItem('darkMode', (!isDark).toString());
 
       if (!browser) {
         if (isDark) {
@@ -164,7 +164,6 @@ export const glassmorphismMode = createGlassmorphismStore();
 // Initialize dark class and theme color on document load if in browser
 if (browser) {
   // Disable transitions during initial load
-  
 
   const storedDarkMode = localStorage.getItem('darkMode');
   const isDark = storedDarkMode !== null ? storedDarkMode === 'true' : true; // Default to dark
@@ -183,7 +182,6 @@ if (browser) {
     const plainColor = isDark ? '#fafafafa' : '#000000';
     document.documentElement.style.setProperty('--color-primary', plainColor);
   }
-
 
   // Always enable glassmorphism mode
   document.documentElement.classList.add('glassmorphism');

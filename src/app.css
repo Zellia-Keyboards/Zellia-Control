@@ -239,7 +239,7 @@
   }
 
   /* Prevent text breaking in lighting page keys */
-  .lighting-page-keys [class^="label-cell-"] {
+  .lighting-page-keys [class^='label-cell-'] {
     white-space: nowrap !important;
     word-break: keep-all !important;
     text-overflow: ellipsis !important;

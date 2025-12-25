@@ -27,7 +27,7 @@
       }
     };
     updateSize();
-    
+
     // Update on resize for responsive changes
     window.addEventListener('resize', updateSize);
     return () => window.removeEventListener('resize', updateSize);
@@ -238,7 +238,7 @@
   }
 
   /* Base label cell styling */
-  [class^="label-cell-"] {
+  [class^='label-cell-'] {
     display: flex;
     overflow: visible;
     white-space: normal;

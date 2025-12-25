@@ -30,15 +30,15 @@
 
   function handleKeyDown(event: KeyboardEvent) {
     if (!isListening) return;
-    
+
     // Prevent default for most keys to avoid browser shortcuts
     event.preventDefault();
-    
+
     const now = performance.now();
     if (startTime === null) {
       startTime = now;
     }
-    
+
     const elapsedMs = Math.round(now - startTime);
     const delta = lastEventTime !== null ? Math.round(now - lastEventTime) : 0;
     lastEventTime = now;
@@ -47,7 +47,7 @@
       time: formatTime(elapsedMs),
       type: 'Press',
       key: getKeyName(event),
-      delta
+      delta,
     };
 
     events = [...events, newEvent];
@@ -55,14 +55,14 @@
 
   function handleKeyUp(event: KeyboardEvent) {
     if (!isListening) return;
-    
+
     event.preventDefault();
-    
+
     const now = performance.now();
     if (startTime === null) {
       startTime = now;
     }
-    
+
     const elapsedMs = Math.round(now - startTime);
     const delta = lastEventTime !== null ? Math.round(now - lastEventTime) : 0;
     lastEventTime = now;
@@ -71,7 +71,7 @@
       time: formatTime(elapsedMs),
       type: 'Release',
       key: getKeyName(event),
-      delta
+      delta,
     };
 
     events = [...events, newEvent];
@@ -114,11 +114,13 @@
   <div class="w-[320px] flex flex-col gap-4 shrink-0">
     <div class="p-5 rounded-xl glassmorphism-card">
       <p class="text-sm text-gray-300 leading-relaxed mb-4">
-        This tool is intended for general-purpose key testing and can be used with any keyboard, but it is not suitable for specialized purposes such as latency testing.
+        This tool is intended for general-purpose key testing and can be used with any keyboard, but
+        it is not suitable for specialized purposes such as latency testing.
       </p>
-      
+
       <p class="text-sm text-gray-300 leading-relaxed">
-        Due to the limitations of the browser environment, some keys cannot be tested and the obtained time may not be accurate.
+        Due to the limitations of the browser environment, some keys cannot be tested and the
+        obtained time may not be accurate.
       </p>
     </div>
 
@@ -141,7 +143,7 @@
             Stop Listening
           </button>
         {/if}
-        
+
         <button
           type="button"
           class="w-full px-6 py-2.5 glassmorphism-button rounded-lg text-sm font-medium"
@@ -150,7 +152,7 @@
           Clear
         </button>
       </div>
-      
+
       {#if isListening}
         <div class="mt-4 flex items-center gap-2">
           <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
@@ -164,13 +166,15 @@
   <div class="flex-1 flex flex-col min-w-0">
     <div class="flex-1 rounded-xl glassmorphism-card p-4 min-h-0 overflow-hidden flex flex-col">
       <!-- Table Header -->
-      <div class="grid grid-cols-4 gap-4 px-4 py-3 border-b border-gray-700/50 text-sm font-medium text-gray-400">
+      <div
+        class="grid grid-cols-4 gap-4 px-4 py-3 border-b border-gray-700/50 text-sm font-medium text-gray-400"
+      >
         <div>Time</div>
         <div>Type</div>
         <div>Key</div>
         <div>Delta (ms)</div>
       </div>
-      
+
       <!-- Table Body -->
       <div class="flex-1 overflow-y-auto">
         {#if events.length === 0}
@@ -183,9 +187,16 @@
           </div>
         {:else}
           {#each events as event, index (index)}
-            <div class="grid grid-cols-4 gap-4 px-4 py-2.5 border-b border-gray-800/50 text-sm {event.type === 'Press' ? 'text-green-400' : 'text-orange-400'}">
+            <div
+              class="grid grid-cols-4 gap-4 px-4 py-2.5 border-b border-gray-800/50 text-sm {event.type ===
+              'Press'
+                ? 'text-green-400'
+                : 'text-orange-400'}"
+            >
               <div class="text-gray-300">{event.time}</div>
-              <div class="{event.type === 'Press' ? 'text-green-400' : 'text-orange-400'}">{event.type}</div>
+              <div class={event.type === 'Press' ? 'text-green-400' : 'text-orange-400'}>
+                {event.type}
+              </div>
               <div class="font-mono text-white">{event.key}</div>
               <div class="text-gray-400">{event.delta}</div>
             </div>

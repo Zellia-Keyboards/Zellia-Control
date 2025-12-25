@@ -149,9 +149,15 @@
   class="rounded-2xl shadow mt-2 mb-4 grow bg-primary-100 dark:bg-black border border-transparent dark:border-gray-600 text-black dark:text-white h-full flex flex-col glassmorphism-card"
   style="padding: calc(2rem * var(--ui-scale, 1));"
 >
-  <div class="flex items-center justify-between" style="margin-bottom: calc(1rem * var(--ui-scale, 1));">
+  <div
+    class="flex items-center justify-between"
+    style="margin-bottom: calc(1rem * var(--ui-scale, 1));"
+  >
     <div class="flex items-center gap-4">
-      <h2 class="font-bold text-gray-900 dark:text-white" style="font-size: calc(1.5rem * var(--ui-scale, 1));">
+      <h2
+        class="font-bold text-gray-900 dark:text-white"
+        style="font-size: calc(1.5rem * var(--ui-scale, 1));"
+      >
         {t('performance.title', currentLanguage)}
       </h2>
       <!-- Switch Travel Distance Component -->

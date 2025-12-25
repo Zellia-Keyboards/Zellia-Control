@@ -50,7 +50,8 @@
           ></div>
         {/if}
         <div
-          class="relative z-10 text-xs font-medium whitespace-nowrap overflow-hidden text-ellipsis {selectedEffect === effect.id
+          class="relative z-10 text-xs font-medium whitespace-nowrap overflow-hidden text-ellipsis {selectedEffect ===
+          effect.id
             ? 'text-primary-700 dark:text-primary-200'
             : 'text-black dark:text-white'}"
         >

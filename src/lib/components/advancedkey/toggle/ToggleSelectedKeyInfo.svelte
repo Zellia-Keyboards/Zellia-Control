@@ -13,12 +13,14 @@
 </script>
 
 <div
-  class="rounded-lg border border-gray-200 dark:border-gray-600 p-4 sm:p-6 mb-6 bg-white dark:bg-gray-900 glassmorphism-card">
+  class="rounded-lg border border-gray-200 dark:border-gray-600 p-4 sm:p-6 mb-6 bg-white dark:bg-gray-900 glassmorphism-card"
+>
   <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
     <div class="flex items-center gap-4">
       <div class="flex items-center gap-3">
         <div
-          class="w-12 h-12 rounded-lg flex items-center justify-center border-2 border-primary-500 bg-primary-50 dark:bg-primary-900 glassmorphism-button">
+          class="w-12 h-12 rounded-lg flex items-center justify-center border-2 border-primary-500 bg-primary-50 dark:bg-primary-900 glassmorphism-button"
+        >
           <span class="font-mono font-bold text-gray-900 dark:text-white">{currentKeyName}</span>
         </div>
         <div>

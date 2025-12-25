@@ -14,7 +14,8 @@
 
   const colorClasses = {
     blue: 'glassmorphism-button bg-blue-600/80 border border-blue-500/50 text-white hover:bg-blue-600',
-    orange: 'glassmorphism-button bg-orange-600/80 border border-orange-500/50 text-white hover:bg-orange-600',
+    orange:
+      'glassmorphism-button bg-orange-600/80 border border-orange-500/50 text-white hover:bg-orange-600',
     red: 'glassmorphism-button bg-red-600/80 border border-red-500/50 text-white hover:bg-red-600',
   };
 </script>

@@ -1,6 +1,6 @@
 <script lang="ts">
   import { Sun, Moon } from 'lucide-svelte';
-  import { darkMode} from '$lib/stores/DarkModeStore.svelte';
+  import { darkMode } from '$lib/stores/DarkModeStore.svelte';
   import { language, t } from '$lib/stores/LanguageStore.svelte';
 
   let currentLanguage = $derived($language);

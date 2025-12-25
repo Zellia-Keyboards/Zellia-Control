@@ -255,8 +255,14 @@
   class="rounded-2xl shadow mt-2 mb-4 grow bg-gray-50 dark:bg-black border border-gray-200 dark:border-gray-600 text-black dark:text-white h-full flex flex-col glassmorphism-card"
   style="padding: calc(2rem * var(--ui-scale, 1));"
 >
-  <div class="flex items-center justify-between -mt-4" style="margin-bottom: calc(0.5rem * var(--ui-scale, 1));">
-    <h2 class="font-bold text-black dark:text-white" style="font-size: calc(1.5rem * var(--ui-scale, 1));">
+  <div
+    class="flex items-center justify-between -mt-4"
+    style="margin-bottom: calc(0.5rem * var(--ui-scale, 1));"
+  >
+    <h2
+      class="font-bold text-black dark:text-white"
+      style="font-size: calc(1.5rem * var(--ui-scale, 1));"
+    >
       {t('lighting.title', currentLanguage)}
     </h2>
     <div class="flex gap-2 mb-2">

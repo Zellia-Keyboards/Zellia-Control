@@ -7,8 +7,8 @@
 
 {#if shouldShow}
   <div class="layer-selector flex items-center gap-2 px-4 py-2 h-12">
-    <span
-      class="font-semibold text-gray-900 dark:text-white mr-2 text-gray-800 dark:text-white">Layer:</span
+    <span class="font-semibold text-gray-900 dark:text-white mr-2 text-gray-800 dark:text-white"
+      >Layer:</span
     >
     {#each [1, 2, 3, 4] as layer}
       <button

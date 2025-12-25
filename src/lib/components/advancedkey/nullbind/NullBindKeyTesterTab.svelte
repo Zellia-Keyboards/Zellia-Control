@@ -16,9 +16,7 @@
   let currentLanguage = $derived($language);
 </script>
 
-<div
-  class="flex flex-col gap-4 rounded-md border glassmorphism-card p-4 shadow-sm"
->
+<div class="flex flex-col gap-4 rounded-md border glassmorphism-card p-4 shadow-sm">
   <div class="text-center">
     <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">
       {t('advancedkey.keyTesterTitle', currentLanguage)}
@@ -28,9 +26,7 @@
     </p>
 
     <div class="grid grid-cols-2 gap-4 max-w-md mx-auto">
-      <div
-        class="p-6 border-2 border-primary-300 bg-primary-100 rounded-lg glassmorphism-card"
-      >
+      <div class="p-6 border-2 border-primary-300 bg-primary-100 rounded-lg glassmorphism-card">
         <div class="text-2xl font-mono font-bold text-gray-900 dark:text-white mb-2">
           {getKeyLabel(localSelectedKeys[0])}
         </div>
@@ -43,9 +39,7 @@
           </div>
         {/if}
       </div>
-      <div
-        class="p-6 border-2 border-primary-300 bg-primary-100 rounded-lg glassmorphism-card"
-      >
+      <div class="p-6 border-2 border-primary-300 bg-primary-100 rounded-lg glassmorphism-card">
         <div class="text-2xl font-mono font-bold text-gray-900 dark:text-white mb-2">
           {getKeyLabel(localSelectedKeys[1])}
         </div>

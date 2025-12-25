@@ -42,7 +42,6 @@
   {#if showLayoutMenu}
     <div
       class="absolute right-0 top-12 w-72 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg z-50 p-4 glassmorphism-card"
-
       transition:slide={{ duration: 300, axis: 'y' }}
     >
       <!-- Bottom Row Configuration -->

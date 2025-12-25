@@ -25,7 +25,7 @@
       }
     };
     updateSize();
-    
+
     // Update on resize for responsive changes
     window.addEventListener('resize', updateSize);
     return () => window.removeEventListener('resize', updateSize);

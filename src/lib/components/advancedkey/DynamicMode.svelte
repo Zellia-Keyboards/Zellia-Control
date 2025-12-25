@@ -9,10 +9,15 @@
     DKSAction,
     type DynamicKeystrokeConfiguration as GlobalDynamicKeystrokeConfiguration,
   } from '$lib/types/AdvancedKeyShared';
-  import { advancedKeys, dynamicKeys, rgbBaseConfig, rgbConfigs } from '$lib/stores/ControllerStore.svelte';
+  import {
+    advancedKeys,
+    dynamicKeys,
+    rgbBaseConfig,
+    rgbConfigs,
+  } from '$lib/stores/ControllerStore.svelte';
   import * as ekc from 'emi-keyboard-controller';
   import { selectedLayer } from '$lib/stores/SelectedLayerStore.svelte';
-  import { keyboardAPI,keyboardConnectionState } from '$lib/api/keyboardAPI.svelte';
+  import { keyboardAPI, keyboardConnectionState } from '$lib/api/keyboardAPI.svelte';
 
   import DKSBinding from '$lib/components/advancedkey/dynamic/Binding.svelte';
   import DKSPerformance from '$lib/components/advancedkey/dynamic/Performance.svelte';
@@ -270,12 +275,12 @@
     //dynamic_key.bindings[2] = ;
     //dynamic_key.bindings[3] = ;
     dynamic_key.target_keys_location[0] = new ekc.KeyLocation();
-    dynamic_key.target_keys_location[0].id = currentSelected == null  ? 0 : currentSelected[0];
+    dynamic_key.target_keys_location[0].id = currentSelected == null ? 0 : currentSelected[0];
     dynamic_key.target_keys_location[0].layer = $selectedLayer;
     dynamic_key.press_begin_distance = mmToPercent(actuationPoint);
     dynamic_key.press_fully_distance = mmToPercent(dksBottomOutPoint);
     dynamic_key.release_begin_distance = mmToPercent(dksBottomOutPoint);
-    dynamic_key.release_fully_distance= mmToPercent(actuationPoint);
+    dynamic_key.release_fully_distance = mmToPercent(actuationPoint);
     keyboardConnectionState.controller?.send_dynamic_key_packet(0, dynamic_key);
   }
 
@@ -388,7 +393,7 @@
     {@const [start, end] = interval}
     {#if start !== -1 && end > start}
       <button
-        class="absolute z-20 rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 glassmorphism-button bg-primary-500 hover:bg-primary-600 focus-visible:ring-primary-300 dark:bg-gray-600 "
+        class="absolute z-20 rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 glassmorphism-button bg-primary-500 hover:bg-primary-600 focus-visible:ring-primary-300 dark:bg-gray-600"
         style="width: {DKS_NODE_SIZE +
           dksIntervalWidth(
             interval
@@ -572,7 +577,7 @@
               actionCategories={dksActionCategories}
             />
           {:else if dksActiveTab === 'performance'}
-            <DKSPerformance {actuationPoint}/>
+            <DKSPerformance {actuationPoint} />
           {:else if dksActiveTab === 'key-tester'}
             <DKSKeyTester {currentKeyName} />
           {/if}

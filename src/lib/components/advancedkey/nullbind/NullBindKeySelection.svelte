@@ -12,9 +12,7 @@
   let currentLanguage = $derived($language);
 </script>
 
-<div
-  class="p-6"
->
+<div class="p-6">
   <div class="max-w-4xl mx-auto">
     <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-3">
       {t('advancedkey.selectTwoKeys', currentLanguage)}
@@ -25,7 +23,7 @@
     <!-- Selected Keys Display -->
     <div class="grid grid-cols-2 gap-4 mb-4">
       <div
-        class="p-4 border-2 border-dashed rounded-lg glassmorphism-card 
+        class="p-4 border-2 border-dashed rounded-lg glassmorphism-card
         {localSelectedKeys.length >= 1
           ? 'border-primary-500 bg-primary-100 dark:bg-primary-900'
           : 'border-primary-400 bg-primary-200 dark:bg-primary-800'}"
@@ -60,7 +58,8 @@
       </div>
 
       <div
-        class="p-4 border-2 border-dashed rounded-lg glassmorphism-card {localSelectedKeys.length >= 2
+        class="p-4 border-2 border-dashed rounded-lg glassmorphism-card {localSelectedKeys.length >=
+        2
           ? 'border-primary-500 bg-primary-100 dark:bg-primary-900'
           : localSelectedKeys.length === 1
             ? 'border-primary-500 bg-primary-100 dark:bg-primary-800'

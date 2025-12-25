@@ -63,14 +63,14 @@ export default defineConfig(async () => ({
   ],
 
   resolve: {
-		alias: {
-			'emi-keyboard-controller': path.resolve(__dirname, './src-controller/src/index.ts')
-		}
-	},
+    alias: {
+      'emi-keyboard-controller': path.resolve(__dirname, './src-controller/src/index.ts'),
+    },
+  },
   server: {
     fs: {
       // Allow serving files from the src-controller directory
       allow: ['.', './src-controller'],
-    }
+    },
   },
 }));

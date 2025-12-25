@@ -1,10 +1,7 @@
 <script lang="ts">
   import { Globe } from 'lucide-svelte';
   import { language, t, type Language } from '$lib/stores/LanguageStore.svelte';
-  import {
-    selectedThemeColor,
-    themeColors,
-  } from '$lib/stores/DarkModeStore.svelte';
+  import { selectedThemeColor, themeColors } from '$lib/stores/DarkModeStore.svelte';
 
   let currentLanguage = $derived($language);
   let currentTheme = $state($selectedThemeColor);
@@ -21,17 +18,18 @@
 <div class="p-3">
   <div class="flex items-center gap-2 mb-2">
     <Globe class="w-4 h-4 text-gray-600 dark:text-gray-400" />
-    <span class="text-sm font-medium text-gray-900 dark:text-white"
-      >{t('ui.language', currentLanguage)}</span
+    <span class="text-sm font-medium text-gray-900 dark:text-white">
+      {t('ui.language', currentLanguage)}</span
     >
   </div>
 
-  <div
-    class="relative inline-flex w-full rounded-lg p-1 glassmorphism-card"
-  >
+  <div class="relative inline-flex w-full rounded-lg p-1 glassmorphism-card">
     <div
       class="language-switch-slider absolute top-1 bottom-1 w-[calc(50%-4px)] rounded-md transition-all duration-300 ease-out shadow-lg language-slider-bg"
-      style="left: {currentLanguage === 'en' ? '4px' : 'calc(50% + 0px)'}; transform: translateZ(0); {currentTheme ? `
+      style="left: {currentLanguage === 'en'
+        ? '4px'
+        : 'calc(50% + 0px)'}; transform: translateZ(0); {currentTheme
+        ? `
         backdrop-filter: blur(12px);
         -webkit-backdrop-filter: blur(12px);
         background: linear-gradient(135deg,
@@ -44,17 +42,24 @@
           inset 0 1px 0 0 rgba(255, 255, 255, 0.15),
           inset 0 -1px 0 0 rgba(0, 0, 0, 0.1);
         border: 1px solid ${themeColors[currentTheme]}33;
-      ` : ''}"
+      `
+        : ''}"
     ></div>
 
     <button
-      class="flex-1 px-3 py-2 text-sm font-medium rounded-md transition-all duration-200 relative z-10 {currentLanguage === 'en' ? 'text-white font-semibold' : 'text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'}"
+      class="flex-1 px-3 py-2 text-sm font-medium rounded-md transition-all duration-200 relative z-10 {currentLanguage ===
+      'en'
+        ? 'text-white font-semibold'
+        : 'text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'}"
       onclick={() => setLanguage('en')}
     >
       EN
     </button>
     <button
-      class="flex-1 px-3 py-2 text-sm font-medium rounded-md transition-all duration-200 relative z-10 {currentLanguage === 'zh' ? 'text-white font-semibold' : 'text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'}"
+      class="flex-1 px-3 py-2 text-sm font-medium rounded-md transition-all duration-200 relative z-10 {currentLanguage ===
+      'zh'
+        ? 'text-white font-semibold'
+        : 'text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'}"
       onclick={() => setLanguage('zh')}
     >
       中文

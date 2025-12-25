@@ -9,8 +9,7 @@
   let currentLanguage = $derived($language);
 
   // Add actuation point state
-  let {actuationPoint} : Props = $props();
-;
+  let { actuationPoint }: Props = $props();
 </script>
 
 <div

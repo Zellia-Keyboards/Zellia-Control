@@ -1,5 +1,4 @@
 <script lang="ts">
-
   // WebUSB DFU types for AT32F405
   declare global {
     interface Navigator {
@@ -33,8 +32,14 @@
     releaseInterface(interfaceNumber: number): Promise<void>;
     transferOut(endpointNumber: number, data: BufferSource): Promise<USBTransfer>;
     transferIn(endpointNumber: number, length: number): Promise<USBInTransferResult>;
-    controlTransferOut(setup: USBControlTransferParameters, data?: BufferSource): Promise<USBTransfer>;
-    controlTransferIn(setup: USBControlTransferParameters, length: number): Promise<USBInTransferResult>;
+    controlTransferOut(
+      setup: USBControlTransferParameters,
+      data?: BufferSource
+    ): Promise<USBTransfer>;
+    controlTransferIn(
+      setup: USBControlTransferParameters,
+      length: number
+    ): Promise<USBInTransferResult>;
     reset(): Promise<void>;
   }
 
@@ -74,10 +79,20 @@
     Info,
     RotateCcw,
     Cpu,
-    Flag
+    Flag,
   } from 'lucide-svelte';
 
-  type FlashStatus = 'idle' | 'choosing' | 'verifying' | 'rebooting' | 'connecting_recovery' | 'updating_program' | 'connecting_flash' | 'flashing' | 'success' | 'error';
+  type FlashStatus =
+    | 'idle'
+    | 'choosing'
+    | 'verifying'
+    | 'rebooting'
+    | 'connecting_recovery'
+    | 'updating_program'
+    | 'connecting_flash'
+    | 'flashing'
+    | 'success'
+    | 'error';
 
   interface FlashStep {
     id: string;
@@ -88,8 +103,8 @@
   }
 
   // AT32F405 DFU Constants
-  const AT32_VID = 0x2E3C; // ArteryTek VID
-  const AT32_DFU_PID = 0xDF11; // DFU PID
+  const AT32_VID = 0x2e3c; // ArteryTek VID
+  const AT32_DFU_PID = 0xdf11; // DFU PID
   const DFU_DETACH_TIMEOUT = 1000; // ms
   const DFU_INTERFACE = 0;
 
@@ -116,50 +131,50 @@
       name: 'Choose Binary',
       icon: Upload,
       description: 'Select firmware file',
-      status: 'pending'
+      status: 'pending',
     },
     {
       id: 'reboot_recovery',
       name: 'Reboot to Recovery',
       icon: RotateCcw,
       description: 'Enter DFU mode',
-      status: 'pending'
+      status: 'pending',
     },
     {
       id: 'connect_recovery',
       name: 'Connect Recovery',
       icon: Usb,
       description: 'Connect in DFU mode',
-      status: 'pending'
+      status: 'pending',
     },
     {
       id: 'update_program',
       name: 'Update Program',
       icon: Cpu,
       description: 'Update DFU bootloader',
-      status: 'pending'
+      status: 'pending',
     },
     {
       id: 'connect_flash',
       name: 'Connect Flash',
       icon: Usb,
       description: 'Reconnect for flashing',
-      status: 'pending'
+      status: 'pending',
     },
     {
       id: 'flash_firmware',
       name: 'Flash Firmware',
       icon: Zap,
       description: 'Write firmware to device',
-      status: 'pending'
+      status: 'pending',
     },
     {
       id: 'finish',
       name: 'Finish',
       icon: Flag,
       description: 'Flashing complete',
-      status: 'pending'
-    }
+      status: 'pending',
+    },
   ];
 
   let steps = $state(flashSteps);
@@ -168,7 +183,7 @@
   function updateStepStatus(stepId: string, newStatus: FlashStep['status']) {
     steps = steps.map(step => ({
       ...step,
-      status: step.id === stepId ? newStatus : step.status
+      status: step.id === stepId ? newStatus : step.status,
     }));
   }
 
@@ -232,13 +247,15 @@
       const arrayBuffer = await file.arrayBuffer();
 
       // Basic validation
-      if (arrayBuffer.byteLength > 1024 * 1024) { // Max 1MB
+      if (arrayBuffer.byteLength > 1024 * 1024) {
+        // Max 1MB
         status = 'error';
         errorMessage = 'Firmware file too large (max 1MB)';
         return;
       }
 
-      if (arrayBuffer.byteLength < 1024) { // Min 1KB
+      if (arrayBuffer.byteLength < 1024) {
+        // Min 1KB
         status = 'error';
         errorMessage = 'Firmware file too small (min 1KB)';
         return;
@@ -246,8 +263,9 @@
 
       fileContent = arrayBuffer;
 
-      console.log(`Firmware loaded: ${file.name} (${Math.round(arrayBuffer.byteLength / 1024)} KB)`);
-
+      console.log(
+        `Firmware loaded: ${file.name} (${Math.round(arrayBuffer.byteLength / 1024)} KB)`
+      );
     } catch (error) {
       status = 'error';
       errorMessage = 'Failed to read firmware file';
@@ -259,9 +277,7 @@
   async function connectDFU(reconnect = false): Promise<boolean> {
     try {
       dfuDevice = await navigator.usb.requestDevice({
-        filters: [
-          { vendorId: AT32_VID, productId: AT32_DFU_PID }
-        ]
+        filters: [{ vendorId: AT32_VID, productId: AT32_DFU_PID }],
       });
 
       console.log('DFU device connected:', dfuDevice);
@@ -271,7 +287,6 @@
       await dfuDevice.claimInterface(DFU_INTERFACE);
 
       return true;
-
     } catch (error) {
       console.error('DFU connection error:', error);
 
@@ -303,7 +318,7 @@
         recipient: 'interface',
         request: 0, // DFU_DETACH
         value: DFU_DETACH_TIMEOUT,
-        index: DFU_INTERFACE
+        index: DFU_INTERFACE,
       });
 
       // Wait for device to disconnect
@@ -318,7 +333,6 @@
 
       dfuDevice = null;
       return true;
-
     } catch (error) {
       console.error('Detach error:', error);
       errorMessage = 'Failed to reboot device';
@@ -341,13 +355,16 @@
         const chunk = firmwareData.slice(offset, Math.min(offset + chunkSize, firmwareData.length));
 
         // Set address
-        await dfuDevice.controlTransferOut({
-          requestType: 'class',
-          recipient: 'interface',
-          request: 0x21, // DFU_DOWNLOAD
-          value: Math.floor(offset / chunkSize),
-          index: 0
-        }, chunk);
+        await dfuDevice.controlTransferOut(
+          {
+            requestType: 'class',
+            recipient: 'interface',
+            request: 0x21, // DFU_DOWNLOAD
+            value: Math.floor(offset / chunkSize),
+            index: 0,
+          },
+          chunk
+        );
 
         // Update progress
         progress = 70 + ((offset + chunk.length) / firmwareData.length) * 25;
@@ -355,16 +372,18 @@
       }
 
       // Verify download
-      await dfuDevice.controlTransferOut({
-        requestType: 'class',
-        recipient: 'interface',
-        request: 0x21, // DFU_DOWNLOAD
-        value: 0,
-        index: 0
-      }, new Uint8Array([0])); // Empty packet to finalize
+      await dfuDevice.controlTransferOut(
+        {
+          requestType: 'class',
+          recipient: 'interface',
+          request: 0x21, // DFU_DOWNLOAD
+          value: 0,
+          index: 0,
+        },
+        new Uint8Array([0])
+      ); // Empty packet to finalize
 
       return true;
-
     } catch (error) {
       console.error('Download error:', error);
       errorMessage = 'Failed to flash firmware';
@@ -386,7 +405,7 @@
       await new Promise(resolve => setTimeout(resolve, 2000));
 
       // Step 4: Connect in recovery mode
-      if (!await connectDFU()) {
+      if (!(await connectDFU())) {
         updateStepStatus('connect_recovery', 'error');
         status = 'error';
         return;
@@ -408,7 +427,7 @@
       await detachAndReboot();
       await new Promise(resolve => setTimeout(resolve, 1000));
 
-      if (!await connectDFU(true)) {
+      if (!(await connectDFU(true))) {
         updateStepStatus('connect_flash', 'error');
         status = 'error';
         return;
@@ -420,7 +439,7 @@
       progress = 60;
 
       // Step 7: Flash firmware
-      if (!await downloadFirmware()) {
+      if (!(await downloadFirmware())) {
         updateStepStatus('flash_firmware', 'error');
         status = 'error';
         return;
@@ -441,7 +460,6 @@
       } catch (error) {
         console.error('Cleanup error:', error);
       }
-
     } catch (error) {
       console.error('Flashing error:', error);
       status = 'error';
@@ -480,9 +498,7 @@
     <h1 class="text-2xl font-semibold text-gray-900 dark:text-white mb-2">
       Zellia Firmware Updater
     </h1>
-    <p class="text-sm text-gray-500 dark:text-gray-400">
-      Update your device firmware via USB DFU
-    </p>
+    <p class="text-sm text-gray-500 dark:text-gray-400">Update your device firmware via USB DFU</p>
   </div>
 
   <!-- Main Content -->
@@ -501,30 +517,34 @@
       <!-- Steps -->
       <div class="relative flex flex-col justify-between h-full py-2">
         {#each steps as step, index}
-          <div class="relative fade-in" class:active={step.status === 'active'} class:completed={step.status === 'completed'}>
+          <div
+            class="relative fade-in"
+            class:active={step.status === 'active'}
+            class:completed={step.status === 'completed'}
+          >
             <!-- Step Circle with line running through it -->
             <div class="flex items-center gap-2">
               <div
-                class="w-10 h-10 rounded-full flex items-center justify-center transition-all duration-500 border-3 z-10 {
-                  step.status === 'completed'
-                    ? 'bg-primary-500 border-primary-500'
+                class="w-10 h-10 rounded-full flex items-center justify-center transition-all duration-500 border-3 z-10 {step.status ===
+                'completed'
+                  ? 'bg-primary-500 border-primary-500'
                   : step.status === 'active'
                     ? 'bg-primary-100 dark:bg-primary-900/30 border-primary-500 ring-4 ring-primary-500/50'
-                  : step.status === 'error'
-                    ? 'bg-red-500 border-red-500'
-                    : 'bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-600'
-                }"
+                    : step.status === 'error'
+                      ? 'bg-red-500 border-red-500'
+                      : 'bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-600'}"
               >
                 {#if step.status === 'completed'}
                   <CheckCircle class="w-5 h-5 text-white" />
                 {:else if step.status === 'error'}
                   <AlertCircle class="w-5 h-5 text-white" />
                 {:else}
-                  <svelte:component this={step.icon} class="w-5 h-5 {
-                    step.status === 'active'
+                  <svelte:component
+                    this={step.icon}
+                    class="w-5 h-5 {step.status === 'active'
                       ? 'text-primary-600 dark:text-primary-400'
-                      : 'text-gray-400'
-                  }" />
+                      : 'text-gray-400'}"
+                  />
                 {/if}
               </div>
 
@@ -546,7 +566,9 @@
       {#if steps[0].status === 'active'}
         <div class="text-center space-y-3 w-full max-w-sm">
           <div class="w-12 h-12 mx-auto">
-            <div class="w-12 h-12 bg-primary-100 dark:bg-primary-900/20 rounded-full flex items-center justify-center">
+            <div
+              class="w-12 h-12 bg-primary-100 dark:bg-primary-900/20 rounded-full flex items-center justify-center"
+            >
               <Upload class="w-6 h-6 text-primary-500" />
             </div>
           </div>
@@ -561,9 +583,9 @@
           </div>
 
           <div
-            class="w-64 h-36 border-2 border-dashed bg-black border-gray-600 rounded-lg flex flex-col items-center justify-center transition-all duration-300 mx-auto hover:border-primary-500 {
-              fileDropActive ? 'border-primary-500 scale-105 bg-primary-900/40' : ''
-            } {selectedFile ? 'border-green-500 bg-green-900/30' : ''}"
+            class="w-64 h-36 border-2 border-dashed bg-black border-gray-600 rounded-lg flex flex-col items-center justify-center transition-all duration-300 mx-auto hover:border-primary-500 {fileDropActive
+              ? 'border-primary-500 scale-105 bg-primary-900/40'
+              : ''} {selectedFile ? 'border-green-500 bg-green-900/30' : ''}"
             ondrop={handleFileDrop}
             ondragover={handleDragOver}
             ondragleave={handleDragLeave}
@@ -577,10 +599,15 @@
               id="firmware-file-input"
             />
 
-            <label for="firmware-file-input" class="cursor-pointer text-center px-4 w-full h-full flex flex-col items-center justify-center">
+            <label
+              for="firmware-file-input"
+              class="cursor-pointer text-center px-4 w-full h-full flex flex-col items-center justify-center"
+            >
               {#if selectedFile}
                 <div class="space-y-3">
-                  <div class="w-10 h-10 mx-auto bg-green-500 rounded-lg flex items-center justify-center">
+                  <div
+                    class="w-10 h-10 mx-auto bg-green-500 rounded-lg flex items-center justify-center"
+                  >
                     <CheckCircle class="w-5 h-5 text-white" />
                   </div>
                   <div>
@@ -594,7 +621,9 @@
                 </div>
               {:else}
                 <div class="space-y-3">
-                  <div class="w-12 h-12 mx-auto bg-primary-100 dark:bg-primary-900/30 rounded-lg flex items-center justify-center">
+                  <div
+                    class="w-12 h-12 mx-auto bg-primary-100 dark:bg-primary-900/30 rounded-lg flex items-center justify-center"
+                  >
                     <Upload class="w-6 h-6 text-primary-600 dark:text-primary-400" />
                   </div>
                   <div>
@@ -609,23 +638,21 @@
               {/if}
             </label>
           </div>
-
-          </div>
+        </div>
       {/if}
 
-  
       <!-- Reboot to Recovery Step -->
       {#if steps[1].status === 'active'}
         <div class="text-center space-y-3 max-w-xs">
           <div class="w-10 h-10 mx-auto">
-            <div class="w-10 h-10 bg-orange-100 dark:bg-orange-900/20 rounded-full flex items-center justify-center">
+            <div
+              class="w-10 h-10 bg-orange-100 dark:bg-orange-900/20 rounded-full flex items-center justify-center"
+            >
               <RotateCcw class="w-5 h-5 text-orange-500" />
             </div>
           </div>
           <div>
-            <h2 class="text-lg font-medium text-gray-900 dark:text-white mb-2">
-              Enter DFU Mode
-            </h2>
+            <h2 class="text-lg font-medium text-gray-900 dark:text-white mb-2">Enter DFU Mode</h2>
             <p class="text-sm text-gray-500 dark:text-gray-400 mb-2">
               Put your device in DFU mode:
             </p>
@@ -653,16 +680,18 @@
       {#if steps[2].status === 'active' || steps[4].status === 'active'}
         <div class="text-center space-y-3">
           <div class="w-10 h-10 mx-auto">
-            <div class="w-10 h-10 bg-purple-100 dark:bg-purple-900/20 rounded-full flex items-center justify-center">
+            <div
+              class="w-10 h-10 bg-purple-100 dark:bg-purple-900/20 rounded-full flex items-center justify-center"
+            >
               <Usb class="w-5 h-5 text-purple-500" />
             </div>
           </div>
           <div>
-            <h2 class="text-lg font-medium text-gray-900 dark:text-white">
-              Connect USB Device
-            </h2>
+            <h2 class="text-lg font-medium text-gray-900 dark:text-white">Connect USB Device</h2>
             <p class="text-sm text-gray-500 dark:text-gray-400">
-              {steps[2].status === 'active' ? 'Connect your device in DFU mode' : 'Reconnect for firmware flashing'}
+              {steps[2].status === 'active'
+                ? 'Connect your device in DFU mode'
+                : 'Reconnect for firmware flashing'}
             </p>
           </div>
           <button
@@ -681,14 +710,14 @@
       {#if steps[3].status === 'active'}
         <div class="text-center space-y-3">
           <div class="w-10 h-10 mx-auto">
-            <div class="w-10 h-10 bg-cyan-100 dark:bg-cyan-900/20 rounded-full flex items-center justify-center">
+            <div
+              class="w-10 h-10 bg-cyan-100 dark:bg-cyan-900/20 rounded-full flex items-center justify-center"
+            >
               <Cpu class="w-5 h-5 text-cyan-500" />
             </div>
           </div>
           <div>
-            <h2 class="text-lg font-medium text-gray-900 dark:text-white">
-              Updating DFU Program
-            </h2>
+            <h2 class="text-lg font-medium text-gray-900 dark:text-white">Updating DFU Program</h2>
             <p class="text-sm text-gray-500 dark:text-gray-400">
               Preparing bootloader for firmware update...
             </p>
@@ -700,7 +729,9 @@
       {#if steps[5].status === 'active'}
         <div class="text-center space-y-3">
           <div class="w-12 h-12 mx-auto">
-            <div class="w-12 h-12 bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center">
+            <div
+              class="w-12 h-12 bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center"
+            >
               <Zap class="w-6 h-6 text-red-500" />
             </div>
           </div>
@@ -736,11 +767,10 @@
             </div>
           </div>
           <div>
-            <h2 class="text-lg font-medium text-gray-900 dark:text-white">
-              Flashing Complete!
-            </h2>
+            <h2 class="text-lg font-medium text-gray-900 dark:text-white">Flashing Complete!</h2>
             <p class="text-sm text-gray-500 dark:text-gray-400 max-w-xs">
-              Your device firmware has been successfully updated. The device will restart automatically.
+              Your device firmware has been successfully updated. The device will restart
+              automatically.
             </p>
           </div>
           <button
@@ -758,13 +788,13 @@
       <!-- Error State -->
       {#if status === 'error'}
         <div class="text-center space-y-3">
-          <div class="w-10 h-10 mx-auto bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center">
+          <div
+            class="w-10 h-10 mx-auto bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center"
+          >
             <AlertCircle class="w-5 h-5 text-red-500" />
           </div>
           <div>
-            <h2 class="text-lg font-medium text-gray-900 dark:text-white">
-              Something went wrong
-            </h2>
+            <h2 class="text-lg font-medium text-gray-900 dark:text-white">Something went wrong</h2>
             <p class="text-sm text-gray-500 dark:text-gray-400 max-w-xs">
               {errorMessage}
             </p>
@@ -815,7 +845,8 @@
   }
 
   @keyframes pulse {
-    0%, 100% {
+    0%,
+    100% {
       transform: scale(1);
     }
     50% {

@@ -9,12 +9,12 @@
     onLowerChange: (value: number) => void;
   }
 
-  let { upperDeadzone, lowerDeadzone, maxTravelDistance, onUpperChange, onLowerChange }: Props = $props();
+  let { upperDeadzone, lowerDeadzone, maxTravelDistance, onUpperChange, onLowerChange }: Props =
+    $props();
   let currentLanguage = $derived($language);
 </script>
 
-<div
-  class="border-t dark:border-white border-gray-200 pt-4 deadzone-container glassmorphism-card">
+<div class="border-t dark:border-white border-gray-200 pt-4 deadzone-container glassmorphism-card">
   <h4 class="text-lg font-medium text-gray-900 dark:text-white mb-3">
     {t('performance.keyTravelDeadzones', currentLanguage)}
   </h4>
@@ -52,7 +52,10 @@
         <!-- Deadzone after bottom (right side) -->
         <div
           class="absolute h-full rounded-r-full deadzone-pattern"
-          style="left: {(lowerDeadzone / maxTravelDistance) * 100}%; width: {((maxTravelDistance - lowerDeadzone) / maxTravelDistance) * 100}%;"
+          style="left: {(lowerDeadzone / maxTravelDistance) * 100}%; width: {((maxTravelDistance -
+            lowerDeadzone) /
+            maxTravelDistance) *
+            100}%;"
         ></div>
       </div>
 

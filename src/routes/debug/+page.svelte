@@ -27,7 +27,7 @@
     {#each tabs as tab}
       <button
         class="tab {activeTab === tab.id ? 'tab-active' : ''}"
-        onclick={() => activeTab = tab.id}
+        onclick={() => (activeTab = tab.id)}
       >
         <svelte:component this={tab.icon} class="tab-icon" />
         <span>{tab.label}</span>

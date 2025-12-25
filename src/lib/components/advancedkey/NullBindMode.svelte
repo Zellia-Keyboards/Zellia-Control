@@ -1,7 +1,7 @@
 <script lang="ts">
   import { language, t } from '$lib/stores/LanguageStore.svelte';
   import { selectedKeys } from '$lib/stores/SelectedKeysStore';
-  import { keyboardAPI,keyboardConnectionState } from '$lib/api/keyboardAPI.svelte';
+  import { keyboardAPI, keyboardConnectionState } from '$lib/api/keyboardAPI.svelte';
   import { selectedLayer } from '$lib/stores/SelectedLayerStore.svelte';
   import {
     globalConfigurations,
@@ -9,7 +9,12 @@
     resetGlobalConfiguration,
   } from '$lib/types/AdvancedKeyShared';
   import * as ekc from 'emi-keyboard-controller';
-  import { advancedKeys, dynamicKeys, rgbBaseConfig, rgbConfigs } from '$lib/stores/ControllerStore.svelte';
+  import {
+    advancedKeys,
+    dynamicKeys,
+    rgbBaseConfig,
+    rgbConfigs,
+  } from '$lib/stores/ControllerStore.svelte';
   import Layer from '../remap/Layer.svelte';
   import DynamicMode from './DynamicMode.svelte';
 
@@ -178,7 +183,6 @@
       dynamic_key.key_id[0] = localSelectedKeys[0];
       dynamic_key.key_id[1] = localSelectedKeys[1];
       dynamic_key.mode = behavior;
-
     }
 
     // Clear selection

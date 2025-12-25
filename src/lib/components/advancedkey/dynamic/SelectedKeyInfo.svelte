@@ -11,9 +11,7 @@
   let currentLanguage = $derived($language);
 </script>
 
-<div
-  class="rounded-lg border p-6 mb-6 glassmorphism-card"
->
+<div class="rounded-lg border p-6 mb-6 glassmorphism-card">
   <div class="flex items-center justify-between">
     <div class="flex items-center gap-4">
       <div class="flex items-center gap-3">

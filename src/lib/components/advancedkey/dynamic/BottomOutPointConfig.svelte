@@ -9,9 +9,7 @@
   let { bottomOutPointValue = $bindable() }: Props = $props(); // [cite: 278]
 </script>
 
-<div
-  class="rounded-lg border p-6 glassmorphism-card"
->
+<div class="rounded-lg border p-6 glassmorphism-card">
   <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">
     {t('advancedkey.bottomOutPoint', currentLanguage)}
   </h3>

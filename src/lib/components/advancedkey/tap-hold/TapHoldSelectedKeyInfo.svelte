@@ -11,8 +11,7 @@
   let currentLanguage = $derived($language);
 </script>
 
-<div
-  class="rounded-lg border p-4 sm:p-6 mb-6 glassmorphism-card">
+<div class="rounded-lg border p-4 sm:p-6 mb-6 glassmorphism-card">
   <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
     <div class="flex items-center gap-4">
       <div class="flex items-center gap-3">
@@ -35,9 +34,7 @@
       <span class="text-sm text-gray-600 dark:text-gray-400"
         >{t('advancedkey.mode', currentLanguage)}:</span
       >
-      <span
-        class="px-3 py-1 rounded-full text-sm font-medium text-white glassmorphism-button"
-      >
+      <span class="px-3 py-1 rounded-full text-sm font-medium text-white glassmorphism-button">
         {t('advancedkey.tapHold', currentLanguage)}
       </span>
     </div>

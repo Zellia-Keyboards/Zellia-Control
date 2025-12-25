@@ -32,7 +32,9 @@
   >
     <!-- Option Header with Animated Icon -->
     <div class="flex items-center gap-4 mb-4">
-      <div class="flex items-center justify-center w-10 h-10 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-6">
+      <div
+        class="flex items-center justify-center w-10 h-10 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-6"
+      >
         <IconComponent
           class="w-8 h-8 {option.type === 'danger'
             ? 'text-red-600'

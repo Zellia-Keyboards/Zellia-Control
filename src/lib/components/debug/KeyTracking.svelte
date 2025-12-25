@@ -17,7 +17,7 @@
   let trackingInterval: NodeJS.Timeout | null = null;
   let startTime = 0;
   const WINDOW_MS = 500; // 滑动窗口大小（0.5秒）
-  let timer : NodeJS.Timeout;
+  let timer: NodeJS.Timeout;
   let handleDataUpdate: (() => void) | null = null;
 
   // Props
@@ -41,7 +41,6 @@
   function percentToMm(distance: number) {
     return distance * 4.0;
   }
-
 
   function startTracking() {
     if (!selectedKeyName) {
@@ -72,24 +71,24 @@
 
         // 限制数据点数量以提高性能（可选）
         // if (trackingData.length > 500) {
-        //   trackingData.shift(); 
+        //   trackingData.shift();
         // }
 
         updateChart();
       }
-    }
+    };
   }
 
   function stopTracking() {
     isTracking = false;
-      if (trackingInterval) {
-        clearInterval(trackingInterval);
-        trackingInterval = null;
-      }
-      // 移除事件监听器
-      if (handleDataUpdate && keyboardConnectionState.controller) {
-        keyboardConnectionState.controller.removeEventListener('updateData', handleDataUpdate);
-        handleDataUpdate = null;
+    if (trackingInterval) {
+      clearInterval(trackingInterval);
+      trackingInterval = null;
+    }
+    // 移除事件监听器
+    if (handleDataUpdate && keyboardConnectionState.controller) {
+      keyboardConnectionState.controller.removeEventListener('updateData', handleDataUpdate);
+      handleDataUpdate = null;
     }
   }
 
@@ -106,7 +105,7 @@
       keyboardConnectionState.controller.removeEventListener('updateData', handleDataUpdate);
       handleDataUpdate = null;
     }
-    console.log("Debug stopped.");
+    console.log('Debug stopped.');
   }
 
   // 2. 开始调试的函数
@@ -119,7 +118,7 @@
       console.error('Controller not connected.');
       return;
     }
-    
+
     isTracking = true;
     startTime = Date.now();
     trackingData = [];
@@ -148,7 +147,7 @@
       }
       controller.request_debug_at([keyIndex]);
     }, 5); // 100 毫秒间隔
-    
+
     console.log(`Debug started for key index: ${keyIndex}`);
   }
 
@@ -194,11 +193,11 @@
 
   function updateChart() {
     if (!chart) return;
-    
+
     // 取最后一个时间作为“当前”
     const lastX = trackingData.length ? trackingData[trackingData.length - 1].x : 0;
     const cutoff = Math.max(0, lastX - WINDOW_MS);
-  
+
     // 固定 x 轴显示范围到最近 30s
     if (lastX > WINDOW_MS) {
       chart.options.scales.x.min = cutoff;
@@ -207,7 +206,7 @@
       chart.options.scales.x.min = 0;
       chart.options.scales.x.max = WINDOW_MS;
     }
-  
+
     chart.data.datasets[0].data = trackingData;
     chart.update('none');
   }
@@ -392,24 +391,28 @@
   <!-- Left Sidebar - Info panel and select key -->
   <div class="w-[200px] shrink-0 flex flex-col gap-3">
     <!-- Info Panel -->
-    <div class="p-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/50">
+    <div
+      class="p-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/50"
+    >
       <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-3">About This Tool</h3>
       <div class="text-xs text-gray-600 dark:text-gray-400 leading-relaxed space-y-2">
         <p>
-          This tool allows you to track the pressing distance of a key in real time and visualize it in a chart.
+          This tool allows you to track the pressing distance of a key in real time and visualize it
+          in a chart.
         </p>
 
         <p>
-          Due to fundamental limitations, the keyboard cannot distinguish 'normal pressing' from conditions like hand movement, force changes after bottom-out, and pressing with greater force.
+          Due to fundamental limitations, the keyboard cannot distinguish 'normal pressing' from
+          conditions like hand movement, force changes after bottom-out, and pressing with greater
+          force.
         </p>
 
         <p>
-          When parameters are set extremely low (~0.01mm), these factors become significant. Unintended key releases under such settings are considered normal.
+          When parameters are set extremely low (~0.01mm), these factors become significant.
+          Unintended key releases under such settings are considered normal.
         </p>
 
-        <p>
-          Zoom in/out with mouse scroll to observe trigger/reset changes closely.
-        </p>
+        <p>Zoom in/out with mouse scroll to observe trigger/reset changes closely.</p>
       </div>
     </div>
 
@@ -440,7 +443,9 @@
       {#if !isTracking}
         <button
           type="button"
-          class="px-4 py-2 glassmorphism-button rounded-lg text-sm font-medium {!selectedKeyName ? 'opacity-50 cursor-not-allowed' : ''}"
+          class="px-4 py-2 glassmorphism-button rounded-lg text-sm font-medium {!selectedKeyName
+            ? 'opacity-50 cursor-not-allowed'
+            : ''}"
           disabled={!selectedKeyName}
           onclick={() => {
             const keyIndex = $selectedKeys[0];

@@ -13,7 +13,6 @@
   let { deletingKeys, newlyAddedKeys, onDeleteKey }: Props = $props();
   let currentLanguage = $derived($language);
 
-  
   // Get configured tap-hold keys
   const configuredTapHoldKeys = $derived(
     Object.entries($globalConfigurations).filter(([_, config]) => config.type === 'tap-hold')
@@ -46,9 +45,7 @@
 </script>
 
 {#if showConfiguredSection}
-  <div
-    class="rounded-lg border p-4 sm:p-6 glassmorphism-card animate-section-fade-in"
-  >
+  <div class="rounded-lg border p-4 sm:p-6 glassmorphism-card animate-section-fade-in">
     <div class="flex items-center justify-between mb-4">
       <h3 class="text-lg font-medium text-gray-900 dark:text-white">
         {t('advancedkey.configuredTapHold', currentLanguage)}

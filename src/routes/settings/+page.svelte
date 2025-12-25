@@ -56,8 +56,8 @@
       <div
         class="action-card action-card-{option.color}"
         style="animation-delay: {index * 100}ms;"
-        onmouseenter={() => hoverIndex = index}
-        onmouseleave={() => hoverIndex = null}
+        onmouseenter={() => (hoverIndex = index)}
+        onmouseleave={() => (hoverIndex = null)}
         onclick={option.action}
       >
         <div class="action-glow glow-{option.color}"></div>
@@ -66,8 +66,12 @@
             <svelte:component this={option.icon} class="action-icon icon-{option.color}" />
           </div>
           <div class="action-info">
-            <h3 class="action-title text-gray-900 dark:text-white">{t(option.nameKey, currentLanguage)}</h3>
-            <p class="action-description text-gray-600 dark:text-gray-300">{t(option.descriptionKey, currentLanguage)}</p>
+            <h3 class="action-title text-gray-900 dark:text-white">
+              {t(option.nameKey, currentLanguage)}
+            </h3>
+            <p class="action-description text-gray-600 dark:text-gray-300">
+              {t(option.descriptionKey, currentLanguage)}
+            </p>
           </div>
         </div>
       </div>

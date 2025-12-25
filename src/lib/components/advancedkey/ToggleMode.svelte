@@ -1,13 +1,19 @@
 <script lang="ts">
   import { selectedKeys } from '$lib/stores/SelectedKeysStore';
-  import { keyboardAPI,keyboardConnectionState } from '$lib/api/keyboardAPI.svelte';
+  import { keyboardAPI, keyboardConnectionState } from '$lib/api/keyboardAPI.svelte';
   import {
     globalConfigurations,
     updateGlobalConfiguration,
     resetGlobalConfiguration,
   } from '$lib/types/AdvancedKeyShared';
   import type { ToggleConfiguration } from '$lib/types/AdvancedKeyShared';
-  import { advancedKeys, dynamicKeys, keymap, rgbBaseConfig, rgbConfigs } from '$lib/stores/ControllerStore.svelte';
+  import {
+    advancedKeys,
+    dynamicKeys,
+    keymap,
+    rgbBaseConfig,
+    rgbConfigs,
+  } from '$lib/stores/ControllerStore.svelte';
   import * as ekc from 'emi-keyboard-controller';
   import { selectedLayer } from '$lib/stores/SelectedLayerStore.svelte';
 
@@ -117,12 +123,19 @@
     dynamic_key.target_keys_location[0] = new ekc.KeyLocation();
     dynamic_key.target_keys_location[0].id = currentSelectedIndex;
     dynamic_key.target_keys_location[0].layer = $selectedLayer - 1;
-    let dynamic_key_index = $dynamicKeys.findIndex(item => item.type == ekc.DynamicKeyType.DynamicKeyNone);
+    let dynamic_key_index = $dynamicKeys.findIndex(
+      item => item.type == ekc.DynamicKeyType.DynamicKeyNone
+    );
     $dynamicKeys[dynamic_key_index] = dynamic_key;
     $dynamicKeys = $dynamicKeys;
-    $keymap[$selectedLayer - 1][currentSelectedIndex] = ekc.Keycode.DynamicKey | (dynamic_key_index << 8);
+    $keymap[$selectedLayer - 1][currentSelectedIndex] =
+      ekc.Keycode.DynamicKey | (dynamic_key_index << 8);
     keyboardConnectionState.controller?.set_dynamic_keys($dynamicKeys);
-    keyboardConnectionState.controller?.send_keymap_packet([currentSelectedIndex],$selectedLayer - 1,$keymap[$selectedLayer - 1][currentSelectedIndex]);
+    keyboardConnectionState.controller?.send_keymap_packet(
+      [currentSelectedIndex],
+      $selectedLayer - 1,
+      $keymap[$selectedLayer - 1][currentSelectedIndex]
+    );
     keyboardConnectionState.controller?.send_dynamic_key_packet(dynamic_key_index, dynamic_key);
   }
 
@@ -192,7 +205,12 @@
         </div>
 
         <div class="xl:col-span-1 space-y-6">
-          <TogglePreview {currentKeyName} selectedToggleAction={selectedToggleAction.toString()} {toggleMode} {toggleState} />
+          <TogglePreview
+            {currentKeyName}
+            selectedToggleAction={selectedToggleAction.toString()}
+            {toggleMode}
+            {toggleState}
+          />
           <ToggleInfoPanel selectedToggleAction={selectedToggleAction.toString()} {toggleMode} />
 
           {#if configuredToggleKeys.length > 0}

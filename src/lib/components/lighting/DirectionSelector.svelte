@@ -43,7 +43,8 @@
             : 'text-black dark:text-white'}"
         />
         <div
-          class="relative z-10 text-xs font-medium text-center whitespace-nowrap overflow-hidden text-ellipsis {selectedDirection === dir.id
+          class="relative z-10 text-xs font-medium text-center whitespace-nowrap overflow-hidden text-ellipsis {selectedDirection ===
+          dir.id
             ? 'text-primary-700 dark:text-primary-200'
             : 'text-black dark:text-white'}"
         >

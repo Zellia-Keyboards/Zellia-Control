@@ -2,7 +2,13 @@
   import { fade } from 'svelte/transition';
   import { keyboardAPI } from '$lib/api/keyboardAPI.svelte';
   import { language, t } from '$lib/stores/LanguageStore.svelte';
-  import { advancedKeys, dynamicKeys, rgbBaseConfig, rgbConfigs, keymap } from '$lib/stores/ControllerStore.svelte';
+  import {
+    advancedKeys,
+    dynamicKeys,
+    rgbBaseConfig,
+    rgbConfigs,
+    keymap,
+  } from '$lib/stores/ControllerStore.svelte';
   import { keyboardLayout } from '$lib/stores/LayoutStore.svelte';
   import { keyboardConnectionState } from '$lib/api/keyboardAPI.svelte';
   import * as ekc from 'emi-keyboard-controller';
@@ -39,20 +45,21 @@
     rgbBaseConfig.set(
       keyboardConnectionState.controller?.get_rgb_base_config() as ekc.IRGBBaseConfig
     );
-    dynamicKeys.set(
-      keyboardConnectionState.controller?.get_dynamic_keys() as ekc.IDynamicKey[]
-    )
-    keymap.set(
-      keyboardConnectionState.controller?.get_keymap() as number[][]
-    )
+    dynamicKeys.set(keyboardConnectionState.controller?.get_dynamic_keys() as ekc.IDynamicKey[]);
+    keymap.set(keyboardConnectionState.controller?.get_keymap() as number[][]);
   }
 </script>
 
 <div class="flex-1 flex items-center justify-center p-8 relative overflow-visible">
   <!-- Animated Background Elements -->
   <div class="absolute inset-0 pointer-events-none">
-    <div class="absolute top-1/4 left-1/4 w-64 h-64 bg-primary-500/5 rounded-full blur-3xl animate-pulse"></div>
-    <div class="absolute bottom-1/4 right-1/4 w-64 h-64 bg-primary-600/5 rounded-full blur-3xl animate-pulse" style="animation-delay: 1s"></div>
+    <div
+      class="absolute top-1/4 left-1/4 w-64 h-64 bg-primary-500/5 rounded-full blur-3xl animate-pulse"
+    ></div>
+    <div
+      class="absolute bottom-1/4 right-1/4 w-64 h-64 bg-primary-600/5 rounded-full blur-3xl animate-pulse"
+      style="animation-delay: 1s"
+    ></div>
   </div>
 
   <div class="w-full max-w-lg mx-auto relative z-10">
@@ -84,12 +91,7 @@
         <!-- Button Content -->
         <div class="relative z-10 flex items-center justify-center gap-3">
           {#if keyboardAPI.state.connectionStatus === 'connecting'}
-            <svg
-              class="w-5 h-5 animate-spin"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
+            <svg class="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 stroke-linecap="round"
                 stroke-linejoin="round"
@@ -99,7 +101,6 @@
             </svg>
             {t('welcome.connecting', currentLanguage)}
           {:else}
-            
             {t('welcome.getStarted', currentLanguage)}
             <svg
               class="w-5 h-5 transition-transform duration-300 group-hover:translate-x-1"
@@ -121,10 +122,7 @@
 
     <!-- Error Display -->
     {#if keyboardAPI.state.error}
-      <div
-        class="mt-8 text-center animate-shake"
-        transition:fade={{ duration: 300 }}
-      >
+      <div class="mt-8 text-center animate-shake" transition:fade={{ duration: 300 }}>
         <div class="inline-flex items-center gap-2 text-red-500 text-sm">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
@@ -161,7 +159,8 @@
   }
 
   @keyframes float {
-    0%, 100% {
+    0%,
+    100% {
       transform: translateY(0);
     }
     50% {
@@ -188,13 +187,21 @@
   }
 
   @keyframes shake {
-    0%, 100% {
+    0%,
+    100% {
       transform: translateX(0);
     }
-    10%, 30%, 50%, 70%, 90% {
+    10%,
+    30%,
+    50%,
+    70%,
+    90% {
       transform: translateX(-5px);
     }
-    20%, 40%, 60%, 80% {
+    20%,
+    40%,
+    60%,
+    80% {
       transform: translateX(5px);
     }
   }

@@ -49,9 +49,7 @@
 
 {#if configuredDynamicKeys.length > 0}
   <div class="max-w-7xl mx-auto mt-6">
-    <div
-      class="rounded-lg border p-6 glassmorphism-card"
-      >
+    <div class="rounded-lg border p-6 glassmorphism-card">
       <div class="flex items-center justify-between mb-4">
         <h3 class="text-lg font-medium text-gray-900 dark:text-white">
           {t('advancedkey.configuredDynamicKeys', currentLanguage)}

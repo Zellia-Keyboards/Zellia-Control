@@ -24,16 +24,10 @@
         viewBox="0 0 24 24"
       >
         <circle cx="12" cy="12" r="9" stroke-width="1.5" />
-        <path
-          stroke-linecap="round"
-          stroke-width="1.5"
-          d="M8 12h8"
-        />
+        <path stroke-linecap="round" stroke-width="1.5" d="M8 12h8" />
       </svg>
     </div>
-    <h3 class="text-2xl font-semibold text-gray-900 dark:text-white mb-3">
-      No Keyboard Connected
-    </h3>
+    <h3 class="text-2xl font-semibold text-gray-900 dark:text-white mb-3">No Keyboard Connected</h3>
     <p class="text-gray-500 dark:text-gray-400 mb-6 max-w-md">
       Please connect a keyboard or go to the home page to start.
     </p>
@@ -65,5 +59,4 @@
       background-position: 200% center;
     }
   }
-
 </style>

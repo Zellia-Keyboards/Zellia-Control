@@ -56,16 +56,15 @@
     highlightColor === 'green'
       ? 'bg-green-500 border-green-500 text-white'
       : highlightColor === 'primary'
-      ? 'bg-primary-600 text-white border-primary-600 hover:bg-primary-700'
-      : 'bg-primary-500 border-primary-500 text-white'
+        ? 'bg-primary-600 text-white border-primary-600 hover:bg-primary-700'
+        : 'bg-primary-500 border-primary-500 text-white'
   );
 
   const cardClasses = $derived(
     description
-      ? 'rounded-lg border p-4 sm:p-6 ' +
-        ('glassmorphism-card')
+      ? 'rounded-lg border p-4 sm:p-6 ' + 'glassmorphism-card'
       : 'rounded-lg border border-gray-200 dark:border-gray-600 p-4 sm:p-6 bg-white dark:bg-gray-900 ' +
-        ('glassmorphism-card')
+          'glassmorphism-card'
   );
 </script>
 
@@ -84,9 +83,7 @@
 
   <div class="space-y-2">
     {#each actionCategories as category}
-      <div
-        class="border rounded-lg glassmorphism-card"
-      >
+      <div class="border rounded-lg glassmorphism-card">
         <button
           class="w-full px-4 py-3 flex items-center justify-between glassmorphism-button rounded-lg transition-colors"
           onclick={() => (expandedSections[category.name] = !expandedSections[category.name])}
@@ -114,7 +111,8 @@
           <div class="px-4 pb-4 pt-2" transition:slide={{ duration: 300, axis: 'y' }}>
             <div class="grid grid-cols-6 sm:grid-cols-8 md:grid-cols-10 lg:grid-cols-12 gap-2">
               {#each category.actions as action}
-                {@const numericKeycode = typeof action.keycode === 'number' ? action.keycode : Number(action.keycode)}
+                {@const numericKeycode =
+                  typeof action.keycode === 'number' ? action.keycode : Number(action.keycode)}
                 <button
                   class="aspect-square min-w-12 text-xs rounded-md border transition-all flex items-center justify-center p-1 whitespace-pre-line leading-tight {$glassmorphismMode
                     ? 'glassmorphism-button'

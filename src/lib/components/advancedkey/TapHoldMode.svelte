@@ -1,7 +1,7 @@
 <script lang="ts">
   import { language, t } from '$lib/stores/LanguageStore.svelte';
   import { selectedKeys } from '$lib/stores/SelectedKeysStore';
-  import { keyboardAPI,keyboardConnectionState } from '$lib/api/keyboardAPI.svelte';
+  import { keyboardAPI, keyboardConnectionState } from '$lib/api/keyboardAPI.svelte';
   import { selectedLayer } from '$lib/stores/SelectedLayerStore.svelte';
   import {
     globalConfigurations,
@@ -19,7 +19,13 @@
   import TapHoldNoKeySelected from '$lib/components/advancedkey/tap-hold/TapHoldNoKeySelected.svelte';
   import TapHoldHeader from '$lib/components/advancedkey/tap-hold/TapHoldHeader.svelte';
   import * as ekc from 'emi-keyboard-controller';
-  import { advancedKeys, dynamicKeys, keymap, rgbBaseConfig, rgbConfigs } from '$lib/stores/ControllerStore.svelte';
+  import {
+    advancedKeys,
+    dynamicKeys,
+    keymap,
+    rgbBaseConfig,
+    rgbConfigs,
+  } from '$lib/stores/ControllerStore.svelte';
   import Layer from '../remap/Layer.svelte';
   import DynamicMode from './DynamicMode.svelte';
   import { Eclipse } from 'lucide-svelte';
@@ -32,10 +38,9 @@
 
   let currentLanguage = $derived($language);
 
-  
   let currentSelectedIndex = $derived($selectedKeys.length > 0 ? $selectedKeys[0] : null);
   let tapAction = $state(0x29); // ESC
-  let holdAction = $state(0xE0); // Left Control
+  let holdAction = $state(0xe0); // Left Control
   let holdDelay = $state(200);
   let tapTimeout = $state(150);
   let deletingKeys = $state(new Set<string>());
@@ -123,22 +128,28 @@
     }
     let dynamic_key = new ekc.DynamicKeyModTap();
     console.log(dynamic_key);
-    dynamic_key.bindings[0] = tapAction; 
-    dynamic_key.bindings[1] = holdAction; 
+    dynamic_key.bindings[0] = tapAction;
+    dynamic_key.bindings[1] = holdAction;
     dynamic_key.type = ekc.DynamicKeyType.DynamicKeyModTap;
     dynamic_key.duration = tapTimeout;
     dynamic_key.target_keys_location[0] = new ekc.KeyLocation();
     dynamic_key.target_keys_location[0].id = currentSelectedIndex;
     dynamic_key.target_keys_location[0].layer = $selectedLayer - 1;
-    let dynamic_key_index = $dynamicKeys.findIndex(item => item.type == ekc.DynamicKeyType.DynamicKeyNone);
+    let dynamic_key_index = $dynamicKeys.findIndex(
+      item => item.type == ekc.DynamicKeyType.DynamicKeyNone
+    );
     $dynamicKeys[dynamic_key_index] = dynamic_key;
     $dynamicKeys = $dynamicKeys;
-    $keymap[$selectedLayer - 1][currentSelectedIndex] = ekc.Keycode.DynamicKey | (dynamic_key_index << 8);
+    $keymap[$selectedLayer - 1][currentSelectedIndex] =
+      ekc.Keycode.DynamicKey | (dynamic_key_index << 8);
     keyboardConnectionState.controller?.set_dynamic_keys($dynamicKeys);
-    keyboardConnectionState.controller?.send_keymap_packet([currentSelectedIndex],$selectedLayer - 1,$keymap[$selectedLayer - 1][currentSelectedIndex]);
+    keyboardConnectionState.controller?.send_keymap_packet(
+      [currentSelectedIndex],
+      $selectedLayer - 1,
+      $keymap[$selectedLayer - 1][currentSelectedIndex]
+    );
     keyboardConnectionState.controller?.send_dynamic_key_packet(dynamic_key_index, dynamic_key);
   }
-
 
   const currentKeyName = $derived.by(() => {
     if (currentSelectedIndex === null) return 'No key selected';
@@ -169,7 +180,7 @@
       const config = getCurrentKeyConfiguration();
       if (config && $globalConfigurations[`${currentSelectedIndex}`]) {
         tapAction = config.tapAction || 0x29; // ESC
-        holdAction = config.holdAction || 0xE0; // Left Control
+        holdAction = config.holdAction || 0xe0; // Left Control
         holdDelay = config.holdDelay || 200;
         tapTimeout = config.tapTimeout || 150;
       }
@@ -211,8 +222,18 @@
         </div>
 
         <div class="xl:col-span-1 space-y-6">
-          <TapHoldPreview {currentKeyName} tapAction={tapAction.toString()} holdAction={holdAction.toString()} {holdDelay} />
-          <TapHoldInfoPanel tapAction={tapAction.toString()} holdAction={holdAction.toString()} {tapTimeout} {holdDelay} />
+          <TapHoldPreview
+            {currentKeyName}
+            tapAction={tapAction.toString()}
+            holdAction={holdAction.toString()}
+            {holdDelay}
+          />
+          <TapHoldInfoPanel
+            tapAction={tapAction.toString()}
+            holdAction={holdAction.toString()}
+            {tapTimeout}
+            {holdDelay}
+          />
           <TapHoldConfiguredKeys {deletingKeys} {newlyAddedKeys} onDeleteKey={deleteKey} />
         </div>
       </div>

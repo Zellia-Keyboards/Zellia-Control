@@ -10,8 +10,8 @@
   }
 
   let { isOpen = $bindable() }: Props = $props();
-  
-  const dispatch = createEventDispatcher<{ 
+
+  const dispatch = createEventDispatcher<{
     selectKey: number;
     close: void;
   }>();
@@ -66,7 +66,7 @@
 {#if isOpen}
   <!-- svelte-ignore a11y_click_events_have_key_events -->
   <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
-  <div 
+  <div
     class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-md animate-fade-in"
     onclick={handleBackdropClick}
     role="dialog"
@@ -88,7 +88,12 @@
             aria-label="Close"
           >
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M6 18L18 6M6 6l12 12"
+              />
             </svg>
           </button>
         </div>

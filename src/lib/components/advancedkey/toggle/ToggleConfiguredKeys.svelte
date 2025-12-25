@@ -40,7 +40,8 @@
 </script>
 
 <div
-  class="rounded-lg border border-gray-200 dark:border-gray-600 p-6 bg-white dark:bg-gray-900 glassmorphism-card">
+  class="rounded-lg border border-gray-200 dark:border-gray-600 p-6 bg-white dark:bg-gray-900 glassmorphism-card"
+>
   <div class="flex items-center justify-between mb-4">
     <h3 class="text-lg font-medium text-gray-900 dark:text-white">
       {t('advancedkey.configuredToggle', currentLanguage)}
@@ -60,7 +61,9 @@
       {@const isNewlyAdded = newlyAddedKeys.has(keyId)}
       {@const toggleConfig = config as ToggleConfiguration}
       <div
-        class="p-3 rounded-lg border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-800 transform transition-all duration-500 ease-out glassmorphism-card {isDeleting ? 'animate-fade-out' : ''} {isNewlyAdded ? 'animate-fade-in' : ''}"
+        class="p-3 rounded-lg border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-800 transform transition-all duration-500 ease-out glassmorphism-card {isDeleting
+          ? 'animate-fade-out'
+          : ''} {isNewlyAdded ? 'animate-fade-in' : ''}"
       >
         <div class="flex items-center justify-between mb-2">
           <span class="font-mono font-bold text-gray-900 dark:text-white text-sm">{keyName}</span>
@@ -105,7 +108,9 @@
             >
             <div class="flex items-center gap-1">
               <div
-                class="w-2 h-2 rounded-full {toggleConfig.toggleState ? 'bg-green-500' : 'bg-gray-400'}"
+                class="w-2 h-2 rounded-full {toggleConfig.toggleState
+                  ? 'bg-green-500'
+                  : 'bg-gray-400'}"
               ></div>
               <span
                 class="font-medium {toggleConfig.toggleState

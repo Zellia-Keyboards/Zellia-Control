@@ -27,7 +27,8 @@
   <div class="mt-3 grid gap-1">
     {#each behaviorMetadata as behaviorMeta}
       <button
-        class="relative flex items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none transition-colors hover:bg-gray-100 dark:hover:bg-gray-800 glassmorphism-button {behavior === behaviorMeta.behavior
+        class="relative flex items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none transition-colors hover:bg-gray-100 dark:hover:bg-gray-800 glassmorphism-button {behavior ===
+        behaviorMeta.behavior
           ? 'bg-primary-100 dark:bg-primary-900 text-primary-500 border border-primary-400 dark:border-primary-600'
           : 'text-gray-700 dark:text-white'}"
         onclick={() => onBehaviorSelect(behaviorMeta.behavior)}

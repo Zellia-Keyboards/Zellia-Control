@@ -27,9 +27,7 @@
   let currentLanguage = $derived($language);
 </script>
 
-<div
-  class="flex flex-col gap-4 rounded-md border glassmorphism-card p-4 shadow-sm"
->
+<div class="flex flex-col gap-4 rounded-md border glassmorphism-card p-4 shadow-sm">
   <!-- Rapid Trigger Toggle -->
   <div class="flex items-center justify-between">
     <div class="flex-1">

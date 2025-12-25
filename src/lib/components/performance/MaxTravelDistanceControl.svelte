@@ -8,11 +8,7 @@
     onClampValues?: (maxDistance: number) => void;
   }
 
-  let {
-    maxTravelDistance,
-    onMaxTravelChange,
-    onClampValues,
-  }: Props = $props();
+  let { maxTravelDistance, onMaxTravelChange, onClampValues }: Props = $props();
 
   let currentLanguage = $derived($language);
 
@@ -36,8 +32,14 @@
 
 <div class="travel-badge group relative {$glassmorphismMode ? 'glassmorphism-card' : ''}">
   <div class="flex items-center gap-1.5">
-    <svg class="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-      <path d="M12 3v18M12 3l-4 4M12 3l4 4M12 21l-4-4M12 21l4-4"/>
+    <svg
+      class="w-3.5 h-3.5 text-gray-500 dark:text-gray-400"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+    >
+      <path d="M12 3v18M12 3l-4 4M12 3l4 4M12 21l-4-4M12 21l4-4" />
     </svg>
     <input
       type="number"
@@ -51,9 +53,7 @@
     <span class="text-xs font-medium text-gray-500 dark:text-gray-400">mm</span>
   </div>
   <!-- Tooltip -->
-  <div class="travel-tooltip">
-    Switch Travel Distance
-  </div>
+  <div class="travel-tooltip">Switch Travel Distance</div>
 </div>
 
 <style>
@@ -63,25 +63,37 @@
     align-items: center;
     padding: 0.375rem 0.75rem;
     border-radius: 9999px;
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(248, 250, 252, 0.95) 100%);
+    background: linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.9) 0%,
+      rgba(248, 250, 252, 0.95) 100%
+    );
     border: 1px solid rgba(0, 0, 0, 0.08);
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+    box-shadow:
+      0 1px 3px rgba(0, 0, 0, 0.05),
+      inset 0 1px 0 rgba(255, 255, 255, 0.6);
     transition: all 0.2s ease;
   }
 
   :global(.dark) .travel-badge {
     background: linear-gradient(135deg, rgba(31, 41, 55, 0.9) 0%, rgba(17, 24, 39, 0.95) 100%);
     border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    box-shadow:
+      0 1px 3px rgba(0, 0, 0, 0.3),
+      inset 0 1px 0 rgba(255, 255, 255, 0.05);
   }
 
   .travel-badge:hover {
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+    box-shadow:
+      0 4px 12px rgba(0, 0, 0, 0.1),
+      inset 0 1px 0 rgba(255, 255, 255, 0.6);
   }
 
   :global(.dark) .travel-badge:hover {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    box-shadow:
+      0 4px 12px rgba(0, 0, 0, 0.4),
+      inset 0 1px 0 rgba(255, 255, 255, 0.08);
   }
 
   .travel-badge:focus-within {

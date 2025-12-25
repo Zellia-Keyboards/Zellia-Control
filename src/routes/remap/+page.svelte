@@ -187,54 +187,62 @@
   style="outline: none; padding: calc(1.5rem * var(--ui-scale, 1));"
 >
   <!-- Sidebar with Tab Navigation -->
-  <aside class="flex-shrink-0 relative" style="width: calc(14rem * var(--ui-scale, 1)); padding-right: calc(1.5rem * var(--ui-scale, 1));">
-    <h2 class="font-semibold mb-4" style="font-size: calc(1.25rem * var(--ui-scale, 1));">Categories</h2>
+  <aside
+    class="flex-shrink-0 relative"
+    style="width: calc(14rem * var(--ui-scale, 1)); padding-right: calc(1.5rem * var(--ui-scale, 1));"
+  >
+    <h2 class="font-semibold mb-4" style="font-size: calc(1.25rem * var(--ui-scale, 1));">
+      Categories
+    </h2>
     <TabNavigation tabs={Tabs} {activeTab} onTabChange={changeTab} />
-    
+
     <!-- Glassmorphism separator line -->
-    <div 
+    <div
       class="absolute top-0 right-0 bottom-0 w-px bg-gradient-to-b from-transparent via-white/20 to-transparent dark:via-white/10"
       style="box-shadow: 0 0 8px rgba(255, 255, 255, 0.1);"
     ></div>
   </aside>
 
   <!-- Main Content Area -->
-  <main class="flex-1 flex flex-col min-w-0" style="padding-left: calc(1.5rem * var(--ui-scale, 1));">
+  <main
+    class="flex-1 flex flex-col min-w-0"
+    style="padding-left: calc(1.5rem * var(--ui-scale, 1));"
+  >
     <div class="flex-1 min-h-0 relative overflow-hidden">
       {#key activeTab}
-      <div
-        class="absolute inset-0 w-full h-full overflow-y-auto"
-        in:slideMove={{
-          duration: 350,
-          direction: currentTabIndex > previousTabIndex ? 1 : -1,
-        }}
-        out:slideMove={{
-          duration: 350,
-          direction: currentTabIndex > previousTabIndex ? -1 : 1,
-        }}
-      >
-        <ActiveTabComponent>
-          {#snippet keyslot(keyInfo: KeyInfo)}
-            <button
-              onclick={() => {
-                if ($selectedKeys.length === 0) {
-                  showingNotification = true;
-                  setTimeout(() => (showingNotification = false), 3000);
-                } else {
-                  dev
-                    ? console.log(`Clicked key: ${keyInfo.label} (keycode: ${keyInfo.keycode})`)
-                    : null;
-                  setKeyContent(keyInfo);
-                }
-              }}
-              class="size-14 text-wrap text-sm whitespace-pre-line rounded-lg overflow-auto truncate transition-all duration-200 border-2 hover:shadow-[inset_0_0_0_2px_rgba(255,255,255,0.6)] hover:border-white/60 border-gray-300 dark:border-gray-600"
-            >
-              {keyInfo.label}
-            </button>
-          {/snippet}
-        </ActiveTabComponent>
-      </div>
-    {/key}
+        <div
+          class="absolute inset-0 w-full h-full overflow-y-auto"
+          in:slideMove={{
+            duration: 350,
+            direction: currentTabIndex > previousTabIndex ? 1 : -1,
+          }}
+          out:slideMove={{
+            duration: 350,
+            direction: currentTabIndex > previousTabIndex ? -1 : 1,
+          }}
+        >
+          <ActiveTabComponent>
+            {#snippet keyslot(keyInfo: KeyInfo)}
+              <button
+                onclick={() => {
+                  if ($selectedKeys.length === 0) {
+                    showingNotification = true;
+                    setTimeout(() => (showingNotification = false), 3000);
+                  } else {
+                    dev
+                      ? console.log(`Clicked key: ${keyInfo.label} (keycode: ${keyInfo.keycode})`)
+                      : null;
+                    setKeyContent(keyInfo);
+                  }
+                }}
+                class="size-14 text-wrap text-sm whitespace-pre-line rounded-lg overflow-auto truncate transition-all duration-200 border-2 hover:shadow-[inset_0_0_0_2px_rgba(255,255,255,0.6)] hover:border-white/60 border-gray-300 dark:border-gray-600"
+              >
+                {keyInfo.label}
+              </button>
+            {/snippet}
+          </ActiveTabComponent>
+        </div>
+      {/key}
     </div>
   </main>
 </div>

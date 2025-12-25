@@ -28,9 +28,7 @@
 >
   <!-- Header -->
   <div class="p-4">
-    <h1
-      class="font-black text-xl dark:text-white text-gray-900 text-center"
-    >
+    <h1 class="font-black text-xl dark:text-white text-gray-900 text-center">
       <span class="italic">{currentLanguage === 'en' ? 'ZELLIA' : 'ZELLIA'}</span>
       {currentLanguage === 'en' ? 'Control' : '控制'}
     </h1>
@@ -57,7 +55,8 @@
   <div class="px-3 pb-3 border-b border-gray-100 dark:border-gray-600 space-y-2">
     <a
       href="/profiles"
-      class="flex items-center justify-between w-full px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white shadow-md hover:shadow-lg glassmorphism-button">
+      class="flex items-center justify-between w-full px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white shadow-md hover:shadow-lg glassmorphism-button"
+    >
       <div class="flex items-center gap-2">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
@@ -76,16 +75,16 @@
 
     <!-- Disconnect Button -->
     {#if keyboardAPI.shouldShowConfigurator}
-      <div in:slide|global={{ duration: 350, easing: (t) => t * (2 - t), axis: 'y' }}>
-          <button
-            class="w-full px-3 py-2 text-xs font-medium border rounded-md transition-colors duration-200 text-red-600 dark:text-red-400 border-red-300 dark:border-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 glassmorphism-button"
-            onclick={handleDisconnect}
-          >
-            <div class="flex items-center justify-center gap-1">
-              <LogOut class="w-3 h-3" />
-              <i>{t('ui.disconnect', currentLanguage)}</i>
-            </div>
-          </button>
+      <div in:slide|global={{ duration: 350, easing: t => t * (2 - t), axis: 'y' }}>
+        <button
+          class="w-full px-3 py-2 text-xs font-medium border rounded-md transition-colors duration-200 text-red-600 dark:text-red-400 border-red-300 dark:border-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 glassmorphism-button"
+          onclick={handleDisconnect}
+        >
+          <div class="flex items-center justify-center gap-1">
+            <LogOut class="w-3 h-3" />
+            <i>{t('ui.disconnect', currentLanguage)}</i>
+          </div>
+        </button>
       </div>
     {/if}
   </div>

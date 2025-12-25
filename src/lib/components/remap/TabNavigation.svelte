@@ -27,7 +27,9 @@
              {!$glassmorphismMode && !isActive
         ? 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 border-l-4 border-transparent'
         : ''}"
-      style={!$glassmorphismMode && isActive ? 'background-color: var(--theme-color-primary); border-left-color: var(--theme-color-primary);' : ''}
+      style={!$glassmorphismMode && isActive
+        ? 'background-color: var(--theme-color-primary); border-left-color: var(--theme-color-primary);'
+        : ''}
       onclick={() => onTabChange(tab.name)}
     >
       {#if tab.icon}

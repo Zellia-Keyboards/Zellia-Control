@@ -12,9 +12,7 @@
   let currentLanguage = $derived($language);
 </script>
 
-<div
-  class="border-b px-6 py-4 -mx-8 -mt-8 mb-4 "
->
+<div class="border-b px-6 py-4 -mx-8 -mt-8 mb-4">
   <div class="flex items-center justify-between">
     <div class="flex items-center gap-4">
       <button

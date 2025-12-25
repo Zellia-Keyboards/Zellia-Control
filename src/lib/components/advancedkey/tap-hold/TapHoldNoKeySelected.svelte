@@ -24,8 +24,7 @@
     <p class="text-gray-600 dark:text-gray-400 mb-4">
       {t('advancedkey.selectKeyToConfig', currentLanguage)}
     </p>
-    <div
-      class="glassmorphism-card border rounded-lg p-4 text-sm">
+    <div class="glassmorphism-card border rounded-lg p-4 text-sm">
       <strong>{t('advancedkey.tip', currentLanguage)}:</strong>
       {t('advancedkey.tapHoldTip', currentLanguage)}
     </div>

@@ -11,8 +11,7 @@
   let { currentKeyName, tapAction, holdAction, holdDelay }: Props = $props();
 </script>
 
-<div
-  class="rounded-lg border p-4 sm:p-6 glassmorphism-card">
+<div class="rounded-lg border p-4 sm:p-6 glassmorphism-card">
   <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Preview</h3>
 
   <div class="space-y-3">

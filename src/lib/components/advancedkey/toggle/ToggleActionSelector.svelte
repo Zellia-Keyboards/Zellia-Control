@@ -15,7 +15,7 @@
 <KeycodePicker
   title={t('advancedkey.toggleAction', currentLanguage)}
   selectedAction={selectedToggleAction}
-  onActionSelect={onActionSelect}
+  {onActionSelect}
   highlightColor="primary"
   defaultExpandedSection="Basic"
 />
