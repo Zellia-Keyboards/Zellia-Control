@@ -6,7 +6,7 @@
   let currentLanguage = $derived($language);
 </script>
 
-<div class="flex-1 flex items-center justify-center p-8">
+<div class="flex items-center justify-center p-8 w-full h-full min-h-[50vh]">
   <div class="text-center">
     <div class="w-16 h-16 mx-auto mb-4 relative">
 

@@ -71,7 +71,7 @@
         onmouseenter={handleMouseEnter}
         onmouseleave={handleMouseLeave}
         class="group relative px-12 py-4 bg-primary-600/80 backdrop-blur-xl text-white rounded-full font-medium text-lg overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-primary-500/30 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 border border-white/20"
-        style={`background: radial-gradient(circle 120px at ${mouseX}px ${mouseY}px, rgba(255,255,255,0.3), transparent), linear-gradient(to right, var(--color-primary-600), var(--color-primary-500), var(--color-primary-600)); background-size: 100% 100%, 200% 100%; animation: shimmer 3s linear infinite;`}
+        style={`background: radial-gradient(circle 120px at ${mouseX}px ${mouseY}px, rgba(255,255,255,0.3), transparent), linear-gradient(to right, var(--color-primary-600), var(--color-primary-500), var(--color-primary-600)); background-size: 100% 100%, 200% 100%;`}
         onclick={handleConnect}
         disabled={keyboardAPI.state.connectionStatus === 'connecting'}
       >
@@ -99,19 +99,7 @@
             </svg>
             {t('welcome.connecting', currentLanguage)}
           {:else}
-            <svg
-              class="w-5 h-5 transition-transform duration-300 group-hover:translate-x-1"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M13 10V3L4 14h7v7l9-11h-7z"
-              />
-            </svg>
+            
             {t('welcome.getStarted', currentLanguage)}
             <svg
               class="w-5 h-5 transition-transform duration-300 group-hover:translate-x-1"

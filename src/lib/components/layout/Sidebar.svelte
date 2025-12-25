@@ -24,9 +24,7 @@
 </script>
 
 <div
-  class="sidebar flex flex-col dark:bg-black dark:border-gray-600 bg-white border-gray-200 {$glassmorphismMode
-    ? 'glassmorphism-sidebar'
-    : ''} shadow-xl h-full overflow-y-auto border-r"
+  class="sidebar flex flex-col dark:bg-black dark:border-gray-600 bg-white border-gray-200 glassmorphism-sidebar shadow-xl h-full overflow-y-auto overflow-x-hidden border-r isolate"
   style="width: var(--sidebar-width, 13rem);"
 >
   <!-- Header -->
@@ -84,8 +82,7 @@
 
     <!-- Disconnect Button -->
     {#if keyboardAPI.shouldShowConfigurator}
-      <div in:slide|global={{ duration: 300, easing: (t) => t * (2 - t), axis: 'y' }}>
-        <div out:fade|global={{ duration: 200 }}>
+      <div in:slide|global={{ duration: 350, easing: (t) => t * (2 - t), axis: 'y' }}>
           <button
             class="w-full px-3 py-2 text-xs font-medium border rounded-md transition-colors duration-200 text-red-600 dark:text-red-400 border-red-300 dark:border-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 {$glassmorphismMode
               ? 'glassmorphism-button'
@@ -97,7 +94,6 @@
               <i>{t('ui.disconnect', currentLanguage)}</i>
             </div>
           </button>
-        </div>
       </div>
     {/if}
   </div>

@@ -99,13 +99,13 @@
   <SmallScreenWarning />
 
   <!-- Main Application (hidden on small screens) -->
-  <div class="hidden xl:flex h-screen bg-gray-50 dark:bg-black">
+  <div class="hidden xl:flex h-screen bg-gray-50 dark:bg-black overflow-hidden">
     <!-- Sidebar -->
     <Sidebar />
 
     <!-- Main Content -->
     <div
-      class="flex-1 flex flex-col overflow-y-scroll {$glassmorphismMode
+      class="flex-1 flex flex-col overflow-y-scroll overflow-x-hidden isolate {$glassmorphismMode
         ? 'glassmorphism-main'
         : 'bg-primary-50/20 dark:bg-black/20'}"
       style="gap: calc(1rem * var(--ui-scale, 1)); padding: calc(1rem * var(--ui-scale, 1));"

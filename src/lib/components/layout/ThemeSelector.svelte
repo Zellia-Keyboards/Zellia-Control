@@ -26,7 +26,7 @@
   }
 </script>
 
-<div class="p-3 border-t border-gray-200 dark:border-gray-600">
+<div class="p-3">
   <button
     class="flex items-center justify-between w-full px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 {$glassmorphismMode
       ? 'glassmorphism-button'
