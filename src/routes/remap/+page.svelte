@@ -235,7 +235,7 @@
                     setKeyContent(keyInfo);
                   }
                 }}
-                class="size-14 text-wrap text-sm whitespace-pre-line rounded-lg overflow-auto truncate transition-all duration-200 border-2 hover:shadow-[inset_0_0_0_2px_rgba(255,255,255,0.6)] hover:border-white/60 border-gray-300 dark:border-gray-600"
+                class="size-14 text-wrap text-sm whitespace-pre-line rounded-lg overflow-auto truncate transition-all duration-200 border-2 hover:shadow-[inset_0_0_0_2px_var(--color-primary)] hover:border-[color-mix(in_srgb,var(--color-primary)_50%,transparent)] border-[color-mix(in_srgb,var(--color-primary)_50%,transparent)]"
               >
                 {keyInfo.label}
               </button>
