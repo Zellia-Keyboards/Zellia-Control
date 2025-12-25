@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { glassmorphismMode } from '$lib/stores/DarkModeStore.svelte';
   import { language, t, tPlaceholder } from '$lib/stores/LanguageStore.svelte';
   import { keyActions } from '$lib/types/AdvancedKeyShared';
 
@@ -15,10 +14,7 @@
 </script>
 
 <div
-  class="border rounded-lg p-4 sm:p-6 {$glassmorphismMode
-    ? 'glassmorphism-card'
-    : 'bg-primary-200 dark:bg-primary-900 border-primary-400 dark:border-primary-700'}"
->
+  class="border rounded-lg p-4 sm:p-6 glassmorphism-card">
   <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">
     {t('advancedkey.howItWorks', currentLanguage)}
   </h3>

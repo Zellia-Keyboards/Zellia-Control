@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { glassmorphismMode } from '$lib/stores/DarkModeStore.svelte';
   import { fade } from 'svelte/transition';
 
   interface Props {
@@ -14,15 +13,9 @@
   let { title, message, confirmText, confirmColor = 'blue', onConfirm, onCancel }: Props = $props();
 
   const colorClasses = {
-    blue: $glassmorphismMode
-      ? 'glassmorphism-button bg-blue-600/80 border border-blue-500/50 text-white hover:bg-blue-600'
-      : 'bg-blue-600 text-white hover:bg-blue-700',
-    orange: $glassmorphismMode
-      ? 'glassmorphism-button bg-orange-600/80 border border-orange-500/50 text-white hover:bg-orange-600'
-      : 'bg-orange-600 text-white hover:bg-orange-700',
-    red: $glassmorphismMode
-      ? 'glassmorphism-button bg-red-600/80 border border-red-500/50 text-white hover:bg-red-600'
-      : 'bg-red-600 text-white hover:bg-red-700',
+    blue: 'glassmorphism-button bg-blue-600/80 border border-blue-500/50 text-white hover:bg-blue-600',
+    orange: 'glassmorphism-button bg-orange-600/80 border border-orange-500/50 text-white hover:bg-orange-600',
+    red: 'glassmorphism-button bg-red-600/80 border border-red-500/50 text-white hover:bg-red-600',
   };
 </script>
 
@@ -32,9 +25,7 @@
   onclick={onCancel}
 >
   <div
-    class="border border-gray-700 rounded-xl shadow-2xl max-w-md w-full p-6 {$glassmorphismMode
-      ? 'glassmorphism-card'
-      : 'bg-gray-800'}"
+    class="border border-gray-700 rounded-xl shadow-2xl max-w-md w-full p-6 glassmorphism-card"
     onclick={e => e.stopPropagation()}
   >
     <h3 class="text-xl font-bold text-white mb-3">{title}</h3>
@@ -44,9 +35,7 @@
 
     <div class="flex gap-3">
       <button
-        class="flex-1 px-4 py-2.5 rounded-lg border font-medium transition-colors {$glassmorphismMode
-          ? 'glassmorphism-button border-gray-600 text-gray-300'
-          : 'border-gray-600 text-gray-300 hover:bg-gray-700'}"
+        class="flex-1 px-4 py-2.5 rounded-lg border font-medium transition-colors glassmorphism-button border-gray-600 text-gray-300"
         onclick={onCancel}
       >
         Cancel

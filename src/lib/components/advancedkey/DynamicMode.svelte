@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { glassmorphismMode } from '$lib/stores/DarkModeStore.svelte';
   import { language, t } from '$lib/stores/LanguageStore.svelte';
   import { selectedKeys } from '$lib/stores/SelectedKeysStore';
   import {
@@ -378,7 +377,7 @@
   {@const uiIntervals = dksGetIntervals(uiBitmap)}
   {#each Array(4) as _, i}
     <button
-      class="rounded-full border-2 {$glassmorphismMode ? 'glassmorphism-button' : ''}"
+      class="rounded-full border-2 glassmorphism-button"
       onclick={() => dksHandleNodeClick(bindingIndex, i)}
       style:width={DKS_NODE_SIZE + 'px'}
       style:height={DKS_NODE_SIZE + 'px'}>+</button
@@ -389,9 +388,7 @@
     {@const [start, end] = interval}
     {#if start !== -1 && end > start}
       <button
-        class="absolute z-20 rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 {$glassmorphismMode
-          ? 'glassmorphism-button'
-          : ''} {'bg-primary-500 hover:bg-primary-600 focus-visible:ring-primary-300 dark:bg-gray-600 '}"
+        class="absolute z-20 rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 glassmorphism-button bg-primary-500 hover:bg-primary-600 focus-visible:ring-primary-300 dark:bg-gray-600 "
         style="width: {DKS_NODE_SIZE +
           dksIntervalWidth(
             interval
@@ -404,9 +401,7 @@
       </button>
     {:else if start === end}
       <button
-        class="absolute z-20 rounded-full {$glassmorphismMode
-          ? 'glassmorphism-button'
-          : ''} bg-purple-500 dark:bg-gray-500"
+        class="absolute z-20 rounded-full glassmorphism-button bg-purple-500 dark:bg-gray-500"
         style="width: {DKS_NODE_SIZE}px; height: {DKS_NODE_SIZE}px; top: {DKS_NODE_TOP}px; left: {dksNodeLeft(
           start
         )}px;"
@@ -416,9 +411,7 @@
       ></button>
     {/if}
     <button
-      class="absolute z-30 flex items-center justify-center rounded-sm border cursor-ew-resize transition-colors select-none {$glassmorphismMode
-        ? 'glassmorphism-button'
-        : ''} bg-gray-600 hover:bg-gray-700 dark:bg-gray-700 hover:bg-gray-600"
+      class="absolute z-30 flex items-center justify-center rounded-sm border cursor-ew-resize transition-colors select-none glassmorphism-button bg-gray-600 hover:bg-gray-700 dark:bg-gray-700 hover:bg-gray-600"
       style:width={DKS_GRIP_WIDTH + 'px'}
       style:height={DKS_GRIP_HEIGHT + 'px'}
       style:left="{dksNodeLeft(start) + DKS_GRIP_OFFSET + dksIntervalWidth(interval)}px"
@@ -451,9 +444,7 @@
       <div class="flex gap-8">
         <div class="w-96 flex flex-col gap-4">
           <div
-            class="rounded-lg border p-6 bg-primary-50 dark:bg-black dark:border-primary-200 border-[#e5e5e5] {$glassmorphismMode
-              ? 'glassmorphism-card'
-              : ''}"
+            class="rounded-lg border p-6 bg-primary-50 dark:bg-black dark:border-primary-200 border-[#e5e5e5] glassmorphism-card"
           >
             <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">
               {t('advancedkey.configureDKSBindings', currentLanguage)}

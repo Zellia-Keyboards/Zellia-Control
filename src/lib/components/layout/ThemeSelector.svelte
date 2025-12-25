@@ -5,7 +5,6 @@
     selectedThemeColor,
     themeColors,
     type ThemeColorName,
-    glassmorphismMode,
   } from '$lib/stores/DarkModeStore.svelte';
   import { language, t } from '$lib/stores/LanguageStore.svelte';
 
@@ -28,9 +27,7 @@
 
 <div class="p-3">
   <button
-    class="flex items-center justify-between w-full px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 {$glassmorphismMode
-      ? 'glassmorphism-button'
-      : 'text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-900'}"
+    class="flex items-center justify-between w-full px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 glassmorphism-button"
     onclick={() => (showThemeSelector = !showThemeSelector)}
   >
     <div class="flex items-center gap-3">

@@ -1,14 +1,11 @@
 <script lang="ts">
-  import { glassmorphismMode } from '$lib/stores/DarkModeStore.svelte';
   import { language } from '$lib/stores/LanguageStore.svelte';
 
   let currentLanguage = $derived($language);
 </script>
 
 <div
-  class="{$glassmorphismMode
-    ? 'glassmorphism-card'
-    : 'bg-white dark:bg-black'} rounded-xl p-6 border border-gray-200 dark:border-gray-700 transition-all duration-300"
+  class="glassmorphism-card rounded-xl p-6 border border-gray-200 dark:border-gray-700 transition-all duration-300"
 >
   <div class="flex items-start gap-6">
     <div class="flex-shrink-0">
@@ -32,9 +29,7 @@
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <!-- Alipay -->
           <div
-            class="{$glassmorphismMode
-              ? 'glassmorphism'
-              : 'bg-white dark:bg-black'} flex flex-col items-center p-4 rounded-lg border-2 border-blue-500 transition-all duration-300"
+            class="glassmorphism flex flex-col items-center p-4 rounded-lg border-2 border-blue-500 transition-all duration-300"
           >
             <div class="mb-4">
               <svg class="w-32 h-8" viewBox="0 0 149.36909 37.663967">
@@ -103,9 +98,7 @@
 
           <!-- WeChat Pay -->
           <div
-            class="{$glassmorphismMode
-              ? 'glassmorphism'
-              : 'bg-white dark:bg-black'} flex flex-col items-center p-4 rounded-lg border-2 border-green-500 transition-all duration-300"
+            class="glassmorphism flex flex-col items-center p-4 rounded-lg border-2 border-green-500 transition-all duration-300"
           >
             <div class="mb-4">
               <svg class="w-32 h-8" viewBox="0 0 715.94 211.02">

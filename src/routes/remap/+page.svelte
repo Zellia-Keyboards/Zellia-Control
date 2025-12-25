@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { glassmorphismMode, darkMode } from '$lib/stores/DarkModeStore.svelte';
   import { keyboardAPI, keyboardConnectionState } from '$lib/api/keyboardAPI.svelte';
   import { selectedLayer } from '$lib/stores/SelectedLayerStore.svelte';
   import Basic from '$lib/components/remap/Basic.svelte';
@@ -180,9 +179,7 @@
 
 <div
   bind:this={mainContainer}
-  class="rounded-2xl shadow mt-2 mb-4 grow border border-gray-200 dark:border-gray-600 text-black dark:text-white h-full flex {$glassmorphismMode
-    ? 'glassmorphism-card bg-gray-50 dark:bg-gray-900'
-    : 'bg-[color-mix(in_srgb,var(--theme-color-primary)_10%,white)] dark:bg-[color-mix(in_srgb,var(--theme-color-primary)_5%,black)]'}"
+  class="rounded-2xl shadow mt-2 mb-4 grow border border-gray-200 dark:border-gray-600 text-black dark:text-white h-full flex glassmorphism-card bg-gray-50 dark:bg-gray-900"
   tabindex="-1"
   role="application"
   onkeydown={handleKeydown}
@@ -196,10 +193,8 @@
     
     <!-- Glassmorphism separator line -->
     <div 
-      class="absolute top-0 right-0 bottom-0 w-px {$glassmorphismMode 
-        ? 'bg-gradient-to-b from-transparent via-white/20 to-transparent dark:via-white/10' 
-        : 'bg-gray-200 dark:bg-gray-600'}"
-      style={$glassmorphismMode ? 'box-shadow: 0 0 8px rgba(255, 255, 255, 0.1);' : ''}
+      class="absolute top-0 right-0 bottom-0 w-px bg-gradient-to-b from-transparent via-white/20 to-transparent dark:via-white/10"
+      style="box-shadow: 0 0 8px rgba(255, 255, 255, 0.1);"
     ></div>
   </aside>
 
@@ -232,9 +227,7 @@
                   setKeyContent(keyInfo);
                 }
               }}
-              class="size-14 text-wrap text-sm whitespace-pre-line rounded-lg overflow-auto truncate transition-all duration-200 border-2 hover:shadow-[inset_0_0_0_2px_rgba(255,255,255,0.6)] hover:border-white/60 {$glassmorphismMode
-                ? 'glassmorphism-button'
-                : 'border-gray-300 dark:border-gray-600'}"
+              class="size-14 text-wrap text-sm whitespace-pre-line rounded-lg overflow-auto truncate transition-all duration-200 border-2 hover:shadow-[inset_0_0_0_2px_rgba(255,255,255,0.6)] hover:border-white/60 border-gray-300 dark:border-gray-600"
             >
               {keyInfo.label}
             </button>

@@ -12,17 +12,12 @@
 </script>
 
 <div
-  class="rounded-lg border p-4 sm:p-6 mb-6 {$glassmorphismMode
-    ? 'glassmorphism-card'
-    : 'bg-primary-100 dark:bg-primary-900 border-primary-300 dark:border-primary-700'}"
->
+  class="rounded-lg border p-4 sm:p-6 mb-6 glassmorphism-card">
   <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
     <div class="flex items-center gap-4">
       <div class="flex items-center gap-3">
         <div
-          class="w-12 h-12 rounded-lg flex items-center justify-center border-2 {$glassmorphismMode
-            ? 'glassmorphism-button'
-            : 'bg-primary-200 dark:bg-primary-800 border-primary-500 dark:border-primary-600'}"
+          class="w-12 h-12 rounded-lg flex items-center justify-center border-2 glassmorphism-button"
         >
           <span class="font-mono font-bold text-gray-900 dark:text-white">{currentKeyName}</span>
         </div>
@@ -41,9 +36,7 @@
         >{t('advancedkey.mode', currentLanguage)}:</span
       >
       <span
-        class="px-3 py-1 rounded-full text-sm font-medium text-white {$glassmorphismMode
-          ? 'glassmorphism-button'
-          : 'bg-primary-500'}"
+        class="px-3 py-1 rounded-full text-sm font-medium text-white glassmorphism-button"
       >
         {t('advancedkey.tapHold', currentLanguage)}
       </span>

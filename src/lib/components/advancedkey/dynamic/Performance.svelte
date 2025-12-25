@@ -14,9 +14,7 @@
 </script>
 
 <div
-  class="rounded-lg border p-6 bg-white dark:bg-black border-gray-200 dark:border-gray-700 {$glassmorphismMode
-    ? 'glassmorphism-card'
-    : ''}"
+  class="rounded-lg border p-6 bg-white dark:bg-black border-gray-200 dark:border-gray-700 glassmorphism-card"
 >
   <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">
     {t('advancedkey.performanceSettings', currentLanguage)}
@@ -33,9 +31,7 @@
     <!-- Warning box for values below 0.3 -->
     {#if actuationPoint < 0.3}
       <div
-        class="mb-2 p-2 border rounded-md text-xs flex items-center gap-2 {$glassmorphismMode
-          ? 'glassmorphism-card'
-          : ''}"
+        class="mb-2 p-2 border rounded-md text-xs flex items-center gap-2 glassmorphism-card"
         style="background-color: {'color-mix(in srgb, #f59e0b 10%, #fefce8) dark:color-mix(in srgb, #f59e0b 15%, #451a03)'};
                         border-color: {'color-mix(in srgb, #f59e0b 25%, #e7e5e4) dark:color-mix(in srgb, #f59e0b 30%, #78716c)'};
                         color: {'#a16207 dark:#fbbf24'};"
@@ -68,9 +64,7 @@
         max="3.5"
         step="0.01"
         bind:value={actuationPoint}
-        class="w-20 px-2 py-1 text-xs border rounded {$glassmorphismMode
-          ? 'glassmorphism-input'
-          : ''}"
+        class="w-20 px-2 py-1 text-xs border rounded glassmorphism-input"
         style="background-color: {'white dark:#1f2937'};
                        border-color: {'color-mix(in srgb, var(--theme-color-primary) 15%, #d1d5db) dark:color-mix(in srgb, var(--theme-color-primary) 20%, #4b5563)'};
                        color: {'#111827 dark:white'};"
@@ -82,9 +76,7 @@
     </p>
   </div>
   <div
-    class="flex items-start gap-3 p-4 border rounded-lg {$glassmorphismMode
-      ? 'glassmorphism-card'
-      : ''}"
+    class="flex items-start gap-3 p-4 border rounded-lg glassmorphism-card"
     style="background-color: {'color-mix(in srgb, var(--theme-color-primary) 5%, #f0f9ff) dark:color-mix(in srgb, var(--theme-color-primary) 8%, #111827)'};
                border-color: {'color-mix(in srgb, var(--theme-color-primary) 15%, #bfdbfe) dark:color-mix(in srgb, var(--theme-color-primary) 20%, #4b5563)'};"
   >

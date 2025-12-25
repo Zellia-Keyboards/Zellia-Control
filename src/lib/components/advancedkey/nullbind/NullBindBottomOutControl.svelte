@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { glassmorphismMode } from '$lib/stores/DarkModeStore.svelte';
   import { language, t } from '$lib/stores/LanguageStore.svelte';
 
   interface Props {
@@ -26,7 +25,7 @@
       class="relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 {bottomOutPoint >
       0
         ? 'bg-primary-500'
-        : 'bg-gray-300 dark:bg-gray-600'} {$glassmorphismMode ? 'glassmorphism-button' : ''}"
+        : 'bg-gray-300 dark:bg-gray-600'} glassmorphism-button"
       onclick={() => onBottomOutToggle(bottomOutPoint === 0)}
     >
       <span

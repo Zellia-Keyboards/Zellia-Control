@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { glassmorphismMode } from '$lib/stores/DarkModeStore.svelte';
   import { language, t } from '$lib/stores/LanguageStore.svelte';
 
   let currentLanguage = $derived($language);
@@ -8,9 +7,7 @@
 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
   <!-- Performance Features -->
   <div
-    class="{$glassmorphismMode
-      ? 'glassmorphism-card'
-      : 'bg-white dark:bg-black'} rounded-lg border border-gray-200 dark:border-gray-700 p-6 transition-all duration-300"
+    class="glassmorphism-card rounded-lg border border-gray-200 dark:border-gray-700 p-6 transition-all duration-300"
   >
     <h4 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
       {t('about.performance', currentLanguage)}
@@ -33,9 +30,7 @@
 
   <!-- Advanced Features -->
   <div
-    class="{$glassmorphismMode
-      ? 'glassmorphism-card'
-      : 'bg-white dark:bg-black'} rounded-lg border border-gray-200 dark:border-gray-700 p-6 transition-all duration-300"
+    class="glassmorphism-card rounded-lg border border-gray-200 dark:border-gray-700 p-6 transition-all duration-300"
   >
     <h4 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
       {t('about.advancedKeys', currentLanguage)}
@@ -62,9 +57,7 @@
 
   <!-- Customization -->
   <div
-    class="{$glassmorphismMode
-      ? 'glassmorphism-card'
-      : 'bg-white dark:bg-black'} rounded-lg border border-gray-200 dark:border-gray-700 p-6 transition-all duration-300"
+    class="glassmorphism-card rounded-lg border border-gray-200 dark:border-gray-700 p-6 transition-all duration-300"
   >
     <h4 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
       {t('about.customization', currentLanguage)}
@@ -91,9 +84,7 @@
 
   <!-- Technical -->
   <div
-    class="{$glassmorphismMode
-      ? 'glassmorphism-card'
-      : 'bg-white dark:bg-black'} rounded-lg border border-gray-200 dark:border-gray-700 p-6 transition-all duration-300"
+    class="glassmorphism-card rounded-lg border border-gray-200 dark:border-gray-700 p-6 transition-all duration-300"
   >
     <h4 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
       {t('about.technical', currentLanguage)}

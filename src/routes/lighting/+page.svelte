@@ -1,7 +1,6 @@
 <script lang="ts">
   import { ArrowRight, ArrowLeft, ArrowDown, ArrowUp } from 'lucide-svelte';
   import { keyboardAPI, keyboardConnectionState } from '$lib/api/keyboardAPI.svelte';
-  import { glassmorphismMode } from '$lib/stores/DarkModeStore.svelte';
   import { language, t } from '$lib/stores/LanguageStore.svelte';
   import { selectedKeys } from '$lib/stores/SelectedKeysStore';
   import { selectedCount, toggleSelectAll, deselectAll } from '$lib/stores/SelectedKeysStore';
@@ -253,9 +252,7 @@
 </script>
 
 <div
-  class="rounded-2xl shadow mt-2 mb-4 grow bg-gray-50 dark:bg-black border border-gray-200 dark:border-gray-600 text-black dark:text-white h-full flex flex-col {$glassmorphismMode
-    ? 'glassmorphism-card'
-    : ''}"
+  class="rounded-2xl shadow mt-2 mb-4 grow bg-gray-50 dark:bg-black border border-gray-200 dark:border-gray-600 text-black dark:text-white h-full flex flex-col glassmorphism-card"
   style="padding: calc(2rem * var(--ui-scale, 1));"
 >
   <div class="flex items-center justify-between -mt-4" style="margin-bottom: calc(0.5rem * var(--ui-scale, 1));">
@@ -264,9 +261,7 @@
     </h2>
     <div class="flex gap-2 mb-2">
       <button
-        class="rounded transition-colors text-white {$glassmorphismMode
-          ? 'glassmorphism-button'
-          : ''}"
+        class="rounded transition-colors text-white glassmorphism-button"
         style="background-color: var(--theme-color-primary); padding: calc(0.5rem * var(--ui-scale, 1)) calc(1rem * var(--ui-scale, 1));"
         onclick={applySettings}
       >
@@ -276,9 +271,7 @@
   </div>
 
   <div
-    class="rounded-xl shadow flex flex-col lg:flex-row flex-1 {$glassmorphismMode
-      ? 'glassmorphism-card'
-      : ''}"
+    class="rounded-xl shadow flex flex-col lg:flex-row flex-1 glassmorphism-card"
     style="padding: calc(1rem * var(--ui-scale, 1)); gap: calc(1rem * var(--ui-scale, 1));"
   >
     <!-- Left: Effects Panel -->

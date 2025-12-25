@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { glassmorphismMode } from '$lib/stores/DarkModeStore.svelte';
   import { language, t } from '$lib/stores/LanguageStore.svelte';
 
   let currentLanguage = $derived($language);
@@ -8,9 +7,7 @@
 <div class="flex-1 flex items-center justify-center">
   <div class="text-center max-w-md mx-auto">
     <div
-      class="w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-4 {$glassmorphismMode
-        ? 'glassmorphism-card'
-        : 'bg-gray-100 dark:bg-gray-800'}"
+      class="w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-4 glassmorphism-card"
     >
       <svg class="w-12 h-12 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path
@@ -28,10 +25,7 @@
       {t('advancedkey.selectKeyToConfig', currentLanguage)}
     </p>
     <div
-      class="{$glassmorphismMode
-        ? 'glassmorphism-card'
-        : 'bg-primary-100 dark:bg-primary-900 border-primary-400 dark:border-primary-600 text-primary-700 dark:text-primary-300'} border rounded-lg p-4 text-sm"
-    >
+      class="glassmorphism-card border rounded-lg p-4 text-sm">
       <strong>{t('advancedkey.tip', currentLanguage)}:</strong>
       {t('advancedkey.tapHoldTip', currentLanguage)}
     </div>

@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { glassmorphismMode } from '$lib/stores/DarkModeStore.svelte';
   import { keyboardConnectionState } from '$lib/api/keyboardAPI.svelte';
   import { RotateCcw, Download, Trash2, Zap, Shield, AlertTriangle } from 'lucide-svelte';
   import { language, t } from '$lib/stores/LanguageStore.svelte';

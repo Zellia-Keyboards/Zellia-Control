@@ -1,6 +1,4 @@
 <script lang="ts">
-  import { keyboardAPI } from '$lib/api/keyboardAPI.svelte';
-  import { glassmorphismMode } from '$lib/stores/DarkModeStore.svelte';
   import { language, t } from '$lib/stores/LanguageStore.svelte';
 
   let currentLanguage = $derived($language);

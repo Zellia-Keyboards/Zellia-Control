@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { language, t } from '$lib/stores/LanguageStore.svelte';
   import { selectedKeys } from '$lib/stores/SelectedKeysStore';
   import { keyboardAPI,keyboardConnectionState } from '$lib/api/keyboardAPI.svelte';
   import {

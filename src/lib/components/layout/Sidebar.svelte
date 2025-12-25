@@ -2,7 +2,6 @@
   import { page } from '$app/stores';
   import { goto } from '$app/navigation';
   import { keyboardAPI } from '$lib/api/keyboardAPI.svelte';
-  import { glassmorphismMode } from '$lib/stores/DarkModeStore.svelte';
   import { language, t } from '$lib/stores/LanguageStore.svelte';
   import ThemeSelector from './ThemeSelector.svelte';
   import LanguageSwitch from './LanguageSwitch.svelte';
@@ -30,9 +29,7 @@
   <!-- Header -->
   <div class="p-4">
     <h1
-      class="font-black text-xl dark:text-white text-gray-900 {$glassmorphismMode
-        ? ''
-        : ''} text-center"
+      class="font-black text-xl dark:text-white text-gray-900 text-center"
     >
       <span class="italic">{currentLanguage === 'en' ? 'ZELLIA' : 'ZELLIA'}</span>
       {currentLanguage === 'en' ? 'Control' : '控制'}
@@ -60,10 +57,7 @@
   <div class="px-3 pb-3 border-b border-gray-100 dark:border-gray-600 space-y-2">
     <a
       href="/profiles"
-      class="flex items-center justify-between w-full px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white shadow-md hover:shadow-lg {$glassmorphismMode
-        ? 'glassmorphism-button'
-        : ''}"
-    >
+      class="flex items-center justify-between w-full px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white shadow-md hover:shadow-lg glassmorphism-button">
       <div class="flex items-center gap-2">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
@@ -84,9 +78,7 @@
     {#if keyboardAPI.shouldShowConfigurator}
       <div in:slide|global={{ duration: 350, easing: (t) => t * (2 - t), axis: 'y' }}>
           <button
-            class="w-full px-3 py-2 text-xs font-medium border rounded-md transition-colors duration-200 text-red-600 dark:text-red-400 border-red-300 dark:border-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 {$glassmorphismMode
-              ? 'glassmorphism-button'
-              : ''}"
+            class="w-full px-3 py-2 text-xs font-medium border rounded-md transition-colors duration-200 text-red-600 dark:text-red-400 border-red-300 dark:border-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 glassmorphism-button"
             onclick={handleDisconnect}
           >
             <div class="flex items-center justify-center gap-1">
@@ -104,9 +96,7 @@
       {#each NAVIGATE as [href, name]}
         <a
           {href}
-          class="flex items-center gap-3 w-full px-3 py-2.5 text-sm font-medium rounded-lg relative overflow-hidden text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-900 data-[active=true]:bg-primary-500 data-[active=true]:text-white data-[active=true]:shadow-sm transition-all duration-200 ease-in {$glassmorphismMode
-            ? 'glassmorphism-nav-item'
-            : ''}"
+          class="flex items-center gap-3 w-full px-3 py-2.5 text-sm font-medium rounded-lg relative overflow-hidden text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-900 data-[active=true]:bg-primary-500 data-[active=true]:text-white data-[active=true]:shadow-sm transition-all duration-200 ease-in glassmorphism-nav-item"
           data-active={isActive(href)}
         >
           <span class="relative z-10"><i>{t(name, currentLanguage)}</i></span>

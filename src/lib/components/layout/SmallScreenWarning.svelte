@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { glassmorphismMode } from '$lib/stores/DarkModeStore.svelte';
   import { language, t } from '$lib/stores/LanguageStore.svelte';
 
   let currentLanguage = $derived($language);
@@ -10,9 +9,7 @@
 >
   <div class="max-w-2xl mx-4">
     <div
-      class="rounded-xl shadow-lg border p-8 text-center bg-white dark:bg-black border-primary-200 dark:border-primary-700 text-gray-800 dark:text-white {$glassmorphismMode
-        ? 'glassmorphism-card'
-        : ''}"
+      class="rounded-xl shadow-lg border p-8 text-center bg-white dark:bg-black border-primary-200 dark:border-primary-700 text-gray-800 dark:text-white glassmorphism-card"
     >
       <div class="flex items-center justify-center mb-6">
         <div
@@ -41,9 +38,7 @@
       </p>
 
       <div
-        class="border rounded-lg p-4 mb-6 bg-primary-50 dark:bg-primary-900 border-primary-200 dark:border-primary-700 {$glassmorphismMode
-          ? 'glassmorphism-card'
-          : ''}"
+        class="border rounded-lg p-4 mb-6 bg-primary-50 dark:bg-primary-900 border-primary-200 dark:border-primary-700 glassmorphism-card"
       >
         <div class="flex items-center gap-3 text-primary-600 dark:text-primary-400">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

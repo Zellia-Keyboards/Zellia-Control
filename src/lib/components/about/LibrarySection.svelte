@@ -1,6 +1,4 @@
 <script lang="ts">
-  import { glassmorphismMode } from '$lib/stores/DarkModeStore.svelte';
-
   interface Props {
     onGitHubClick?: () => void;
   }
@@ -9,9 +7,7 @@
 </script>
 
 <div
-  class="{$glassmorphismMode
-    ? 'glassmorphism-card'
-    : 'bg-white dark:bg-black'} rounded-xl p-6 border border-gray-200 dark:border-gray-700 transition-all duration-300"
+  class="glassmorphism-card rounded-xl p-6 border border-gray-200 dark:border-gray-700 transition-all duration-300"
 >
   <div class="flex items-start gap-6">
     <div class="flex-shrink-0">

@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { glassmorphismMode } from '$lib/stores/DarkModeStore.svelte';
   import { language, t } from '$lib/stores/LanguageStore.svelte';
   import type { KeyConfiguration } from '$lib/types/AdvancedKeyShared';
 
@@ -56,9 +55,7 @@
             <div class="flex items-center justify-between">
               <div class="flex items-center justify-center gap-3 flex-1">
                 <div
-                  class="px-3 py-1.5 bg-primary-500 text-white rounded-lg font-mono font-bold text-sm {$glassmorphismMode
-                    ? 'glassmorphism-button'
-                    : ''}"
+                  class="px-3 py-1.5 bg-primary-500 text-white rounded-lg font-mono font-bold text-sm glassmorphism-button"
                 >
                   {nullBindConfig.pairedKeys[0]}
                 </div>
@@ -73,17 +70,13 @@
                   </svg>
                 </div>
                 <div
-                  class="px-3 py-1.5 bg-primary-500 text-white rounded-lg font-mono font-bold text-sm {$glassmorphismMode
-                    ? 'glassmorphism-button'
-                    : ''}"
+                  class="px-3 py-1.5 bg-primary-500 text-white rounded-lg font-mono font-bold text-sm glassmorphism-button"
                 >
                   {nullBindConfig.pairedKeys[1]}
                 </div>
               </div>
               <button
-                class="w-8 h-8 bg-red-500 hover:bg-red-600 rounded-lg flex items-center justify-center text-white transition-colors ml-3 {$glassmorphismMode
-                  ? 'glassmorphism-button'
-                  : ''}"
+                class="w-8 h-8 bg-red-500 hover:bg-red-600 rounded-lg flex items-center justify-center text-white transition-colors ml-3 glassmorphism-button"
                 onclick={() => onDeletePair(nullBindConfig.pairedKeys)}
                 title={t('advancedkey.deletePair', currentLanguage)}
                 aria-label={t('advancedkey.deletePair', currentLanguage)}

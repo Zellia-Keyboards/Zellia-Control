@@ -1,6 +1,4 @@
 <script lang="ts">
-  import { glassmorphismMode } from '$lib/stores/DarkModeStore.svelte';
-  import { language, t } from '$lib/stores/LanguageStore.svelte';
 
   // WebUSB DFU types for AT32F405
   declare global {

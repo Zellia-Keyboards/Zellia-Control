@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { glassmorphismMode } from '$lib/stores/DarkModeStore.svelte';
   import { MoreVertical } from 'lucide-svelte';
   import type { Profile } from '$lib/stores/ProfileStore.svelte';
 
@@ -17,9 +16,7 @@
 <div
   class="relative rounded-lg border transition-all duration-200 p-6 {isActive
     ? 'border-green-500/50 cursor-default'
-    : 'border-gray-700 cursor-pointer hover:border-gray-600'} {$glassmorphismMode
-    ? 'glassmorphism-card'
-    : 'bg-gray-900'}"
+    : 'border-gray-700 cursor-pointer hover:border-gray-600'} glassmorphism-card"
   onclick={() => !isActive && onActivate()}
   role="button"
   tabindex={0}

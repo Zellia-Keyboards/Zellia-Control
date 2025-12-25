@@ -5,7 +5,6 @@
   import { page } from '$app/stores';
   import { goto } from '$app/navigation';
   import { beforeNavigate, afterNavigate } from '$app/navigation';
-  import { glassmorphismMode } from '$lib/stores/DarkModeStore.svelte';
   import { language } from '$lib/stores/LanguageStore.svelte';
   import { advancedKeys, rgbConfigs, keymap } from '$lib/stores/ControllerStore.svelte';
   import { keyboardLayout as keyboardLayoutStore } from '$lib/stores/LayoutStore.svelte';
@@ -105,9 +104,7 @@
 
     <!-- Main Content -->
     <div
-      class="flex-1 flex flex-col overflow-y-scroll overflow-x-hidden isolate {$glassmorphismMode
-        ? 'glassmorphism-main'
-        : 'bg-primary-50/20 dark:bg-black/20'}"
+      class="flex-1 flex flex-col overflow-y-scroll overflow-x-hidden isolate glassmorphism-main"
       style="gap: calc(1rem * var(--ui-scale, 1)); padding: calc(1rem * var(--ui-scale, 1));"
     >
       <MainContentArea

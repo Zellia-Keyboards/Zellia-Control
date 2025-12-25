@@ -1,8 +1,6 @@
 <script lang="ts">
   import { Settings } from 'lucide-svelte';
   import { slide } from 'svelte/transition';
-  import { glassmorphismMode } from '$lib/stores/DarkModeStore.svelte';
-
   let showLayoutMenu = $state(false);
   let bottomRowConfig = $state<'6.25u' | '7u'>('6.25u');
   let splitSpacebar = $state(false);
@@ -24,9 +22,7 @@
 
 <div class="relative">
   <button
-    class="flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-200 {$glassmorphismMode
-      ? 'glassmorphism-button'
-      : 'bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'}"
+    class="flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-200 glassmorphism-button"
     onclick={() => (showLayoutMenu = !showLayoutMenu)}
   >
     <Settings class="w-4 h-4 text-gray-600 dark:text-gray-400" />
@@ -45,9 +41,8 @@
 
   {#if showLayoutMenu}
     <div
-      class="absolute right-0 top-12 w-72 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg z-50 p-4 {$glassmorphismMode
-        ? 'glassmorphism-card'
-        : ''}"
+      class="absolute right-0 top-12 w-72 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg z-50 p-4 glassmorphism-card"
+
       transition:slide={{ duration: 300, axis: 'y' }}
     >
       <!-- Bottom Row Configuration -->
@@ -119,9 +114,7 @@
       <!-- Apply Button -->
       <div class="mt-4 pt-3 border-t border-gray-200 dark:border-gray-600">
         <button
-          class="w-full px-3 py-2 rounded-lg transition-colors duration-200 text-sm font-medium {$glassmorphismMode
-            ? 'glassmorphism-button text-gray-900 dark:text-white'
-            : 'bg-primary-500 text-white hover:bg-primary-600'}"
+          class="w-full px-3 py-2 rounded-lg transition-colors duration-200 text-sm font-medium glassmorphism-button text-gray-900 dark:text-white"
           onclick={applyConfiguration}
         >
           Apply Configuration

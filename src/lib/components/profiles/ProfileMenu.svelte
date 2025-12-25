@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { glassmorphismMode } from '$lib/stores/DarkModeStore.svelte';
   import { Download, Copy, RotateCcw, Trash2 } from 'lucide-svelte';
   import { slide } from 'svelte/transition';
 
@@ -65,9 +64,7 @@
 </script>
 
 <div
-  class="fixed border rounded-lg shadow-2xl z-[9999] w-48 overflow-hidden backdrop-blur-2xl {$glassmorphismMode
-    ? 'glassmorphism-card border-primary-500/30'
-    : 'bg-primary-900 dark:bg-primary-900 border-primary-700'}"
+  class="fixed border rounded-lg shadow-2xl z-[9999] w-48 overflow-hidden backdrop-blur-2xl glassmorphism-card border-primary-500/30"
   style="top: {position.top}px; right: {position.right}px;"
   transition:slide={{ duration: 150, axis: 'y' }}
   onclick={e => e.stopPropagation()}

@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { glassmorphismMode } from '$lib/stores/DarkModeStore.svelte';
   import { language, t } from '$lib/stores/LanguageStore.svelte';
 
   interface Props {
@@ -13,9 +12,7 @@
 </script>
 
 <div
-  class="relative overflow-hidden rounded-lg border bg-gradient-to-br from-primary-200 to-primary-100 border-primary-400 dark:from-primary-800 dark:to-primary-900 dark:border-primary-600 {$glassmorphismMode
-    ? 'glassmorphism-card'
-    : ''}"
+  class="relative overflow-hidden rounded-lg border bg-gradient-to-br from-primary-200 to-primary-100 border-primary-400 dark:from-primary-800 dark:to-primary-900 dark:border-primary-600 glassmorphism-card"
 >
   <div class="p-4">
     <div class="text-sm font-medium text-gray-900 dark:text-white mb-3">
@@ -23,9 +20,7 @@
     </div>
     <div class="flex items-center justify-center gap-3">
       <div
-        class="px-3 py-2 bg-primary-500 text-white rounded-lg font-mono font-bold text-sm {$glassmorphismMode
-          ? 'glassmorphism-button'
-          : ''}"
+        class="px-3 py-2 bg-primary-500 text-white rounded-lg font-mono font-bold text-sm glassmorphism-button"
       >
         {getKeyLabel(localSelectedKeys[0])}
       </div>
@@ -40,9 +35,7 @@
         </svg>
       </div>
       <div
-        class="px-3 py-2 bg-primary-500 text-white rounded-lg font-mono font-bold text-sm {$glassmorphismMode
-          ? 'glassmorphism-button'
-          : ''}"
+        class="px-3 py-2 bg-primary-500 text-white rounded-lg font-mono font-bold text-sm glassmorphism-button"
       >
         {getKeyLabel(localSelectedKeys[1])}
       </div>

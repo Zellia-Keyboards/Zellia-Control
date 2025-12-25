@@ -1,11 +1,9 @@
 <script lang="ts">
-  import { glassmorphismMode } from '$lib/stores/DarkModeStore.svelte';
   import type {
     globalConfigurations,
     DynamicKeystrokeConfiguration,
   } from '$lib/types/AdvancedKeyShared';
   import { language, t } from '$lib/stores/LanguageStore.svelte';
-  import { Trash2 } from 'lucide-svelte';
 
   let currentLanguage = $derived($language);
 
@@ -52,11 +50,8 @@
 {#if configuredDynamicKeys.length > 0}
   <div class="max-w-7xl mx-auto mt-6">
     <div
-      class="rounded-lg border p-6 {glassmorphismMode ? 'glassmorphism-card' : ''}"
-      style={glassmorphismMode
-        ? ''
-        : `background-color: color-mix(in srgb, var(--theme-color-primary) 5%, ${'white dark:black'}); border-color: ${'color-mix(in srgb, var(--theme-color-primary) 15%, #e5e7eb) dark:color-mix(in srgb, var(--theme-color-primary) 20%, #374151)'};`}
-    >
+      class="rounded-lg border p-6 glassmorphism-card"
+      >
       <div class="flex items-center justify-between mb-4">
         <h3 class="text-lg font-medium text-gray-900 dark:text-white">
           {t('advancedkey.configuredDynamicKeys', currentLanguage)}
@@ -82,15 +77,7 @@
               ? 'opacity-0 scale-95 pointer-events-none'
               : isNewlyAdded
                 ? 'opacity-100 scale-100 animate-fade-in'
-                : 'opacity-100 scale-100 hover:scale-[1.02] hover:-translate-y-1'} p-4 rounded-lg border {glassmorphismMode
-              ? 'glassmorphism-card'
-              : ''}"
-            style={glassmorphismMode
-              ? ''
-              : `background: linear-gradient(135deg, 
-								color-mix(in srgb, var(--theme-color-primary) 8%, ${'#ffffff dark:#1f2937'}) 0%, 
-								color-mix(in srgb, var(--theme-color-primary) 3%, ${'#f8fafc dark:#111827'}) 100%);
-							   border-color: color-mix(in srgb, var(--theme-color-primary) 20%, ${'#e2e8f0 dark:#374151'});`}
+                : 'opacity-100 scale-100 hover:scale-[1.02] hover:-translate-y-1'} p-4 rounded-lg border glassmorphism-card"
           >
             <div class="flex items-center justify-between mb-3">
               <span class="font-mono font-bold" style="color: var(--theme-color-primary);"
@@ -99,9 +86,7 @@
 
               {#if onDeleteKey}
                 <button
-                  class="w-8 h-8 bg-red-500 hover:bg-red-600 rounded-lg flex items-center justify-center text-white transition-colors {glassmorphismMode
-                    ? 'glassmorphism-button'
-                    : ''}"
+                  class="w-8 h-8 bg-red-500 hover:bg-red-600 rounded-lg flex items-center justify-center text-white transition-colors glassmorphism-button"
                   onclick={() => deleteKey(keyId)}
                   title={t('advancedkey.deleteKey', currentLanguage)}
                   aria-label={t('advancedkey.deleteKey', currentLanguage)}

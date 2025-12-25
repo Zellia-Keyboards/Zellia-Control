@@ -1,6 +1,5 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import { glassmorphismMode } from '$lib/stores/DarkModeStore.svelte';
 
   // Liquid glass effect
   let buttonElement: HTMLButtonElement;

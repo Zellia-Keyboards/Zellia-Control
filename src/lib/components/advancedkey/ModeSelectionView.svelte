@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { glassmorphismMode } from '$lib/stores/DarkModeStore.svelte';
   import { language, t } from '$lib/stores/LanguageStore.svelte';
   import type { ComponentType } from 'svelte';
 
@@ -34,7 +33,7 @@
 
 <!-- Getting Started Section -->
 <div
-  class="rounded-xl p-6 border mb-4 {$glassmorphismMode ? 'glassmorphism-card' : ''}"
+  class="rounded-xl p-6 border mb-4 glassmorphism-card"
   style="background: {'color-mix(in srgb, var(--theme-color-primary) 5%, #f9fafb) dark:color-mix(in srgb, var(--theme-color-primary) 8%, #111827)'};
                 border-color: {'color-mix(in srgb, var(--theme-color-primary) 10%, #e5e7eb) dark:color-mix(in srgb, var(--theme-color-primary) 15%, #374151)'};"
 >
@@ -44,9 +43,7 @@
   <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
     <div class="flex items-start gap-3">
       <div
-        class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white bg-primary {$glassmorphismMode
-          ? 'glassmorphism-button'
-          : ''}"
+        class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white bg-primary glassmorphism-button"
       >
         1
       </div>
@@ -61,9 +58,7 @@
     </div>
     <div class="flex items-start gap-3">
       <div
-        class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white bg-primary {$glassmorphismMode
-          ? 'glassmorphism-button'
-          : ''}"
+        class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white bg-primary glassmorphism-button"
       >
         2
       </div>
@@ -78,9 +73,7 @@
     </div>
     <div class="flex items-start gap-3">
       <div
-        class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white bg-primary {$glassmorphismMode
-          ? 'glassmorphism-button'
-          : ''}"
+        class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white bg-primary glassmorphism-button"
       >
         3
       </div>
@@ -101,9 +94,7 @@
     {@const Icon = mode.icon}
     <div class="group relative w-full">
       <button
-        class="w-full h-full p-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border-2 text-left group-hover:scale-105 flex flex-col bg-white dark:bg-black border-gray-300 dark:border-gray-600 hover:border-primary-500 {$glassmorphismMode
-          ? 'glassmorphism-card'
-          : ''}"
+        class="w-full h-full p-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border-2 text-left group-hover:scale-105 flex flex-col bg-white dark:bg-black border-gray-300 dark:border-gray-600 hover:border-primary-500 glassmorphism-card"
         onclick={() => onSelectMode(mode.id)}
       >
         <!-- Mode Header -->

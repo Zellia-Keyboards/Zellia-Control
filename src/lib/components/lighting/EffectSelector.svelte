@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { glassmorphismMode } from '$lib/stores/DarkModeStore.svelte';
   import { language, t } from '$lib/stores/LanguageStore.svelte';
 
   interface EffectOption {
@@ -42,9 +41,7 @@
         class="px-2 py-2 rounded-lg border-2 text-center transition-all duration-200 relative overflow-hidden {selectedEffect ===
         effect.id
           ? 'border-primary bg-primary/20 dark:bg-primary/30 shadow-lg'
-          : 'border-gray-300 dark:border-gray-600 hover:border-primary/50'} {$glassmorphismMode
-          ? 'glassmorphism-button'
-          : ''}"
+          : 'border-gray-300 dark:border-gray-600 hover:border-primary/50'} glassmorphism-button"
         onclick={() => onSelectEffect(effect.id, effect.mode)}
       >
         {#if selectedEffect === effect.id}

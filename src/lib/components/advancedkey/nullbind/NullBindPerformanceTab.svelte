@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { glassmorphismMode } from '$lib/stores/DarkModeStore.svelte';
   import { language, t } from '$lib/stores/LanguageStore.svelte';
   import { AlertTriangle } from 'lucide-svelte';
 
@@ -29,9 +28,7 @@
 </script>
 
 <div
-  class="flex flex-col gap-4 rounded-md border {$glassmorphismMode
-    ? 'glassmorphism-card'
-    : 'border-gray-200 bg-white dark:border-gray-600 dark:bg-black'} p-4 shadow-sm"
+  class="flex flex-col gap-4 rounded-md border glassmorphism-card p-4 shadow-sm"
 >
   <!-- Rapid Trigger Toggle -->
   <div class="flex items-center justify-between">
@@ -47,7 +44,7 @@
       class="relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 {rtDown >
       0
         ? 'bg-primary-500'
-        : 'bg-gray-300 dark:bg-gray-600'} {$glassmorphismMode ? 'glassmorphism-button' : ''}"
+        : 'bg-gray-300 dark:bg-gray-600'} glassmorphism-button"
       onclick={() => onRapidTriggerToggle(rtDown === 0)}
     >
       <span
@@ -77,9 +74,7 @@
     <!-- Warning box for values below 0.3 -->
     {#if uiActuationPoint < 0.3}
       <div
-        class="mb-2 p-2 border rounded-md text-xs flex items-center gap-2 {$glassmorphismMode
-          ? 'glassmorphism-card'
-          : ''} bg-yellow-50 dark:bg-yellow-900 border-yellow-300 dark:border-yellow-600 text-yellow-700 dark:text-yellow-200"
+        class="mb-2 p-2 border rounded-md text-xs flex items-center gap-2 glassmorphism-card bg-yellow-50 dark:bg-yellow-900 border-yellow-300 dark:border-yellow-600 text-yellow-700 dark:text-yellow-200"
       >
         <AlertTriangle class="w-4 h-4 flex-shrink-0" />
         <span>{t('advancedkey.keySensitivityWarning', currentLanguage)}</span>
@@ -109,9 +104,7 @@
         step="0.01"
         bind:value={uiActuationPoint}
         onchange={onCommitActuationPoint}
-        class="w-20 px-2 py-1 text-xs border rounded {$glassmorphismMode
-          ? 'glassmorphism-input'
-          : ''} bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white"
+        class="w-20 px-2 py-1 text-xs border rounded glassmorphism-input bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white"
       />
       <span class="text-xs text-gray-500 dark:text-gray-400"
         >{t('advancedkey.millimeters', currentLanguage)}</span

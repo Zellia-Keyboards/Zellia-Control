@@ -1,6 +1,5 @@
 <script lang="ts">
   import { glassmorphismMode } from '$lib/stores/DarkModeStore.svelte';
-  import { language, t } from '$lib/stores/LanguageStore.svelte';
 
   interface TabOption {
     name: string;

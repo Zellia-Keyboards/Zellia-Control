@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { glassmorphismMode } from '$lib/stores/DarkModeStore.svelte';
   import { language, t } from '$lib/stores/LanguageStore.svelte';
   import { keyboardAPI } from '$lib/api/keyboardAPI.svelte';
   import type { KeyConfiguration, ToggleConfiguration } from '$lib/types/AdvancedKeyShared';
@@ -41,10 +40,7 @@
 </script>
 
 <div
-  class="rounded-lg border border-gray-200 dark:border-gray-600 p-6 bg-white dark:bg-gray-900 {$glassmorphismMode
-    ? 'glassmorphism-card'
-    : ''}"
->
+  class="rounded-lg border border-gray-200 dark:border-gray-600 p-6 bg-white dark:bg-gray-900 glassmorphism-card">
   <div class="flex items-center justify-between mb-4">
     <h3 class="text-lg font-medium text-gray-900 dark:text-white">
       {t('advancedkey.configuredToggle', currentLanguage)}
@@ -64,16 +60,12 @@
       {@const isNewlyAdded = newlyAddedKeys.has(keyId)}
       {@const toggleConfig = config as ToggleConfiguration}
       <div
-        class="p-3 rounded-lg border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-800 transform transition-all duration-500 ease-out {$glassmorphismMode
-          ? 'glassmorphism-card'
-          : ''} {isDeleting ? 'animate-fade-out' : ''} {isNewlyAdded ? 'animate-fade-in' : ''}"
+        class="p-3 rounded-lg border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-800 transform transition-all duration-500 ease-out glassmorphism-card {isDeleting ? 'animate-fade-out' : ''} {isNewlyAdded ? 'animate-fade-in' : ''}"
       >
         <div class="flex items-center justify-between mb-2">
           <span class="font-mono font-bold text-gray-900 dark:text-white text-sm">{keyName}</span>
           <button
-            class="w-8 h-8 bg-red-500 hover:bg-red-600 rounded-lg flex items-center justify-center text-white transition-colors {$glassmorphismMode
-              ? 'glassmorphism-button'
-              : ''}"
+            class="w-8 h-8 bg-red-500 hover:bg-red-600 rounded-lg flex items-center justify-center text-white transition-colors glassmorphism-button"
             onclick={() => onDeleteKey(keyId)}
             title={t('common.delete', currentLanguage)}
             aria-label={t('common.delete', currentLanguage)}

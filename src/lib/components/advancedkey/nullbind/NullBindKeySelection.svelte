@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { glassmorphismMode } from '$lib/stores/DarkModeStore.svelte';
   import { language, t } from '$lib/stores/LanguageStore.svelte';
 
   interface Props {
@@ -14,9 +13,7 @@
 </script>
 
 <div
-  class="p-6 {$glassmorphismMode
-    ? ''
-    : 'bg-primary-50 dark:bg-black border-primary-300 dark:border-gray-600'}"
+  class="p-6"
 >
   <div class="max-w-4xl mx-auto">
     <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-3">
@@ -28,18 +25,15 @@
     <!-- Selected Keys Display -->
     <div class="grid grid-cols-2 gap-4 mb-4">
       <div
-        class="p-4 border-2 border-dashed rounded-lg {$glassmorphismMode
-          ? 'glassmorphism-card'
-          : ''} {localSelectedKeys.length >= 1
+        class="p-4 border-2 border-dashed rounded-lg glassmorphism-card 
+        {localSelectedKeys.length >= 1
           ? 'border-primary-500 bg-primary-100 dark:bg-primary-900'
           : 'border-primary-400 bg-primary-200 dark:bg-primary-800'}"
       >
         <div class="text-center">
           {#if localSelectedKeys.length >= 1}
             <div
-              class="w-12 h-12 text-white bg-primary-500 rounded-lg flex items-center justify-center mx-auto mb-2 {$glassmorphismMode
-                ? 'glassmorphism-button'
-                : ''}"
+              class="w-12 h-12 text-white bg-primary-500 rounded-lg flex items-center justify-center mx-auto mb-2 glassmorphism-button"
             >
               <span class="font-mono font-bold">{getKeyLabel(localSelectedKeys[0])}</span>
             </div>
@@ -47,18 +41,14 @@
               {t('advancedkey.firstKey', currentLanguage)}
             </div>
             <button
-              class="mt-2 text-xs text-red-600 hover:text-red-700 {$glassmorphismMode
-                ? 'glassmorphism-button'
-                : ''}"
+              class="mt-2 text-xs text-red-600 hover:text-red-700 glassmorphism-button"
               onclick={() => onRemoveKey(0)}
             >
               {t('advancedkey.remove', currentLanguage)}
             </button>
           {:else}
             <div
-              class="w-12 h-12 bg-primary-300 dark:bg-gray-700 rounded-lg flex items-center justify-center mx-auto mb-2 animate-pulse {$glassmorphismMode
-                ? 'glassmorphism-button'
-                : ''}"
+              class="w-12 h-12 bg-primary-300 dark:bg-gray-700 rounded-lg flex items-center justify-center mx-auto mb-2 animate-pulse glassmorphism-button"
             >
               <span class="text-primary-500">?</span>
             </div>
@@ -70,9 +60,7 @@
       </div>
 
       <div
-        class="p-4 border-2 border-dashed rounded-lg {$glassmorphismMode
-          ? 'glassmorphism-card'
-          : ''} {localSelectedKeys.length >= 2
+        class="p-4 border-2 border-dashed rounded-lg glassmorphism-card {localSelectedKeys.length >= 2
           ? 'border-primary-500 bg-primary-100 dark:bg-primary-900'
           : localSelectedKeys.length === 1
             ? 'border-primary-500 bg-primary-100 dark:bg-primary-800'
@@ -81,9 +69,7 @@
         <div class="text-center">
           {#if localSelectedKeys.length >= 2}
             <div
-              class="w-12 h-12 text-white bg-primary-500 rounded-lg flex items-center justify-center mx-auto mb-2 {$glassmorphismMode
-                ? 'glassmorphism-button'
-                : ''}"
+              class="w-12 h-12 text-white bg-primary-500 rounded-lg flex items-center justify-center mx-auto mb-2 glassmorphism-button"
             >
               <span class="font-mono font-bold">{getKeyLabel(localSelectedKeys[1])}</span>
             </div>
@@ -91,18 +77,14 @@
               {t('advancedkey.secondKey', currentLanguage)}
             </div>
             <button
-              class="mt-2 text-xs text-red-600 hover:text-red-700 {$glassmorphismMode
-                ? 'glassmorphism-button'
-                : ''}"
+              class="mt-2 text-xs text-red-600 hover:text-red-700 glassmorphism-button"
               onclick={() => onRemoveKey(1)}
             >
               {t('advancedkey.remove', currentLanguage)}
             </button>
           {:else if localSelectedKeys.length === 1}
             <div
-              class="w-12 h-12 bg-primary-300 dark:bg-gray-700 rounded-lg flex items-center justify-center mx-auto mb-2 animate-pulse {$glassmorphismMode
-                ? 'glassmorphism-button'
-                : ''}"
+              class="w-12 h-12 bg-primary-300 dark:bg-gray-700 rounded-lg flex items-center justify-center mx-auto mb-2 animate-pulse glassmorphism-button"
             >
               <span class="text-primary-500">?</span>
             </div>
@@ -111,9 +93,7 @@
             </div>
           {:else}
             <div
-              class="w-12 h-12 bg-gray-300 dark:bg-gray-600 rounded-lg flex items-center justify-center mx-auto mb-2 {$glassmorphismMode
-                ? 'glassmorphism-button'
-                : ''}"
+              class="w-12 h-12 bg-gray-300 dark:bg-gray-600 rounded-lg flex items-center justify-center mx-auto mb-2 glassmorphism-button"
             >
               <span class="text-gray-500 dark:text-gray-400">?</span>
             </div>

@@ -63,11 +63,9 @@
   const cardClasses = $derived(
     description
       ? 'rounded-lg border p-4 sm:p-6 ' +
-        ($glassmorphismMode
-          ? 'glassmorphism-card'
-          : 'bg-primary-50 dark:bg-primary-950 border-primary-300 dark:border-primary-800')
+        ('glassmorphism-card')
       : 'rounded-lg border border-gray-200 dark:border-gray-600 p-4 sm:p-6 bg-white dark:bg-gray-900 ' +
-        ($glassmorphismMode ? 'glassmorphism-card' : '')
+        ('glassmorphism-card')
   );
 </script>
 
@@ -87,14 +85,10 @@
   <div class="space-y-2">
     {#each actionCategories as category}
       <div
-        class="border rounded-lg {$glassmorphismMode
-          ? 'glassmorphism-card'
-          : 'border-primary-200 dark:border-primary-700'}"
+        class="border rounded-lg glassmorphism-card"
       >
         <button
-          class="w-full px-4 py-3 flex items-center justify-between {$glassmorphismMode
-            ? 'glassmorphism-button'
-            : 'hover:bg-primary-100 dark:hover:bg-primary-900'} rounded-lg transition-colors"
+          class="w-full px-4 py-3 flex items-center justify-between glassmorphism-button rounded-lg transition-colors"
           onclick={() => (expandedSections[category.name] = !expandedSections[category.name])}
         >
           <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300">

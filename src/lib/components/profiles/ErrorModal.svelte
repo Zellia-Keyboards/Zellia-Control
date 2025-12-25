@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { glassmorphismMode } from '$lib/stores/DarkModeStore.svelte';
   import { AlertCircle } from 'lucide-svelte';
   import { fade } from 'svelte/transition';
 
@@ -17,9 +16,7 @@
   onclick={onClose}
 >
   <div
-    class="border border-gray-700 rounded-xl shadow-2xl max-w-md w-full p-6 {$glassmorphismMode
-      ? 'glassmorphism-card'
-      : 'bg-gray-800'}"
+    class="border border-gray-700 rounded-xl shadow-2xl max-w-md w-full p-6 glassmorphism-card"
     onclick={e => e.stopPropagation()}
   >
     <div class="flex items-start gap-3 mb-4">
@@ -34,9 +31,7 @@
 
     <div class="flex justify-end">
       <button
-        class="px-4 py-2.5 rounded-lg font-medium transition-colors {$glassmorphismMode
-          ? 'glassmorphism-button bg-gray-700/80 border border-gray-600/50 text-white hover:bg-gray-700'
-          : 'bg-gray-700 text-white hover:bg-gray-600'}"
+        class="px-4 py-2.5 rounded-lg font-medium transition-colors glassmorphism-button bg-gray-700/80 border border-gray-600/50 text-white hover:bg-gray-700"
         onclick={onClose}
       >
         OK

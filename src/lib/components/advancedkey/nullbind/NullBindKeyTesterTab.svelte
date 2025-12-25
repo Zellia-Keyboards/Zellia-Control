@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { glassmorphismMode } from '$lib/stores/DarkModeStore.svelte';
   import { language, t } from '$lib/stores/LanguageStore.svelte';
 
   interface Props {
@@ -18,9 +17,7 @@
 </script>
 
 <div
-  class="flex flex-col gap-4 rounded-md border {$glassmorphismMode
-    ? 'glassmorphism-card'
-    : 'border-gray-200 bg-white dark:border-gray-600 dark:bg-black'} p-4 shadow-sm"
+  class="flex flex-col gap-4 rounded-md border glassmorphism-card p-4 shadow-sm"
 >
   <div class="text-center">
     <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">
@@ -32,9 +29,7 @@
 
     <div class="grid grid-cols-2 gap-4 max-w-md mx-auto">
       <div
-        class="p-6 border-2 border-primary-300 bg-primary-100 rounded-lg {$glassmorphismMode
-          ? 'glassmorphism-card'
-          : ''}"
+        class="p-6 border-2 border-primary-300 bg-primary-100 rounded-lg glassmorphism-card"
       >
         <div class="text-2xl font-mono font-bold text-gray-900 dark:text-white mb-2">
           {getKeyLabel(localSelectedKeys[0])}
@@ -49,9 +44,7 @@
         {/if}
       </div>
       <div
-        class="p-6 border-2 border-primary-300 bg-primary-100 rounded-lg {$glassmorphismMode
-          ? 'glassmorphism-card'
-          : ''}"
+        class="p-6 border-2 border-primary-300 bg-primary-100 rounded-lg glassmorphism-card"
       >
         <div class="text-2xl font-mono font-bold text-gray-900 dark:text-white mb-2">
           {getKeyLabel(localSelectedKeys[1])}

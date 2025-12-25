@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { glassmorphismMode } from '$lib/stores/DarkModeStore.svelte';
   import type { KeyAction } from '$lib/types/AdvancedKeyShared';
   import { language, t } from '$lib/stores/LanguageStore.svelte';
 
@@ -26,9 +25,7 @@
 </script>
 
 <div
-  class="rounded-lg border p-6 bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 {$glassmorphismMode
-    ? 'glassmorphism-card'
-    : ''}"
+  class="rounded-lg border p-6 bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 glassmorphism-card"
 >
   <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">
     {t('advancedkey.keycodeSelectionTitle', currentLanguage)}
@@ -55,9 +52,7 @@
         <div class="grid grid-cols-10 gap-2">
           {#each category.actions as action}
             <button
-              class="aspect-square w-15 h-15 text-xs rounded-md border transition-all {$glassmorphismMode
-                ? 'glassmorphism-button'
-                : ''}"
+              class="aspect-square w-15 h-15 text-xs rounded-md border transition-all glassmorphism-button"
               style={selectedBindingIndex !== null
                 ? `background-color: ${'white dark:#111827'}; 
 								   border-color: ${'color-mix(in srgb, var(--theme-color-primary) 10%, #e5e5e5) dark:color-mix(in srgb, var(--theme-color-primary) 15%, #4b5563)'}; 

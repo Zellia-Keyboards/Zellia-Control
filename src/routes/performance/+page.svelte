@@ -1,7 +1,5 @@
 <script lang="ts">
-  import { glassmorphismMode } from '$lib/stores/DarkModeStore.svelte';
   import { keyboardAPI, keyboardConnectionState } from '$lib/api/keyboardAPI.svelte';
-  import { AlertTriangle, AppleIcon, LetterText } from 'lucide-svelte';
   import { language, t } from '$lib/stores/LanguageStore.svelte';
   import { selectedCount, toggleSelectAll, deselectAll } from '$lib/stores/SelectedKeysStore';
   import * as ekc from 'emi-keyboard-controller';
@@ -148,9 +146,7 @@
 </script>
 
 <div
-  class="rounded-2xl shadow mt-2 mb-4 grow bg-primary-100 dark:bg-black border border-transparent dark:border-gray-600 text-black dark:text-white h-full flex flex-col {$glassmorphismMode
-    ? 'glassmorphism-card'
-    : ''}"
+  class="rounded-2xl shadow mt-2 mb-4 grow bg-primary-100 dark:bg-black border border-transparent dark:border-gray-600 text-black dark:text-white h-full flex flex-col glassmorphism-card"
   style="padding: calc(2rem * var(--ui-scale, 1));"
 >
   <div class="flex items-center justify-between" style="margin-bottom: calc(1rem * var(--ui-scale, 1));">
@@ -168,9 +164,7 @@
     <div class="flex gap-2">
       <!-- svelte-ignore a11y_mouse_events_have_key_events -->
       <button
-        class="px-5 py-2 text-sm rounded-full mr-1 transition-all duration-200 text-white font-medium shadow-sm hover:shadow-md {$glassmorphismMode
-          ? 'glassmorphism-button'
-          : ''}"
+        class="px-5 py-2 text-sm rounded-full mr-1 transition-all duration-200 text-white font-medium shadow-sm hover:shadow-md glassmorphism-button"
         style="background-color: var(--theme-color-primary);"
         onmouseover={e =>
           ((e.currentTarget as HTMLElement).style.backgroundColor =
@@ -182,9 +176,7 @@
         {t('performance.selectAllKeys', currentLanguage)}
       </button>
       <button
-        class="bg-gray-200 hover:bg-gray-300 text-gray-600 dark:bg-gray-800 dark:hover:bg-gray-700 dark:text-white dark:border dark:border-white/20 px-5 py-2 text-sm rounded-full transition-all duration-200 font-medium shadow-sm hover:shadow-md {$glassmorphismMode
-          ? 'glassmorphism-button'
-          : ''}"
+        class="bg-gray-200 hover:bg-gray-300 text-gray-600 dark:bg-gray-800 dark:hover:bg-gray-700 dark:text-white dark:border dark:border-white/20 px-5 py-2 text-sm rounded-full transition-all duration-200 font-medium shadow-sm hover:shadow-md glassmorphism-button"
         onclick={() => deselectAll()}
       >
         {t('performance.discardSelection', currentLanguage)}
@@ -192,9 +184,7 @@
     </div>
   </div>
   <div
-    class="rounded-xl shadow flex flex-col md:flex-row flex-1 {$glassmorphismMode
-      ? 'glassmorphism-card'
-      : ''}"
+    class="rounded-xl shadow flex flex-col md:flex-row flex-1 glassmorphism-card"
     style="padding: calc(1.25rem * var(--ui-scale, 1)); gap: calc(1.25rem * var(--ui-scale, 1));"
   >
     <!-- 1st Box: Actuation Point (with slide-out animation) -->

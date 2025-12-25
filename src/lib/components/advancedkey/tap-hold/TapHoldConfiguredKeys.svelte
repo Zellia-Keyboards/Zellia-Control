@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { glassmorphismMode } from '$lib/stores/DarkModeStore.svelte';
   import { language, t } from '$lib/stores/LanguageStore.svelte';
   import { keyActions, globalConfigurations } from '$lib/types/AdvancedKeyShared';
   import type { TapHoldConfiguration } from '$lib/types/AdvancedKeyShared';
@@ -48,9 +47,7 @@
 
 {#if showConfiguredSection}
   <div
-    class="rounded-lg border p-4 sm:p-6 {$glassmorphismMode
-      ? 'glassmorphism-card'
-      : 'bg-primary-50 dark:bg-primary-950 border-primary-300 dark:border-primary-800'} animate-section-fade-in"
+    class="rounded-lg border p-4 sm:p-6 glassmorphism-card animate-section-fade-in"
   >
     <div class="flex items-center justify-between mb-4">
       <h3 class="text-lg font-medium text-gray-900 dark:text-white">
@@ -71,18 +68,14 @@
         {@const isDeleting = deletingKeys.has(keyId)}
         {@const isNewlyAdded = newlyAddedKeys.has(keyId)}
         <div
-          class="p-3 rounded-lg border transform transition-all duration-500 ease-out {$glassmorphismMode
-            ? 'glassmorphism-card'
-            : 'bg-primary-100 dark:bg-primary-900 border-primary-300 dark:border-primary-700'} {isDeleting
+          class="p-3 rounded-lg border transform transition-all duration-500 ease-out glassmorphism-card {isDeleting
             ? 'animate-fade-out'
             : ''} {isNewlyAdded ? 'animate-fade-in' : ''}"
         >
           <div class="flex items-center justify-between mb-2">
             <span class="font-mono font-bold text-gray-900 dark:text-white text-sm">{keyName}</span>
             <button
-              class="w-8 h-8 bg-red-500 hover:bg-red-600 rounded-lg flex items-center justify-center text-white transition-colors {$glassmorphismMode
-                ? 'glassmorphism-button'
-                : ''}"
+              class="w-8 h-8 bg-red-500 hover:bg-red-600 rounded-lg flex items-center justify-center text-white transition-colors glassmorphism-button"
               onclick={() => onDeleteKey(keyId)}
               title={t('common.delete', currentLanguage)}
               aria-label={t('common.delete', currentLanguage)}

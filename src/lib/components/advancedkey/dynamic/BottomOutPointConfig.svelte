@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { glassmorphismMode } from '$lib/stores/DarkModeStore.svelte';
   import { language, t } from '$lib/stores/LanguageStore.svelte';
 
   let currentLanguage = $derived($language);
@@ -11,11 +10,7 @@
 </script>
 
 <div
-  class="rounded-lg border p-6 {glassmorphismMode ? 'glassmorphism-card' : ''}"
-  style={glassmorphismMode
-    ? ''
-    : `background-color: color-mix(in srgb, var(--theme-color-primary) 5%, ${'white dark:black'});
-           border-color: ${'color-mix(in srgb, var(--theme-color-primary) 15%, #e5e7eb) dark:color-mix(in srgb, var(--theme-color-primary) 20%, #374151)'};`}
+  class="rounded-lg border p-6 glassmorphism-card"
 >
   <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">
     {t('advancedkey.bottomOutPoint', currentLanguage)}
@@ -40,9 +35,7 @@
       max="4.0"
       step="0.1"
       bind:value={bottomOutPointValue}
-      class="w-full h-2 rounded-full appearance-none slider-thumb {glassmorphismMode
-        ? 'glassmorphism-input'
-        : ''}"
+      class="w-full h-2 rounded-full appearance-none slider-thumb glassmorphism-input"
       style="background-color: {'#d1d5db dark:#374151'}; --thumb-color: var(--theme-color-primary);"
     />
     <div class="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-1">

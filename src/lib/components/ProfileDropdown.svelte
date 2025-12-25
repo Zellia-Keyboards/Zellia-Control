@@ -1,7 +1,6 @@
 <script lang="ts">
   import { profileStore } from '$lib/stores/ProfileStore.svelte';
   import { language, t } from '$lib/stores/LanguageStore.svelte';
-  import { glassmorphismMode } from '$lib/stores/DarkModeStore.svelte';
   import { Check } from 'lucide-svelte';
   import { slide } from 'svelte/transition';
 
@@ -35,9 +34,7 @@
 <div class="relative">
   <!-- Dropdown Button -->
   <button
-    class="flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-200 {$glassmorphismMode
-      ? 'glassmorphism-button'
-      : 'bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'}"
+    class="flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-200 glassmorphism-button"
     onclick={toggleDropdown}
   >
     <div class="flex flex-col items-start">
@@ -64,9 +61,7 @@
   <!-- Dropdown Menu -->
   {#if showDropdown}
     <div
-      class="absolute top-full mt-2 right-0 w-64 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50 overflow-hidden {$glassmorphismMode
-        ? 'glassmorphism-card'
-        : ''}"
+      class="absolute top-full mt-2 right-0 w-64 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50 overflow-hidden glassmorphism-card"
       transition:slide={{ duration: 200, axis: 'y' }}
       onclick={e => e.stopPropagation()}
     >

@@ -1,6 +1,5 @@
 <script lang="ts">
   import type { Snippet } from 'svelte';
-  import { glassmorphismMode } from '$lib/stores/DarkModeStore.svelte';
   import type { DKSAction, KeyAction } from '$lib/types/AdvancedKeyShared'; // Assuming KeyAction is exported
 
   type Props = {
@@ -30,14 +29,8 @@
 
 <div class="flex items-center gap-4">
   <button
-    class="w-16 h-16 p-0.5 rounded-lg border-2 text-xs transition-all font-medium {glassmorphismMode
-      ? 'glassmorphism-button'
-      : ''}"
-    style={glassmorphismMode
-      ? `border-color: ${selectedBindingIndex === bindingIndex ? 'var(--theme-color-primary)' : '#e5e7eb) dark:#4b5563'};`
-      : `border-color: ${selectedBindingIndex === bindingIndex ? 'var(--theme-color-primary)' : '#e5e7eb) dark:#4b5563'};
-               background-color: ${selectedBindingIndex === bindingIndex ? 'color-mix(in srgb, var(--theme-color-primary) 8%, #f9fafb) dark:color-mix(in srgb, var(--theme-color-primary) 10%, #1f2937)' : 'white dark:black'};
-               color: ${selectedBindingIndex === bindingIndex ? 'var(--theme-color-primary)' : '#111827 dark:white'};`}
+    class="w-16 h-16 p-0.5 rounded-lg border-2 text-xs transition-all font-medium glassmorphism-button"
+    style={`border-color: ${selectedBindingIndex === bindingIndex ? 'var(--theme-color-primary)' : '#e5e7eb) dark:#4b5563'};`}
     onmouseover={e => {
       if (selectedBindingIndex !== bindingIndex) {
         (e.currentTarget as HTMLElement).style.backgroundColor =

@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { glassmorphismMode } from '$lib/stores/DarkModeStore.svelte';
   import { language, t } from '$lib/stores/LanguageStore.svelte';
 
   interface Props {
@@ -15,10 +14,7 @@
 </script>
 
 <div
-  class="border-t dark:border-white border-gray-200 pt-4 deadzone-container {$glassmorphismMode
-    ? 'glassmorphism-card'
-    : ''}"
->
+  class="border-t dark:border-white border-gray-200 pt-4 deadzone-container glassmorphism-card">
   <h4 class="text-lg font-medium text-gray-900 dark:text-white mb-3">
     {t('performance.keyTravelDeadzones', currentLanguage)}
   </h4>

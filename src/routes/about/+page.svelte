@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { glassmorphismMode } from '$lib/stores/DarkModeStore.svelte';
   import { Keyboard, Heart } from 'lucide-svelte';
   import { language, t } from '$lib/stores/LanguageStore.svelte';
   import DonationSection from '$lib/components/about/DonationSection.svelte';
@@ -31,9 +30,7 @@
     <div class="space-y-8">
       <!-- App Info Section -->
       <div
-        class="{$glassmorphismMode
-          ? 'glassmorphism-card'
-          : 'bg-white dark:bg-black'} rounded-xl p-6 border border-gray-200 dark:border-gray-700 transition-all duration-300"
+        class="glassmorphism-card rounded-xl p-6 border border-gray-200 dark:border-gray-700 transition-all duration-300"
       >
         <div class="flex items-start gap-6">
           <div class="flex-shrink-0">
@@ -74,9 +71,7 @@
 
       <!-- Contact/Links -->
       <div
-        class="{$glassmorphismMode
-          ? 'glassmorphism-card'
-          : 'bg-white dark:bg-black'} rounded-xl p-6 border border-gray-200 dark:border-gray-700 text-center transition-all duration-300"
+        class="glassmorphism-card rounded-xl p-6 border border-gray-200 dark:border-gray-700 text-center transition-all duration-300"
       >
         <h3
           class="text-xl font-bold text-gray-900 dark:text-white mb-4 flex items-center justify-center gap-2"

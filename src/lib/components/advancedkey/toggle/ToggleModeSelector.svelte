@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { glassmorphismMode } from '$lib/stores/DarkModeStore.svelte';
   import { language, t } from '$lib/stores/LanguageStore.svelte';
 
   interface Props {
@@ -13,9 +12,7 @@
 </script>
 
 <div
-  class="rounded-lg border border-gray-200 dark:border-gray-600 p-4 sm:p-6 bg-white dark:bg-gray-900 {$glassmorphismMode
-    ? 'glassmorphism-card'
-    : ''}"
+  class="rounded-lg border border-gray-200 dark:border-gray-600 p-4 sm:p-6 bg-white dark:bg-gray-900 glassmorphism-card"
 >
   <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">
     {t('advancedkey.toggleMode', currentLanguage)}
@@ -25,9 +22,7 @@
     <button
       class="p-4 rounded-lg border-2 text-left transition-all {toggleMode === 'press'
         ? 'border-primary-600 bg-primary-50 dark:bg-primary-900'
-        : 'border-gray-300 dark:border-gray-600 bg-transparent hover:border-gray-400 dark:hover:border-gray-500'} {$glassmorphismMode
-        ? 'glassmorphism-button'
-        : ''}"
+        : 'border-gray-300 dark:border-gray-600 bg-transparent hover:border-gray-400 dark:hover:border-gray-500'} glassmorphism-button"
       onclick={() => onModeSelect('press')}
     >
       <div class="flex items-center gap-3 mb-2">
@@ -52,9 +47,7 @@
     <button
       class="p-4 rounded-lg border-2 text-left transition-all {toggleMode === 'release'
         ? 'border-primary-600 bg-primary-50 dark:bg-primary-900'
-        : 'border-gray-300 dark:border-gray-600 bg-transparent hover:border-gray-400 dark:hover:border-gray-500'} {$glassmorphismMode
-        ? 'glassmorphism-button'
-        : ''}"
+        : 'border-gray-300 dark:border-gray-600 bg-transparent hover:border-gray-400 dark:hover:border-gray-500'} glassmorphism-button"
       onclick={() => onModeSelect('release')}
     >
       <div class="flex items-center gap-3 mb-2">

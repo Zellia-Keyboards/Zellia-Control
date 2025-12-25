@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { glassmorphismMode } from '$lib/stores/DarkModeStore.svelte';
   import { language, t } from '$lib/stores/LanguageStore.svelte';
 
   interface Props {
@@ -12,10 +11,7 @@
 </script>
 
 <div
-  class="rounded-lg border p-4 sm:p-6 {$glassmorphismMode
-    ? 'glassmorphism-card'
-    : 'bg-primary-50 dark:bg-primary-950 border-primary-300 dark:border-primary-800'}"
->
+  class="rounded-lg border p-4 sm:p-6 glassmorphism-card">
   <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">
     {t('advancedkey.tapAction', currentLanguage)} & {t('advancedkey.holdAction', currentLanguage)}
     {t('advancedkey.actionCategories', currentLanguage)}

@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { glassmorphismMode } from '$lib/stores/DarkModeStore.svelte';
   import { keyboardAPI } from '$lib/api/keyboardAPI.svelte';
   import {
     LayoutTemplateIcon,
@@ -217,11 +216,8 @@
 </script>
 
 <div
-  class="rounded-2xl shadow p-8 mt-2 mb-4 grow {$glassmorphismMode
-    ? 'glassmorphism-card'
-    : ''} text-black bg-primary-100 dark:bg-black dark:text-white border-0 dark:border dark:border-gray-600 {selectedMode
-    ? ''
-    : 'h-full'} flex flex-col"
+  class="rounded-2xl shadow p-8 mt-2 mb-4 grow glassmorphism-card text-black bg-primary-100 dark:bg-black dark:text-white border-0 dark:border dark:border-gray-600 {selectedMode
+    ? '' : 'h-full'} flex flex-col"
 >
   {#if selectedMode === null}
     <!-- Main dashboard view with mode selection and configured keys table -->
@@ -234,18 +230,14 @@
       <div class="flex gap-6 flex-1">
         <!-- Left panel: Mode selection -->
         <div class="w-96 flex-shrink-0">
-          <div class="rounded-lg border p-6 bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 {$glassmorphismMode
-            ? 'glassmorphism-card'
-            : ''}">
+          <div class="rounded-lg border p-6 bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 glassmorphism-card">
             <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">
               {t('advancedkey.step1Title', currentLanguage)}
             </h2>
           <div class="space-y-3">
             {#each keyModes as mode}
               <button
-                class="w-full text-left p-4 rounded-lg border transition-all hover:shadow-md hover:scale-[1.02] {$glassmorphismMode
-                  ? 'glassmorphism-button'
-                  : 'bg-white hover:bg-gray-50 dark:bg-gray-800 dark:hover:bg-gray-700'} border-gray-200 dark:border-gray-600"
+                class="w-full text-left p-4 rounded-lg border transition-all hover:shadow-md hover:scale-[1.02] glassmorphism-button border-gray-200 dark:border-gray-600"
                 onclick={() => createNewKey(mode.id)}
               >
                 <div class="flex items-center gap-3">
@@ -269,9 +261,7 @@
 
       <!-- Right panel: Configured keys table -->
       <div class="flex-1 flex flex-col">
-        <div class="rounded-lg border flex-1 flex flex-col bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 {$glassmorphismMode
-          ? 'glassmorphism-card'
-          : ''}">
+        <div class="rounded-lg border flex-1 flex flex-col bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 glassmorphism-card">
           <div class="p-6 border-b border-gray-200 dark:border-gray-700">
             <h2 class="text-xl font-semibold text-gray-900 dark:text-white">
               {t('advancedkey.configuredDynamicKeys', currentLanguage)} (configuredKeys.length)
@@ -285,7 +275,7 @@
             {#if configuredKeys.length === 0}
               <div class="flex items-center justify-center h-full">
                 <div class="text-center">
-                  <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center {$glassmorphismMode ? 'glassmorphism-card' : ''}">
+                  <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center glassmorphism-card">
                     <LayersIcon class="w-8 h-8 text-gray-400" />
                   </div>
                   <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">
