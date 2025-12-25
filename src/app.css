@@ -56,10 +56,7 @@
 /* Base layer using Tailwind 4.x layer system */
 @layer base {
   /* Global font application with responsive scaling */
-  * {
-    font-family: 'Noto Sans SC', ui-sans-serif, system-ui, sans-serif;
-  }
-
+  *,
   body,
   html,
   input,
@@ -174,8 +171,6 @@
     transition: none !important;
   }
 
-  p.bg-gray-50.text-white,
-  div.bg-gray-50.text-white,
   .bg-gray-50.text-white,
   .bg-gray-100.text-white,
   .bg-white.text-white {
@@ -183,8 +178,6 @@
   }
 
   /* Keep white text in dark mode for all scenarios */
-  .dark p.bg-gray-50.text-white,
-  .dark div.bg-gray-50.text-white,
   .dark .bg-gray-50.text-white,
   .dark .bg-gray-100.text-white,
   .dark .bg-white.text-white,
@@ -274,6 +267,7 @@
     color: rgba(255, 255, 255, 0.95) !important;
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5) !important;
   }
+
 
   .glassmorphism .glassmorphism-card {
     background: color-mix(in srgb, var(--theme-color-primary) 4%, rgba(0, 0, 0, 0.2)) !important;
