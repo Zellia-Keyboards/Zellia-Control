@@ -52,7 +52,7 @@
   </div>
 
   <!-- Profile Section -->
-  <div class="px-3 pb-3 border-b border-gray-100 dark:border-gray-600 space-y-2">
+  <div class="px-3 pb-3 space-y-2">
     <a
       href="/profiles"
       class="flex items-center justify-between w-full px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white shadow-md hover:shadow-lg glassmorphism-button"
