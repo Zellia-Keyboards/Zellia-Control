@@ -1,5 +1,5 @@
 // Dark mode store for global state management with Tailwind CSS integration
-import { writable } from 'svelte/store';
+import { readable, writable } from 'svelte/store';
 import { browser } from '$app/environment';
 
 // Define theme colors with enhanced visibility for dark mode
@@ -131,35 +131,8 @@ export const updateThemeForDarkMode = () => {
   });
 };
 
-// Create a store for glassmorphism mode
-const createGlassmorphismStore = () => {
-  // Always enable glassmorphism mode by default
-  const initial = true;
-  const { subscribe, set, update } = writable<boolean>(initial);
-
-  if (browser) {
-    document.documentElement.classList.add('glassmorphism');
-    localStorage.setItem('glassmorphismMode', 'true');
-  }
-
-  return {
-    subscribe,
-    toggle: () => {
-      // Prevent disabling glassmorphism
-      return true;
-    },
-    set: (value: boolean) => {
-      // Prevent disabling glassmorphism
-      set(true);
-      if (browser) {
-        document.documentElement.classList.add('glassmorphism');
-        localStorage.setItem('glassmorphismMode', 'true');
-      }
-    },
-  };
-};
-
-export const glassmorphismMode = createGlassmorphismStore();
+// Glassmorphism is always enabled - simple readable store
+export const glassmorphismMode = readable(true);
 
 // Initialize dark class and theme color on document load if in browser
 if (browser) {
