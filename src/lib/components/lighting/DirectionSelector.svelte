@@ -67,12 +67,12 @@
     <!-- Active arc -->
     {#if direction > 0}
       {@const startSvg = 180}  <!-- Our 0° = left = SVG 180° -->
-      {@const endSvg = (180 - direction + 360) % 360}  <!-- Convert our direction to SVG angle -->
+      {@const endSvg = (180 + direction + 360) % 360}  <!-- Convert our direction to SVG angle -->
       {@const startX = 32 + 26 * Math.cos(startSvg * Math.PI / 180)}
       {@const startY = 32 - 26 * Math.sin(startSvg * Math.PI / 180)}
       {@const endX = 32 + 26 * Math.cos(endSvg * Math.PI / 180)}
       {@const endY = 32 - 26 * Math.sin(endSvg * Math.PI / 180)}
-      {@const largeArc = direction > 180 ? 1 : 0}
+      {@const largeArc = direction <= 180 ? 1 : 0}
       <path
         d="M {startX} {startY} A 26 26 0 {largeArc} 1 {endX} {endY}"
         fill="none"
@@ -99,11 +99,11 @@
     <!-- Center arrow -->
     <g transform="translate(32, 32)">
       {#if true}
-        {@const arrowAngle = (direction+180) * Math.PI / 180}
+        {@const arrowAngle = ((direction - 180 + 360) % 360) * Math.PI / 180}
         <path
-          d="M {Math.cos(arrowAngle) * 10} {Math.sin(arrowAngle) * 10}
-             L {Math.cos(arrowAngle + 2.3) * 5} {Math.sin(arrowAngle + 2.3) * 5}
-             L {Math.cos(arrowAngle - 2.3) * 5} {Math.sin(arrowAngle - 2.3) * 5}
+          d="M {Math.cos(arrowAngle) * 10} {-Math.sin(arrowAngle) * 10}
+             L {Math.cos(arrowAngle + 2.3) * 5} {-Math.sin(arrowAngle + 2.3) * 5}
+             L {Math.cos(arrowAngle - 2.3) * 5} {-Math.sin(arrowAngle - 2.3) * 5}
              Z"
           fill="currentColor"
           class="text-gray-600 dark:text-gray-400"
