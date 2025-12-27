@@ -2,6 +2,7 @@
   import { language, t } from '$lib/stores/LanguageStore.svelte';
   import * as ekc from 'emi-keyboard-controller';
   import tinycolor from 'tinycolor2';
+  import DirectionSelector from './DirectionSelector.svelte';
 
   export type RGBBaseModeType =
     | typeof ekc.RGBBaseMode.RgbBaseModeOff
@@ -32,14 +33,6 @@
     const toHex = (c: number) => ('0' + Math.floor(c).toString(16)).slice(-2);
     return `#${toHex(rgb.red)}${toHex(rgb.green)}${toHex(rgb.blue)}`;
   }
-
-  // Direction options (4 directions)
-  const directions = $derived([
-    { value: 0, label: '←', hint: '0° RTL' },
-    { value: 90, label: '↑', hint: '90° DTU' },
-    { value: 180, label: '→', hint: '180° LTR' },
-    { value: 270, label: '↓', hint: '270° UTD' },
-  ]);
 
   // Initialize local state when baseConfig changes
   $effect(() => {
@@ -223,33 +216,7 @@
           >
             {t('lighting.direction', currentLanguage)}
           </label>
-          <div class="grid grid-cols-4 gap-2">
-            {#each directions as dir}
-              <button
-                class="aspect-square rounded border-2 text-center transition-all duration-200 {localDirection ===
-                dir.value
-                  ? 'border-primary bg-primary/20 dark:bg-primary/30'
-                  : 'border-gray-300 dark:border-gray-600 hover:border-primary/50'} glassmorphism-button"
-                onclick={() => (localDirection = dir.value)}
-                title={dir.hint}
-              >
-                <div class="flex flex-col items-center">
-                  <span
-                    class="text-lg leading-none {localDirection === dir.value
-                      ? 'text-primary-700 dark:text-primary-200'
-                      : 'text-black dark:text-white'}"
-                  >
-                    {dir.label}
-                  </span>
-                  <span
-                    class="text-[8px] text-gray-500 dark:text-gray-400 leading-tight mt-0.5"
-                  >
-                    {dir.hint}
-                  </span>
-                </div>
-              </button>
-            {/each}
-          </div>
+          <DirectionSelector direction={localDirection} onDirectionChange={(d) => (localDirection = d)} />
         </div>
 
         <!-- Density -->

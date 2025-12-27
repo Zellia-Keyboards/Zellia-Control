@@ -2,6 +2,7 @@
   import { language, t } from '$lib/stores/LanguageStore.svelte';
   import * as ekc from 'emi-keyboard-controller';
   import tinycolor from 'tinycolor2';
+  import DirectionSelector from './DirectionSelector.svelte';
 
   export type RGBModeType =
     | typeof ekc.RGBMode.RgbModeFixed
@@ -237,24 +238,15 @@
       </button>
 
       {#if showRainbowPreset}
-        <div class="space-y-3">
+        <div class="space-y-4">
           <!-- Direction -->
           <div>
             <label
-              class="block text-xs text-gray-600 dark:text-gray-300 mb-1.5"
+              class="block text-xs text-gray-600 dark:text-gray-300 mb-2"
             >
               {t('lighting.rainbowDirection', currentLanguage)}
             </label>
-            <input
-              type="number"
-              min="0"
-              max="360"
-              value={rainbowDirection}
-              oninput={(e) =>
-                (rainbowDirection =
-                  Math.min(360, Math.max(0, Number((e.target as HTMLInputElement).value) || 0)))}
-              class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-black dark:text-white focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none transition-all glassmorphism-button"
-            />
+            <DirectionSelector direction={rainbowDirection} onDirectionChange={(d) => (rainbowDirection = d)} />
           </div>
 
           <!-- Density -->
