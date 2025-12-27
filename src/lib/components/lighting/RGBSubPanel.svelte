@@ -28,8 +28,11 @@
   let { config, onConfigChange, keyboardKeys = [], rgbConfigs = [], title }: Props = $props();
   let currentLanguage = $derived($language);
 
+  // Local state for mode - initialize from prop but don't sync back
+  // This allows the UI to show immediate feedback when clicking
+  let selectedMode = $state(config.mode);
+
   // Local state for deferred apply
-  let localMode = $state(config.mode);
   let localColor = $state('');
   let localSpeed = $state(0);
 
@@ -46,7 +49,6 @@
 
   // Initialize local state when config changes
   $effect(() => {
-    localMode = config.mode;
     localColor = rgbToHex(config.rgb);
     localSpeed = Math.round(config.speed * 1000);
   });
@@ -75,7 +77,7 @@
   // Apply all changes at once
   function applyChanges() {
     const newConfig = new ekc.RGBConfig();
-    newConfig.mode = localMode;
+    newConfig.mode = selectedMode;
     newConfig.speed = isNaN(localSpeed) ? 0 : Math.round(localSpeed) / 1000;
 
     const c = tinycolor(localColor).toRgb();
@@ -98,7 +100,7 @@
       if (!key) return rgbConfig;
 
       const newConfig = new ekc.RGBConfig();
-      newConfig.mode = localMode;
+      newConfig.mode = selectedMode;
       newConfig.speed = isNaN(localSpeed) ? 0 : Math.round(localSpeed) / 1000;
 
       const verticalDistance =
@@ -156,16 +158,15 @@
       <!-- Mode buttons in 2 rows -->
       <div class="grid grid-cols-6 gap-2">
         {#each modes as mode}
+          {@const isSelected = selectedMode === mode.value}
           <button
-            class="h-12 rounded-lg border-2 text-center transition-all duration-200 px-2 flex items-center justify-center {localMode ===
-            mode.value
+            class="h-12 min-h-[48px] rounded-lg border text-center transition-all duration-200 px-2 flex items-center justify-center {isSelected
               ? 'border-primary bg-primary/20 dark:bg-primary/30'
-              : 'border-gray-300 dark:border-gray-600 hover:border-primary/50'} glassmorphism-button"
-            onclick={() => (localMode = mode.value)}
+              : 'border-gray-300 dark:border-gray-600 hover:border-primary/50 glassmorphism-button'}"
+            onclick={() => (selectedMode = mode.value)}
           >
             <div
-              class="text-xs font-medium whitespace-nowrap overflow-hidden text-ellipsis {localMode ===
-              mode.value
+              class="text-xs font-medium whitespace-nowrap overflow-hidden text-ellipsis {isSelected
                 ? 'text-primary-700 dark:text-primary-200'
                 : 'text-black dark:text-white'}"
             >

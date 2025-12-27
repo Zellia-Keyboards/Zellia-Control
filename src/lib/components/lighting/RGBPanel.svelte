@@ -19,8 +19,11 @@
   let { baseConfig, onConfigChange, title }: Props = $props();
   let currentLanguage = $derived($language);
 
+  // Local state for mode - initialize from prop but don't sync back
+  // This allows the UI to show immediate feedback when clicking
+  let selectedMode = $state(baseConfig.mode);
+
   // Local state for deferred apply
-  let localMode = $state(baseConfig.mode);
   let localColor = $state('');
   let localSubColor = $state('');
   let localSpeed = $state(0);
@@ -36,7 +39,6 @@
 
   // Initialize local state when baseConfig changes
   $effect(() => {
-    localMode = baseConfig.mode;
     localColor = rgbToHex(baseConfig.rgb);
     localSubColor = rgbToHex(baseConfig.secondary_rgb);
     localSpeed = Math.round(baseConfig.speed * 1000);
@@ -56,7 +58,7 @@
   // Apply all changes at once
   function applyChanges() {
     const newConfig = new ekc.RGBBaseConfig();
-    newConfig.mode = localMode;
+    newConfig.mode = selectedMode;
     newConfig.speed = isNaN(localSpeed) ? 0 : Math.round(localSpeed) / 1000;
     newConfig.direction = localDirection;
     newConfig.density = localDensity;
@@ -114,16 +116,15 @@
       <!-- Mode buttons -->
       <div class="grid grid-cols-4 gap-2 mb-4">
         {#each baseModes as mode}
+          {@const isSelected = selectedMode === mode.value}
           <button
-            class="px-3 py-2 rounded-lg border-2 text-center transition-all duration-200 relative overflow-hidden {localMode ===
-            mode.value
+            class="px-3 py-2 min-h-[38px] rounded-lg border text-center transition-all duration-200 relative overflow-hidden {isSelected
               ? 'border-primary bg-primary/20 dark:bg-primary/30'
-              : 'border-gray-300 dark:border-gray-600 hover:border-primary/50'} glassmorphism-button"
-            onclick={() => (localMode = mode.value)}
+              : 'border-gray-300 dark:border-gray-600 hover:border-primary/50 glassmorphism-button'}"
+            onclick={() => (selectedMode = mode.value)}
           >
             <div
-              class="text-xs font-medium whitespace-nowrap overflow-hidden text-ellipsis {localMode ===
-              mode.value
+              class="text-xs font-medium whitespace-nowrap overflow-hidden text-ellipsis {isSelected
                 ? 'text-primary-700 dark:text-primary-200'
                 : 'text-black dark:text-white'}"
             >
