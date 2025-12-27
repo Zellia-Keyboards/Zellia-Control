@@ -268,7 +268,7 @@
           <!-- Apply Rainbow Button -->
           <button
             onclick={applyRainbowEffect}
-            class="w-full px-4 py-2 rounded-lg bg-gray-200 dark:bg-gray-700 text-black dark:text-white font-medium text-sm hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+            class="w-full px-4 py-2 rounded-lg border-2 border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-800 text-black dark:text-white font-medium text-sm hover:border-primary/50 transition-colors glassmorphism-button"
           >
             {t('lighting.applySettings', currentLanguage)}
           </button>
