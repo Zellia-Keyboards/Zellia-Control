@@ -7,7 +7,7 @@
   import Profile from '$lib/components/remap/Profile.svelte';
   import Extension from '$lib/components/remap/Extension.svelte';
   import TabNavigation from '$lib/components/remap/TabNavigation.svelte';
-  import { selectedKeys } from '$lib/stores/SelectedKeysStore';
+  import { selectedKeys, setAllowSelection } from '$lib/stores/SelectedKeysStore';
   import { selectedCount, toggleSelectAll, deselectAll } from '$lib/stores/SelectedKeysStore';
   import { keymap } from '$lib/stores/ControllerStore.svelte';
   import type { Keycode } from '../../../src-controller/src/interface';
@@ -15,6 +15,9 @@
   import { cubicOut } from 'svelte/easing';
   import { fade } from 'svelte/transition';
   import { dev } from '$app/environment';
+
+  // Always allow key selection on remap page
+  setAllowSelection(true);
 
   // Type for key information with keycode support
   type KeyInfo = {

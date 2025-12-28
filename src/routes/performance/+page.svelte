@@ -1,7 +1,7 @@
 <script lang="ts">
   import { keyboardAPI, keyboardConnectionState } from '$lib/api/keyboardAPI.svelte';
   import { language, t } from '$lib/stores/LanguageStore.svelte';
-  import { selectedCount, toggleSelectAll, deselectAll } from '$lib/stores/SelectedKeysStore';
+  import { selectedCount, toggleSelectAll, deselectAll, setAllowSelection } from '$lib/stores/SelectedKeysStore';
   import * as ekc from 'emi-keyboard-controller';
   import { advancedKeys } from '$lib/stores/ControllerStore.svelte';
   import { selectedKeys } from '$lib/stores/SelectedKeysStore';
@@ -10,6 +10,9 @@
   import DeadzoneControl from '$lib/components/performance/DeadzoneControl.svelte';
   import SensitivityControl from '$lib/components/performance/SensitivityControl.svelte';
   import MaxTravelDistanceControl from '$lib/components/performance/MaxTravelDistanceControl.svelte';
+
+  // Always allow key selection on performance page
+  setAllowSelection(true);
 
   //let advancedKey : ekc.AdvancedKey = $derived.by(()=>{
   //  var k = new ekc.AdvancedKey();

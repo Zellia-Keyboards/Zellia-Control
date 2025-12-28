@@ -1,12 +1,42 @@
 <script lang="ts">
   import { keyboardConnectionState } from '$lib/api/keyboardAPI.svelte';
   import { language, t } from '$lib/stores/LanguageStore.svelte';
-  import { selectedKeys } from '$lib/stores/SelectedKeysStore';
+  import { selectedKeys, setAllowSelection, toggleSelectAll, deselectAll } from '$lib/stores/SelectedKeysStore';
   import * as ekc from 'emi-keyboard-controller';
   import tinycolor from 'tinycolor2';
   import { rgbBaseConfig, rgbConfigs } from '$lib/stores/ControllerStore.svelte';
   import RGBPanel from '$lib/components/lighting/RGBPanel.svelte';
   import RGBSubPanel from '$lib/components/lighting/RGBSubPanel.svelte';
+  import { onMount, onDestroy } from 'svelte';
+
+  // Always allow key selection on lighting page
+  setAllowSelection(true);
+
+  // Keyboard shortcuts for key selection
+  function onKeyDown(e: KeyboardEvent) {
+    const ctrl = e.ctrlKey || e.metaKey;
+    // Ctrl+A behavior - toggle select all
+    if (ctrl && e.key.toLowerCase() === 'a') {
+      e.preventDefault();
+      toggleSelectAll();
+      return;
+    }
+
+    // Ctrl+Escape => deselect all
+    if (ctrl && e.key === 'Escape') {
+      e.preventDefault();
+      deselectAll();
+      return;
+    }
+  }
+
+  // Attach listener on mount
+  onMount(() => {
+    window.addEventListener('keydown', onKeyDown);
+  });
+  onDestroy(() => {
+    window.removeEventListener('keydown', onKeyDown);
+  });
 
   let currentLanguage = $derived($language);
 
