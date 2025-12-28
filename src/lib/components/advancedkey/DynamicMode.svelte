@@ -553,7 +553,7 @@
               bind:selectedBindingIndex={dksSelectedBindingIndex}
             />
           {:else if dksActiveTab === 'performance'}
-            <DKSPerformance {actuationPoint} />
+            <DKSPerformance />
           {:else if dksActiveTab === 'key-tester'}
             <DKSKeyTester {currentKeyName} />
           {/if}

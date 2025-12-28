@@ -1,15 +1,62 @@
 <script lang="ts">
-  import { glassmorphismMode } from '$lib/stores/DarkModeStore.svelte';
+  import { Info } from 'lucide-svelte';
   import { language, t } from '$lib/stores/LanguageStore.svelte';
-  import { AlertTriangle } from 'lucide-svelte';
-  interface Props {
-    actuationPoint: number;
-  }
+  import { advancedKeys } from '$lib/stores/ControllerStore.svelte';
+  import { selectedKeys } from '$lib/stores/SelectedKeysStore';
+  import * as ekc from 'emi-keyboard-controller';
+  import ActuationPointControl from '$lib/components/performance/ActuationPointControl.svelte';
 
   let currentLanguage = $derived($language);
 
-  // Add actuation point state
-  let { actuationPoint }: Props = $props();
+  function mmToPercent(distance: number) {
+    return distance / 4.0;
+  }
+
+  function percentToMm(distance: number) {
+    return distance * 4.0;
+  }
+
+  // Performance settings state
+  let actuationPoint = $state(2.0);
+  let deactivationPoint = $state(1.5);
+  let maxTravelDistance = $state(4.0);
+
+  // Advanced key derived from state (normal mode, no rapid trigger for DKS)
+  let advancedKey = $derived.by(() => {
+    var k = new ekc.AdvancedKey();
+    k.mode = ekc.KeyMode.KeyAnalogNormalMode; // DKS forces normal mode
+    k.activation_value = mmToPercent(actuationPoint);
+    k.deactivation_value = mmToPercent(deactivationPoint);
+    k.trigger_distance = mmToPercent(0.5); // Default sensitivity
+    k.release_distance = mmToPercent(0.5);
+    k.upper_deadzone = mmToPercent(0.5);
+    k.lower_deadzone = mmToPercent(4.0 - 3.5);
+    return k;
+  });
+
+  // Load existing settings from selected key
+  $effect(() => {
+    if ($selectedKeys.length > 0) {
+      let k = $advancedKeys[$selectedKeys[0]];
+      actuationPoint = percentToMm(k.activation_value);
+      deactivationPoint = percentToMm(k.deactivation_value);
+    }
+  });
+
+  // Update settings when they change
+  $effect(() => {
+    if ($selectedKeys.length > 0) {
+      advancedKeys.update(currentKeys => {
+        const newKeys = [...currentKeys];
+        for (const index of $selectedKeys) {
+          if (index >= 0 && index < newKeys.length) {
+            newKeys[index] = { ...advancedKey };
+          }
+        }
+        return newKeys;
+      });
+    }
+  });
 </script>
 
 <div
@@ -18,94 +65,39 @@
   <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">
     {t('advancedkey.performanceSettings', currentLanguage)}
   </h3>
-  <div class="mb-6">
-    <div class="flex justify-between items-center mb-2">
-      <label
-        for="actuation-point-slider"
-        class="text-sm font-medium text-gray-700 dark:text-gray-300"
-        >{t('advancedkey.actuationPoint', currentLanguage)}</label
-      >
-      <span class="text-sm text-gray-500 dark:text-gray-400">{actuationPoint.toFixed(2)}mm</span>
-    </div>
-    <!-- Warning box for values below 0.3 -->
-    {#if actuationPoint < 0.3}
-      <div
-        class="mb-2 p-2 border rounded-md text-xs flex items-center gap-2 glassmorphism-card"
-        style="background-color: {'color-mix(in srgb, #f59e0b 10%, #fefce8) dark:color-mix(in srgb, #f59e0b 15%, #451a03)'};
-                        border-color: {'color-mix(in srgb, #f59e0b 25%, #e7e5e4) dark:color-mix(in srgb, #f59e0b 30%, #78716c)'};
-                        color: {'#a16207 dark:#fbbf24'};"
-      >
-        <AlertTriangle class="w-4 h-4 flex-shrink-0" />
-        <span>{t('advancedkey.sensitivityWarning', currentLanguage)}</span>
-      </div>
-    {/if}
-    <!-- Dual input: Slider -->
-    <input
-      id="actuation-point-slider"
-      type="range"
-      min="0.01"
-      max="3.5"
-      step="0.01"
-      bind:value={actuationPoint}
-      class="w-full h-2 rounded-full appearance-none slider-thumb mb-2"
-      style="background-color: {'#d1d5db dark:#374151'};
-                   --thumb-color: var(--theme-color-primary);"
+
+  <div class="space-y-4">
+    <!-- Actuation Point Control -->
+    <ActuationPointControl
+      {actuationPoint}
+      {deactivationPoint}
+      keysSelected={$selectedKeys.length}
+      {maxTravelDistance}
+      onActuationChange={value => (actuationPoint = value)}
+      onDeactivationChange={value => (deactivationPoint = value)}
     />
 
-    <!-- Dual input: Text input -->
-    <div class="flex items-center gap-2 mb-2">
-      <span class="text-xs text-gray-500 dark:text-gray-400"
-        >{t('performance.directInput', currentLanguage)}:</span
-      >
-      <input
-        type="number"
-        min="0.01"
-        max="3.5"
-        step="0.01"
-        bind:value={actuationPoint}
-        class="w-20 px-2 py-1 text-xs border rounded glassmorphism-input"
-        style="background-color: {'white dark:#1f2937'};
-                       border-color: {'color-mix(in srgb, var(--theme-color-primary) 15%, #d1d5db) dark:color-mix(in srgb, var(--theme-color-primary) 20%, #4b5563)'};
-                       color: {'#111827 dark:white'};"
-      />
-      <span class="text-xs text-gray-500 dark:text-gray-400">mm</span>
-    </div>
-    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-      {t('advancedkey.actuationPointDesc', currentLanguage)}
-    </p>
-  </div>
-  <div
-    class="flex items-start gap-3 p-4 border rounded-lg glassmorphism-card"
-    style="background-color: {'color-mix(in srgb, var(--theme-color-primary) 5%, #f0f9ff) dark:color-mix(in srgb, var(--theme-color-primary) 8%, #111827)'};
-               border-color: {'color-mix(in srgb, var(--theme-color-primary) 15%, #bfdbfe) dark:color-mix(in srgb, var(--theme-color-primary) 20%, #4b5563)'};"
-  >
-    <svg
-      class="w-5 h-5 mt-0.5"
-      style="color: var(--theme-color-primary);"
-      fill="none"
-      stroke="currentColor"
-      viewBox="0 0 24 24"
+    <!-- Info about Rapid Trigger being disabled for DKS -->
+    <div
+      class="flex items-start gap-3 p-4 border rounded-lg glassmorphism-card"
+      style="background-color: {'color-mix(in srgb, var(--theme-color-primary) 5%, #f0f9ff) dark:color-mix(in srgb, var(--theme-color-primary) 8%, #111827)'};
+                 border-color: {'color-mix(in srgb, var(--theme-color-primary) 15%, #bfdbfe) dark:color-mix(in srgb, var(--theme-color-primary) 20%, #4b5563)'};"
     >
-      <path
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        stroke-width="2"
-        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-      />
-    </svg>
-    <div>
-      <p
-        class="text-sm font-medium"
-        style="color: {'color-mix(in srgb, var(--theme-color-primary) 85%, black) dark:white'};"
-      >
-        {t('advancedkey.rapidTriggerDisabled', currentLanguage)}
-      </p>
-      <p
-        class="text-sm"
-        style="color: {'color-mix(in srgb, var(--theme-color-primary) 75%, black) dark:#d1d5db'};"
-      >
-        {t('advancedkey.rapidTriggerDisabledDesc', currentLanguage)}
-      </p>
+  <Info />
+      <div>
+        <p
+          class="text-sm font-medium"
+          style="color: {'color-mix(in srgb, var(--theme-color-primary) 85%, black) dark:white'};"
+        >
+          {t('advancedkey.rapidTriggerDisabled', currentLanguage)}
+        </p>
+        <p
+          class="text-sm"
+          style="color: {'color-mix(in srgb, var(--theme-color-primary) 75%, black) dark:#d1d5db'};"
+        >
+          {t('advancedkey.rapidTriggerDisabledDesc', currentLanguage)}
+        </p>
+      </div>
     </div>
   </div>
 </div>

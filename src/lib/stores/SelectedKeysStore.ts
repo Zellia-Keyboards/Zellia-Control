@@ -8,6 +8,18 @@ export const selectedKeys = {
   set: (keys: number[]) => _selected.set(keys),
 };
 
+// Store that controls whether key selection is allowed
+const _allowSelection = writable<boolean>(true);
+
+export const allowSelection = {
+  subscribe: _allowSelection.subscribe,
+  set: (allow: boolean) => _allowSelection.set(allow),
+};
+
+export function setAllowSelection(allow: boolean) {
+  _allowSelection.set(allow);
+}
+
 // Number of keys currently known (set by KeyboardRender)
 const _totalKeys = writable(0);
 export const totalKeys = {

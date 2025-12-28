@@ -11,7 +11,7 @@
     ArrowLeftIcon,
   } from 'lucide-svelte';
   import { language, t } from '$lib/stores/LanguageStore.svelte';
-  import { selectedKeys, deselectAll } from '$lib/stores/SelectedKeysStore';
+  import { selectedKeys, deselectAll, setAllowSelection } from '$lib/stores/SelectedKeysStore';
   import {
     globalConfigurations,
     updateGlobalConfiguration,
@@ -89,7 +89,13 @@
   function goBackToModeSelection(): void {
     selectedMode = null;
     editingKeyIndex = null;
+    deselectAll(); // Clear any selected keys when returning to mode selection
   }
+
+  // Disable key selection when in mode selection view, enable when inside a mode
+  $effect(() => {
+    setAllowSelection(selectedMode !== null);
+  });
 
   // For Dynamic mode - track selected key coordinates
   let dksCurrentSelected = $state<[number, number] | null>(null);

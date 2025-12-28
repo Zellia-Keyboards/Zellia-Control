@@ -12,6 +12,7 @@
   export let labels: string[] = [];
   export let index: number = 0;
   export let selected: boolean = false;
+  export let allowSelection = true;
 
   // --- 内部状态 ---
   // Key unit size - will be read from CSS variable for responsive scaling
@@ -91,7 +92,7 @@
 </script>
 
 <div class="key-container" style={keyStyle}>
-  <button class="keycap" class:selected on:mousedown={handleClick}>
+  <button class="keycap" class:selected={selected && allowSelection} class:selection-disabled={!allowSelection} on:mousedown={handleClick}>
     <div class="label-grid" style={labelContainerStyle}>
       {#each Array(9) as _, i}
         {#if labels[i]}
@@ -219,6 +220,7 @@
       border-color 160ms ease,
       transform 80ms ease;
   }
+
 
   /* 使用 CSS Grid 实现九宫格标签布局 */
   .label-grid {

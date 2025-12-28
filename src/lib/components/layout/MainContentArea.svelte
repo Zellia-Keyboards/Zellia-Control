@@ -2,6 +2,7 @@
   import KeyboardRender from '$lib/components/KeyboardRender.svelte';
   import { keyboardAPI } from '$lib/api/keyboardAPI.svelte';
   import { page } from '$app/stores';
+  import { allowSelection } from '$lib/stores/SelectedKeysStore';
   import ToolbarSection from './ToolbarSection.svelte';
   import LoadingOverlay from './LoadingOverlay.svelte';
   import ConnectionInterface from './ConnectionInterface.svelte';
@@ -43,13 +44,14 @@
     class:performance-page-keys={isPerformancePage}
     class:lighting-page-keys={isLightingPage}
   >
-    <KeyboardRender keys={keyboardKeys} />
+    <KeyboardRender keys={keyboardKeys} allowSelection={$allowSelection} />
   </div>
 {/if}
 
 <!-- Loading overlay while configurator is loading -->
 {#if isLoadingConfigurator}
   <LoadingOverlay />
+  
   <!-- Connection Interface when not connected and on root page -->
 {:else if !keyboardAPI.shouldShowConfigurator && $page.url.pathname === '/'}
   <ConnectionInterface />

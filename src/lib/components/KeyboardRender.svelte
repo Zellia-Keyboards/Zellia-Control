@@ -8,6 +8,7 @@
 
   // 1. In Svelte, props are declared with `export let`
   export let keys: kle.Key[] = [];
+  export let allowSelection = true;
 
   // 2. The event dispatcher replaces Vue's `emit`
   const dispatch = createEventDispatcher<{ select: number }>();
@@ -45,18 +46,19 @@
   // --- Event Handlers ---
   // These functions can be defined directly in the script.
   function handleMouseDown(event: MouseEvent, index: number) {
-    if (event.buttons === 1) {
+    if (event.buttons === 1 && allowSelection) {
       keyButtonClick(index);
     }
   }
 
   function handleMouseEnter(event: MouseEvent, index: number) {
-    if (event.buttons === 1) {
+    if (event.buttons === 1 && allowSelection) {
       keyButtonClick(index);
     }
   }
 
   function keyButtonClick(index: number) {
+    if (!allowSelection) return;
     // Dispatch the custom event
     dispatch('select', index);
   }
@@ -83,6 +85,7 @@
           rotationAngle={key.rotation_angle}
           labels={key.labels}
           {index}
+          {allowSelection}
           selected={$selectedKeys.includes(index)}
         />
       </div>
