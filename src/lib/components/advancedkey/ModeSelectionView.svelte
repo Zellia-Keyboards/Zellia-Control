@@ -133,7 +133,7 @@
   {/each}
 </div>
 
-<div class="mt-4 text-center text-gray-600 dark:text-gray-300">
+<div class="glassmorphism mt-4 text-center text-gray-600 dark:text-gray-300">
   <p class="text-sm">
     {t('advancedkey.infoDesc', currentLanguage)}
   </p>

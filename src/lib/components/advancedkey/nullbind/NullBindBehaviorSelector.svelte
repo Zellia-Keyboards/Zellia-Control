@@ -52,7 +52,7 @@
               />
             </svg>
             <div
-              class="absolute bottom-full right-0 mb-2 w-56 p-2 bg-gray-900 dark:bg-black text-white dark:border dark:border-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10"
+              class="glassmorphism bg-primary-100 dark:bg-primary-900 text-primary-500 absolute bottom-full right-0 mb-2 w-56 p-2 bg-gray-900  text-white dark:border dark:border-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10"
             >
               {behaviorMeta.description}
             </div>

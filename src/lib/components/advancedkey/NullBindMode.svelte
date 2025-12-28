@@ -347,16 +347,7 @@
 
           <div class="flex-1 mt-6">
             {#if activeTab === 'performance'}
-              <NullBindPerformanceTab
-                {rtDown}
-                {actuationPoint}
-                {uiActuationPoint}
-                {bottomOutPoint}
-                switchDistance={SWITCH_DISTANCE}
-                onRapidTriggerToggle={updateNullBindRapidTrigger}
-                onActuationPointChange={value => (uiActuationPoint = value)}
-                onCommitActuationPoint={commitNullBindActuationPoint}
-              />
+              <NullBindPerformanceTab />
             {:else if activeTab === 'key-tester'}
               <NullBindKeyTesterTab
                 {localSelectedKeys}

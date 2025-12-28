@@ -22,19 +22,29 @@
       </div>
     </div>
     <button
-      class="relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 {bottomOutPoint >
+      class="bottom-out-toggle relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none {bottomOutPoint >
       0
         ? 'bg-primary-500'
-        : 'bg-gray-300 dark:bg-gray-600'} glassmorphism-button"
+        : 'bg-gray-300 dark:bg-gray-600'}"
       onclick={() => onBottomOutToggle(bottomOutPoint === 0)}
     >
       <span
-        class="inline-block h-3 w-3 transform rounded-full {bottomOutPoint > 0
-          ? 'bg-white dark:bg-black'
-          : 'bg-white'} transition-transform shadow-sm {bottomOutPoint > 0
+        class="toggle-thumb inline-block h-3 w-3 transform rounded-full bg-white transition-transform shadow-sm {bottomOutPoint >
+        0
           ? 'translate-x-5'
           : 'translate-x-1'}"
       ></span>
     </button>
   </div>
 </div>
+
+<style>
+  .bottom-out-toggle:active .toggle-thumb {
+    transform: scale(0.95);
+  }
+
+  .bottom-out-toggle:active:not([class*='translate-x-5']) .toggle-thumb,
+  .bottom-out-toggle:active:not([class*='translate-x-1']) .toggle-thumb {
+    transform: scale(0.95) translateX(0.2rem);
+  }
+</style>
