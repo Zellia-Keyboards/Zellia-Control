@@ -214,7 +214,7 @@
         max="100"
         value={localSpeed}
         oninput={(e) => (localSpeed = Number((e.target as HTMLInputElement).value))}
-        class="w-full h-2 rounded-full bg-gray-300 dark:bg-gray-700 appearance-none slider-thumb"
+        class="rgb-subpanel-slider"
       />
     </div>
 
@@ -262,7 +262,7 @@
               max="255"
               value={rainbowDensity}
               oninput={(e) => (rainbowDensity = Number((e.target as HTMLInputElement).value))}
-              class="w-full h-2 rounded-full bg-gray-300 dark:bg-gray-700 appearance-none slider-thumb"
+              class="rgb-subpanel-slider"
             />
           </div>
 
@@ -308,27 +308,41 @@
   }
 
   /* Slider styling */
-  .slider-thumb {
+  .rgb-subpanel-slider {
+    width: 100%;
+    height: 8px;
+    border-radius: 9999px;
     appearance: none;
+    background: color-mix(in srgb, var(--theme-color-primary) 20%, transparent);
   }
 
-  .slider-thumb::-webkit-slider-thumb {
+  .rgb-subpanel-slider::-webkit-slider-thumb {
     appearance: none;
-    width: 16px;
-    height: 16px;
+    width: 20px;
+    height: 20px;
     border-radius: 50%;
     background: var(--theme-color-primary);
     cursor: pointer;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    transition: transform 0.1s ease;
   }
 
-  .slider-thumb::-moz-range-thumb {
-    width: 16px;
-    height: 16px;
+  .rgb-subpanel-slider::-webkit-slider-thumb:hover {
+    transform: scale(1.1);
+  }
+
+  .rgb-subpanel-slider::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
     border-radius: 50%;
     background: var(--theme-color-primary);
     cursor: pointer;
     border: none;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    transition: transform 0.1s ease;
+  }
+
+  .rgb-subpanel-slider::-moz-range-thumb:hover {
+    transform: scale(1.1);
   }
 </style>

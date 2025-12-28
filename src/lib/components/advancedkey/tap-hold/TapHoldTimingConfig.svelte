@@ -32,8 +32,7 @@
         max="1000"
         step="50"
         bind:value={holdDelay}
-        class="w-full h-2 rounded-full bg-gray-300 dark:bg-gray-700 appearance-none slider-thumb"
-        style="--thumb-color: var(--theme-color-primary)"
+        class="timing-slider"
       />
       <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Time before hold action triggers</p>
     </div>
@@ -53,8 +52,7 @@
         max="500"
         step="25"
         bind:value={tapTimeout}
-        class="w-full h-2 rounded-full bg-gray-300 dark:bg-gray-700 appearance-none slider-thumb"
-        style="--thumb-color: var(--theme-color-primary)"
+        class="timing-slider"
       />
       <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
         Maximum time for a tap to register
@@ -64,25 +62,41 @@
 </div>
 
 <style>
-  .slider-thumb {
+  .timing-slider {
+    width: 100%;
+    height: 8px;
+    border-radius: 9999px;
     appearance: none;
+    background: color-mix(in srgb, var(--theme-color-primary) 20%, transparent);
   }
-  .slider-thumb::-webkit-slider-thumb {
+
+  .timing-slider::-webkit-slider-thumb {
     appearance: none;
-    width: 16px;
-    height: 16px;
+    width: 20px;
+    height: 20px;
     border-radius: 50%;
-    background: var(--thumb-color, #2563eb);
+    background: var(--theme-color-primary);
     cursor: pointer;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    transition: transform 0.1s ease;
   }
-  .slider-thumb::-moz-range-thumb {
-    width: 16px;
-    height: 16px;
+
+  .timing-slider::-webkit-slider-thumb:hover {
+    transform: scale(1.1);
+  }
+
+  .timing-slider::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
     border-radius: 50%;
-    background: var(--thumb-color, #2563eb);
+    background: var(--theme-color-primary);
     cursor: pointer;
     border: none;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    transition: transform 0.1s ease;
+  }
+
+  .timing-slider::-moz-range-thumb:hover {
+    transform: scale(1.1);
   }
 </style>
