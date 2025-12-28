@@ -103,8 +103,16 @@
       const layoutJson = controller.get_layout_json();
       const layout = JSON.parse(layoutJson);
       const key = layout[dksCurrentSelected[1]];
-      return key?.labels?.find((l: string) => l && l.trim()) || 'Unknown';
+      if (key && key.labels) {
+        const label =
+          key.labels[4] ||
+          key.labels[0] ||
+          key.labels.find((l: string) => l && l.trim() !== '');
+        return label || 'Unknown';
+      }
+      return 'Unknown';
     } catch (e) {
+      console.error('Error getting key label:', e);
       return 'Unknown';
     }
   });

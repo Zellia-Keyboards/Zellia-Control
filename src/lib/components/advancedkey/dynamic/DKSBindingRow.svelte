@@ -24,7 +24,9 @@
     keyActions,
   }: Props = $props();
 
-  const currentKeyAction = $derived(keyActions.find(k => k.id === keycode));
+  const currentKeyAction = $derived(
+    keyActions.find(k => String(k.keycode) === String(keycode))
+  );
 </script>
 
 <div class="flex items-center gap-4">

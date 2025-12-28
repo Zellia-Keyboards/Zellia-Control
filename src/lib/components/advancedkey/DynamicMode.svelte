@@ -55,9 +55,9 @@
   }
 
   let currentSelectedIndex = $derived($selectedKeys.length > 0 ? $selectedKeys[0] : null);
-  let dksSelectedKeycodes = $state(['esc', '', '', '']);
+  let dksSelectedKeycodes = $state(['', '', '', '']);
   let dksSelectedBitmaps = $state<DKSAction[][]>([
-    [DKSAction.PRESS, DKSAction.HOLD, DKSAction.HOLD, DKSAction.RELEASE],
+    [DKSAction.RELEASE, DKSAction.RELEASE, DKSAction.RELEASE, DKSAction.RELEASE],
     [DKSAction.RELEASE, DKSAction.RELEASE, DKSAction.RELEASE, DKSAction.RELEASE],
     [DKSAction.RELEASE, DKSAction.RELEASE, DKSAction.RELEASE, DKSAction.RELEASE],
     [DKSAction.RELEASE, DKSAction.RELEASE, DKSAction.RELEASE, DKSAction.RELEASE],
@@ -284,29 +284,6 @@
     keyboardConnectionState.controller?.send_dynamic_key_packet(0, dynamic_key);
   }
 
-  const dksActionCategories = $state([
-    {
-      name: 'Common',
-      actions: keyActions.filter(action =>
-        ['esc', 'enter', 'space', 'tab', 'backspace', 'delete'].includes(String(action.keycode))
-      ),
-    },
-    {
-      name: 'Modifiers',
-      actions: keyActions.filter(action =>
-        ['ctrl', 'shift', 'alt', 'win'].includes(String(action.keycode))
-      ),
-    },
-    {
-      name: 'Function',
-      actions: keyActions.filter(action => action.category === 'Function').slice(0, 12),
-    },
-    {
-      name: 'Letters',
-      actions: keyActions.filter(action => action.category === 'Letter').slice(0, 20),
-    },
-  ]);
-
   const dksConfiguredList = $derived(
     Object.entries($globalConfigurations).filter(([_, config]) => config.type === 'dynamic') as [
       string,
@@ -340,9 +317,9 @@
         dksSelectedBitmaps = dynamicConfig.bitmap.map((b: DKSAction[]) => [...b]);
         dksBottomOutPoint = dynamicConfig.bottomOutPoint;
       } else {
-        dksSelectedKeycodes = [currentKeyName, '', '', ''];
+        dksSelectedKeycodes = ['', '', '', ''];
         dksSelectedBitmaps = [
-          [DKSAction.PRESS, DKSAction.HOLD, DKSAction.HOLD, DKSAction.RELEASE],
+          [DKSAction.RELEASE, DKSAction.RELEASE, DKSAction.RELEASE, DKSAction.RELEASE],
           [DKSAction.RELEASE, DKSAction.RELEASE, DKSAction.RELEASE, DKSAction.RELEASE],
           [DKSAction.RELEASE, DKSAction.RELEASE, DKSAction.RELEASE, DKSAction.RELEASE],
           [DKSAction.RELEASE, DKSAction.RELEASE, DKSAction.RELEASE, DKSAction.RELEASE],
@@ -444,7 +421,7 @@
 <div class="flex-1 p-6 overflow-y-auto -mx-8">
   {#if currentSelected}
     <div class="max-w-7xl mx-auto">
-      <DKSSelectedKeyInfo {currentKeyName} currentSelectedCoords={currentSelected} />
+      <DKSSelectedKeyInfo {currentKeyName} />
 
       <div class="flex gap-8">
         <div class="w-96 flex flex-col gap-4">
@@ -574,7 +551,6 @@
             <DKSBinding
               bind:selectedKeycodes={dksSelectedKeycodes}
               bind:selectedBindingIndex={dksSelectedBindingIndex}
-              actionCategories={dksActionCategories}
             />
           {:else if dksActiveTab === 'performance'}
             <DKSPerformance {actuationPoint} />
