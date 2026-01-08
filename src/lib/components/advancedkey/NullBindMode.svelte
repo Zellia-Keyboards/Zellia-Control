@@ -12,10 +12,10 @@
   import {
     advancedKeys,
     dynamicKeys,
+    keymap,
     rgbBaseConfig,
     rgbConfigs,
   } from '$lib/stores/ControllerStore.svelte';
-  import Layer from '../remap/Layer.svelte';
   import DynamicMode from './DynamicMode.svelte';
 
   import NullBindHeader from '$lib/components/advancedkey/nullbind/NullBindHeader.svelte';
@@ -46,6 +46,7 @@
   let nullBindNewlyAddedPairs = $state<Set<string>>(new Set());
   let uiBottomOutPoint = $state(4.0);
   let uiActuationPoint = $state(1.5);
+  let selectedActions = $state([0,0]);
 
   const SWITCH_DISTANCE = 4.0;
   const NULL_BIND_BEHAVIOR_METADATA = $derived([
@@ -96,9 +97,17 @@
 
   const canConfigureNullBind = $derived(localSelectedKeys.length === 2);
 
+  $effect(() => {
+    if (localSelectedKeys.length == 1) {
+      selectedActions[0] = $keymap[$selectedLayer][localSelectedKeys[0]];
+    }
+    if (localSelectedKeys.length == 2) {
+      selectedActions[1] = $keymap[$selectedLayer][localSelectedKeys[1]];
+    }
+  });
+
   function updateNullBindConfiguration(): void {
     if (localSelectedKeys.length !== 2) return;
-
     const key1Label = getNullBindKeyLabel(localSelectedKeys[0]);
     const key2Label = getNullBindKeyLabel(localSelectedKeys[1]);
 
@@ -173,16 +182,37 @@
       //dynamic_key.bindings[1] = ;
       //dynamic_key.bindings[2] = ;
       //dynamic_key.bindings[3] = ;
-
+      dynamic_key.bindings[0] = selectedActions[0];
+      dynamic_key.bindings[1] = selectedActions[1];
       dynamic_key.target_keys_location[0] = new ekc.KeyLocation();
       dynamic_key.target_keys_location[1] = new ekc.KeyLocation();
       dynamic_key.target_keys_location[0].id = localSelectedKeys[0];
       dynamic_key.target_keys_location[0].layer = $selectedLayer;
       dynamic_key.target_keys_location[1].id = localSelectedKeys[1];
       dynamic_key.target_keys_location[1].layer = $selectedLayer;
-      dynamic_key.key_id[0] = localSelectedKeys[0];
-      dynamic_key.key_id[1] = localSelectedKeys[1];
       dynamic_key.mode = behavior;
+      let dynamic_key_index = $dynamicKeys.findIndex(
+        item => item.type == ekc.DynamicKeyType.DynamicKeyNone
+      );
+      $dynamicKeys[dynamic_key_index] = dynamic_key;
+      $dynamicKeys = $dynamicKeys;
+      $keymap[$selectedLayer - 1][localSelectedKeys[0]] =
+        ekc.Keycode.DynamicKey | (dynamic_key_index << 8);
+      keyboardConnectionState.controller?.set_dynamic_keys($dynamicKeys);
+      keyboardConnectionState.controller?.send_keymap_packet(
+        [localSelectedKeys[0]],
+        $selectedLayer - 1,
+        $keymap[$selectedLayer - 1][localSelectedKeys[0]]
+      );
+      $keymap[$selectedLayer - 1][localSelectedKeys[1]] =
+        ekc.Keycode.DynamicKey | (dynamic_key_index << 8);
+      keyboardConnectionState.controller?.set_dynamic_keys($dynamicKeys);
+      keyboardConnectionState.controller?.send_keymap_packet(
+        [localSelectedKeys[1]],
+        $selectedLayer - 1,
+        $keymap[$selectedLayer - 1][localSelectedKeys[1]]
+      );
+      keyboardConnectionState.controller?.send_dynamic_key_packet(dynamic_key_index, dynamic_key);
     }
 
     // Clear selection
