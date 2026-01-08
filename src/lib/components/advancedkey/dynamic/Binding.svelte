@@ -7,18 +7,22 @@
   interface Props {
     selectedKeycodes: string[];
     selectedBindingIndex: number | null;
+    selectedActions: number[];
   }
 
   let {
     selectedKeycodes = $bindable(),
     selectedBindingIndex = $bindable(),
+    selectedActions = $bindable(),
   }: Props = $props();
 
   let selectedAction = $state(0);
 
   function onActionSelect(actionId: number): void {
+    console.log(actionId)
     if (selectedBindingIndex !== null) {
       selectedKeycodes[selectedBindingIndex] = String(actionId);
+      selectedActions[selectedBindingIndex] = actionId;
       selectedAction = actionId;
       // Keep the binding selected so user can see and modify their selection
     }

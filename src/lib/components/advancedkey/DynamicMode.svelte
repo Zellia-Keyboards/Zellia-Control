@@ -55,6 +55,7 @@
   }
 
   let currentSelectedIndex = $derived($selectedKeys.length > 0 ? $selectedKeys[0] : null);
+  let dksSelectedActions = $state([0,0,0,0]);
   let dksSelectedKeycodes = $state(['', '', '', '']);
   let dksSelectedBitmaps = $state<DKSAction[][]>([
     [DKSAction.RELEASE, DKSAction.RELEASE, DKSAction.RELEASE, DKSAction.RELEASE],
@@ -270,10 +271,10 @@
 
     let dynamic_key = new ekc.DynamicKeyStroke4x4();
     dynamic_key.type = ekc.DynamicKeyType.DynamicKeyStroke;
-    //dynamic_key.bindings[0] = ;
-    //dynamic_key.bindings[1] = ;
-    //dynamic_key.bindings[2] = ;
-    //dynamic_key.bindings[3] = ;
+    dynamic_key.bindings[0] = dksSelectedActions[0];
+    dynamic_key.bindings[1] = dksSelectedActions[1];
+    dynamic_key.bindings[2] = dksSelectedActions[2];
+    dynamic_key.bindings[3] = dksSelectedActions[3];
     dynamic_key.target_keys_location[0] = new ekc.KeyLocation();
     dynamic_key.target_keys_location[0].id = currentSelected == null ? 0 : currentSelected[0];
     dynamic_key.target_keys_location[0].layer = $selectedLayer;
@@ -281,6 +282,7 @@
     dynamic_key.press_fully_distance = mmToPercent(dksBottomOutPoint);
     dynamic_key.release_begin_distance = mmToPercent(dksBottomOutPoint);
     dynamic_key.release_fully_distance = mmToPercent(actuationPoint);
+    dynamic_key.key_control[0] = 
     keyboardConnectionState.controller?.send_dynamic_key_packet(0, dynamic_key);
   }
 
@@ -549,6 +551,7 @@
 
           {#if dksActiveTab === 'bindings'}
             <DKSBinding
+              bind:selectedActions={dksSelectedActions}
               bind:selectedKeycodes={dksSelectedKeycodes}
               bind:selectedBindingIndex={dksSelectedBindingIndex}
             />
