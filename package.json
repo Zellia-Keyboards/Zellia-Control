@@ -24,7 +24,6 @@
     "vite-plugin-pwa": "^0.21.0"
   },
   "devDependencies": {
-    "emi-keyboard-controller": "file:src-controller",
     "@sveltejs/adapter-static": "^3.0.1",
     "@sveltejs/kit": "^2.0.0",
     "@sveltejs/vite-plugin-svelte": "^5.0.3",
