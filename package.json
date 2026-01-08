@@ -19,12 +19,12 @@
     "@types/tinycolor2": "^1.4.6",
     "chart.js": "^4.4.9",
     "chartjs-plugin-zoom": "^2.2.0",
-    "emi-keyboard-controller": "file:src-controller",
     "lucide-svelte": "^0.511.0",
     "tinycolor2": "^1.6.0",
     "vite-plugin-pwa": "^0.21.0"
   },
   "devDependencies": {
+    "emi-keyboard-controller": "file:src-controller",
     "@sveltejs/adapter-static": "^3.0.1",
     "@sveltejs/kit": "^2.0.0",
     "@sveltejs/vite-plugin-svelte": "^5.0.3",
