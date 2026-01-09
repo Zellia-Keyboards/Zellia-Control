@@ -6,11 +6,21 @@ on:
       - main
     paths:
       - 'src/**'
+      - 'src-controller/**'
+      - '.github/workflows/web.yml'
+      - 'package.json'
+      - 'yarn.lock'
+      - 'vite.config.js'
   pull_request:
     branches:
       - main
     paths:
       - 'src/**'
+      - 'src-controller/**'
+      - '.github/workflows/web.yml'
+      - 'package.json'
+      - 'yarn.lock'
+      - 'vite.config.js'
   workflow_dispatch: # Manual trigger
 
 env:
@@ -30,7 +40,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'yarn'
 
       - name: Setup Yarn
         run: |
