@@ -54,18 +54,17 @@ jobs:
           rm -rf .yarn/cache
           rm -f .yarncrc .yarnrc.yml
 
-      - name: Verify package.json
-        run: |
-          echo "=== Current directory ==="
-          pwd
-          echo "=== package.json build script ==="
-          cat package.json | grep -A 1 "build"
-
       - name: Install dependencies
         run: yarn install
 
+      - name: Build controller
+        run: |
+          cd src-controller
+          yarn install
+          yarn build
+
       - name: Build website
-        run: yarn build
+        run: vite build
         env:
           NODE_ENV: production
 
