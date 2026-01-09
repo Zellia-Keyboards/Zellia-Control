@@ -65,7 +65,7 @@ jobs:
 
       - name: Build website
         run: |
-          cd ..
+          ls
           yarn build
         env:
           NODE_ENV: production
