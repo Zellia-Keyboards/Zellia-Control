@@ -1,32 +1,76 @@
 import { defineConfig } from 'vite';
 import { sveltekit } from '@sveltejs/kit/vite';
 import tailwindcss from '@tailwindcss/vite';
-
-const host = process.env.TAURI_DEV_HOST;
+import { VitePWA } from 'vite-plugin-pwa';
+import path from 'path';
 
 // https://vitejs.dev/config/
 export default defineConfig(async () => ({
-  plugins: [tailwindcss(), sveltekit()],
+  plugins: [
+    tailwindcss(),
+    sveltekit(),
+    VitePWA({
+      registerType: 'autoUpdate',
+      includeAssets: ['favicon.png', 'robots.txt'],
+      manifest: {
+        name: 'Zellia Control',
+        short_name: 'Zellia',
+        description: 'Configure Zellia Hall Effect keyboards with advanced customization options',
+        theme_color: '#1f2937',
+        background_color: '#ffffff',
+        display: 'standalone',
+        scope: '/',
+        start_url: '/',
+        orientation: 'portrait-primary',
+        icons: [
+          {
+            src: '/favicon.png',
+            sizes: '192x192',
+            type: 'image/png',
+            purpose: 'any',
+          },
+          {
+            src: '/favicon.png',
+            sizes: '512x512',
+            type: 'image/png',
+            purpose: 'any',
+          },
+        ],
+        categories: ['productivity', 'utilities'],
+      },
+      workbox: {
+        globPatterns: ['**/*.{js,css,html,svg,png,ico,json,woff,woff2}'],
+        navigateFallback: '/index.html',
+        cleanupOutdatedCaches: true,
+        runtimeCaching: [
+          {
+            urlPattern: /^https:\/\/fonts\.(googleapis|gstatic)\.com\/.*/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'google-fonts-cache',
+              expiration: {
+                maxEntries: 20,
+                maxAgeSeconds: 30 * 24 * 60 * 60, // 30 days
+              },
+            },
+          },
+        ],
+      },
+      devOptions: {
+        enabled: false,
+      },
+    }),
+  ],
 
-  // Vite options tailored for Tauri development and only applied in `tauri dev` or `tauri build`
-  //
-  // 1. prevent vite from obscuring rust errors
-  clearScreen: false,
-  // 2. tauri expects a fixed port, fail if that port is not available
+  resolve: {
+    alias: {
+      'emi-keyboard-controller': path.resolve(__dirname, './src-controller/src/index.ts'),
+    },
+  },
   server: {
-    port: 1420,
-    strictPort: true,
-    host: host || false,
-    hmr: host
-      ? {
-          protocol: 'ws',
-          host,
-          port: 1421,
-        }
-      : undefined,
-    watch: {
-      // 3. tell vite to ignore watching `src-tauri`
-      ignored: ['**/src-tauri/**'],
+    fs: {
+      // Allow serving files from the src-controller directory
+      allow: ['.', './src-controller'],
     },
   },
 }));

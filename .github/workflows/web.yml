@@ -6,11 +6,21 @@ on:
       - main
     paths:
       - 'src/**'
+      - 'src-controller/**'
+      - '.github/workflows/web.yml'
+      - 'package.json'
+      - 'yarn.lock'
+      - 'vite.config.js'
   pull_request:
     branches:
       - main
     paths:
       - 'src/**'
+      - 'src-controller/**'
+      - '.github/workflows/web.yml'
+      - 'package.json'
+      - 'yarn.lock'
+      - 'vite.config.js'
   workflow_dispatch: # Manual trigger
 
 env:
@@ -30,18 +40,31 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'yarn'
 
       - name: Setup Yarn
         run: |
           corepack enable
           yarn set version ${{ env.YARN_VERSION }}
 
+      - name: Clean caches
+        run: |
+          rm -rf node_modules
+          rm -rf src-controller/node_modules
+          rm -rf ~/.yarn/cache
+          rm -rf .yarn/cache
+          rm -f .yarncrc .yarnrc.yml
+
       - name: Install dependencies
         run: yarn install
 
+      - name: Build controller
+        run: |
+          cd src-controller
+          yarn install
+          yarn build
+
       - name: Build website
-        run: yarn build
+        run: yarn install && yarn build
         env:
           NODE_ENV: production
 
