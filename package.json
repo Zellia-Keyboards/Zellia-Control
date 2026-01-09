@@ -2,6 +2,7 @@
   "name": "zellia-control",
   "version": "0.1.0",
   "description": "",
+  "private": true,
   "type": "module",
   "scripts": {
     "dev": "vite dev",
