@@ -64,7 +64,7 @@ jobs:
           yarn build
 
       - name: Build website
-        run: vite build
+        run: yarn install && yarn build
         env:
           NODE_ENV: production
 
