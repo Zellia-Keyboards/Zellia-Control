@@ -46,6 +46,13 @@ jobs:
           corepack enable
           yarn set version ${{ env.YARN_VERSION }}
 
+      - name: Clean caches
+        run: |
+          rm -rf node_modules
+          rm -rf src-controller/node_modules
+          rm -rf ~/.yarn/cache
+          rm -rf .yarn/cache
+
       - name: Install dependencies
         run: yarn install
 
