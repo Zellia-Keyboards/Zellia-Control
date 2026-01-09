@@ -52,6 +52,14 @@ jobs:
           rm -rf src-controller/node_modules
           rm -rf ~/.yarn/cache
           rm -rf .yarn/cache
+          rm -f .yarncrc .yarnrc.yml
+
+      - name: Verify package.json
+        run: |
+          echo "=== Current directory ==="
+          pwd
+          echo "=== package.json build script ==="
+          cat package.json | grep -A 1 "build"
 
       - name: Install dependencies
         run: yarn install
