@@ -7,8 +7,8 @@
   import LanguageSwitch from './LanguageSwitch.svelte';
   import DarkModeToggle from './DarkModeToggle.svelte';
   import { NAVIGATE } from '$lib/config/navigation';
-  import { LogOut } from 'lucide-svelte';
-  import { slide, fade } from 'svelte/transition';
+  import { LogOut, Save } from 'lucide-svelte';
+  import { slide } from 'svelte/transition';
 
   let currentLanguage = $derived($language);
 
@@ -73,6 +73,22 @@
       </svg>
     </a>
 
+    <!-- Save Button -->
+    {#if keyboardAPI.shouldShowConfigurator}
+      <div in:slide|global={{ duration: 350, easing: t => t * (2 - t), axis: 'y' }}>
+        <button
+          class="w-full px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 text-white shadow-lg hover:shadow-xl glassmorphism-button flex items-center justify-center gap-2 active:scale-95 hover:animate-none"
+          onclick={handleSave}
+          title="Save configuration"
+        >
+          <div class="flex items-center justify-center gap-1">
+            <Save class="w-3 h-3" />
+            <i>{t('ui.save', currentLanguage)}</i>
+          </div>
+        </button>
+      </div>
+    {/if}
+    
     <!-- Disconnect Button -->
     {#if keyboardAPI.shouldShowConfigurator}
       <div in:slide|global={{ duration: 350, easing: t => t * (2 - t), axis: 'y' }}>

@@ -67,24 +67,24 @@
   <!-- svelte-ignore a11y_click_events_have_key_events -->
   <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
   <div
-    class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-md animate-fade-in"
+    class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 animate-fade-in"
     onclick={handleBackdropClick}
     role="dialog"
     aria-modal="true"
     aria-labelledby="keyboard-selector-title"
     tabindex="-1"
   >
-    <div class="relative w-auto mx-4 max-h-[90vh] flex flex-col animate-scale-in">
+    <div class="dark glassmorphism relative w-auto mx-4 max-h-[90vh] flex flex-col animate-scale-in">
       <!-- Modal content -->
-      <div class="glassmorphism-card rounded-2xl p-8 overflow-hidden">
+      <div class="rounded-2xl overflow-hidden border border-white/10" style="background: color-mix(in srgb, var(--theme-color-primary) 8%, rgb(17, 24, 39));">
         <!-- Header -->
-        <div class="flex items-center justify-between mb-6">
-          <h2 id="keyboard-selector-title" class="text-xl font-semibold text-white">
-            Select the key to track
+        <div class="flex items-center justify-between px-6 py-4 border-b border-white/10">
+          <h2 id="keyboard-selector-title" class="text-lg font-semibold text-white">
+            Select Key to Track
           </h2>
           <button
             onclick={closeModal}
-            class="text-gray-400 hover:text-white transition-colors p-2 rounded-lg hover:bg-white/10"
+            class="p-2 rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-all duration-200"
             aria-label="Close"
           >
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -98,8 +98,8 @@
           </button>
         </div>
 
-        <!-- Keyboard render container - no inner glassmorphism -->
-        <div class="overflow-auto max-h-[calc(90vh-10rem)] rounded-xl p-6 bg-black/20">
+        <!-- Keyboard render container -->
+        <div class="overflow-auto max-h-[calc(90vh-10rem)] p-6">
           {#if keys.length > 0}
             <div class="flex justify-center">
               <KeyboardRender {keys} on:select={handleKeySelect} />
@@ -107,18 +107,18 @@
           {:else}
             <div class="text-center py-12 text-gray-400">
               <p class="text-lg">No keyboard layout available</p>
-              <p class="text-sm mt-2">Please connect a keyboard first</p>
+              <p class="text-sm mt-2 text-gray-500">Please connect a keyboard first</p>
             </div>
           {/if}
         </div>
 
         <!-- Footer -->
-        <div class="mt-6 flex justify-end">
+        <div class="px-6 py-4 border-t border-white/10 flex justify-end">
           <button
             onclick={closeModal}
-            class="px-6 py-2.5 text-sm font-medium glassmorphism-button rounded-lg"
+            class="px-5 py-2 text-sm font-medium rounded-lg bg-white/10 hover:bg-white/20 text-white border border-white/10 transition-all duration-200"
           >
-            Close
+            Cancel
           </button>
         </div>
       </div>

@@ -33,6 +33,8 @@
   let showErrorModal = $state(false);
   let errorMessage = $state('');
 
+  let fileInput: HTMLInputElement | undefined;
+
   function toggleMenu(profileId: number, event: MouseEvent) {
     event.stopPropagation();
     if (openMenuId === profileId) {
@@ -52,6 +54,57 @@
   function handleOutsideClick() {
     openMenuId = null;
     menuPosition = null;
+  }
+
+  function handleFileSelect(event: Event) {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e: ProgressEvent<FileReader>) => {
+      try {
+        const content = e.target?.result as string;
+        const targetSlot = profiles.findIndex((p, idx) => idx >= 4 && p === null);
+        
+        if (targetSlot === -1) {
+          errorMessage = 'No available profile slots. Maximum 16 profiles reached.';
+          showErrorModal = true;
+          return;
+        }
+
+        profileStore.importProfile(content, targetSlot + 1);
+        
+        // Reset the file input
+        if (fileInput) {
+          fileInput.value = '';
+        }
+      } catch (error) {
+        errorMessage = `Failed to import profile: ${error instanceof Error ? error.message : 'Unknown error'}`;
+        showErrorModal = true;
+        
+        // Reset the file input
+        if (fileInput) {
+          fileInput.value = '';
+        }
+      }
+    };
+
+    reader.onerror = () => {
+      errorMessage = 'Failed to read the file. Please try again.';
+      showErrorModal = true;
+      
+      // Reset the file input
+      if (fileInput) {
+        fileInput.value = '';
+      }
+    };
+
+    reader.readAsText(file);
+  }
+
+  function triggerImport() {
+    fileInput?.click();
   }
 
   function setActive(profileId: number) {
@@ -142,10 +195,36 @@
 
 <svelte:window onclick={handleOutsideClick} />
 
+<!-- Hidden file input for import -->
+<input
+  type="file"
+  accept=".json"
+  bind:this={fileInput}
+  onchange={handleFileSelect}
+  class="hidden"
+  aria-label="Import profile"
+/>
+
 <div class="w-full max-w-4xl mx-auto p-8">
   <!-- Header -->
   <div class="mb-8">
-    <h1 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">Configure Profiles</h1>
+    <div class="flex items-center justify-between mb-2">
+      <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Configure Profiles</h1>
+      <button
+        onclick={triggerImport}
+        class="px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white shadow-md hover:shadow-lg glassmorphism-button flex items-center gap-2"
+      >
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+          />
+        </svg>
+        Import Profile
+      </button>
+    </div>
     <p class="text-sm text-gray-500 dark:text-gray-400">
       Manage your keyboard profiles here. You can import, export, and customize them.
     </p>

@@ -1,6 +1,6 @@
 <script lang="ts">
   import '../app.css';
-  import { keyboardAPI } from '$lib/api/keyboardAPI.svelte';
+  import { keyboardAPI} from '$lib/api/keyboardAPI.svelte';
   import * as kle from '@ijprest/kle-serial';
   import { page } from '$app/stores';
   import { goto } from '$app/navigation';
@@ -13,19 +13,11 @@
   import MainContentArea from '$lib/components/layout/MainContentArea.svelte';
   import { shouldShowConfiguratorLayout, shouldShowLayerSelector } from '$lib/utils/layoutHelpers';
   import { transformKeyboardKeys } from '$lib/utils/keyboardKeyTransformer.svelte';
-  import { slide } from 'svelte/transition';
-  import { quintOut } from 'svelte/easing';
 
   let { children } = $props();
-  let showFirefoxWarning = $state(false);
-  let firefoxWarningDismissed = $state(false);
   let isLoadingConfigurator = $state(false);
   let currentLanguage = $derived($language);
 
-  // Slide animation state
-  let slideDirection = $state(1);
-  let isAnimating = $state(false);
-  let previousPath = $state($page.url.pathname);
 
   // Keyboard layout for global KeyboardRender
   let layout = $derived($keyboardLayoutStore);
@@ -33,7 +25,6 @@
 
   // Transform keyboard keys based on the active page
   let keyboardKeys: kle.Key[] = $derived.by(() => {
-    console.log(`Active page: ${$page.url.pathname}`);
     return transformKeyboardKeys(keyboardLayout, $advancedKeys, $rgbConfigs, $page.url.pathname);
   });
 
@@ -45,11 +36,6 @@
   $effect(() => {
     if (typeof document !== 'undefined') {
       document.documentElement.lang = currentLanguage;
-
-      // Check if user is using Firefox - only show warning if not dismissed
-      if (navigator.userAgent.toLowerCase().includes('firefox') && !firefoxWarningDismissed) {
-        showFirefoxWarning = true;
-      }
     }
   });
 

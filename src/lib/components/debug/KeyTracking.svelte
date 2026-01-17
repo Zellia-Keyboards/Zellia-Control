@@ -259,8 +259,8 @@
             {
               label: t('debug.keyDistance', currentLanguage),
               data: [],
-              borderColor: '#22c55e',
-              backgroundColor: 'rgba(34, 197, 94, 0.15)',
+              borderColor: '#ffffff',
+              backgroundColor: 'rgba(255, 255, 255, 0.15)',
               borderWidth: 2,
               pointRadius: 0,
               pointHoverRadius: 4,
@@ -387,109 +387,123 @@
 </script>
 
 <!-- Key Tracking Section -->
-<div class="flex gap-4 h-full min-h-0">
-  <!-- Left Sidebar - Info panel and select key -->
-  <div class="w-[200px] shrink-0 flex flex-col gap-3">
+<div class="flex gap-5 h-full min-h-0">
+  <!-- Left Sidebar - Info panel and controls -->
+  <div class="w-[280px] shrink-0 flex flex-col gap-4">
     <!-- Info Panel -->
-    <div
-      class="p-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/50"
-    >
-      <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-3">About This Tool</h3>
-      <div class="text-xs text-gray-600 dark:text-gray-400 leading-relaxed space-y-2">
+    <div class="glassmorphism-card p-5 rounded-xl">
+      <div class="flex items-center gap-2 mb-3">
+        <div class="w-2 h-2 rounded-full bg-primary-500"></div>
+        <h3 class="text-sm font-bold text-gray-900 dark:text-white">About This Tool</h3>
+      </div>
+      <div class="text-xs text-gray-600 dark:text-gray-400 leading-relaxed space-y-3">
         <p>
-          This tool allows you to track the pressing distance of a key in real time and visualize it
-          in a chart.
+          Track the pressing distance of a key in real time and visualize it in a chart.
         </p>
 
         <p>
-          Due to fundamental limitations, the keyboard cannot distinguish 'normal pressing' from
-          conditions like hand movement, force changes after bottom-out, and pressing with greater
-          force.
+          The keyboard cannot distinguish 'normal pressing' from conditions like hand movement or force changes after bottom-out.
         </p>
 
-        <p>
-          When parameters are set extremely low (~0.01mm), these factors become significant.
-          Unintended key releases under such settings are considered normal.
+        <p class="text-amber-600 dark:text-amber-400">
+          <strong>Tip:</strong> Zoom with mouse scroll to observe trigger/reset changes closely.
         </p>
-
-        <p>Zoom in/out with mouse scroll to observe trigger/reset changes closely.</p>
       </div>
     </div>
 
-    <!-- Buttons Column -->
-    <div class="flex flex-col gap-2">
-      <button
-        type="button"
-        class="px-4 py-2 glassmorphism-button rounded-lg text-sm font-medium"
-        onclick={clearChart}
-      >
-        Clear Chart
-      </button>
-
+    <!-- Control Buttons -->
+    <div class="glassmorphism-card p-4 rounded-xl flex flex-col gap-3">
+      <h4 class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">Controls</h4>
+      
       <button
         onclick={openKeySelector}
-        class="px-4 py-2 glassmorphism-button rounded-lg text-sm font-medium text-left"
+        class="w-full px-4 py-3 glassmorphism-button rounded-lg text-sm font-medium text-left flex items-center justify-between gap-2 transition-all duration-200 hover:shadow-md {!keyboardConnectionState.controller ? 'opacity-50 cursor-not-allowed' : ''}"
         disabled={!keyboardConnectionState.controller}
       >
-        {selectedKeyName || 'Select Key'}
+        <span class="truncate">{selectedKeyName || 'Select Key...'}</span>
+        <svg class="w-4 h-4 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+        </svg>
       </button>
-    </div>
-  </div>
 
-  <!-- Right Side - Chart Area with controls on left -->
-  <div class="flex-1 min-w-0 flex gap-3">
-    <!-- Chart Control Buttons - Left of chart -->
-    <div class="flex flex-col gap-2 self-center">
-      {#if !isTracking}
+      <!-- Start/Stop and Clear buttons row -->
+      <div class="flex gap-2">
+        {#if !isTracking}
+          <button
+            type="button"
+            class="flex-1 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all duration-200 {!selectedKeyName ? 'opacity-50 cursor-not-allowed glassmorphism-button' : 'bg-green-500 hover:bg-green-600 text-white shadow-lg shadow-green-500/30 hover:shadow-xl active:scale-95'}"
+            disabled={!selectedKeyName}
+            onclick={() => {
+              const keyIndex = $selectedKeys[0];
+              if (keyIndex !== undefined) startDebug(keyIndex);
+            }}
+          >
+            Start
+          </button>
+        {:else}
+          <button
+            type="button"
+            class="flex-1 px-4 py-2.5 rounded-lg text-sm font-semibold bg-red-500 hover:bg-red-600 text-white shadow-lg shadow-red-500/30 hover:shadow-xl transition-all duration-200 active:scale-95"
+            onclick={stopDebug}
+          >
+            Stop
+          </button>
+        {/if}
+
         <button
           type="button"
-          class="px-4 py-2 glassmorphism-button rounded-lg text-sm font-medium {!selectedKeyName
-            ? 'opacity-50 cursor-not-allowed'
-            : ''}"
-          disabled={!selectedKeyName}
+          class="flex-1 px-4 py-2.5 glassmorphism-button rounded-lg text-sm font-medium transition-all duration-200 hover:shadow-md"
+          onclick={clearChart}
+        >
+          Clear
+        </button>
+      </div>
+
+      <!-- Zoom buttons row -->
+      <div class="flex gap-2">
+        <button
+          type="button"
+          class="flex-1 px-3 py-2.5 glassmorphism-button rounded-lg text-sm font-medium transition-all duration-200 hover:shadow-md"
+          onclick={resetZoom}
+        >
+          Reset Zoom
+        </button>
+
+        <button
+          type="button"
+          class="flex-1 px-3 py-2.5 glassmorphism-button rounded-lg text-sm font-medium transition-all duration-200 hover:shadow-md"
           onclick={() => {
-            const keyIndex = $selectedKeys[0];
-            if (keyIndex !== undefined) startDebug(keyIndex);
+            if (chart) {
+              chart.options.scales.y.min = 3.9;
+              chart.options.scales.y.max = 4.0;
+              chart.update();
+            }
           }}
         >
-          Start
+          Zoom 0.1mm
         </button>
-      {:else}
-        <button
-          type="button"
-          class="px-4 py-2 glassmorphism-button rounded-lg text-sm font-medium"
-          onclick={stopDebug}
-        >
-          Stop
-        </button>
-      {/if}
-
-      <button
-        type="button"
-        class="px-4 py-2 glassmorphism-button rounded-lg text-sm font-medium"
-        onclick={resetZoom}
-      >
-        Reset Zoom
-      </button>
-
-      <button
-        type="button"
-        class="px-4 py-2 glassmorphism-button rounded-lg text-sm font-medium"
-        onclick={() => {
-          if (chart) {
-            chart.options.scales.y.min = 3.9;
-            chart.options.scales.y.max = 4.0;
-            chart.update();
-          }
-        }}
-      >
-        Zoom 0.1mm
-      </button>
+      </div>
     </div>
 
+    <!-- Status Indicator -->
+    {#if isTracking}
+      <div class="glassmorphism-card p-4 rounded-xl">
+        <div class="flex items-center gap-3">
+          <div class="w-3 h-3 rounded-full bg-green-500 animate-pulse shadow-lg shadow-green-500/50"></div>
+          <div>
+            <p class="text-sm font-semibold text-green-400">Recording</p>
+            <p class="text-xs text-gray-500 dark:text-gray-400">{selectedKeyName}</p>
+          </div>
+        </div>
+      </div>
+    {/if}
+  </div>
+
+  <!-- Right Side - Chart Area -->
+  <div class="flex-1 min-w-0">
     <!-- Chart Container -->
-    <div class="flex-1">
-      <div class="aspect-square w-[1000px] max-h-[600px] p-4 ml-auto">
+    <div class="h-full glassmorphism-card rounded-xl p-4">
+      <div class="w-full h-full max-h-[600px]">
         <canvas bind:this={chartCanvas} class="w-full h-full"></canvas>
       </div>
     </div>
@@ -502,11 +516,11 @@
 <style>
   :global(:root) {
     --chart-text-color: #9ca3af; /* gray-400 */
-    --chart-grid-color: #374151; /* gray-700 */
+    --chart-grid-color: #797979; /* gray-700 */
   }
 
   :global(.dark) {
     --chart-text-color: #9ca3af; /* gray-400 */
-    --chart-grid-color: #374151; /* gray-700 */
+    --chart-grid-color: #bfbfbf; /* gray-700 */
   }
 </style>
