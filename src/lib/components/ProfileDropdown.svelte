@@ -34,21 +34,20 @@
 <div class="relative">
   <!-- Dropdown Button -->
   <button
-    class="flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-200 glassmorphism-button"
+    class="flex items-center gap-2 px-4 py-2.5 rounded-lg transition-all duration-200 glassmorphism-button hover:shadow-md active:scale-95"
     onclick={toggleDropdown}
+    title="Switch profiles"
   >
     <div class="flex flex-col items-start">
       <span class="text-xs text-gray-500 dark:text-gray-400">
         {t('ui.profiles', currentLanguage)}
       </span>
-      <span class="text-sm font-medium text-gray-900 dark:text-white">
+      <span class="text-sm font-semibold text-gray-900 dark:text-white">
         {activeProfile?.name || t('profiles.noProfile', currentLanguage)}
       </span>
     </div>
     <svg
-      class="w-4 h-4 text-gray-600 dark:text-gray-400 transition-transform duration-200 {showDropdown
-        ? 'rotate-180'
-        : ''}"
+      class="w-4 h-4 text-gray-600 dark:text-gray-400 transition-transform duration-200 {showDropdown ? 'rotate-180' : ''}"
       fill="none"
       stroke="currentColor"
       stroke-width="2"
@@ -60,8 +59,10 @@
 
   <!-- Dropdown Menu -->
   {#if showDropdown}
+    <!-- svelte-ignore a11y_click_events_have_key_events -->
+    <!-- svelte-ignore a11y_no_static_element_interactions -->
     <div
-      class="absolute top-full mt-2 right-0 w-64 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50 overflow-hidden glassmorphism-card"
+      class="absolute top-full mt-2 right-0 w-72 glassmorphism-card border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl z-50 overflow-hidden backdrop-blur-xl"
       transition:slide={{ duration: 200, axis: 'y' }}
       onclick={e => e.stopPropagation()}
     >
@@ -73,11 +74,11 @@
         {:else}
           {#each availableProfiles as profile}
             <button
-              class="w-full px-4 py-3 text-left hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors flex items-center justify-between group"
+              class="w-full px-4 py-3 text-left hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-150 flex items-center justify-between group"
               onclick={() => selectProfile(profile.id)}
             >
               <div class="flex-1">
-                <div class="text-sm font-medium text-gray-900 dark:text-white">
+                <div class="text-sm font-semibold text-gray-900 dark:text-white">
                   {profile.name}
                 </div>
                 <div class="text-xs text-gray-500 dark:text-gray-400">
@@ -97,7 +98,7 @@
       <div class="border-t border-gray-200 dark:border-gray-700">
         <a
           href="/profiles"
-          class="block px-4 py-3 text-sm font-medium text-center text-primary-600 dark:text-primary-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+          class="block px-4 py-3 text-sm font-semibold text-center text-primary-600 dark:text-primary-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
           onclick={() => (showDropdown = false)}
         >
           {t('profiles.manageAll', currentLanguage)}
