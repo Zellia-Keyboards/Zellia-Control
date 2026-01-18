@@ -20,14 +20,14 @@
 
   function handleInputChange(e: Event) {
     const input = e.target as HTMLInputElement;
-    // Filter to only allow digits and one decimal point (2.0-4.0 range)
+    // Filter to only allow digits and one decimal point (1.0-4.0 range)
     const filteredValue = input.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');
     inputValue = filteredValue;
 
     let value = filteredValue ? Number(filteredValue) : 4.0;
 
     // Clamp values to valid range
-    if (value < 2.0) value = 2.0;
+    if (value < 1.0) value = 1.0;
     if (value > 4.0) value = 4.0;
 
     onMaxTravelChange(value);
