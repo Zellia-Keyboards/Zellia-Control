@@ -20,7 +20,7 @@
 
   function handleInputChange(e: Event) {
     const input = e.target as HTMLInputElement;
-    // Filter to only allow digits and one decimal point (1.0-4.0 range)
+    // Filter to only allow digits and one decimal point (2.0-4.0 range)
     const filteredValue = input.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');
     inputValue = filteredValue;
 
