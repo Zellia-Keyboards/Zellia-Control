@@ -11,16 +11,25 @@
   let { maxTravelDistance, onMaxTravelChange, onClampValues }: Props = $props();
 
   let currentLanguage = $derived($language);
+  let inputValue = $state(String(maxTravelDistance));
+
+  // Sync local input when prop changes from parent
+  $effect(() => {
+    inputValue = String(maxTravelDistance);
+  });
 
   function handleInputChange(e: Event) {
     const input = e.target as HTMLInputElement;
-    let value = Number(input.value);
+    // Filter to only allow digits and one decimal point (1.0-4.0 range)
+    const filteredValue = input.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');
+    inputValue = filteredValue;
+
+    let value = filteredValue ? Number(filteredValue) : 4.0;
 
     // Clamp values to valid range
-    if (value < 1.0) value = 1.0;
-    if (value > 10.0) value = 10.0;
+    if (value < 2.0) value = 2.0;
+    if (value > 4.0) value = 4.0;
 
-    maxTravelDistance = value;
     onMaxTravelChange(value);
 
     // Call optional clamp callback for other values
@@ -30,7 +39,7 @@
   }
 </script>
 
-<div class="travel-badge group relative {$glassmorphismMode ? 'glassmorphism-card' : ''}">
+<div class="travel-badge group relative glassmorphism-card">
   <div class="flex items-center gap-1.5">
     <svg
       class="w-3.5 h-3.5 text-gray-500 dark:text-gray-400"
@@ -42,11 +51,9 @@
       <path d="M12 3v18M12 3l-4 4M12 3l4 4M12 21l-4-4M12 21l4-4" />
     </svg>
     <input
-      type="number"
-      min="1.0"
-      max="10.0"
-      step="0.1"
-      bind:value={maxTravelDistance}
+      type="text"
+      inputmode="decimal"
+      bind:value={inputValue}
       oninput={handleInputChange}
       class="travel-input"
     />
