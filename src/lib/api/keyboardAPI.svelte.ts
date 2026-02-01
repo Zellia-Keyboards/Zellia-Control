@@ -3,7 +3,7 @@
 
 import {
   Zellia80Controller,
-  Zellia60Controller,
+  ZelliaStarlightController,
   OholeoKeyboardController,
   TrinityPadController,
   type IKeyboardController,
@@ -12,7 +12,7 @@ import { goto } from '$app/navigation';
 import * as api from '$lib/api/api.svelte';
 import type { KeyboardController } from 'emi-keyboard-controller';
 
-export type KeyboardModel = 'zellia60he' | 'zellia80he' | 'oholeo' | 'trinity_pad';
+export type KeyboardModel = 'zellia_starlight' | 'zellia80he' | 'oholeo' | 'trinity_pad';
 
 export interface DetectedDevice {
   device: any; // HIDDevice type from WebHID API
@@ -44,9 +44,9 @@ export let keyboardConnectionState = $state<KeyboardConnectionState>({
 // Available controllers
 const availableControllers = [
   {
-    controller: Zellia60Controller,
-    modelName: 'Zellia 60HE',
-    modelKey: 'zellia60he' as KeyboardModel,
+    controller: ZelliaStarlightController,
+    modelName: 'Zellia Starlight',
+    modelKey: 'zelliastarlight' as KeyboardModel,
   },
   {
     controller: Zellia80Controller,
@@ -75,7 +75,7 @@ export const keyboardAPI = {
     try {
       // Try to request devices with all controller filters at once (single popup)
       const allFilters = [
-        { vendorId: 0xfeed, productId: 22319, usagePage: 0xff60 }, // Zellia80 & Oholeo
+        { vendorId: 0xfeed, productId: 22319, usagePage: 0xff60 }, // ZelliaStarlight, Zellia80 & Oholeo
         { vendorId: 0xfeed, productId: 0xffff, usagePage: 0xff60 }, // Trinity Pad
       ];
 
@@ -87,7 +87,7 @@ export const keyboardAPI = {
 
       // Match the first device to a controller
       let selectedController: IKeyboardController | null = null;
-      let selectedModel: KeyboardModel = 'zellia60he';
+      let selectedModel: KeyboardModel = 'zellia_starlight';
       let deviceName = 'Unknown Device';
 
       for (const device of devices) {
@@ -139,8 +139,8 @@ export const keyboardAPI = {
 
   // Check if a device matches a controller (simplified matching)
   deviceMatchesController(device: any, ControllerClass: any): boolean {
-    // For Zellia60Controller: vendorId: 0xFEED, productId: 22319
-    if (ControllerClass === Zellia60Controller) {
+    // For ZelliaStarlightController: vendorId: 0xFEED, productId: 22319
+    if (ControllerClass === ZelliaStarlightController) {
       return device.vendorId === 0xfeed && device.productId === 22319;
     }
     // For Zellia80Controller: vendorId: 0xFEED, productId: 22319
@@ -241,7 +241,7 @@ export const keyboardAPI = {
 };
 
 // Helper functions
-export const isKeyboard60HE = () => keyboardConnectionState.selectedModel === 'zellia60he';
+export const isKeyboard60HE = () => keyboardConnectionState.selectedModel === 'zelliastarlight';
 export const isKeyboard80HE = () => keyboardConnectionState.selectedModel === 'zellia80he';
 export const isOholeoKeyboard = () => keyboardConnectionState.selectedModel === 'oholeo';
 export const isTrinityPad = () => keyboardConnectionState.selectedModel === 'trinity_pad';
