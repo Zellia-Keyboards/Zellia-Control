@@ -1,7 +1,7 @@
 <script lang="ts">
   import { page } from '$app/stores';
   import { goto } from '$app/navigation';
-  import { keyboardAPI } from '$lib/api/keyboardAPI.svelte';
+  import { keyboardAPI, keyboardConnectionState } from '$lib/api/keyboardAPI.svelte';
   import { language, t } from '$lib/stores/LanguageStore.svelte';
   import ThemeSelector from './ThemeSelector.svelte';
   import LanguageSwitch from './LanguageSwitch.svelte';
@@ -9,6 +9,7 @@
   import { NAVIGATE } from '$lib/config/navigation';
   import { LogOut, Save } from 'lucide-svelte';
   import { slide } from 'svelte/transition';
+  import { advancedKeys, dynamicKeys, keymap, rgbBaseConfig, rgbConfigs } from '$lib/stores/ControllerStore.svelte';
 
   let currentLanguage = $derived($language);
 
@@ -19,6 +20,24 @@
   function handleDisconnect() {
     keyboardAPI.disconnect();
     goto('/');
+  }
+  function handleSave() {
+    console.log("save");
+    console.log($advancedKeys);
+    keyboardConnectionState.controller?.set_advanced_keys($advancedKeys);
+    console.log($rgbBaseConfig);
+    keyboardConnectionState.controller?.set_rgb_base_config($rgbBaseConfig);
+    console.log($keymap);
+    if ($keymap != undefined) {
+      keyboardConnectionState.controller?.set_keymap($keymap);
+    }
+    console.log($rgbConfigs);
+    keyboardConnectionState.controller?.set_rgb_configs($rgbConfigs);
+    console.log($dynamicKeys);
+    keyboardConnectionState.controller?.set_dynamic_keys($dynamicKeys);
+    var result = keyboardConnectionState.controller?.save_config();
+    console.debug(result);
+    keyboardConnectionState.controller?.flash_config();
   }
 </script>
 
