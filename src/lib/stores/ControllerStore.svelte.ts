@@ -6,3 +6,5 @@ export const rgbConfigs = writable(Array<ekc.IRGBConfig>());
 export const keymap = writable(Array<Array<number>>());
 export const rgbBaseConfig = writable(new ekc.RGBBaseConfig());
 export const dynamicKeys = writable(Array<ekc.IDynamicKey>());
+export const layoutLabels = writable<string[][]>([[]]);
+export const selectedLayoutIndices = writable<number[]>([]);

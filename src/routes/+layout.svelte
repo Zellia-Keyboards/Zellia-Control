@@ -6,13 +6,14 @@
   import { goto } from '$app/navigation';
   import { beforeNavigate, afterNavigate } from '$app/navigation';
   import { language } from '$lib/stores/LanguageStore.svelte';
-  import { advancedKeys, rgbConfigs, keymap } from '$lib/stores/ControllerStore.svelte';
+  import { advancedKeys, rgbConfigs, keymap, dynamicKeys } from '$lib/stores/ControllerStore.svelte';
   import { keyboardLayout as keyboardLayoutStore } from '$lib/stores/LayoutStore.svelte';
   import SmallScreenWarning from '$lib/components/layout/SmallScreenWarning.svelte';
   import Sidebar from '$lib/components/layout/Sidebar.svelte';
   import MainContentArea from '$lib/components/layout/MainContentArea.svelte';
   import { shouldShowConfiguratorLayout, shouldShowLayerSelector } from '$lib/utils/layoutHelpers';
-  import { transformKeyboardKeys } from '$lib/utils/keyboardKeyTransformer.svelte';
+  import { transformKeyboardKeys, mapToExtendedKeys, type ExtendedKey } from '$lib/utils/keyboardKeyTransformer.svelte';
+  import { selectedLayer } from '$lib/stores/SelectedLayerStore.svelte';
 
   let { children } = $props();
   let isLoadingConfigurator = $state(false);
@@ -21,11 +22,14 @@
 
   // Keyboard layout for global KeyboardRender
   let layout = $derived($keyboardLayoutStore);
-  let keyboardLayout: kle.Key[] = $derived(kle.Serial.deserialize(JSON.parse(layout)).keys);
+  let rawKeyboardLayout: kle.Key[] = $derived(kle.Serial.deserialize(JSON.parse(layout)).keys);
+
+  // Map raw KLE keys to ExtendedKeys with parsed id and layoutGroup
+  let extendedKeys: ExtendedKey[] = $derived(mapToExtendedKeys(rawKeyboardLayout));
 
   // Transform keyboard keys based on the active page
-  let keyboardKeys: kle.Key[] = $derived.by(() => {
-    return transformKeyboardKeys(keyboardLayout, $advancedKeys, $rgbConfigs, $page.url.pathname);
+  let keyboardKeys: ExtendedKey[] = $derived.by(() => {
+    return transformKeyboardKeys(extendedKeys, $advancedKeys, $rgbConfigs, $page.url.pathname, $keymap, $selectedLayer, $dynamicKeys);
   });
 
   // Derived variables for layout state

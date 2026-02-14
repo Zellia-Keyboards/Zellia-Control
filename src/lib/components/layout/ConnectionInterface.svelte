@@ -8,6 +8,8 @@
     rgbBaseConfig,
     rgbConfigs,
     keymap,
+    layoutLabels,
+    selectedLayoutIndices,
   } from '$lib/stores/ControllerStore.svelte';
   import { keyboardLayout } from '$lib/stores/LayoutStore.svelte';
   import { keyboardConnectionState } from '$lib/api/keyboardAPI.svelte';
@@ -47,6 +49,9 @@
     );
     dynamicKeys.set(keyboardConnectionState.controller?.get_dynamic_keys() as ekc.IDynamicKey[]);
     keymap.set(keyboardConnectionState.controller?.get_keymap() as number[][]);
+    const labels = keyboardConnectionState.controller?.get_layout_labels() ?? [[]];
+    layoutLabels.set(labels);
+    selectedLayoutIndices.set(new Array(labels.length).fill(0));
   }
 </script>
 

@@ -16,6 +16,7 @@ import {
   JoystickKeycode,
   MIDIKeycode,
   KeyboardConfig,
+  MacroKeycode,
 } from 'emi-keyboard-controller';
 
 export const keyCodeToKeyName: { [key in Keycode]: string } = {
@@ -344,3 +345,127 @@ export const SystemKeyToKeyName: { [key in SystemRawKeycode]: string } = {
   [SystemRawKeycode.SystemRestart]: 'Restart',
   [SystemRawKeycode.SystemDisplayToggleIntExt]: 'Display Toggle Int Ext',
 };
+
+export const MacroKeycodeToKeyName: { [key in MacroKeycode]: string } = {
+  [MacroKeycode.MacroEnd]: 'End',
+  [MacroKeycode.MacroRecordingStart]: 'Start Recording',
+  [MacroKeycode.MacroRecordingStop]: 'Stop Recording',
+  [MacroKeycode.MacroRecordingToggle]: 'Toggle Recording',
+  [MacroKeycode.MacroPlayingStartOnce]: 'Start Playing Once',
+  [MacroKeycode.MacroPlayingStartCircularly]: 'Start Playing Circularly',
+  [MacroKeycode.MacroPlayingStartOnceNoGap]: 'Start Playing Once No Gap',
+  [MacroKeycode.MacroPlayingStartCircularlyNoGap]: 'Start Playing Circularly No Gap',
+  [MacroKeycode.MacroPlayingStop]: 'Stop Playing',
+  [MacroKeycode.MacroPlayingPause]: 'Pause Playing',
+  [MacroKeycode.MacroBegin]: '',
+};
+
+export const MIDINoteName: string[] = [
+  'C', 'C♯', 'D', 'D♯', 'E', 'F',
+  'F♯', 'G', 'G♯', 'A', 'A♯', 'B',
+];
+
+/**
+ * Convert keycode modifier bits to a human-readable string.
+ */
+export function keyBindingModifierToString(keybinding: number): string {
+  let desc = '';
+  for (let i = 0; i < 8; i++) {
+    if (((keybinding >> 8) & (1 << i)) > 0) {
+      desc += keyModifierToKeyName[(1 << i) as KeyModifier] + ' ';
+    }
+  }
+  return desc;
+}
+
+/**
+ * Convert a numeric keycode to display-friendly main and sub strings.
+ * This mirrors EMIKeyboardConfigurator's keyCodeToString logic.
+ */
+export function keyCodeToString(keycode: number): { mainString: string; subString: string } {
+  let mainString = '';
+  let subString = '';
+  const modifier = (keycode >> 8) & 0xff;
+  const code = keycode & 0xff;
+
+  if (code < Keycode.ExSel || code === Keycode.KeyTransparent) {
+    mainString = keyCodeToKeyName[code as Keycode] ?? '';
+    subString = keyBindingModifierToString(keycode);
+  } else {
+    switch (code) {
+      case Keycode.MouseCollection:
+        mainString = MouseKeycodeToKeyName[modifier as MouseKeycode] ?? 'Mouse';
+        break;
+      case Keycode.LayerControl:
+        subString = LayerControlToKeyName[((modifier >> 4) & 0x0f) as LayerControlKeycode] ?? '';
+        mainString = 'Layer' + (modifier & 0x0f).toString();
+        break;
+      case Keycode.KeyboardOperation:
+        if ((modifier & 0x3f) < KeyboardKeycode.KeyboardConfigBase) {
+          mainString = KeyboardOperationToKeyName[modifier as KeyboardKeycode] ?? 'Keyboard';
+        } else {
+          switch ((modifier >> 6) & 0x03) {
+            case 0:
+              subString = 'Turn off';
+              break;
+            case 1:
+              subString = 'Turn on';
+              break;
+            case 2:
+              subString = 'Toggle';
+              break;
+            default:
+              break;
+          }
+          mainString =
+            KeyboardConfigToKeyName[
+              ((modifier & 0x3f) - KeyboardKeycode.KeyboardConfigBase) as KeyboardConfig
+            ] ?? '';
+        }
+        break;
+      case Keycode.KeyUser:
+        mainString = 'User ' + modifier.toString();
+        break;
+      case Keycode.DynamicKey:
+        subString = 'Dynamic Key';
+        mainString = modifier.toString();
+        break;
+      case Keycode.ConsumerCollection:
+        mainString = ConsumerKeyToKeyName[modifier as ConsumerKeycode] ?? 'Consumer';
+        break;
+      case Keycode.SystemCollection:
+        mainString = SystemKeyToKeyName[modifier as SystemRawKeycode] ?? 'System';
+        break;
+      case Keycode.JoystickCollection:
+        subString = 'Joystick';
+        mainString =
+          (JoystickKeycodeToKeyName[((modifier >> 5) & 0x0f) as JoystickKeycode] ?? '') +
+          (modifier & 0x1f).toString();
+        break;
+      case Keycode.MIDICollection:
+        subString = 'MIDI';
+        mainString = MIDIKeycode[modifier] ?? modifier.toString();
+        break;
+      case Keycode.MIDINote:
+        subString = 'MIDI Note';
+        mainString = MIDINoteName[modifier % 12] + ((modifier - (modifier % 12)) / 12).toString();
+        break;
+      case Keycode.MacroCollection:
+        subString = 'Macro';
+        mainString =
+          (MacroKeycodeToKeyName[((modifier >> 4) & 0x0f) as MacroKeycode] ?? '') +
+          (modifier & 0x0f).toString();
+        break;
+    }
+  }
+  return { mainString, subString };
+}
+
+/**
+ * Convert a numeric keycode to a KLE-style labels array.
+ * Position 0 = sub string (modifier), position 6 = main string (key name).
+ */
+export function keyCodeToStringLabels(keycode: number): string[] {
+  const label_item = keyCodeToString(keycode);
+  return [label_item.subString, '', '', '', '', '', label_item.mainString] as string[];
+}

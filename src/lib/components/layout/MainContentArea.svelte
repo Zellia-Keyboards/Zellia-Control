@@ -7,11 +7,11 @@
   import LoadingOverlay from './LoadingOverlay.svelte';
   import ConnectionInterface from './ConnectionInterface.svelte';
   import NotConnectedFallback from './NotConnectedFallback.svelte';
-  import type * as kle from '@ijprest/kle-serial';
+  import type { ExtendedKey } from '$lib/utils/keyboardKeyTransformer.svelte';
 
   let {
     children,
-    keyboardKeys = [] as kle.Key[],
+    keyboardKeys = [] as ExtendedKey[],
     isLoadingConfigurator = false,
     shouldShowLayerSelector = false,
   } = $props();

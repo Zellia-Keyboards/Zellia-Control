@@ -175,3 +175,7 @@ export async function send_rgb_base_packet(rgb_base_config: ekc.IRGBBaseConfig) 
 export async function send_rgb_packet(indexs: number[], rgb_config: ekc.IRGBConfig) {
   return CONTROLLER.send_rgb_packet(indexs, rgb_config);
 }
+
+export async function get_layout_labels() {
+  return CONTROLLER.get_layout_labels();
+}

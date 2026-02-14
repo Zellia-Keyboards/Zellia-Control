@@ -3,6 +3,7 @@
   import KeyboardRender from '$lib/components/KeyboardRender.svelte';
   import { keyboardLayout } from '$lib/stores/LayoutStore.svelte';
   import { selectedKeys, deselectAll, toggleKey } from '$lib/stores/SelectedKeysStore';
+  import { mapToExtendedKeys, type ExtendedKey } from '$lib/utils/keyboardKeyTransformer.svelte';
   import * as kle from '@ijprest/kle-serial';
 
   interface Props {
@@ -16,7 +17,7 @@
     close: void;
   }>();
 
-  let keys: kle.Key[] = $state([]);
+  let keys: ExtendedKey[] = $state([]);
 
   // Parse and deserialize the keyboard layout
   $effect(() => {
@@ -25,7 +26,7 @@
       if (layoutString && layoutString !== '[]') {
         const layoutData = JSON.parse(layoutString);
         const deserialized = kle.Serial.deserialize(layoutData);
-        keys = deserialized.keys;
+        keys = mapToExtendedKeys(deserialized.keys);
       } else {
         keys = [];
       }

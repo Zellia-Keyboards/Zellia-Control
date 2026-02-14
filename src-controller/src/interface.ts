@@ -824,6 +824,7 @@ export interface IKeyboardController{
     get_config_file_num() : number;
     get_config_file_index(): number;
     set_config_file_index(index: number) : void;
+    get_layout_labels(): string[][];
     send_advanced_key_packet(indexs: number[], advanced_key : IAdvancedKey) : void;
     send_keymap_packet(indexs: number[], layer: number, keymap : number) : void;
     send_dynamic_key_packet(index: number, dynamic_key : IDynamicKey) : void;
@@ -1009,6 +1010,9 @@ export abstract class KeyboardController implements IKeyboardController, EventTa
     }
     set_config_file_index(index: number) : void {
         this.config_index = index;
+    }
+    get_layout_labels(): string[][] {
+        return [[]];
     }
     send_advanced_key_packet(indexs: number[], advanced_key: IAdvancedKey): void {
         //throw new Error("Method not implemented.");

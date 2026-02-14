@@ -1,6 +1,7 @@
 <script lang="ts">
   import { Settings } from 'lucide-svelte';
   import { slide } from 'svelte/transition';
+  import { layoutLabels, selectedLayoutIndices } from '$lib/stores/ControllerStore.svelte';
   
   let showLayoutMenu = $state(false);
   let bottomRowConfig = $state<'6.25u' | '7u'>('6.25u');
@@ -8,6 +9,47 @@
   let rightShiftSplit = $state(false);
   let leftShiftSplit = $state(false);
   let splitBackspace = $state(false);
+
+  // Reactively update selectedLayoutIndices when toggles change
+  $effect(() => {
+    const labels = $layoutLabels;
+    // Read all toggle states to create reactive dependencies
+    const _splitBackspace = splitBackspace;
+    const _leftShiftSplit = leftShiftSplit;
+    const _bottomRowConfig = bottomRowConfig;
+    const _splitSpacebar = splitSpacebar;
+    const _rightShiftSplit = rightShiftSplit;
+
+    if (labels && labels.length > 0) {
+      const indices = new Array(labels.length).fill(0);
+
+      // Group 0: Split backspace (toggle: off=0, on=1)
+      if (labels.length > 0 && labels[0].length > 0) {
+        indices[0] = _splitBackspace ? 1 : 0;
+      }
+
+      // Group 1: Split enter / right shift split (toggle: off=0, on=1)
+      if (labels.length > 1 && labels[1].length > 0) {
+        indices[1] = _rightShiftSplit ? 1 : 0;
+      }
+
+      // Group 2: Bottom row + split spacebar combination
+      // Maps to: 0=6.25u, 1=6.25u split, 2=7u, 3=7u split
+      if (labels.length > 2 && labels[2].length > 0) {
+        let baseIndex = _bottomRowConfig === '7u' ? 2 : 0;
+        if (_splitSpacebar) baseIndex += 1;
+        // Clamp to available options
+        indices[2] = Math.min(baseIndex, labels[2].length);
+      }
+
+      // Group 3+: Additional layout groups
+      if (labels.length > 3 && labels[3].length > 0) {
+        indices[3] = _leftShiftSplit ? 1 : 0;
+      }
+
+      selectedLayoutIndices.set(indices);
+    }
+  });
 
   function applyConfiguration() {
     console.log('Layout config applied:', {
