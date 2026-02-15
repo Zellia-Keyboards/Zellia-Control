@@ -2,18 +2,7 @@
   import { fade } from 'svelte/transition';
   import { keyboardAPI } from '$lib/api/keyboardAPI.svelte';
   import { language, t } from '$lib/stores/LanguageStore.svelte';
-  import {
-    advancedKeys,
-    dynamicKeys,
-    rgbBaseConfig,
-    rgbConfigs,
-    keymap,
-    layoutLabels,
-    selectedLayoutIndices,
-  } from '$lib/stores/ControllerStore.svelte';
-  import { keyboardLayout } from '$lib/stores/LayoutStore.svelte';
   import { keyboardConnectionState } from '$lib/api/keyboardAPI.svelte';
-  import * as ekc from 'emi-keyboard-controller';
 
   let currentLanguage = $derived($language);
 
@@ -39,19 +28,7 @@
   }
 
   async function handleConnect() {
-    const success = await keyboardAPI.connect();
-    const layout = keyboardConnectionState.controller?.get_layout_json() as string;
-    keyboardLayout.set(layout || '[]');
-    advancedKeys.set(keyboardConnectionState.controller?.get_advanced_keys() as ekc.IAdvancedKey[]);
-    rgbConfigs.set(keyboardConnectionState.controller?.get_rgb_configs() as ekc.IRGBConfig[]);
-    rgbBaseConfig.set(
-      keyboardConnectionState.controller?.get_rgb_base_config() as ekc.IRGBBaseConfig
-    );
-    dynamicKeys.set(keyboardConnectionState.controller?.get_dynamic_keys() as ekc.IDynamicKey[]);
-    keymap.set(keyboardConnectionState.controller?.get_keymap() as number[][]);
-    const labels = keyboardConnectionState.controller?.get_layout_labels() ?? [[]];
-    layoutLabels.set(labels);
-    selectedLayoutIndices.set(new Array(labels.length).fill(0));
+    await keyboardAPI.connect();
   }
 </script>
 

@@ -11,6 +11,17 @@ import {
 import { goto } from '$app/navigation';
 import * as api from '$lib/api/api.svelte';
 import type { KeyboardController } from 'emi-keyboard-controller';
+import * as ekc from 'emi-keyboard-controller';
+import {
+  advancedKeys,
+  dynamicKeys,
+  rgbBaseConfig,
+  rgbConfigs,
+  keymap,
+  layoutLabels,
+  selectedLayoutIndices,
+} from '$lib/stores/ControllerStore.svelte';
+import { keyboardLayout } from '$lib/stores/LayoutStore.svelte';
 
 export type KeyboardModel = 'zellia_starlight' | 'zellia80he' | 'oholeo' | 'trinity_pad';
 
@@ -121,8 +132,23 @@ export const keyboardAPI = {
       keyboardConnectionState.selectedModel = selectedModel;
       keyboardConnectionState.controller = selectedController;
 
-      // Request initial configuration from keyboard
-      selectedController.request_config();
+      // Sync static layout data immediately (hardcoded in controller, not from keyboard)
+      const layout = selectedController.get_layout_json() as string;
+      keyboardLayout.set(layout || '[]');
+      const labels = selectedController.get_layout_labels() ?? [[]];
+      layoutLabels.set(labels);
+      selectedLayoutIndices.set(new Array(labels.length).fill(0));
+
+      // Listen for keyboard data as it arrives and sync to Svelte stores
+      selectedController.addEventListener('updateData', () => {
+        const ctrl = keyboardConnectionState.controller;
+        if (!ctrl) return;
+        advancedKeys.set([...(ctrl.get_advanced_keys() as ekc.IAdvancedKey[])]);
+        rgbConfigs.set([...(ctrl.get_rgb_configs() as ekc.IRGBConfig[])]);
+        rgbBaseConfig.set({ ...(ctrl.get_rgb_base_config() as ekc.IRGBBaseConfig) });
+        dynamicKeys.set([...(ctrl.get_dynamic_keys() as ekc.IDynamicKey[])]);
+        keymap.set((ctrl.get_keymap() as number[][]).map(layer => [...layer]));
+      });
 
       // Redirect to remap page after successful connection
       goto('/remap');

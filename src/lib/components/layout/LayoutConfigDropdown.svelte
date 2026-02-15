@@ -1,14 +1,45 @@
 <script lang="ts">
   import { Settings } from 'lucide-svelte';
   import { slide } from 'svelte/transition';
+  import { browser } from '$app/environment';
   import { layoutLabels, selectedLayoutIndices } from '$lib/stores/ControllerStore.svelte';
-  
+
+  const STORAGE_KEY = 'zellia-layout-config';
+
+  interface LayoutConfig {
+    bottomRowConfig: '6.25u' | '7u';
+    splitSpacebar: boolean;
+    rightShiftSplit: boolean;
+    leftShiftSplit: boolean;
+    splitBackspace: boolean;
+  }
+
+  function loadLayoutConfig(): LayoutConfig {
+    if (browser) {
+      try {
+        const stored = localStorage.getItem(STORAGE_KEY);
+        if (stored) return JSON.parse(stored);
+      } catch { /* ignore invalid data */ }
+    }
+    return { bottomRowConfig: '6.25u', splitSpacebar: false, rightShiftSplit: false, leftShiftSplit: false, splitBackspace: false };
+  }
+
+  const saved = loadLayoutConfig();
+
   let showLayoutMenu = $state(false);
-  let bottomRowConfig = $state<'6.25u' | '7u'>('6.25u');
-  let splitSpacebar = $state(false);
-  let rightShiftSplit = $state(false);
-  let leftShiftSplit = $state(false);
-  let splitBackspace = $state(false);
+  let bottomRowConfig = $state<'6.25u' | '7u'>(saved.bottomRowConfig);
+  let splitSpacebar = $state(saved.splitSpacebar);
+  let rightShiftSplit = $state(saved.rightShiftSplit);
+  let leftShiftSplit = $state(saved.leftShiftSplit);
+  let splitBackspace = $state(saved.splitBackspace);
+
+  // Persist layout config to localStorage whenever any toggle changes
+  $effect(() => {
+    const config: LayoutConfig = { bottomRowConfig, splitSpacebar, rightShiftSplit, leftShiftSplit, splitBackspace };
+    if (browser) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
+    }
+  });
 
   // Reactively update selectedLayoutIndices when toggles change
   $effect(() => {

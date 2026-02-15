@@ -10,7 +10,8 @@
   import { selectedKeys, setAllowSelection } from '$lib/stores/SelectedKeysStore';
   import { selectedCount, toggleSelectAll, deselectAll } from '$lib/stores/SelectedKeysStore';
   import { keymap } from '$lib/stores/ControllerStore.svelte';
-  import type { Keycode } from '../../../src-controller/src/interface';
+  import { Keycode } from '../../../src-controller/src/interface';
+  import { untrack } from 'svelte';
   import type { Component, Snippet } from 'svelte';
   import { cubicOut } from 'svelte/easing';
   import { fade } from 'svelte/transition';
@@ -138,42 +139,74 @@
   });
 
   let currentKeycode = $state(0);
+  let hasSetKeycode = $state(false);
   // Function to set key content/keycode for selected keys
+  // Encoding follows EMI protocol: low byte = keycode type, high byte = subcode/modifier
   function setKeyContent(keyInfo: KeyInfo) {
     if ($selectedKeys.length === 0) return;
 
-    let keycode = keyInfo.keycode;
-    if (keyInfo.subcode != undefined) {
-      keycode |= keyInfo.subcode;
+    let keycode: number;
+
+    if (keyInfo.keycode === Keycode.LayerControl && keyInfo.subcode != undefined && keyInfo.layer != undefined) {
+      // Layer control: Keycode.LayerControl | (layerNum << 8) | (controlType << 12)
+      keycode = Keycode.LayerControl | (keyInfo.layer << 8) | (keyInfo.subcode << 12);
+    } else if (keyInfo.subcode != undefined) {
+      // Collection types (Mouse, Consumer, Keyboard, Joystick) & standalone modifiers:
+      // low byte = keycode type, high byte = subcode
+      keycode = keyInfo.keycode | (keyInfo.subcode << 8);
+    } else {
+      // Regular keys (no subcode needed)
+      keycode = keyInfo.keycode;
     }
+
     currentKeycode = keycode;
+    hasSetKeycode = true;
     const apiLayer = $selectedLayer - 1;
 
     if (dev) {
       console.log(
-        `Setting keycode ${keycode} for keys ${$selectedKeys} on layer ${$selectedLayer} (API layer ${apiLayer})`
+        `Setting keycode 0x${keycode.toString(16)} for keys ${$selectedKeys} on layer ${$selectedLayer} (API layer ${apiLayer})`
       );
     }
+
+    // Update local keymap store to keep UI in sync
+    keymap.update(km => {
+      if (km && km[apiLayer]) {
+        for (const idx of $selectedKeys) {
+          if (idx < km[apiLayer].length) {
+            km[apiLayer][idx] = keycode;
+          }
+        }
+      }
+      return km;
+    });
 
     keyboardConnectionState.controller?.send_keymap_packet($selectedKeys, apiLayer, keycode);
   }
 
-  let hasSelection = $state(false);
+  // Re-apply current keycode when selection or layer changes (paint mode)
+  // Only fires after the user has explicitly set a keycode via setKeyContent
   $effect(() => {
     const keysToUpdate = $selectedKeys;
-    const isSelected = $selectedKeys.length > 0;
-    if (isSelected && !hasSelection) {
-    }
-    // 只有在有按键被选中的时候才更新
-    if (keysToUpdate.length === 0) {
-      return;
-    }
-    hasSelection = isSelected;
-    keyboardConnectionState.controller?.send_keymap_packet(
-      $selectedKeys,
-      $selectedLayer - 1,
-      currentKeycode
-    );
+    const apiLayer = $selectedLayer - 1;
+    if (!hasSetKeycode || keysToUpdate.length === 0) return;
+
+    // Read currentKeycode without tracking to avoid double-send with setKeyContent
+    const kc = untrack(() => currentKeycode);
+
+    // Update local keymap store
+    keymap.update(km => {
+      if (km && km[apiLayer]) {
+        for (const idx of keysToUpdate) {
+          if (idx < km[apiLayer].length) {
+            km[apiLayer][idx] = kc;
+          }
+        }
+      }
+      return km;
+    });
+
+    keyboardConnectionState.controller?.send_keymap_packet(keysToUpdate, apiLayer, kc);
   });
 
   $inspect(ActiveTabComponent, 'ActiveTabComponent');
@@ -238,7 +271,7 @@
                     setKeyContent(keyInfo);
                   }
                 }}
-                class="size-14 text-wrap text-sm whitespace-pre-line rounded-lg overflow-auto truncate transition-all duration-200 border-2 hover:shadow-[inset_0_0_0_2px_var(--color-primary)] hover:border-[color-mix(in_srgb,var(--color-primary)_50%,transparent)] border-[color-mix(in_srgb,var(--color-primary)_50%,transparent)]"
+                class="size-14 text-wrap text-sm whitespace-pre-line rounded-lg overflow-auto transition-all duration-200 border-2 hover:shadow-[inset_0_0_0_2px_var(--color-primary)] hover:border-[color-mix(in_srgb,var(--color-primary)_50%,transparent)] border-[color-mix(in_srgb,var(--color-primary)_50%,transparent)]"
               >
                 {keyInfo.label}
               </button>

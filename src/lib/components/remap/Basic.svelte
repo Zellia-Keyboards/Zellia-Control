@@ -1,11 +1,13 @@
 <script lang="ts">
   import type { Snippet } from 'svelte';
-  import { Keycode } from '../../../../src-controller/src/interface';
+  import { Keycode, KeyModifier, LayerControlKeycode } from '../../../../src-controller/src/interface';
 
   // Map display text to keycode values
   type KeyInfo = {
     label: string;
     keycode: Keycode;
+    subcode?: number;
+    layer?: number;
   };
 
   const KeyboardSlotContent: KeyInfo[][] = [
@@ -82,7 +84,7 @@
       { label: 'Enter', keycode: Keycode.Enter },
     ],
     [
-      { label: 'Shift', keycode: Keycode.KeyTransparent }, // Modifier handled separately
+      { label: 'L Shift', keycode: Keycode.NoEvent, subcode: KeyModifier.KeyLeftShift },
       { label: 'Z', keycode: Keycode.Z },
       { label: 'X', keycode: Keycode.X },
       { label: 'C', keycode: Keycode.C },
@@ -93,18 +95,18 @@
       { label: ',', keycode: Keycode.Comma },
       { label: '.', keycode: Keycode.Dot },
       { label: '/', keycode: Keycode.Slash },
-      { label: 'Shift', keycode: Keycode.KeyTransparent }, // Modifier handled separately
+      { label: 'R Shift', keycode: Keycode.NoEvent, subcode: KeyModifier.KeyRightShift },
       { label: '↑', keycode: Keycode.UpArrow },
     ],
     [
-      { label: 'Ctrl', keycode: Keycode.KeyTransparent }, // Modifier handled separately
-      { label: 'Win', keycode: Keycode.KeyTransparent }, // Modifier handled separately
-      { label: 'Alt', keycode: Keycode.KeyTransparent }, // Modifier handled separately
+      { label: 'L Ctrl', keycode: Keycode.NoEvent, subcode: KeyModifier.KeyLeftCtrl },
+      { label: 'L Win', keycode: Keycode.NoEvent, subcode: KeyModifier.KeyLeftGui },
+      { label: 'L Alt', keycode: Keycode.NoEvent, subcode: KeyModifier.KeyLeftAlt },
       { label: 'Space', keycode: Keycode.Spacebar },
-      { label: 'Alt', keycode: Keycode.KeyTransparent }, // Modifier handled separately
-      { label: 'Fn', keycode: Keycode.KeyTransparent }, // Function layer key
+      { label: 'R Alt', keycode: Keycode.NoEvent, subcode: KeyModifier.KeyRightAlt },
+      { label: 'Fn', keycode: Keycode.LayerControl, subcode: LayerControlKeycode.LayerMomentary, layer: 1 },
       { label: 'Menu', keycode: Keycode.Application },
-      { label: 'Ctrl', keycode: Keycode.KeyTransparent }, // Modifier handled separately
+      { label: 'R Ctrl', keycode: Keycode.NoEvent, subcode: KeyModifier.KeyRightCtrl },
       { label: '←', keycode: Keycode.LeftArrow },
       { label: '↓', keycode: Keycode.DownArrow },
       { label: '→', keycode: Keycode.RightArrow },
