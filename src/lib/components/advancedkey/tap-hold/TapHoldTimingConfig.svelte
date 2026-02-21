@@ -1,5 +1,6 @@
 <script lang="ts">
   import { language, t } from '$lib/stores/LanguageStore.svelte';
+  import { ThemedSlider } from '$lib/components/ui';
 
   interface Props {
     holdDelay: number;
@@ -25,14 +26,11 @@
         >
         <span class="text-sm text-gray-500 dark:text-gray-400">{holdDelay}ms</span>
       </div>
-      <input
-        id="hold-delay-slider"
-        type="range"
-        min="100"
-        max="1000"
-        step="50"
+      <ThemedSlider
+        min={100}
+        max={1000}
+        step={50}
         bind:value={holdDelay}
-        class="timing-slider"
       />
       <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Time before hold action triggers</p>
     </div>
@@ -45,14 +43,11 @@
         >
         <span class="text-sm text-gray-500 dark:text-gray-400">{tapTimeout}ms</span>
       </div>
-      <input
-        id="tap-timeout-slider"
-        type="range"
-        min="50"
-        max="500"
-        step="25"
+      <ThemedSlider
+        min={50}
+        max={500}
+        step={25}
         bind:value={tapTimeout}
-        class="timing-slider"
       />
       <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
         Maximum time for a tap to register
@@ -61,42 +56,3 @@
   </div>
 </div>
 
-<style>
-  .timing-slider {
-    width: 100%;
-    height: 8px;
-    border-radius: 9999px;
-    appearance: none;
-    background: color-mix(in srgb, var(--theme-color-primary) 20%, transparent);
-  }
-
-  .timing-slider::-webkit-slider-thumb {
-    appearance: none;
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    background: var(--theme-color-primary);
-    cursor: pointer;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-    transition: transform 0.1s ease;
-  }
-
-  .timing-slider::-webkit-slider-thumb:hover {
-    transform: scale(1.1);
-  }
-
-  .timing-slider::-moz-range-thumb {
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    background: var(--theme-color-primary);
-    cursor: pointer;
-    border: none;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-    transition: transform 0.1s ease;
-  }
-
-  .timing-slider::-moz-range-thumb:hover {
-    transform: scale(1.1);
-  }
-</style>

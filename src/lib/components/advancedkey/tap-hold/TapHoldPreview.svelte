@@ -3,8 +3,8 @@
 
   interface Props {
     currentKeyName: string;
-    tapAction: string;
-    holdAction: string;
+    tapAction: number;
+    holdAction: number;
     holdDelay: number;
   }
 

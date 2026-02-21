@@ -127,7 +127,6 @@
       }, 600);
     }
     let dynamic_key = new ekc.DynamicKeyModTap();
-    console.log(dynamic_key);
     dynamic_key.bindings[0] = tapAction;
     dynamic_key.bindings[1] = holdAction;
     dynamic_key.type = ekc.DynamicKeyType.DynamicKeyModTap;
@@ -224,13 +223,13 @@
         <div class="xl:col-span-1 space-y-6">
           <TapHoldPreview
             {currentKeyName}
-            tapAction={tapAction.toString()}
-            holdAction={holdAction.toString()}
+            {tapAction}
+            {holdAction}
             {holdDelay}
           />
           <TapHoldInfoPanel
-            tapAction={tapAction.toString()}
-            holdAction={holdAction.toString()}
+            {tapAction}
+            {holdAction}
             {tapTimeout}
             {holdDelay}
           />

@@ -83,13 +83,6 @@
   });
 
   function applyConfiguration() {
-    console.log('Layout config applied:', {
-      bottomRowConfig,
-      splitSpacebar,
-      rightShiftSplit,
-      leftShiftSplit,
-      splitBackspace,
-    });
     showLayoutMenu = false;
   }
 

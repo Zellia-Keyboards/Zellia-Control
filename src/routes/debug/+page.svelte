@@ -25,11 +25,12 @@
   <!-- Tabs -->
   <div class="tabs-container">
     {#each tabs as tab}
+      {@const TabIcon = tab.icon}
       <button
         class="tab {activeTab === tab.id ? 'tab-active' : ''}"
         onclick={() => (activeTab = tab.id)}
       >
-        <svelte:component this={tab.icon} class="tab-icon" />
+        <TabIcon class="tab-icon" />
         <span>{tab.label}</span>
         {#if activeTab === tab.id}
           <div class="tab-indicator"></div>
@@ -125,7 +126,7 @@
   }
 
   .tab span,
-  .tab .tab-icon {
+  .tab :global(.tab-icon) {
     position: relative;
     z-index: 1;
   }
@@ -135,7 +136,7 @@
     color: #6b7280;
   }
 
-  .dark .tab:not(.tab-active) {
+  :global(.dark) .tab:not(.tab-active) {
     color: #9ca3af;
   }
 
@@ -143,7 +144,7 @@
     color: #374151;
   }
 
-  .dark .tab:not(.tab-active):hover {
+  :global(.dark) .tab:not(.tab-active):hover {
     color: #d1d5db;
   }
 
@@ -152,20 +153,20 @@
     color: #4f46e5;
   }
 
-  .tab-active .tab-icon {
+  .tab-active :global(.tab-icon) {
     color: #4f46e5;
   }
 
   /* Active tab colors - dark mode */
-  .dark .tab-active {
+  :global(.dark) .tab-active {
     color: #a78bfa;
   }
 
-  .dark .tab-active .tab-icon {
+  :global(.dark) .tab-active :global(.tab-icon) {
     color: #a78bfa;
   }
 
-  .tab-icon {
+  :global(.tab-icon) {
     width: 1rem;
     height: 1rem;
   }
@@ -189,7 +190,7 @@
     }
   }
 
-  .dark .tab-indicator {
+  :global(.dark) .tab-indicator {
     background: rgba(99, 102, 241, 0.25);
   }
 
@@ -205,7 +206,7 @@
     overflow: hidden;
   }
 
-  .dark .content-area {
+  :global(.dark) .content-area {
     background: rgba(0, 0, 0, 0.6);
   }
 
@@ -215,7 +216,7 @@
     border: 1px solid rgba(255, 255, 255, 0.18);
   }
 
-  .dark .glassmorphism-card.content-area {
+  :global(.dark) .glassmorphism-card.content-area {
     background: rgba(0, 0, 0, 0.5);
     border-color: rgba(99, 102, 241, 0.2);
   }

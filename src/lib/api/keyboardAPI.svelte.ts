@@ -7,11 +7,10 @@ import {
   OholeoKeyboardController,
   TrinityPadController,
   type IKeyboardController,
-} from '../../../src-controller/src/index';
+} from 'emi-keyboard-controller';
+import * as ekc from 'emi-keyboard-controller';
 import { goto } from '$app/navigation';
 import * as api from '$lib/api/api.svelte';
-import type { KeyboardController } from 'emi-keyboard-controller';
-import * as ekc from 'emi-keyboard-controller';
 import {
   advancedKeys,
   dynamicKeys,
@@ -37,7 +36,7 @@ export interface KeyboardConnectionState {
   connectionStatus: 'disconnected' | 'connecting' | 'connected' | 'error';
   lastConnectedDevice?: string;
   error?: string;
-  controller?: KeyboardController;
+  controller?: IKeyboardController;
   detectedDevices?: DetectedDevice[];
 }
 
@@ -267,7 +266,7 @@ export const keyboardAPI = {
 };
 
 // Helper functions
-export const isKeyboard60HE = () => keyboardConnectionState.selectedModel === 'zelliastarlight';
+export const isKeyboard60HE = () => keyboardConnectionState.selectedModel === 'zellia_starlight';
 export const isKeyboard80HE = () => keyboardConnectionState.selectedModel === 'zellia80he';
 export const isOholeoKeyboard = () => keyboardConnectionState.selectedModel === 'oholeo';
 export const isTrinityPad = () => keyboardConnectionState.selectedModel === 'trinity_pad';

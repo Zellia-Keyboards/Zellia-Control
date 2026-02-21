@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { fade } from 'svelte/transition';
+  import { Modal } from '$lib/components/ui';
 
   interface Props {
     title: string;
@@ -20,35 +20,26 @@
   };
 </script>
 
-<div
-  class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
-  transition:fade={{ duration: 150 }}
-  onclick={onCancel}
->
-  <div
-    class="border border-gray-700 rounded-xl shadow-2xl max-w-md w-full p-6 glassmorphism-card"
-    onclick={e => e.stopPropagation()}
-  >
-    <h3 class="text-xl font-bold text-white mb-3">{title}</h3>
-    <p class="text-sm text-gray-400 mb-6">
-      {@html message}
-    </p>
+<Modal onClose={onCancel}>
+  <h3 class="text-xl font-bold text-white mb-3">{title}</h3>
+  <p class="text-sm text-gray-400 mb-6">
+    {@html message}
+  </p>
 
-    <div class="flex gap-3">
-      <button
-        class="flex-1 px-4 py-2.5 rounded-lg border font-medium transition-colors glassmorphism-button border-gray-600 text-gray-300"
-        onclick={onCancel}
-      >
-        Cancel
-      </button>
-      <button
-        class="flex-1 px-4 py-2.5 rounded-lg font-medium transition-colors {colorClasses[
-          confirmColor
-        ]}"
-        onclick={onConfirm}
-      >
-        {confirmText}
-      </button>
-    </div>
+  <div class="flex gap-3">
+    <button
+      class="flex-1 px-4 py-2.5 rounded-lg border font-medium transition-colors glassmorphism-button border-gray-600 text-gray-300"
+      onclick={onCancel}
+    >
+      Cancel
+    </button>
+    <button
+      class="flex-1 px-4 py-2.5 rounded-lg font-medium transition-colors {colorClasses[
+        confirmColor
+      ]}"
+      onclick={onConfirm}
+    >
+      {confirmText}
+    </button>
   </div>
-</div>
+</Modal>

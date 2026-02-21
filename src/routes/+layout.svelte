@@ -2,7 +2,7 @@
   import '../app.css';
   import { keyboardAPI} from '$lib/api/keyboardAPI.svelte';
   import * as kle from '@ijprest/kle-serial';
-  import { page } from '$app/stores';
+  import { page } from '$app/state';
   import { goto } from '$app/navigation';
   import { beforeNavigate, afterNavigate } from '$app/navigation';
   import { language } from '$lib/stores/LanguageStore.svelte';
@@ -29,12 +29,12 @@
 
   // Transform keyboard keys based on the active page
   let keyboardKeys: ExtendedKey[] = $derived.by(() => {
-    return transformKeyboardKeys(extendedKeys, $advancedKeys, $rgbConfigs, $page.url.pathname, $keymap, $selectedLayer, $dynamicKeys);
+    return transformKeyboardKeys(extendedKeys, $advancedKeys, $rgbConfigs, page.url.pathname, $keymap, $selectedLayer, $dynamicKeys);
   });
 
   // Derived variables for layout state
-  let shouldShowLayout = $derived(shouldShowConfiguratorLayout($page.url.pathname));
-  let showLayerSelector = $derived(shouldShowLayerSelector($page.url.pathname));
+  let shouldShowLayout = $derived(shouldShowConfiguratorLayout(page.url.pathname));
+  let showLayerSelector = $derived(shouldShowLayerSelector(page.url.pathname));
 
   // Set page language for accessibility
   $effect(() => {
@@ -49,7 +49,7 @@
   $effect(() => {
     if (navigationInProgress) return; // Prevent navigation loops
 
-    const path = $page.url.pathname;
+    const path = page.url.pathname;
     const shouldShowConfigurator = keyboardAPI.shouldShowConfigurator;
 
     // Root page - redirect to remap only if connected

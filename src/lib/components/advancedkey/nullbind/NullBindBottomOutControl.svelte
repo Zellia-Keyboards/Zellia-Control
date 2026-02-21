@@ -1,5 +1,6 @@
 <script lang="ts">
   import { language, t } from '$lib/stores/LanguageStore.svelte';
+  import { Toggle } from '$lib/components/ui';
 
   interface Props {
     bottomOutPoint: number;
@@ -21,30 +22,10 @@
         {t('advancedkey.alternativeBottomOutBehaviorDesc', currentLanguage)}
       </div>
     </div>
-    <button
-      class="bottom-out-toggle relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none {bottomOutPoint >
-      0
-        ? 'bg-primary-500'
-        : 'bg-gray-300 dark:bg-gray-600'}"
-      onclick={() => onBottomOutToggle(bottomOutPoint === 0)}
-    >
-      <span
-        class="toggle-thumb inline-block h-3 w-3 transform rounded-full bg-white transition-transform shadow-sm {bottomOutPoint >
-        0
-          ? 'translate-x-5'
-          : 'translate-x-1'}"
-      ></span>
-    </button>
+    <Toggle
+      checked={bottomOutPoint > 0}
+      onToggle={() => onBottomOutToggle(bottomOutPoint === 0)}
+      size="sm"
+    />
   </div>
 </div>
-
-<style>
-  .bottom-out-toggle:active .toggle-thumb {
-    transform: scale(0.95);
-  }
-
-  .bottom-out-toggle:active:not([class*='translate-x-5']) .toggle-thumb,
-  .bottom-out-toggle:active:not([class*='translate-x-1']) .toggle-thumb {
-    transform: scale(0.95) translateX(0.2rem);
-  }
-</style>

@@ -26,6 +26,12 @@ export type KeyConfiguration = {
   keycodes?: string[];
   bitmap?: DKSAction[][];
   bottomOutPoint?: number;
+  rtDown?: number;
+  rtUp?: number;
+  actuationPoint?: number;
+  deactivationPoint?: number;
+  upperDeadzone?: number;
+  lowerDeadzone?: number;
 };
 
 // Dynamic Keystroke Configuration type

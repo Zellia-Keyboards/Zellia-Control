@@ -2,14 +2,14 @@
   import { glassmorphismMode } from '$lib/stores/DarkModeStore.svelte';
   import { language, t } from '$lib/stores/LanguageStore.svelte';
   import { ArrowRight } from 'lucide-svelte';
-  import type { ComponentType } from 'svelte';
+  import type { Component } from 'svelte';
 
   interface Props {
     option: {
       id: string;
       nameKey: string;
       descriptionKey: string;
-      icon: ComponentType;
+      icon: Component;
       action: () => void;
       type: 'primary' | 'secondary' | 'danger';
       featureKeys: string[];

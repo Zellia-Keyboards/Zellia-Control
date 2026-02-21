@@ -3,8 +3,8 @@
   import { keyActions } from '$lib/types/AdvancedKeyShared';
 
   interface Props {
-    tapAction: string;
-    holdAction: string;
+    tapAction: number;
+    holdAction: number;
     tapTimeout: number;
     holdDelay: number;
   }

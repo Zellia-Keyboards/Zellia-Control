@@ -27,7 +27,7 @@ export async function set_device(device: string) {
       break;
     }
     case 'Zellia60 HE': {
-      CONTROLLER = new ekc.Zellia60Controller();
+      CONTROLLER = new ekc.ZelliaStarlightController();
       break;
     }
     case 'Zellia80 HE': {
@@ -166,8 +166,8 @@ export async function send_advanced_key_packet(indexs: number[], advanced_key: e
 export async function send_keymap_packet(indexs: number[], layer: number, keymap: number) {
   return CONTROLLER.send_keymap_packet(indexs, layer, keymap);
 }
-export async function send_dynamic_key_packet(indexs: number[], dynamic_keys: ekc.IDynamicKey) {
-  return CONTROLLER.send_dynamic_key_packet(indexs, dynamic_keys);
+export async function send_dynamic_key_packet(index: number, dynamic_keys: ekc.IDynamicKey) {
+  return CONTROLLER.send_dynamic_key_packet(index, dynamic_keys);
 }
 export async function send_rgb_base_packet(rgb_base_config: ekc.IRGBBaseConfig) {
   return CONTROLLER.send_rgb_base_packet(rgb_base_config);

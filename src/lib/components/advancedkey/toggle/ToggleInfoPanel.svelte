@@ -3,7 +3,7 @@
   import { keyActions } from '$lib/types/AdvancedKeyShared';
 
   interface Props {
-    selectedToggleAction: string;
+    selectedToggleAction: number;
     toggleMode: string;
   }
 

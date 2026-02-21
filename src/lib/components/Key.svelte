@@ -1,22 +1,42 @@
 <script lang="ts">
-  import { createEventDispatcher, onMount } from 'svelte';
+  import { onMount } from 'svelte';
 
-  // --- Props (由父组件传入的属性) ---
-  export let x: number = 0;
-  export let y: number = 0;
-  export let width: number = 1;
-  export let height: number = 1;
-  export let rotationAngle: number = 0;
-  export let rotationX: number = 0;
-  export let rotationY: number = 0;
-  export let labels: string[] = [];
-  export let index: number = 0;
-  export let selected: boolean = false;
-  export let allowSelection = true;
+  interface Props {
+    x?: number;
+    y?: number;
+    width?: number;
+    height?: number;
+    rotationAngle?: number;
+    rotationX?: number;
+    rotationY?: number;
+    labels?: string[];
+    index?: number;
+    selected?: boolean;
+    allowSelection?: boolean;
+    onselect?: (index: number) => void;
+    onmousedown?: (e: MouseEvent) => void;
+    onmouseenter?: (e: MouseEvent) => void;
+  }
 
-  // --- 内部状态 ---
+  let {
+    x = 0,
+    y = 0,
+    width = 1,
+    height = 1,
+    rotationAngle = 0,
+    rotationX: rotX = 0,
+    rotationY: rotY = 0,
+    labels = [],
+    index = 0,
+    selected = false,
+    allowSelection = true,
+    onselect,
+    onmousedown,
+    onmouseenter,
+  }: Props = $props();
+
   // Key unit size - will be read from CSS variable for responsive scaling
-  let usize = 59;
+  let usize = $state(59);
 
   // Read CSS variable for responsive scaling
   onMount(() => {
@@ -29,70 +49,44 @@
     };
     updateSize();
 
-    // Update on resize for responsive changes
     window.addEventListener('resize', updateSize);
     return () => window.removeEventListener('resize', updateSize);
   });
 
-  // --- 事件派发器 ---
-  // 用于向父组件发送消息
-  const dispatch = createEventDispatcher<{ select: number }>();
-
-  function handleClick() {
-    // 当按键被点击时，派发 'select' 事件，并附带自己的索引
-    dispatch('select', index);
+  function handleClick(e: MouseEvent) {
+    onmousedown?.(e);
   }
 
-  // --- 工具函数 ---
-  function rgbToHex(rgb: { r: number; g: number; b: number } | undefined): string {
-    if (!rgb) return '#cccccc'; // 如果颜色未定义，返回默认灰色
-    const toHex = (c: number) => ('0' + Math.floor(c).toString(16)).slice(-2);
-    return `#${toHex(rgb.r)}${toHex(rgb.g)}${toHex(rgb.b)}`;
+  function handleMouseEnter(e: MouseEvent) {
+    onmouseenter?.(e);
   }
 
-  function getContrastColor(hexColor: string): string {
-    if (hexColor.length !== 7) return '#000000';
-    const r = parseInt(hexColor.substr(1, 2), 16);
-    const g = parseInt(hexColor.substr(3, 2), 16);
-    const b = parseInt(hexColor.substr(5, 2), 16);
-    // 根据亮度计算公式，判断使用黑色还是白色字体
-    const brightness = (r * 299 + g * 587 + b * 114) / 1000;
-    return brightness > 140 ? '#000000' : '#FFFFFF';
-  }
-
-  // --- 响应式声明 (替代 Vue 的 computed) ---
-  // 这些变量会在它们的依赖项改变时自动重新计算
-
-  // 1. 订阅 store 来决定按键是否被选中
-  //$: isSelected = $selected_key_index === index;
-
-  // 2. 订阅 store 来获取按键颜色
-  //$: color = $rgb_configs[index] ? rgbToHex($rgb_configs[index].rgb) : '#aaaaaa';
-
-  // 3. 动态计算按键的字体颜色
-  //$: textColor = getContrastColor(color);
-
-  // 4. 计算按键的整体旋转和定位样式
-  $: keyStyle = `
+  // Reactive computed styles
+  let keyStyle = $derived(`
     position: absolute;
     left: ${x * usize}px;
     top: ${y * usize}px;
     width: ${width * usize}px;
     height: ${height * usize}px;
-    transform-origin: ${rotationX * usize}px ${rotationY * usize}px;
+    transform-origin: ${rotX * usize}px ${rotY * usize}px;
     transform: rotate(${rotationAngle}deg);
     transition: all 0.3s ease-out;
-  `;
+  `);
 
-  // 5. 计算不同位置标签的样式 - 修复文本裁剪
-  $: labelContainerStyle = `
+  let labelContainerStyle = $derived(`
     width: 100%;
     height: 100%;
-  `;
+  `);
 </script>
 
 <div class="key-container" style={keyStyle}>
-  <button class="keycap" class:selected={selected && allowSelection} class:selection-disabled={!allowSelection} on:mousedown={handleClick}>
+  <button
+    class="keycap"
+    class:selected={selected && allowSelection}
+    class:selection-disabled={!allowSelection}
+    onmousedown={handleClick}
+    onmouseenter={handleMouseEnter}
+  >
     <div class="label-grid" style={labelContainerStyle}>
       {#each Array(9) as _, i}
         {#if labels[i]}

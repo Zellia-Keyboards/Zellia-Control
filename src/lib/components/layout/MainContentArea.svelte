@@ -1,7 +1,7 @@
 <script lang="ts">
   import KeyboardRender from '$lib/components/KeyboardRender.svelte';
   import { keyboardAPI } from '$lib/api/keyboardAPI.svelte';
-  import { page } from '$app/stores';
+  import { page } from '$app/state';
   import { allowSelection } from '$lib/stores/SelectedKeysStore';
   import ToolbarSection from './ToolbarSection.svelte';
   import LoadingOverlay from './LoadingOverlay.svelte';
@@ -18,18 +18,18 @@
 
   // Helper to check if we should hide keyboard and toolbar
   let shouldHideKeyboardAndToolbar = $derived(
-    $page.url.pathname.includes('/about') ||
-      $page.url.pathname.includes('/profiles') ||
-      $page.url.pathname.includes('/debug') ||
-      $page.url.pathname.includes('/settings') ||
-      $page.url.pathname.includes('/update')
+    page.url.pathname.includes('/about') ||
+      page.url.pathname.includes('/profiles') ||
+      page.url.pathname.includes('/debug') ||
+      page.url.pathname.includes('/settings') ||
+      page.url.pathname.includes('/update')
   );
 
   // Helper to check if we're on performance page (for smaller key labels)
-  let isPerformancePage = $derived($page.url.pathname.includes('/performance'));
+  let isPerformancePage = $derived(page.url.pathname.includes('/performance'));
 
   // Helper to check if we're on lighting page (for even smaller key labels)
-  let isLightingPage = $derived($page.url.pathname.includes('/lighting'));
+  let isLightingPage = $derived(page.url.pathname.includes('/lighting'));
 </script>
 
 <!-- Layer selector and Layout toggle (only show when connected and not on /about or /profiles) -->
@@ -53,7 +53,7 @@
   <LoadingOverlay />
   
   <!-- Connection Interface when not connected and on root page -->
-{:else if !keyboardAPI.shouldShowConfigurator && $page.url.pathname === '/'}
+{:else if !keyboardAPI.shouldShowConfigurator && page.url.pathname === '/'}
   <ConnectionInterface />
 {:else if keyboardAPI.shouldShowConfigurator && !isLoadingConfigurator}
   {@render children()}

@@ -44,6 +44,17 @@
         (e.currentTarget as HTMLElement).style.backgroundColor = 'white dark:black';
       }
     }}
+    onfocus={e => {
+      if (selectedBindingIndex !== bindingIndex) {
+        (e.currentTarget as HTMLElement).style.backgroundColor =
+          'color-mix(in srgb, var(--theme-color-primary) 2%, #f9fafb)';
+      }
+    }}
+    onblur={e => {
+      if (selectedBindingIndex !== bindingIndex) {
+        (e.currentTarget as HTMLElement).style.backgroundColor = '';
+      }
+    }}
     onclick={() => onSelectBinding(bindingIndex)}
   >
     {currentKeyAction?.name || keycode}

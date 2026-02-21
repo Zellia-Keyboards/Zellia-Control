@@ -207,11 +207,11 @@
         <div class="xl:col-span-1 space-y-6">
           <TogglePreview
             {currentKeyName}
-            selectedToggleAction={selectedToggleAction.toString()}
+            {selectedToggleAction}
             {toggleMode}
             {toggleState}
           />
-          <ToggleInfoPanel selectedToggleAction={selectedToggleAction.toString()} {toggleMode} />
+          <ToggleInfoPanel {selectedToggleAction} {toggleMode} />
 
           {#if configuredToggleKeys.length > 0}
             <ToggleConfiguredKeys

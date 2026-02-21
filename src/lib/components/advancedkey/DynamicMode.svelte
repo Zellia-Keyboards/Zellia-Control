@@ -282,7 +282,6 @@
     dynamic_key.press_fully_distance = mmToPercent(dksBottomOutPoint);
     dynamic_key.release_begin_distance = mmToPercent(dksBottomOutPoint);
     dynamic_key.release_fully_distance = mmToPercent(actuationPoint);
-    dynamic_key.key_control[0] = 
     keyboardConnectionState.controller?.send_dynamic_key_packet(0, dynamic_key);
   }
 
@@ -423,7 +422,7 @@
 <div class="flex-1 p-6 overflow-y-auto -mx-8">
   {#if currentSelected}
     <div class="max-w-7xl mx-auto">
-      <DKSSelectedKeyInfo {currentKeyName} />
+      <DKSSelectedKeyInfo {currentKeyName} currentSelectedCoords={currentSelected} />
 
       <div class="flex gap-8">
         <div class="w-96 flex flex-col gap-4">

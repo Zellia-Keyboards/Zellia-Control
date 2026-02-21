@@ -5,11 +5,8 @@ import {
   MouseKeycode,
   KeyboardKeycode,
   RGBMode,
-  Srgb,
   LayerControlKeycode,
   DynamicKeyType,
-  IDynamicKey,
-  IDynamicKeyMutex,
   DynamicKeyMutex,
   ConsumerKeycode,
   SystemRawKeycode,
@@ -17,6 +14,11 @@ import {
   MIDIKeycode,
   KeyboardConfig,
   MacroKeycode,
+} from 'emi-keyboard-controller';
+import type {
+  Srgb,
+  IDynamicKey,
+  IDynamicKeyMutex,
 } from 'emi-keyboard-controller';
 
 export const keyCodeToKeyName: { [key in Keycode]: string } = {
@@ -206,6 +208,7 @@ export const keyCodeToKeyName: { [key in Keycode]: string } = {
   [Keycode.JoystickCollection]: 'Joystick',
   [Keycode.MIDICollection]: 'MIDI',
   [Keycode.MIDINote]: 'MIDI Note',
+  [Keycode.MacroCollection]: 'Macro',
   [Keycode.KeyUser]: 'User',
   [Keycode.KeyboardOperation]: 'Keyboard',
   [Keycode.KeyTransparent]: '∇',

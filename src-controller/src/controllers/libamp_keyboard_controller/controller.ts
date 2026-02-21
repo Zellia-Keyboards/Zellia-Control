@@ -1,4 +1,4 @@
-import { AdvancedKeyToBytes, DynamicKey, DynamicKeyModTap, DynamicKeyMutex, DynamicKeyStroke4x4, DynamicKeyToggleKey, DynamicKeyType, IDynamicKey, KeyboardController, getEMIPathIdentifier, KeyboardKeycode, IAdvancedKey, IRGBBaseConfig, IRGBConfig} from "./../../interface";
+import { AdvancedKeyToBytes, DynamicKey, DynamicKeyModTap, DynamicKeyMutex, DynamicKeyStroke4x4, DynamicKeyToggleKey, DynamicKeyType, type IDynamicKey, KeyboardController, getEMIPathIdentifier, KeyboardKeycode, type IAdvancedKey, type IRGBBaseConfig, type IRGBConfig} from "./../../interface";
 
 enum PacketCode {
   PacketCodeAction = 0x00,

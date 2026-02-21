@@ -53,17 +53,21 @@
   <!-- Actions Grid -->
   <div class="actions-grid">
     {#each settingsOptions as option, index}
+      {@const Icon = option.icon}
       <div
         class="action-card action-card-{option.color}"
         style="animation-delay: {index * 100}ms;"
         onmouseenter={() => (hoverIndex = index)}
         onmouseleave={() => (hoverIndex = null)}
         onclick={option.action}
+        onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); option.action(); } }}
+        role="button"
+        tabindex={0}
       >
         <div class="action-glow glow-{option.color}"></div>
         <div class="action-content glassmorphism-card">
           <div class="action-icon-wrapper icon-wrapper-{option.color}">
-            <svelte:component this={option.icon} class="action-icon icon-{option.color}" />
+            <Icon class="action-icon icon-{option.color}" />
           </div>
           <div class="action-info">
             <h3 class="action-title text-gray-900 dark:text-white">

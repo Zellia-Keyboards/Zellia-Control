@@ -4,7 +4,7 @@
 
   interface Props {
     currentKeyName: string;
-    selectedToggleAction: string;
+    selectedToggleAction: number;
     toggleMode: string;
     toggleState: boolean;
   }

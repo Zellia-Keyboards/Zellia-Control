@@ -1,70 +1,4 @@
 <script lang="ts">
-  // WebUSB DFU types for AT32F405
-  declare global {
-    interface Navigator {
-      usb: {
-        requestDevice(options: USBDeviceRequestOptions): Promise<USBDevice>;
-        getDevices(): Promise<USBDevice[]>;
-      };
-    }
-  }
-
-  interface USBDeviceRequestOptions {
-    filters: USBDeviceFilter[];
-  }
-
-  interface USBDeviceFilter {
-    vendorId?: number;
-    productId?: number;
-    classCode?: number;
-    subclassCode?: number;
-    protocolCode?: number;
-    serialNumber?: string;
-  }
-
-  interface USBDevice {
-    productName?: string;
-    manufacturerName?: string;
-    open(): Promise<void>;
-    close(): Promise<void>;
-    selectConfiguration(configurationValue: number): Promise<void>;
-    claimInterface(interfaceNumber: number): Promise<void>;
-    releaseInterface(interfaceNumber: number): Promise<void>;
-    transferOut(endpointNumber: number, data: BufferSource): Promise<USBTransfer>;
-    transferIn(endpointNumber: number, length: number): Promise<USBInTransferResult>;
-    controlTransferOut(
-      setup: USBControlTransferParameters,
-      data?: BufferSource
-    ): Promise<USBTransfer>;
-    controlTransferIn(
-      setup: USBControlTransferParameters,
-      length: number
-    ): Promise<USBInTransferResult>;
-    reset(): Promise<void>;
-  }
-
-  interface USBTransfer {
-    status: USBTransferStatus;
-  }
-
-  interface USBInTransferResult {
-    data: DataView;
-    status: USBTransferStatus;
-  }
-
-  type USBTransferStatus = 'ok' | 'stall' | 'babble';
-
-  interface USBControlTransferParameters {
-    requestType: USBRequestType;
-    recipient: USBRecipient;
-    request: number;
-    value: number;
-    index: number;
-  }
-
-  type USBRequestType = 'standard' | 'class' | 'vendor' | 'reserved';
-  type USBRecipient = 'device' | 'interface' | 'endpoint' | 'other';
-
   import {
     Upload,
     CheckCircle,
@@ -281,6 +215,8 @@
       });
 
       console.log('DFU device connected:', dfuDevice);
+
+      if (!dfuDevice) return false;
 
       await dfuDevice.open();
       await dfuDevice.selectConfiguration(1);
@@ -517,6 +453,7 @@
       <!-- Steps -->
       <div class="relative flex flex-col justify-between h-full py-2">
         {#each steps as step, index}
+          {@const StepIcon = step.icon}
           <div
             class="relative fade-in"
             class:active={step.status === 'active'}
@@ -539,8 +476,7 @@
                 {:else if step.status === 'error'}
                   <AlertCircle class="w-5 h-5 text-white" />
                 {:else}
-                  <svelte:component
-                    this={step.icon}
+                  <StepIcon
                     class="w-5 h-5 {step.status === 'active'
                       ? 'text-primary-600 dark:text-primary-400'
                       : 'text-gray-400'}"
@@ -589,6 +525,8 @@
             ondrop={handleFileDrop}
             ondragover={handleDragOver}
             ondragleave={handleDragLeave}
+            role="region"
+            aria-label="Firmware file drop zone"
           >
             <input
               type="file"
@@ -696,7 +634,7 @@
           </div>
           <button
             class="px-6 py-2.5 bg-purple-600 hover:bg-purple-700 text-white font-medium text-sm rounded-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 border border-purple-500/30"
-            onclick={connectDFU}
+            onclick={() => connectDFU()}
           >
             <div class="flex items-center gap-2">
               <Usb class="w-4 h-4" />
@@ -840,7 +778,7 @@
   }
 
   /* Pulse animation for active state */
-  .active .w-8 {
+  .active .w-10 {
     animation: pulse 2s ease-in-out infinite;
   }
 

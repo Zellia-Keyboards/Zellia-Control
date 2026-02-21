@@ -1,5 +1,6 @@
 <script lang="ts">
   import { language, t } from '$lib/stores/LanguageStore.svelte';
+  import { ThemedSlider } from '$lib/components/ui';
   import * as ekc from 'emi-keyboard-controller';
   import tinycolor from 'tinycolor2';
   import DirectionSelector from './DirectionSelector.svelte';
@@ -142,20 +143,20 @@
             style="margin-bottom: calc(0.5rem * var(--ui-scale, 1));"
           >
             {t('lighting.color', currentLanguage)}
+            <div class="flex items-center gap-3 mt-2">
+              <input
+                type="color"
+                value={localColor}
+                oninput={(e) => (localColor = (e.target as HTMLInputElement).value)}
+                class="w-10 h-10 rounded-lg border-2 border-gray-300 dark:border-gray-600 p-0 cursor-pointer overflow-hidden transition-colors hover:border-primary/50"
+              />
+              <span
+                class="text-sm font-mono text-gray-700 dark:text-gray-300 uppercase"
+              >
+                {localColor}
+              </span>
+            </div>
           </label>
-          <div class="flex items-center gap-3">
-            <input
-              type="color"
-              value={localColor}
-              oninput={(e) => (localColor = (e.target as HTMLInputElement).value)}
-              class="w-10 h-10 rounded-lg border-2 border-gray-300 dark:border-gray-600 p-0 cursor-pointer overflow-hidden transition-colors hover:border-primary/50"
-            />
-            <span
-              class="text-sm font-mono text-gray-700 dark:text-gray-300 uppercase"
-            >
-              {localColor}
-            </span>
-          </div>
         </div>
         <div>
           <label
@@ -163,20 +164,20 @@
             style="margin-bottom: calc(0.5rem * var(--ui-scale, 1));"
           >
             {t('lighting.secondaryColor', currentLanguage)}
+            <div class="flex items-center gap-3 mt-2">
+              <input
+                type="color"
+                value={localSubColor}
+                oninput={(e) => (localSubColor = (e.target as HTMLInputElement).value)}
+                class="w-10 h-10 rounded-lg border-2 border-gray-300 dark:border-gray-600 p-0 cursor-pointer overflow-hidden transition-colors hover:border-primary/50"
+              />
+              <span
+                class="text-sm font-mono text-gray-700 dark:text-gray-300 uppercase"
+              >
+                {localSubColor}
+              </span>
+            </div>
           </label>
-          <div class="flex items-center gap-3">
-            <input
-              type="color"
-              value={localSubColor}
-              oninput={(e) => (localSubColor = (e.target as HTMLInputElement).value)}
-              class="w-10 h-10 rounded-lg border-2 border-gray-300 dark:border-gray-600 p-0 cursor-pointer overflow-hidden transition-colors hover:border-primary/50"
-            />
-            <span
-              class="text-sm font-mono text-gray-700 dark:text-gray-300 uppercase"
-            >
-              {localSubColor}
-            </span>
-          </div>
         </div>
       </div>
     </div>
@@ -198,13 +199,11 @@
           <span>{t('lighting.speed', currentLanguage)}</span>
           <span class="font-semibold">{localSpeed}%</span>
         </div>
-        <input
-          type="range"
-          min="1"
-          max="100"
+        <ThemedSlider
+          min={1}
+          max={100}
           value={localSpeed}
           oninput={(e) => (localSpeed = Number((e.target as HTMLInputElement).value))}
-          class="rgb-panel-slider"
         />
       </div>
 
@@ -212,11 +211,11 @@
       <div class="grid grid-cols-2 gap-4">
         <!-- Direction -->
         <div>
-          <label
+          <span
             class="block text-xs text-gray-600 dark:text-gray-300 mb-1.5"
           >
             {t('lighting.direction', currentLanguage)}
-          </label>
+          </span>
           <DirectionSelector direction={localDirection} onDirectionChange={(d) => (localDirection = d)} />
         </div>
 
@@ -226,13 +225,11 @@
             <span>{t('lighting.density', currentLanguage)}</span>
             <span class="font-semibold">{localDensity}</span>
           </div>
-          <input
-            type="range"
-            min="0"
-            max="255"
+          <ThemedSlider
+            min={0}
+            max={255}
             value={localDensity}
             oninput={(e) => (localDensity = Number((e.target as HTMLInputElement).value))}
-            class="rgb-panel-slider"
           />
         </div>
       </div>
@@ -250,13 +247,11 @@
         <span>{t('lighting.level', currentLanguage) || 'Level'}</span>
         <span class="font-semibold">{localBrightness}</span>
       </div>
-      <input
-        type="range"
-        min="0"
-        max="255"
+      <ThemedSlider
+        min={0}
+        max={255}
         value={localBrightness}
         oninput={(e) => (localBrightness = Number((e.target as HTMLInputElement).value))}
-        class="rgb-panel-slider"
       />
     </div>
   </div>
@@ -288,44 +283,5 @@
   input[type='color']::-moz-color-swatch {
     border: none;
     border-radius: inherit;
-  }
-
-  /* Slider styling */
-  .rgb-panel-slider {
-    width: 100%;
-    height: 8px;
-    border-radius: 9999px;
-    appearance: none;
-    background: color-mix(in srgb, var(--theme-color-primary) 20%, transparent);
-  }
-
-  .rgb-panel-slider::-webkit-slider-thumb {
-    appearance: none;
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    background: var(--theme-color-primary);
-    cursor: pointer;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-    transition: transform 0.1s ease;
-  }
-
-  .rgb-panel-slider::-webkit-slider-thumb:hover {
-    transform: scale(1.1);
-  }
-
-  .rgb-panel-slider::-moz-range-thumb {
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    background: var(--theme-color-primary);
-    cursor: pointer;
-    border: none;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-    transition: transform 0.1s ease;
-  }
-
-  .rgb-panel-slider::-moz-range-thumb:hover {
-    transform: scale(1.1);
   }
 </style>

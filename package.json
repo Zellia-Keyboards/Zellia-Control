@@ -31,6 +31,7 @@
     "@tailwindcss/postcss": "^4.1.7",
     "@tailwindcss/vite": "^4.1.7",
     "@types/node": "^22.15.23",
+    "@types/w3c-web-hid": "^1.0.6",
     "autoprefixer": "^10.4.20",
     "baseline-browser-mapping": "^2.9.11",
     "prettier": "^3.6.2",

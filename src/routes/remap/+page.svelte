@@ -213,6 +213,7 @@
   $inspect(selectedKeys, 'selectedKeys');
 </script>
 
+<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
 <div
   bind:this={mainContainer}
   class="rounded-2xl shadow mt-2 mb-4 grow border border-gray-200 dark:border-gray-600 text-black dark:text-white h-full flex glassmorphism-card bg-gray-50 dark:bg-gray-900"

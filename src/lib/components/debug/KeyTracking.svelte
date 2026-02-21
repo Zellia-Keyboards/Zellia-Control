@@ -32,11 +32,7 @@
     isModalOpen = true;
   }
 
-  function handleKeySelected(event: CustomEvent<number>) {
-    const keyIndex = event.detail;
-    selectedKeyName = `Key ${keyIndex}`;
-    // The $effect watching $selectedKeys will handle starting the debug
-  }
+  // Key selection is handled reactively via the $effect watching $selectedKeys
 
   function percentToMm(distance: number) {
     return distance * 4.0;
@@ -63,7 +59,7 @@
 
     // 1. 创建事件监听器
     handleDataUpdate = () => {
-      const keyData = controller.advanced_keys[keyIndex];
+      const keyData = controller.get_advanced_keys()[keyIndex];
       if (keyData) {
         const elapsedTime = Date.now() - startTime;
         // keyData.value 是来自控制器的实时距离值
@@ -126,7 +122,7 @@
 
     // 创建事件监听器
     handleDataUpdate = () => {
-      const keyData = controller.advanced_keys[keyIndex];
+      const keyData = controller.get_advanced_keys()[keyIndex];
       if (keyData) {
         const elapsedTime = Date.now() - startTime;
         // 使用 keyData.value 作为实时距离值
@@ -511,7 +507,7 @@
 </div>
 
 <!-- Keyboard Selector Modal -->
-<KeyboardSelector bind:isOpen={isModalOpen} on:selectKey={handleKeySelected} />
+<KeyboardSelector bind:isOpen={isModalOpen} />
 
 <style>
   :global(:root) {

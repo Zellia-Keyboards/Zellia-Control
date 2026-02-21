@@ -19,7 +19,6 @@
   let selectedAction = $state(0);
 
   function onActionSelect(actionId: number): void {
-    console.log(actionId)
     if (selectedBindingIndex !== null) {
       selectedKeycodes[selectedBindingIndex] = String(actionId);
       selectedActions[selectedBindingIndex] = actionId;

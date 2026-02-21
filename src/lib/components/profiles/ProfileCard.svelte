@@ -18,6 +18,7 @@
     ? 'border-green-500/50 cursor-default'
     : 'border-gray-700 cursor-pointer hover:border-gray-600'} glassmorphism-card"
   onclick={() => !isActive && onActivate()}
+  onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); !isActive && onActivate(); } }}
   role="button"
   tabindex={0}
 >

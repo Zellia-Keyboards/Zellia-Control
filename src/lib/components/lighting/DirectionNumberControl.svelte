@@ -4,6 +4,7 @@
   interface Props {
     direction: number;
     onDirectionChange: (value: number) => void;
+    label?: string;
     min?: number;
     max?: number;
   }
@@ -18,15 +19,15 @@
 </script>
 
 <div>
-  <label class="block text-xs text-gray-600 dark:text-gray-300 mb-1.5"
-    >{t('lighting.direction', currentLanguage)}</label
-  >
-  <input
-    type="number"
-    min={min}
-    max={max}
-    value={direction}
-    oninput={handleInput}
-    class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-black dark:text-white focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none transition-all glassmorphism-button"
-  />
+  <label class="block text-xs text-gray-600 dark:text-gray-300 mb-1.5">
+    {t('lighting.direction', currentLanguage)}
+    <input
+      type="number"
+      min={min}
+      max={max}
+      value={direction}
+      oninput={handleInput}
+      class="mt-1.5 w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-black dark:text-white focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none transition-all glassmorphism-button"
+    />
+  </label>
 </div>

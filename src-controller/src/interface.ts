@@ -831,6 +831,9 @@ export interface IKeyboardController{
     send_rgb_base_packet(rgb_base_config : IRGBBaseConfig) : void;
     send_rgb_packet(indexs: number[], rgb_config : IRGBConfig) : void;
     request_debug_at(indexs: number[]) : void;
+    addEventListener(type: string, listener: EventListener): void;
+    removeEventListener(type: string, listener: EventListener): void;
+    dispatchEvent(event: Event): boolean;
 }
 
 export abstract class KeyboardController implements IKeyboardController, EventTarget{

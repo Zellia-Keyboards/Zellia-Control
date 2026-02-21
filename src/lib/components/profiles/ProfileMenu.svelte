@@ -68,6 +68,9 @@
   style="top: {position.top}px; right: {position.right}px;"
   transition:slide={{ duration: 150, axis: 'y' }}
   onclick={e => e.stopPropagation()}
+  onkeydown={e => e.stopPropagation()}
+  role="menu"
+  tabindex={-1}
 >
   <button
     class="w-full px-4 py-2.5 text-left text-sm hover:bg-primary-800/50 flex items-center gap-3 text-gray-200 dark:text-gray-200 transition-colors"
@@ -100,10 +103,10 @@
         ? 'bg-red-900/30'
         : 'hover:bg-red-900/20'}"
       onmousedown={startHold}
-      onTouchstart={startHold}
+      ontouchstart={startHold}
       onmouseup={cancelHold}
       onmouseleave={cancelHold}
-      onTouchend={cancelHold}
+      ontouchend={cancelHold}
     >
       <!-- Progress bar background -->
       <div

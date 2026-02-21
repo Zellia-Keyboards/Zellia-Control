@@ -21,7 +21,7 @@
 
 <div>
   {#if label}
-    <label class="block text-xs text-gray-600 dark:text-gray-300 mb-1.5">{label}</label>
+    <span class="block text-xs text-gray-600 dark:text-gray-300 mb-1.5">{label}</span>
   {/if}
   <div class="grid grid-cols-2 gap-2">
     {#each modes as mode}

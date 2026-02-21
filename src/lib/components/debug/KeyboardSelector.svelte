@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte';
   import KeyboardRender from '$lib/components/KeyboardRender.svelte';
   import { keyboardLayout } from '$lib/stores/LayoutStore.svelte';
   import { selectedKeys, deselectAll, toggleKey } from '$lib/stores/SelectedKeysStore';
@@ -11,11 +10,6 @@
   }
 
   let { isOpen = $bindable() }: Props = $props();
-
-  const dispatch = createEventDispatcher<{
-    selectKey: number;
-    close: void;
-  }>();
 
   let keys: ExtendedKey[] = $state([]);
 
@@ -36,9 +30,7 @@
     }
   });
 
-  function handleKeySelect(event: CustomEvent<number>) {
-    const keyIndex = event.detail;
-    dispatch('selectKey', keyIndex);
+  function handleKeySelect(keyIndex: number) {
     deselectAll();
     toggleKey(keyIndex);
     closeModal();
@@ -46,7 +38,6 @@
 
   function closeModal() {
     isOpen = false;
-    dispatch('close');
   }
 
   function handleBackdropClick(event: MouseEvent) {
@@ -103,7 +94,7 @@
         <div class="overflow-auto max-h-[calc(90vh-10rem)] p-6">
           {#if keys.length > 0}
             <div class="flex justify-center">
-              <KeyboardRender {keys} on:select={handleKeySelect} />
+              <KeyboardRender {keys} onselect={handleKeySelect} />
             </div>
           {:else}
             <div class="text-center py-12 text-gray-400">

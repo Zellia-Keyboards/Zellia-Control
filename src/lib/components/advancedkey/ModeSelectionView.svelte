@@ -1,12 +1,12 @@
 <script lang="ts">
   import { language, t } from '$lib/stores/LanguageStore.svelte';
-  import type { ComponentType } from 'svelte';
+  import type { Component } from 'svelte';
 
   interface KeyMode {
     id: string;
     name: string;
     description: string;
-    icon: ComponentType;
+    icon: Component;
     features: string[];
   }
 
