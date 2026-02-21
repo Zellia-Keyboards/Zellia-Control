@@ -1,16 +1,18 @@
 import { LibampKeyboardController } from '../libamp_keyboard_controller/controller';
-import { type IAdvancedKey, type IKeyboardController, type IRGBConfig, KeyMode, CalibrationMode, RGBMode, Keycode, KeyModifier, AdvancedKeyToBytes, AdvancedKey, KeyboardKeycode, LayerControlKeycode, KeyboardController, DynamicKey, DynamicKeyType, DynamicKeyStroke4x4, DynamicKeyModTap, DynamicKeyToggleKey, DynamicKeyMutex, type IDynamicKey, type IDynamicKeyStroke4x4, type IDynamicKeyModTap, type IDynamicKeyToggleKey, type IDynamicKeyMutex, RGBBaseConfig } from './../../interface';
+import { IAdvancedKey, IKeyboardController, IRGBConfig, KeyMode, CalibrationMode, RGBMode, Keycode, KeyModifier, AdvancedKeyToBytes, AdvancedKey, KeyboardKeycode, LayerControlKeycode, KeyboardController, DynamicKey, DynamicKeyType, DynamicKeyStroke4x4, DynamicKeyModTap, DynamicKeyToggleKey, DynamicKeyMutex, IDynamicKey, IDynamicKeyStroke4x4, IDynamicKeyModTap, IDynamicKeyToggleKey, IDynamicKeyMutex, RGBBaseConfig, MacroAction } from './../../interface';
 
-const layout = `[["Esc","!\\n1","@\\n2","#\\n3","$\\n4","%\\n5","^\\n6","&\\n7","*\\n8","(\\n9",")\\n0","_\\n-","+\\n=",{"w":2},"Backspace"],[{"w":1.5},"Tab","Q","W","E","R","T","Y","U","I","O","P","{\\n[","}\\n]",{"w":1.5},"|\\n\\\\"],[{"w":1.75},"Caps Lock","A","S","D","F","G","H","J","K","L",":\\n;","\\"\\n'",{"w":2.25},"Enter"],[{"w":2},"Shift","Z","X","C","V","B","N","M","<\\n,",">\\n.","?\\n/","Shift","↑","Del"],[{"w":1.25},"Ctrl",{"w":1.25},"Win",{"w":1.25},"Alt",{"a":7,"w":6.25},"",{"a":4},"Alt","Fn","←","↓","→"]]`;
+import layout from './keyboard_layout.json?raw';
+import markdown from './README.md?raw';
 
 export class OholeoKeyboardController extends LibampKeyboardController {
     ADVANCED_KEY_NUM: number = 64;
-    config_file_number:number = 4;
+    profile_number:number = 4;
 
     constructor() {
         super();
         this.device = undefined;
         this.reset_to_default();
+        this.feature.rgb_flag = true;
     }
 
     async detect(): Promise<HIDDevice[]> {
@@ -80,5 +82,10 @@ export class OholeoKeyboardController extends LibampKeyboardController {
                 Array(64).fill(Keycode.KeyTransparent)
         ];
         this.dynamic_keys = Array(32).fill(null).map(() => (new DynamicKey()));;
+        this.macros = Array(4).fill(Array(128).fill(new MacroAction()));
+    }
+
+    get_readme_markdown(): string {
+        return markdown;
     }
 }

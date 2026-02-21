@@ -126,6 +126,12 @@ export interface IDynamicKeyMutex extends IDynamicKey {
     mode : (DynamicKeyMutexMode | number);
 }
 
+export interface FirmwareVersion {
+    major: number;
+    minor: number;
+    patch: number;
+    info: string;
+}
 // Interface for AdvancedKey
 export interface IAdvancedKey {
     state: boolean;
@@ -221,7 +227,7 @@ export class DynamicKeyStroke4x4 implements IDynamicKeyStroke4x4{
     constructor()
     {
         this.type = DynamicKeyType.DynamicKeyStroke;
-        this.target_keys_location = [new KeyLocation()];
+        this.target_keys_location = [];
         this.bindings = [0,0,0,0];
         this.key_control = [0,0,0,0];
         this.press_begin_distance = 0.25;
@@ -245,7 +251,7 @@ export class DynamicKeyModTap implements IDynamicKeyModTap {
     constructor()
     {
         this.type = DynamicKeyType.DynamicKeyModTap;
-        this.target_keys_location = [new KeyLocation()];
+        this.target_keys_location = [];
         this.bindings = [0,0];
         this.duration = 100;
     }
@@ -265,7 +271,7 @@ export class DynamicKeyToggleKey implements IDynamicKeyToggleKey {
     constructor()
     {
         this.type = DynamicKeyType.DynamicKeyToggleKey;
-        this.target_keys_location = [new KeyLocation()];
+        this.target_keys_location = [];
         this.bindings = [0];
     }
     get_primary_binding(): number {
@@ -286,7 +292,7 @@ export class DynamicKeyMutex implements IDynamicKeyMutex {
     constructor() 
     {
         this.type = DynamicKeyType.DynamicKeyMutex;
-        this.target_keys_location = [new KeyLocation(),new KeyLocation()];
+        this.target_keys_location = [];
         this.bindings = [0,0];
         this.mode = DynamicKeyMutexMode.DKMutexDistancePriority;
         this.is_key2_primary = false;
@@ -731,6 +737,25 @@ export interface Srgb {
     blue: number;
 }
 
+export enum ScriptLevel {
+    Disable = 0x00,
+    AOT = 0x01,
+    JIT = 0x02,
+}
+
+export interface IFeature {
+    advanced_key_flag : boolean;
+    rgb_flag : boolean;
+    script_level : ScriptLevel;
+}
+
+export class Feature implements IFeature {
+    script_level: ScriptLevel = ScriptLevel.Disable;
+    advanced_key_flag: boolean = false;
+    rgb_flag: boolean = false;
+}
+
+
 // Interface for RGBConfig
 export interface IRGBConfig {
     mode: RGBMode;
@@ -815,7 +840,6 @@ export interface IKeyboardController{
     flash_config() : void;
     system_reset() : void;
     factory_reset() : void;
-    enter_bootloader(): void;
     request_config() : void;
     start_debug() : void;
     stop_debug() : void;
@@ -825,15 +849,32 @@ export interface IKeyboardController{
     get_config_file_index(): number;
     set_config_file_index(index: number) : void;
     get_layout_labels(): string[][];
-    send_advanced_key_packet(indexs: number[], advanced_key : IAdvancedKey) : void;
-    send_keymap_packet(indexs: number[], layer: number, keymap : number) : void;
-    send_dynamic_key_packet(index: number, dynamic_key : IDynamicKey) : void;
-    send_rgb_base_packet(rgb_base_config : IRGBBaseConfig) : void;
-    send_rgb_packet(indexs: number[], rgb_config : IRGBConfig) : void;
-    request_debug_at(indexs: number[]) : void;
-    addEventListener(type: string, listener: EventListener): void;
-    removeEventListener(type: string, listener: EventListener): void;
-    dispatchEvent(event: Event): boolean;
+    get_firmware_version() : FirmwareVersion;
+    get_macros(): IMacroAction[][];
+    set_macros(macros : IMacroAction[][]) : void;
+    get_script_source(): string;
+    set_script_source(script : string) : void;
+    get_script_bytecode(): Uint8Array;
+    set_script_bytecode(bytecode : Uint8Array) : void;
+    get_readme_markdown() : string;
+    get_feature() : IFeature;
+}
+
+export interface IMacroAction {
+    delay: number;
+    keycode: number;
+    event: number;
+    is_virtual : boolean;
+    key_id : number;
+}
+
+export class MacroAction implements IMacroAction {
+    delay: number = 0;
+    keycode: number = 0;
+    event: number = 0;
+    is_virtual: boolean = false;
+    key_id: number = 0;
+
 }
 
 export abstract class KeyboardController implements IKeyboardController, EventTarget{
@@ -852,7 +893,27 @@ export abstract class KeyboardController implements IKeyboardController, EventTa
         this.path = getEMIPathIdentifier();
         this.reset_to_default();
     }
-
+    get_script_source(): string {
+        return "";
+    }
+    set_script_source(script: string): void {
+        
+    }
+    get_script_bytecode(): Uint8Array {
+        return new Uint8Array();
+    }
+    set_script_bytecode(bytecode: Uint8Array): void {
+        
+    }
+    get_readme_markdown(): string {
+        return "KeyboardController";
+    }
+    get_macros(): IMacroAction[][] {
+        return [new Array<MacroAction>];
+    }
+    set_macros(macros: IMacroAction[][]): void {
+        
+    }
     // 添加事件监听
     addEventListener(type: string, listener: EventListener): void {
       if (!this.listeners[type]) {
@@ -956,7 +1017,7 @@ export abstract class KeyboardController implements IKeyboardController, EventTa
         this.rgb_base_config = new RGBBaseConfig();
         this.rgb_configs = new Array<IRGBConfig>();
         this.keymap = new Array<Array<number>>();
-        this.dynamic_keys = Array(32).fill(null).map(() => (new DynamicKey()));;
+        this.dynamic_keys = new Array<IDynamicKey>();
         this.config_index = 0;
     }
     fetch_config() : void
@@ -978,10 +1039,6 @@ export abstract class KeyboardController implements IKeyboardController, EventTa
     factory_reset() : void
     {
 
-    }
-    enter_bootloader(): void
-    {
-        
     }
     request_config() : void
     {
@@ -1017,23 +1074,11 @@ export abstract class KeyboardController implements IKeyboardController, EventTa
     get_layout_labels(): string[][] {
         return [[]];
     }
-    send_advanced_key_packet(indexs: number[], advanced_key: IAdvancedKey): void {
-        //throw new Error("Method not implemented.");
+    get_firmware_version(): FirmwareVersion {
+        return { major: 0, minor: 0, patch: 0, info: "" }
     }
-    send_keymap_packet(indexs: number[], layer : number, keymap: number): void {
-        //throw new Error("Method not implemented.");
-    }
-    send_dynamic_key_packet(index: number, dynamic_key: IDynamicKey): void {
-        //throw new Error("Method not implemented.");
-    }
-    send_rgb_base_packet(rgb_base_config: IRGBBaseConfig): void {
-        //throw new Error("Method not implemented.");
-    }
-    send_rgb_packet(indexs: number[], rgb_config: IRGBConfig): void {
-        //throw new Error("Method not implemented.");
-    }
-    request_debug_at(indexs: number[]) : void {
-        
+    get_feature(): IFeature {
+        return new Feature();
     }
 }
 
