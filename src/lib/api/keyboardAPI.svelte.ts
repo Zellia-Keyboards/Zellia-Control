@@ -100,36 +100,39 @@ export const keyboardAPI = {
       let selectedController: IKeyboardController | null = null;
       let selectedModel: KeyboardModel = 'zellia_starlight';
       let deviceName = 'Unknown Device';
+      let matchedDevice: any = null;
 
       for (const device of devices) {
         for (const controllerConfig of availableControllers) {
           if (this.deviceMatchesController(device, controllerConfig.controller)) {
             selectedController = new controllerConfig.controller();
-            console.log(selectedController);
+            console.log('[HID] Selected controller:', controllerConfig.modelName);
             selectedModel = controllerConfig.modelKey;
             deviceName = device.productName || controllerConfig.modelName;
+            matchedDevice = device;
             break;
           }
         }
         if (selectedController) break;
       }
 
-      if (!selectedController) {
+      // Fallback: if no productName match, use ZelliaStarlight as default for VID 0xFEED / PID 22319
+      if (!selectedController && devices.length > 0) {
+        const device = devices[0];
+        if (device.vendorId === 0xfeed && device.productId === 22319) {
+          console.warn('[HID] No exact productName match, falling back to ZelliaStarlight');
+          selectedController = new ZelliaStarlightController();
+          selectedModel = 'zelliastarlight' as KeyboardModel;
+          deviceName = device.productName || 'Zellia Starlight';
+          matchedDevice = device;
+        }
+      }
+
+      if (!selectedController || !matchedDevice) {
         throw new Error('No compatible controller found for detected device');
       }
 
-      // Connect to the device
-      const connected = await selectedController.connect(devices[0]);
-      //const connected = true;
-      if (!connected) {
-        throw new Error('Failed to connect to keyboard');
-      }
-
-      // Update state
-      keyboardConnectionState.isConnected = true;
-      keyboardConnectionState.connectionStatus = 'connected';
-      keyboardConnectionState.lastConnectedDevice = deviceName;
-      keyboardConnectionState.selectedModel = selectedModel;
+      // Set controller reference early so the updateData listener can access it
       keyboardConnectionState.controller = selectedController;
 
       // Sync static layout data immediately (hardcoded in controller, not from keyboard)
@@ -139,8 +142,9 @@ export const keyboardAPI = {
       layoutLabels.set(labels);
       selectedLayoutIndices.set(new Array(labels.length).fill(0));
 
-      // Listen for keyboard data as it arrives and sync to Svelte stores
-      selectedController.addEventListener('updateData', () => {
+      // Register the updateData listener BEFORE connect(), since connect() now
+      // reads all config data and dispatches updateData before returning
+      const syncStores = () => {
         const ctrl = keyboardConnectionState.controller;
         if (!ctrl) return;
         advancedKeys.set([...(ctrl.get_advanced_keys() as ekc.IAdvancedKey[])]);
@@ -148,7 +152,31 @@ export const keyboardAPI = {
         rgbBaseConfig.set({ ...(ctrl.get_rgb_base_config() as ekc.IRGBBaseConfig) });
         dynamicKeys.set([...(ctrl.get_dynamic_keys() as ekc.IDynamicKey[])]);
         keymap.set((ctrl.get_keymap() as number[][]).map(layer => [...layer]));
+      };
+      selectedController.addEventListener('updateData', syncStores);
+
+      // Auto-disconnect when keyboard is physically unplugged
+      selectedController.addEventListener('deviceDisconnected', () => {
+        console.warn('[HID] Keyboard physically disconnected, cleaning up...');
+        keyboardConnectionState.isConnected = false;
+        keyboardConnectionState.connectionStatus = 'disconnected';
+        keyboardConnectionState.controller = undefined;
+        keyboardConnectionState.selectedModel = null;
+        keyboardConnectionState.error = undefined;
+        goto('/');
       });
+
+      // Connect to the matched device (reads all config via request-response)
+      const connected = await selectedController.connect(matchedDevice);
+      if (!connected) {
+        throw new Error('Failed to connect to keyboard');
+      }
+
+      // Update state
+      keyboardConnectionState.isConnected = true;
+      keyboardConnectionState.connectionStatus = 'connected';
+      keyboardConnectionState.lastConnectedDevice = deviceName;
+      keyboardConnectionState.selectedModel = selectedModel;
 
       // Redirect to remap page after successful connection
       goto('/remap');
@@ -163,23 +191,29 @@ export const keyboardAPI = {
     }
   },
 
-  // Check if a device matches a controller (simplified matching)
+  // Check if a device matches a controller using productName to disambiguate
   deviceMatchesController(device: any, ControllerClass: any): boolean {
-    // For ZelliaStarlightController: vendorId: 0xFEED, productId: 22319
-    if (ControllerClass === ZelliaStarlightController) {
-      return device.vendorId === 0xfeed && device.productId === 22319;
-    }
-    // For Zellia80Controller: vendorId: 0xFEED, productId: 22319
-    if (ControllerClass === Zellia80Controller) {
-      return device.vendorId === 0xfeed && device.productId === 22319;
-    }
-    // For OholeoKeyboardController: vendorId: 0xFEED, productId: 22319 (same as Zellia80)
-    if (ControllerClass === OholeoKeyboardController) {
-      return device.vendorId === 0xfeed && device.productId === 22319;
-    }
-    // For TrinityPadController: vendorId: 0xFEED, productId: 0xFFFF
+    const name = (device.productName || '').toLowerCase();
+    console.log(`[HID] Matching device: vendorId=0x${device.vendorId?.toString(16)}, productId=0x${device.productId?.toString(16)}, productName="${device.productName}"`);
+
     if (ControllerClass === TrinityPadController) {
       return device.vendorId === 0xfeed && device.productId === 0xffff;
+    }
+
+    if (device.vendorId !== 0xfeed || device.productId !== 22319) {
+      return false;
+    }
+
+    // Use productName to distinguish keyboards with the same VID/PID
+    if (ControllerClass === Zellia80Controller) {
+      return name.includes('80');
+    }
+    if (ControllerClass === OholeoKeyboardController) {
+      return name.includes('oholeo');
+    }
+    if (ControllerClass === ZelliaStarlightController) {
+      // Starlight matches if name indicates 60/starlight, OR as fallback when no other matched
+      return name.includes('starlight') || name.includes('60');
     }
     return false;
   },
