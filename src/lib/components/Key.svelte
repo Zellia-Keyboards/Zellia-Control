@@ -89,16 +89,43 @@
     width: 100%;
     height: 100%;
   `;
+
+  // Detect single-label keys vs multi-label
+  $: filledLabels = labels.reduce((acc: number[], l: string, i: number) => {
+    if (l) acc.push(i);
+    return acc;
+  }, []);
+  $: isSingleLabel = filledLabels.length === 1;
+  $: singleLabelIndex = isSingleLabel ? filledLabels[0] : -1;
+
+  // For multi-label keys: labels alone in their row span all 3 columns
+  $: rowSpanSet = (() => {
+    if (isSingleLabel) return new Set<number>();
+    const rows = [[0, 1, 2], [3, 4, 5], [6, 7, 8]];
+    const set = new Set<number>();
+    rows.forEach(row => {
+      const filled = row.filter(i => labels[i]);
+      if (filled.length === 1) set.add(filled[0]);
+    });
+    return set;
+  })();
 </script>
 
 <div class="key-container" style={keyStyle}>
   <button class="keycap" class:selected={selected && allowSelection} class:selection-disabled={!allowSelection} on:mousedown={handleClick}>
     <div class="label-grid" style={labelContainerStyle}>
-      {#each Array(9) as _, i}
-        {#if labels[i]}
-          <span class="label-cell-{i}">{labels[i]}</span>
-        {/if}
-      {/each}
+      {#if isSingleLabel}
+        <span
+          class="label-single"
+          class:align-right={labels[singleLabelIndex] === 'No Event'}
+        >{labels[singleLabelIndex]}</span>
+      {:else}
+        {#each Array(9) as _, i}
+          {#if labels[i]}
+            <span class="label-cell-{i}" class:row-span={rowSpanSet.has(i)}>{labels[i]}</span>
+          {/if}
+        {/each}
+      {/if}
     </div>
   </button>
 </div>
@@ -242,7 +269,8 @@
   /* Base label cell styling */
   [class^='label-cell-'] {
     display: flex;
-    overflow: visible;
+    overflow: hidden;
+    overflow-wrap: anywhere;
     white-space: normal;
     line-height: 1.1;
     min-height: 0;
@@ -303,4 +331,35 @@
     justify-content: flex-end;
     align-items: flex-end;
   }
+
+  /* Single label: span full keycap, bottom-left by default */
+  .label-single {
+    grid-area: 1 / 1 / 4 / 4;
+    display: flex;
+    align-items: flex-end;
+    justify-content: flex-start;
+    overflow: hidden;
+    overflow-wrap: anywhere;
+    word-wrap: break-word;
+    line-height: 1.1;
+    min-height: 0;
+    min-width: 0;
+    white-space: normal;
+  }
+
+  /* No Event aligned to the right */
+  .label-single.align-right {
+    justify-content: flex-end;
+  }
+
+  /* Row-span: label alone in its row spans all 3 columns */
+  .label-cell-0.row-span { grid-area: 1 / 1 / 2 / 4; }
+  .label-cell-1.row-span { grid-area: 1 / 1 / 2 / 4; }
+  .label-cell-2.row-span { grid-area: 1 / 1 / 2 / 4; }
+  .label-cell-3.row-span { grid-area: 2 / 1 / 3 / 4; }
+  .label-cell-4.row-span { grid-area: 2 / 1 / 3 / 4; }
+  .label-cell-5.row-span { grid-area: 2 / 1 / 3 / 4; }
+  .label-cell-6.row-span { grid-area: 3 / 1 / 4 / 4; }
+  .label-cell-7.row-span { grid-area: 3 / 1 / 4 / 4; }
+  .label-cell-8.row-span { grid-area: 3 / 1 / 4 / 4; }
 </style>
