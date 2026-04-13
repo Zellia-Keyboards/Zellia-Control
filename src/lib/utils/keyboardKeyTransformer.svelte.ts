@@ -97,6 +97,11 @@ export function transformKeyboardKeys(
       let labels = newKeys[index].labels;
       labels = labels.map(() => '');
 
+      if (!advanced_key) {
+        newKeys[index].labels = labels;
+        return;
+      }
+
       // Helper to convert percentage (0-1) to mm and format nicely
       const toMm = (val: number) => (val * 4.0).toFixed(3);
 
@@ -199,6 +204,11 @@ export function transformKeyboardKeys(
       const rgb_config = rgbConfigs[keyId];
       let labels = newKeys[index].labels;
       labels = labels.map(() => '');
+
+      if (!rgb_config) {
+        newKeys[index].labels = labels;
+        return;
+      }
 
       switch (rgb_config.mode) {
         case ekc.RGBMode.RgbModeStatic: {
