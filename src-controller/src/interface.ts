@@ -1036,9 +1036,12 @@ export abstract class KeyboardController implements IKeyboardController, EventTa
 
 
 export function AdvancedKeyToBytes(key : IAdvancedKey): Uint8Array {
-    const bytes = new Uint8Array(48); // 总共 45 字节
-    bytes[0] = key.mode; // 写入 mode (1 字节)
+    const bytes = new Uint8Array(48);
+    bytes[0] = key.mode;
     bytes[1] = key.calibration_mode;
+
+    const dataView = new DataView(bytes.buffer);
+    // uint16 format: value * 65535, little-endian, starting at offset 2
     const fields = [
         key.activation_value,
         key.deactivation_value,
@@ -1048,17 +1051,17 @@ export function AdvancedKeyToBytes(key : IAdvancedKey): Uint8Array {
         key.release_speed,
         key.upper_deadzone,
         key.lower_deadzone,
-        key.upper_bound,
-        key.lower_bound,
     ];
 
-    let offset = 4; // 从第 2 个字节开始写入
-    const dataView = new DataView(bytes.buffer);
-
+    let offset = 2;
     for (let field of fields) {
-      dataView.setFloat32(offset, field, true); // 以小端序写入每个 f32 字段
-      offset += 4; // 每个 f32 占用 4 个字节
+      dataView.setUint16(offset, Math.round(field * 65535), true);
+      offset += 2;
     }
+    // upper_bound and lower_bound are raw uint16 (not scaled by 65535)
+    dataView.setUint16(offset, Math.round(key.upper_bound), true);
+    offset += 2;
+    dataView.setUint16(offset, Math.round(key.lower_bound), true);
 
     return bytes;
   }
