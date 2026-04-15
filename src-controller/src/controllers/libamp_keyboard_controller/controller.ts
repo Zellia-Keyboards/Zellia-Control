@@ -27,6 +27,15 @@ enum PacketData {
   PacketDataScriptSource = 0x0C,
   PacketDataScriptBytecode = 0x0D,
 };
+enum PacketUserType {
+  PacketTypeUserLayout = 0x00,
+  PacketTypeUserKeyTravel = 0x01,
+}
+
+enum PacketUserCode {
+  PacketDataUserGet = 0x00,
+  PacketDataUserSet = 0x01,
+}
 enum LargeDataCmd {
     Start = 0x00,
     Payload = 0x01,
@@ -1749,6 +1758,124 @@ export class LibampKeyboardController extends KeyboardController {
             //console.debug(send_buf);
             let res = this.enqueueCommand(send_buf);
             //console.debug("Wrote RGB Configs: {:?} byte(s)", res);
+        }
+    }
+
+    // ==========================================
+    // PACKET_TYPE_USER_LAYOUT
+    // ==========================================
+
+    async get_layouts(length : number): Promise<number[]> {
+        this.txBuffer.fill(0);
+        this.txBuffer[0] = PacketCode.PacketCodeUser;
+        this.txBuffer[1] = PacketUserType.PacketTypeUserLayout;
+        this.txBuffer[2] = PacketUserCode.PacketDataUserGet;
+        this.txBuffer[3] = length; // GET 请求时 length 为 0
+
+        // 等待下位机返回包含数据的包
+        const res = await this.enqueueCommand(this.txBuffer);
+
+        // 解析返回包 (res[0]=Code, res[1]=Type, res[2]=Action, res[3]=Length)
+        //const layoutLength = res[3];
+        // 截取对应长度的数据转换为普通数组并返回
+        return Array.from(res.slice(4, 4 + length));
+    }
+
+    async set_layouts(layouts: number[]): Promise<void> {
+        // 单个包最大载荷: 64 - Header(4) = 60，但保险起见限制在最大可用范围内
+        const MAX_LAYOUT_LEN = 59; 
+        const length = Math.min(layouts.length, MAX_LAYOUT_LEN);
+
+        this.txBuffer.fill(0);
+        this.txBuffer[0] = PacketCode.PacketCodeUser;
+        this.txBuffer[1] = PacketUserType.PacketTypeUserLayout;
+        this.txBuffer[2] = PacketUserCode.PacketDataUserSet;
+        this.txBuffer[3] = length;
+        
+        // 填入数据
+        for (let i = 0; i < length; i++) {
+            this.txBuffer[4 + i] = layouts[i];
+        }
+
+        await this.enqueueCommand(this.txBuffer);
+        console.debug("Sent User Layouts");
+    }
+
+    // ==========================================
+    // PACKET_TYPE_USER_KEY_TRAVEL
+    // ==========================================
+    async get_key_travel(indexs: number[]): Promise<number[]> {
+        // 头信息占 6 字节，载荷最多可放: Math.floor((64 - 6) / 4) = 14 个 item
+        const ITEMS_PER_PACKET = 14; 
+        const travelMap = new Map<number, number>();
+
+        // 分包发送请求
+        for (let i = 0; i < indexs.length; i += ITEMS_PER_PACKET) {
+            const chunk = indexs.slice(i, i + ITEMS_PER_PACKET);
+            
+            this.txBuffer.fill(0);
+            this.txBuffer[0] = PacketCode.PacketCodeUser;
+            this.txBuffer[1] = PacketUserCode.PacketDataUserGet;   // user_code
+            this.txBuffer[2] = PacketUserType.PacketTypeUserKeyTravel; // user_type
+            this.txBuffer[3] = 0; // reserved
+            
+            let dataView = new DataView(this.txBuffer.buffer);
+            // length 字段为 uint16_t (Offset 4)
+            dataView.setUint16(4, chunk.length, true); 
+            
+            // 填充数据数组 (Offset 6 开始)
+            for (let j = 0; j < chunk.length; j++) {
+                // index 在 offset 6 + j*4，travel 在 8 + j*4（GET 请求只需要填入 index 即可）
+                dataView.setUint16(6 + j * 4, chunk[j], true);
+            }
+
+            // 发送并等待这一批次的数据
+            const res = await this.enqueueCommand(this.txBuffer);
+            let resView = new DataView(res.buffer);
+            
+            // 解析回包数据
+            const resLength = resView.getUint16(4, true);
+            for (let j = 0; j < resLength; j++) {
+                const idx = resView.getUint16(6 + j * 4, true);
+                const travel = resView.getUint16(8 + j * 4, true);
+                travelMap.set(idx, travel);
+            }
+        }
+
+        // 按照用户传入的 indexs 顺序，拼接返回结果数组
+        return indexs.map(idx => travelMap.get(idx) ?? 0);
+    }
+
+    async set_key_travel(indexs: number[], key_travels: number[]): Promise<void> {
+        if (indexs.length !== key_travels.length) {
+            throw new Error("indexs and key_travels must have the same length");
+        }
+
+        const ITEMS_PER_PACKET = 14;
+        
+        // 分包发送设置
+        for (let i = 0; i < indexs.length; i += ITEMS_PER_PACKET) {
+            const chunkIndices = indexs.slice(i, i + ITEMS_PER_PACKET);
+            const chunkTravels = key_travels.slice(i, i + ITEMS_PER_PACKET);
+            
+            this.txBuffer.fill(0);
+            this.txBuffer[0] = PacketCode.PacketCodeUser;
+            this.txBuffer[1] = PacketUserCode.PacketDataUserSet;       // user_code
+            this.txBuffer[2] = PacketUserType.PacketTypeUserKeyTravel; // user_type
+            this.txBuffer[3] = 0; // reserved
+            
+            let dataView = new DataView(this.txBuffer.buffer);
+            // length 字段为 uint16_t (Offset 4)
+            dataView.setUint16(4, chunkIndices.length, true); 
+            
+            // 填充数据数组 (Offset 6 开始)
+            for (let j = 0; j < chunkIndices.length; j++) {
+                dataView.setUint16(6 + j * 4, chunkIndices[j], true); // index
+                dataView.setUint16(8 + j * 4, chunkTravels[j], true); // travel
+            }
+
+            await this.enqueueCommand(this.txBuffer);
+            console.debug(`Sent User Key Travel chunk ${i}`);
         }
     }
 }
