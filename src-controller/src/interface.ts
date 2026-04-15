@@ -132,6 +132,15 @@ export interface FirmwareVersion {
     patch: number;
     info: string;
 }
+
+export class KeyboardConfig {
+    debug : boolean = false;
+    nkro : boolean = false;
+    winlock : boolean = false;
+    continuous_poll : boolean = false;
+    enable_report : boolean = true;
+}
+
 // Interface for AdvancedKey
 export interface IAdvancedKey {
     state: boolean;
@@ -230,10 +239,10 @@ export class DynamicKeyStroke4x4 implements IDynamicKeyStroke4x4{
         this.target_keys_location = [];
         this.bindings = [0,0,0,0];
         this.key_control = [0,0,0,0];
-        this.press_begin_distance = 0.25;
-        this.press_fully_distance = 0.75;
-        this.release_begin_distance = 0.75;
-        this.release_fully_distance = 0.25;
+        this.press_begin_distance = 0.25*65535;
+        this.press_fully_distance = 0.75*65535;
+        this.release_begin_distance = 0.75*65535;
+        this.release_fully_distance = 0.25*65535;
     }
     get_primary_binding(): number {
         return this.bindings[0];
@@ -417,6 +426,8 @@ export enum Keycode {
     MIDICollection = 0xab,
     MIDINote = 0xac,
     MacroCollection = 0xad,
+    ScriptCollection = 0xae,
+    GamepadCollection = 0xaf,
     KeyUser = 0xFD,
     KeyboardOperation = 0xFE,
     KeyTransparent = 0xFF,
@@ -458,18 +469,21 @@ export enum KeyboardKeycode {
     KeyboardResetToDefault = 4,
     KeyboardRgbBrightnessUp = 5,
     KeyboardRgbBrightnessDown = 6,
-    KeyboardConfig0 = 0x10,
-    KeyboardConfig1 = 0x11,
-    KeyboardConfig2 = 0x12,
-    KeyboardConfig3 = 0x13,
+    KeyboardCalibrate = 7,
+    KeyboardRecovery = 8,
+    KeyboardProfile0 = 0x10,
+    KeyboardProfile1 = 0x11,
+    KeyboardProfile2 = 0x12,
+    KeyboardProfile3 = 0x13,
     KeyboardConfigBase = 0x20,
 }
-export enum KeyboardConfig {
+export enum KeyboardConfigCode {
     KeyboardConfigDebug = 0,
     KeyboardConfigNkro = 1,
     KeyboardConfigWinlock = 2,
     KeyboardConfigContinousPoll = 3,
-    KeyboardConfigNum = 4,
+    KeyboardConfigEnableReport = 4,
+    KeyboardConfigNum = 5,
 }
 export enum LayerControlKeycode {
     LayerMomentary = 0,
@@ -729,6 +743,45 @@ export enum MacroKeycode {
     MacroBegin                           = 0xf,
 }
 
+export enum ScriptKeycode {
+    ScriptWatch,
+    ScriptStart,
+    ScriptStop,
+    ScriptSuspend,
+    ScriptRestart,
+    ScriptToggle
+}
+
+export enum GamepadKeycode {
+    GamepadUp,
+    GamepadDown,
+    GamepadLeft,
+    GamepadRight,
+    GamepadStart,
+    GamepadBack,
+    GamepadLS,
+    GamepadRS,
+    GamepadLB,
+    GamepadRB,
+    GamepadGuide,
+    GamepadUndefined,
+    GamepadA,
+    GamepadB,
+    GamepadX,
+    GamepadY,
+    GamepadLT,
+    GamepadRT,
+    GamepadLeftXPositive = 32,
+    GamepadLeftXNegaitve = 33,
+    GamepadLeftYPositive = 34,
+    GamepadLeftYNegaitve = 35,
+    GamepadRightXPositive = 36,
+    GamepadRightXNegative = 37,
+    GamepadRightYPositive = 38,
+    GamepadRightYNegative = 39,
+    GamepadLTAnalog = 40,
+    GamepadRTAnalog = 41,
+}
 
 // Generic color interfaces
 export interface Srgb {
@@ -784,7 +837,7 @@ export class RGBConfig implements IRGBConfig {
           green: 55,
           blue: 252
         };
-        this.speed = 0.02;
+        this.speed = 20;
     }
 }
 
@@ -808,7 +861,7 @@ export class RGBBaseConfig implements IRGBBaseConfig {
           green: 0,
           blue: 0
         };
-        this.speed = 0.02;
+        this.speed = 20;
         this.direction = 0;
         this.density = 0;
         this.brightness = 255;
@@ -816,7 +869,7 @@ export class RGBBaseConfig implements IRGBBaseConfig {
 }
 
 export interface IKeyboardController{
-    detect(): Promise<HIDDevice[]>;
+    detect(silent: boolean): Promise<HIDDevice[]>;
     write(buf: Uint8Array) : number;
     read(buf: Uint8Array) : number ;
     read_timeout( buf: Uint8Array, timeout: number) : number;
@@ -834,20 +887,24 @@ export interface IKeyboardController{
     set_keymap(keymap : number[][]) : void;
     get_dynamic_keys(): IDynamicKey[];
     set_dynamic_keys(dynamic_keys: IDynamicKey[]): void;
+    get_config(): KeyboardConfig;
+    set_config(config: KeyboardConfig): void;
     reset_to_default() : void;
-    fetch_config() : void;
-    save_config() : void;
-    flash_config() : void;
+    fetch() : void;
+    save() : void;
+    flash() : void;
+    calibrate() : void;
     system_reset() : void;
     factory_reset() : void;
-    request_config() : void;
+    enter_bootloader(): void;
+    request_debug_at(ids: number[]) : void;
     start_debug() : void;
     stop_debug() : void;
     request_debug() : void;
     get_layout_json() : string;
-    get_config_file_num() : number;
-    get_config_file_index(): number;
-    set_config_file_index(index: number) : void;
+    get_profile_num() : number;
+    get_profile_index(): number;
+    set_profile_index(index: number) : void;
     get_layout_labels(): string[][];
     get_firmware_version() : FirmwareVersion;
     get_macros(): IMacroAction[][];
@@ -858,22 +915,17 @@ export interface IKeyboardController{
     set_script_bytecode(bytecode : Uint8Array) : void;
     get_readme_markdown() : string;
     get_feature() : IFeature;
+    emit(event : KeyboardKeyEvent, use_keymap : boolean) : void;
 }
 
 export interface IMacroAction {
     delay: number;
-    keycode: number;
-    event: number;
-    is_virtual : boolean;
-    key_id : number;
+    event: KeyboardKeyEvent;
 }
 
 export class MacroAction implements IMacroAction {
     delay: number = 0;
-    keycode: number = 0;
-    event: number = 0;
-    is_virtual: boolean = false;
-    key_id: number = 0;
+    event: KeyboardKeyEvent = new KeyboardKeyEvent();
 
 }
 
@@ -886,12 +938,29 @@ export abstract class KeyboardController implements IKeyboardController, EventTa
     dynamic_keys!: IDynamicKey[];
     config_index!: number;
     path : string;
+    config : KeyboardConfig;
     private listeners: { [key: string]: EventListener[] } = {};
 
     constructor() {
         this.device = undefined;
+        this.config = new KeyboardConfig();
         this.path = getEMIPathIdentifier();
         this.reset_to_default();
+    }
+    calibrate(): void {
+        
+    }
+    enter_bootloader(): void {
+        
+    }
+    get_config(): KeyboardConfig {
+        return this.config;
+    }
+    set_config(config: KeyboardConfig): void {
+        this.config = config;
+    }
+    emit(event : KeyboardKeyEvent, use_keymap : boolean): void {
+        
     }
     get_script_source(): string {
         return "";
@@ -909,7 +978,7 @@ export abstract class KeyboardController implements IKeyboardController, EventTa
         return "KeyboardController";
     }
     get_macros(): IMacroAction[][] {
-        return [new Array<MacroAction>];
+        return [[]];
     }
     set_macros(macros: IMacroAction[][]): void {
         
@@ -945,11 +1014,13 @@ export abstract class KeyboardController implements IKeyboardController, EventTa
       return false;
     }
     
-    async detect(): Promise<HIDDevice[]>
-    {        
-        return await navigator.hid.requestDevice({
-            filters: [{ vendorId: 0xFFFF, productId: 0xFFFF, usagePage:0xFFC0}]
-        });;
+    async detect(silent: boolean = false): Promise<HIDDevice[]>
+    {
+        return detectHIDDevice({
+            vendorId: 0xFFFF,
+            productId: 0xFFFF,
+            usagePage: 0xFFC0
+            }, silent);
     }
 
     write(buf: Uint8Array) : number
@@ -1013,22 +1084,22 @@ export abstract class KeyboardController implements IKeyboardController, EventTa
     }
     reset_to_default() : void
     {
-        this.advanced_keys = new Array<IAdvancedKey>();
+        this.advanced_keys = [];
         this.rgb_base_config = new RGBBaseConfig();
-        this.rgb_configs = new Array<IRGBConfig>();
-        this.keymap = new Array<Array<number>>();
-        this.dynamic_keys = new Array<IDynamicKey>();
+        this.rgb_configs = [];
+        this.keymap = [];
+        this.dynamic_keys = [];
         this.config_index = 0;
     }
-    fetch_config() : void
+    fetch() : void
     {
 
     }
-    save_config() : void
+    save() : void
     {
 
     }
-    flash_config() : void
+    flash() : void
     {
 
     }
@@ -1040,9 +1111,9 @@ export abstract class KeyboardController implements IKeyboardController, EventTa
     {
 
     }
-    request_config() : void
+    request_debug_at(ids: number[]): void
     {
-
+    
     }
     start_debug() : void
     {
@@ -1060,15 +1131,15 @@ export abstract class KeyboardController implements IKeyboardController, EventTa
     {
         return "[]";
     }
-    get_config_file_num() : number
+    get_profile_num() : number
     {
         return 0;
     }
-    get_config_file_index(): number
+    get_profile_index(): number
     {
         return 0;
     }
-    set_config_file_index(index: number) : void {
+    set_profile_index(index: number) : void {
         this.config_index = index;
     }
     get_layout_labels(): string[][] {
@@ -1083,30 +1154,72 @@ export abstract class KeyboardController implements IKeyboardController, EventTa
 }
 
 
-export function AdvancedKeyToBytes(key : IAdvancedKey): Uint8Array {
-    const bytes = new Uint8Array(48); // 总共 45 字节
-    bytes[0] = key.mode; // 写入 mode (1 字节)
-    bytes[1] = key.calibration_mode;
-    const fields = [
-        key.activation_value,
-        key.deactivation_value,
-        key.trigger_distance,
-        key.release_distance,
-        key.trigger_speed,
-        key.release_speed,
-        key.upper_deadzone,
-        key.lower_deadzone,
-        key.upper_bound,
-        key.lower_bound,
-    ];
-
-    let offset = 4; // 从第 2 个字节开始写入
-    const dataView = new DataView(bytes.buffer);
-
-    for (let field of fields) {
-      dataView.setFloat32(offset, field, true); // 以小端序写入每个 f32 字段
-      offset += 4; // 每个 f32 占用 4 个字节
+export class KeyboardKeyEvent {
+    keycode: number = 0;
+    event: number = 0;
+    is_virtual: boolean = false;
+    key_id: number = 0;
+    constructor()
+    {
     }
+}
 
-    return bytes;
+  export interface HIDFilter {
+  vendorId: number;
+  productId: number;
+  usagePage?: number;
+}
+
+/**
+ * 通用的 WebHID 设备检测/请求函数
+ * @param filter 设备过滤参数 (VID, PID, UsagePage)
+ * @param silent 是否为静默模式 (true: 获取已授权列表; false: 弹出浏览器选择框)
+ */
+export async function detectHIDDevice(
+  filter: HIDFilter, 
+  silent: boolean = false, 
+  nameFilter?: string //
+): Promise<HIDDevice[]> {
+  const hid = (navigator as any).hid;
+  if (!hid) return [];
+
+  if (silent) {
+    // 静默模式：获取已授权且在线的设备列表
+    const devices = await hid.getDevices();
+    return devices.filter((d: any) => {
+      // 1. 基本 VID/PID 校验
+      if (d.vendorId !== filter.vendorId || d.productId !== filter.productId) {
+        return false;
+      }
+      
+      // 2. 如果指定了 UsagePage，则深度匹配 collections
+      if (filter.usagePage) {
+        const hasUsage = d.collections.some((c: any) => c.usagePage === filter.usagePage);
+        if (!hasUsage) return false;
+      }
+      
+      // 注意：某些廉价主控可能没写 productName，所以要做一下判空保护
+      if (nameFilter && (!d.productName || !d.productName.includes(nameFilter))) {
+        return false;
+      }
+      
+      return true;
+    });
+  } else {
+    // 弹窗模式：请求用户授权新设备
+    const devices = await hid.requestDevice({
+      filters: [{
+        vendorId: filter.vendorId,
+        productId: filter.productId,
+        usagePage: filter.usagePage
+      }]
+    });
+
+    // 因为浏览器原生弹窗不支持按名字过滤，如果用户乱点了一个名字不匹配的设备，我们在这里把它剔除
+    if (nameFilter) {
+      return devices.filter((d: any) => d.productName && d.productName.includes(nameFilter));
+    }
+    
+    return devices;
   }
+}

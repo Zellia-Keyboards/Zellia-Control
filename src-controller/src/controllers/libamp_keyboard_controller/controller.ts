@@ -1,8 +1,8 @@
-import { AdvancedKeyToBytes, DynamicKey, DynamicKeyModTap, DynamicKeyMutex, DynamicKeyStroke4x4, DynamicKeyToggleKey, DynamicKeyType, IDynamicKey, KeyboardController, getEMIPathIdentifier, KeyboardKeycode, IAdvancedKey, IRGBBaseConfig, IRGBConfig, FirmwareVersion, MacroAction, IMacroAction, IFeature, Feature, ScriptLevel} from "./../../interface";
+import { DynamicKey, DynamicKeyModTap, DynamicKeyMutex, DynamicKeyStroke4x4, DynamicKeyToggleKey, DynamicKeyType, IDynamicKey, KeyboardController, getEMIPathIdentifier, KeyboardKeycode, IAdvancedKey, IRGBBaseConfig, IRGBConfig, FirmwareVersion, MacroAction, IMacroAction, IFeature, Feature, ScriptLevel, Keycode, KeyboardKeyEvent, KeyboardConfigCode} from "./../../interface";
 import semver, { SemVer } from 'semver';
 
 enum PacketCode {
-  PacketCodeAction = 0x00,
+  PacketCodeEvent = 0x00,
   PacketCodeSet = 0x01,
   PacketCodeGet = 0x02,
   PacketCodeLog = 0x03,
@@ -37,6 +37,7 @@ interface PendingRequest {
     resolve: (data: Uint8Array) => void;
     reject: (reason: any) => void;
     expectedCode: PacketCode | number;
+    expectedType: PacketData | number;
     timer: number;
 }
 
@@ -85,6 +86,16 @@ export class RequestQueue {
 
         this.isProcessing = false;
     }
+    public clear(reason: Error = new Error("Queue cleared")) {
+        // 将队列中所有还未执行的 Promise 全部 reject 掉，防止外部 await 死等
+        for (const item of this.queue) {
+            item.reject(reason);
+        }
+        // 清空数组释放内存
+        this.queue = [];
+        // 释放处理锁
+        this.isProcessing = false;
+    }
 }
 
 export class LibampKeyboardController extends KeyboardController {
@@ -96,7 +107,7 @@ export class LibampKeyboardController extends KeyboardController {
     private txBuffer = new Uint8Array(64); // 复用发送缓冲区，避免GC
     private requestQueue = new RequestQueue();
     firmware_version : FirmwareVersion = { major: 0, minor: 0, patch: 0, info: "" };
-    macros : MacroAction[][] = [new Array<MacroAction>];
+    macros : MacroAction[][] = [[]];
     feature : Feature = {
         script_level: ScriptLevel.Disable,
         advanced_key_flag: true,
@@ -124,20 +135,22 @@ export class LibampKeyboardController extends KeyboardController {
             }
 
             // 2. 如果不是我们在等待的包（或者是主动上报的 Debug/User 包），则走原有流程
-            this.dispatchEvent(new Event('updateData'));
+            //this.dispatchEvent(new Event('updateData'));
             this.packet_process(data);
         };
 
     }
     private async sendAndWait(buf: Uint8Array, timeout: number = 200): Promise<Uint8Array> {
         const expectedCode = buf[0];
+        const expectedType = buf[1];
 
         return new Promise((resolve, reject) => {
             // 3. 设置超时
             const timer = window.setTimeout(() => {
                 // 双重检查，确保超时的是当前这个请求
                 if (this.pendingRequest && 
-                    this.pendingRequest.expectedCode === expectedCode) {
+                    this.pendingRequest.expectedCode === expectedCode&&
+                    this.pendingRequest.expectedType === expectedType) {
                     
                     this.pendingRequest = null;
                     reject(new Error(`Timeout waiting for packet: Code ${expectedCode}`));
@@ -149,6 +162,7 @@ export class LibampKeyboardController extends KeyboardController {
                 resolve,
                 reject,
                 expectedCode, // 自动填入
+                expectedType,
                 timer
             };
 
@@ -202,7 +216,7 @@ export class LibampKeyboardController extends KeyboardController {
             result = true;
         }
         if (result) {
-            this.request_config();
+            this.request();
             this.device.addEventListener("inputreport", this.handleInputReport);
             navigator.hid.addEventListener('disconnect', this.handleDeviceDisconnect);
         }
@@ -227,6 +241,8 @@ export class LibampKeyboardController extends KeyboardController {
             this.pendingRequest.reject(new Error("Device disconnected abruptly"));
             this.pendingRequest = null;
         }
+
+        this.requestQueue.clear(new Error("Device disconnected abruptly"));
     }
 
     private async _set_large_data(dataType: number, data: Uint8Array): Promise<void> {
@@ -390,7 +406,7 @@ export class LibampKeyboardController extends KeyboardController {
                 this.packet_process_dynamic_key(buf);
                 break;
             case PacketData.PacketDataProfileIndex:
-                this.packet_process_config_index(buf);
+                this.packet_process_profile_index(buf);
                 break;
             case PacketData.PacketDataConfig:
                 this.packet_process_config(buf);
@@ -418,27 +434,36 @@ export class LibampKeyboardController extends KeyboardController {
 
     packet_process_advanced_key(buf : Uint8Array)
     {   
-      let dataView = new DataView(buf.buffer);  
-      if (buf[0] == PacketCode.PacketCodeGet) {
-          const key_index = dataView.getUint16(2, true);
-          this.advanced_keys[key_index].mode = buf[4];
-          this.advanced_keys[key_index].activation_value = dataView.getFloat32(8 + 4 * 0, true);
-          this.advanced_keys[key_index].deactivation_value = dataView.getFloat32(8 + 4 * 1, true);
-          this.advanced_keys[key_index].trigger_distance = dataView.getFloat32(8 + 4 * 2, true);
-          this.advanced_keys[key_index].release_distance = dataView.getFloat32(8 + 4 * 3, true);
-          this.advanced_keys[key_index].trigger_speed = dataView.getFloat32(8 + 4 * 4, true);
-          this.advanced_keys[key_index].release_speed = dataView.getFloat32(8 + 4 * 5, true);
-          this.advanced_keys[key_index].upper_deadzone = dataView.getFloat32(8 + 4 * 6, true);
-          this.advanced_keys[key_index].lower_deadzone = dataView.getFloat32(8 + 4 * 7, true);
-      }
-      else (buf[0] == PacketCode.PacketCodeSet)
-      {
-          const key_index = dataView.getUint16(2, true);
-          dataView.setUint16(2,key_index,true);
-          let key_bytes = AdvancedKeyToBytes(this.advanced_keys[key_index]);
-          buf.set(key_bytes,4);
-      }
-    }
+        let dataView = new DataView(buf.buffer);  
+        if (buf[0] == PacketCode.PacketCodeGet) {
+            const key_index = dataView.getUint16(2, true);
+            this.advanced_keys[key_index].mode = buf[4];
+            this.advanced_keys[key_index].calibration_mode = buf[5];
+            this.advanced_keys[key_index].activation_value = dataView.getUint16(6 + 2 * 0, true)/65535;
+            this.advanced_keys[key_index].deactivation_value = dataView.getUint16(6 + 2 * 1, true)/65535;
+            this.advanced_keys[key_index].trigger_distance = dataView.getUint16(6 + 2 * 2, true)/65535;
+            this.advanced_keys[key_index].release_distance = dataView.getUint16(6 + 2 * 3, true)/65535;
+            this.advanced_keys[key_index].trigger_speed = dataView.getUint16(6 + 2 * 4, true)/65535;
+            this.advanced_keys[key_index].release_speed = dataView.getUint16(6 + 2 * 5, true)/65535;
+            this.advanced_keys[key_index].upper_deadzone = dataView.getUint16(6 + 2 * 6, true)/65535;
+            this.advanced_keys[key_index].lower_deadzone = dataView.getUint16(6 + 2 * 7, true)/65535;
+            console.log(this.advanced_keys[key_index]);
+        }
+        else (buf[0] == PacketCode.PacketCodeSet)
+        {
+            const key_index = dataView.getUint16(2, true);
+            buf[4] = this.advanced_keys[key_index].mode;
+            buf[5] = this.advanced_keys[key_index].calibration_mode;
+            dataView.setUint16(6 + 2 * 0, this.advanced_keys[key_index].activation_value*65535, true);
+            dataView.setUint16(6 + 2 * 1, this.advanced_keys[key_index].deactivation_value*65535, true);
+            dataView.setUint16(6 + 2 * 2, this.advanced_keys[key_index].trigger_distance*65535, true);
+            dataView.setUint16(6 + 2 * 3, this.advanced_keys[key_index].release_distance*65535, true);
+            dataView.setUint16(6 + 2 * 4, this.advanced_keys[key_index].trigger_speed*65535, true);
+            dataView.setUint16(6 + 2 * 5, this.advanced_keys[key_index].release_speed*65535, true);
+            dataView.setUint16(6 + 2 * 6, this.advanced_keys[key_index].upper_deadzone*65535, true);
+            dataView.setUint16(6 + 2 * 7, this.advanced_keys[key_index].lower_deadzone*65535, true);
+        }
+    }   
 
     packet_process_rgb_base_config(buf : Uint8Array)
     {
@@ -452,10 +477,10 @@ export class LibampKeyboardController extends KeyboardController {
             this.rgb_base_config.secondary_rgb.red = buf[6];
             this.rgb_base_config.secondary_rgb.green = buf[7];
             this.rgb_base_config.secondary_rgb.blue = buf[8];
-            this.rgb_base_config.speed = dataView.getFloat32(9, true);
-            this.rgb_base_config.direction = dataView.getUint16(13, true);
-            this.rgb_base_config.density = buf[15];
-            this.rgb_base_config.brightness = buf[16];
+            this.rgb_base_config.speed = dataView.getUint16(9, true);
+            this.rgb_base_config.direction = dataView.getUint16(11, true);
+            this.rgb_base_config.density = buf[13];
+            this.rgb_base_config.brightness = buf[14];
       }
       else (buf[0] == PacketCode.PacketCodeSet)
       {
@@ -466,10 +491,10 @@ export class LibampKeyboardController extends KeyboardController {
             buf[6] = this.rgb_base_config.secondary_rgb.red;
             buf[7] = this.rgb_base_config.secondary_rgb.green;
             buf[8] = this.rgb_base_config.secondary_rgb.blue;
-            dataView.setFloat32(9,this.rgb_base_config.speed,true);
-            dataView.setUint16(13,this.rgb_base_config.direction % 65536,true);
-            buf[15] = this.rgb_base_config.density % 256;
-            buf[16] = this.rgb_base_config.brightness % 256;
+            dataView.setUint16(9,this.rgb_base_config.speed,true);
+            dataView.setUint16(11,this.rgb_base_config.direction % 65536,true);
+            buf[13] = this.rgb_base_config.density % 256;
+            buf[14] = this.rgb_base_config.brightness % 256;
       }
     }
 
@@ -480,14 +505,14 @@ export class LibampKeyboardController extends KeyboardController {
             const dataLength = buf[2];
             for (var i = 0; i < dataLength; i++)
             {
-                const key_index = dataView.getUint16(3 + 0 + 10 * i, true);
+                const key_index = dataView.getUint16(3 + 0 + 8 * i, true);
                 if (key_index<this.rgb_configs.length)
                 {
-                    this.rgb_configs[key_index].mode  = buf[3 + 10 * i + 2];
-                    this.rgb_configs[key_index].rgb.red = buf[3 + 10 * i + 3];
-                    this.rgb_configs[key_index].rgb.green = buf[3 + 10 * i + 4];
-                    this.rgb_configs[key_index].rgb.blue = buf[3 + 10 * i + 5];
-                    this.rgb_configs[key_index].speed = dataView.getFloat32(3 + 10 * i + 6, true);
+                    this.rgb_configs[key_index].mode  = buf[3 + 8 * i + 2];
+                    this.rgb_configs[key_index].rgb.red = buf[3 + 8 * i + 3];
+                    this.rgb_configs[key_index].rgb.green = buf[3 + 8 * i + 4];
+                    this.rgb_configs[key_index].rgb.blue = buf[3 + 8 * i + 5];
+                    this.rgb_configs[key_index].speed = dataView.getUint16(3 + 8 * i + 6, true);
                     
                     //rgb_to_hsv(&g_rgb_configs[g_rgb_mapping[buf[1]+i]].hsv, &g_rgb_configs[g_rgb_mapping[buf[1]+i]].rgb);
                 }
@@ -498,14 +523,14 @@ export class LibampKeyboardController extends KeyboardController {
             const dataLength = buf[2];
             for (var i = 0; i < dataLength; i++)
             {
-                const key_index = dataView.getUint16(3 + 0 + 10 * i,true);
+                const key_index = dataView.getUint16(3 + 0 + 8 * i,true);
                 if (key_index<this.rgb_configs.length)
                 {
-                  buf[3 + 2 + 10 * i] = this.rgb_configs[key_index].mode;
-                  buf[3 + 3 + 10 * i] = this.rgb_configs[key_index].rgb.red;
-                  buf[3 + 4 + 10 * i] = this.rgb_configs[key_index].rgb.green;
-                  buf[3 + 5 + 10 * i] = this.rgb_configs[key_index].rgb.blue;
-                  dataView.setFloat32(3 + 6 + 10 * i,this.rgb_configs[key_index].speed,true);
+                  buf[3 + 2 + 8 * i] = this.rgb_configs[key_index].mode;
+                  buf[3 + 3 + 8 * i] = this.rgb_configs[key_index].rgb.red;
+                  buf[3 + 4 + 8 * i] = this.rgb_configs[key_index].rgb.green;
+                  buf[3 + 5 + 8 * i] = this.rgb_configs[key_index].rgb.blue;
+                  dataView.setUint16(3 + 6 + 8 * i,this.rgb_configs[key_index].speed,true);
                 }
             }
       }
@@ -566,10 +591,10 @@ export class LibampKeyboardController extends KeyboardController {
                     dynamic_key_stroke.key_control[1] = dataView.getUint8(4+12+1);
                     dynamic_key_stroke.key_control[2] = dataView.getUint8(4+12+2);
                     dynamic_key_stroke.key_control[3] = dataView.getUint8(4+12+3);
-                    dynamic_key_stroke.press_begin_distance = dataView.getFloat32(4+16,true);
-                    dynamic_key_stroke.press_fully_distance = dataView.getFloat32(4+20,true);
-                    dynamic_key_stroke.release_begin_distance = dataView.getFloat32(4+24,true);
-                    dynamic_key_stroke.release_fully_distance = dataView.getFloat32(4+28,true);
+                    dynamic_key_stroke.press_begin_distance = dataView.getUint16(4+16,true)/65535;
+                    dynamic_key_stroke.press_fully_distance = dataView.getUint16(4+18,true)/65535;
+                    dynamic_key_stroke.release_begin_distance = dataView.getUint16(4+20,true)/65535;
+                    dynamic_key_stroke.release_fully_distance = dataView.getUint16(4+22,true)/65535;
                     dynamic_key = dynamic_key_stroke;
                     break;
                 case DynamicKeyType.DynamicKeyModTap:
@@ -619,11 +644,11 @@ export class LibampKeyboardController extends KeyboardController {
                     dataView.setUint8(4+12+1,dynamic_key_stroke.key_control[1]);
                     dataView.setUint8(4+12+2,dynamic_key_stroke.key_control[2]);
                     dataView.setUint8(4+12+3,dynamic_key_stroke.key_control[3]);
-                    dataView.setFloat32(4+16,dynamic_key_stroke.press_begin_distance,true);
-                    dataView.setFloat32(4+20,dynamic_key_stroke.press_fully_distance,true);
-                    dataView.setFloat32(4+24,dynamic_key_stroke.release_begin_distance,true);
-                    dataView.setFloat32(4+28,dynamic_key_stroke.release_fully_distance,true);
-                    dataView.setUint16(4+32,dynamic_key_stroke.target_keys_location[0].id,true);
+                    dataView.setUint16(4+16,dynamic_key_stroke.press_begin_distance*65535,true);
+                    dataView.setUint16(4+28,dynamic_key_stroke.press_fully_distance*65535,true);
+                    dataView.setUint16(4+20,dynamic_key_stroke.release_begin_distance*65535,true);
+                    dataView.setUint16(4+22,dynamic_key_stroke.release_fully_distance*65535,true);
+                    dataView.setUint16(4+24,dynamic_key_stroke.target_keys_location[0].id,true);
                     break;
                 case DynamicKeyType.DynamicKeyModTap:
                     const dynamic_key_mt = item as DynamicKeyModTap;
@@ -653,9 +678,9 @@ export class LibampKeyboardController extends KeyboardController {
       }
     }
 
-    packet_process_config_index(buf : Uint8Array)
+    packet_process_profile_index(buf : Uint8Array)
     {
-      let dataView = new DataView(buf.buffer);  
+      let dataView = new DataView(buf.buffer);
       if (buf[0] == PacketCode.PacketCodeGet) {
         this.profile_index = buf[2];
       }
@@ -663,6 +688,61 @@ export class LibampKeyboardController extends KeyboardController {
 
     packet_process_config(buf : Uint8Array)
     {
+        if (buf[0] === PacketCode.PacketCodeGet) {
+            // GET: 接收来自下位机的数据并更新本地 config
+            const length = buf[2];
+            for (let i = 0; i < length; i++) {
+                const index = buf[4 + i * 2];
+                const value = buf[5 + i * 2] > 0;
+                
+                switch (index) {
+                    case KeyboardConfigCode.KeyboardConfigDebug:
+                        this.config.debug = value;
+                        break;
+                    case KeyboardConfigCode.KeyboardConfigNkro:
+                        this.config.nkro = value;
+                        break;
+                    case KeyboardConfigCode.KeyboardConfigWinlock:
+                        this.config.winlock = value;
+                        break;
+                    case KeyboardConfigCode.KeyboardConfigContinousPoll:
+                        this.config.continuous_poll = value;
+                        break;
+                    case KeyboardConfigCode.KeyboardConfigEnableReport:
+                        this.config.enable_report = value;
+                        break;
+                }
+            }
+        }
+        else if (buf[0] === PacketCode.PacketCodeSet) {
+            // SET: 根据本地 config 填充即将发送给下位机的 Buffer
+            const length = buf[2];
+            for (let i = 0; i < length; i++) {
+                const index = buf[4 + i * 2];
+                let value = false;
+                
+                switch (index) {
+                    case KeyboardConfigCode.KeyboardConfigDebug:
+                        value = this.config.debug;
+                        break;
+                    case KeyboardConfigCode.KeyboardConfigNkro:
+                        value = this.config.nkro;
+                        break;
+                    case KeyboardConfigCode.KeyboardConfigWinlock:
+                        value = this.config.winlock;
+                        break;
+                    case KeyboardConfigCode.KeyboardConfigContinousPoll:
+                        value = this.config.continuous_poll;
+                        break;
+                    case KeyboardConfigCode.KeyboardConfigEnableReport:
+                        value = this.config.enable_report;
+                        break;
+                }
+                // 写入 boolean 对应的 0 或 1
+                buf[5 + i * 2] = value ? 1 : 0;
+            }
+        }
+        console.log(this.config);
     }
 
     packet_process_debug(buf : Uint8Array)
@@ -670,20 +750,26 @@ export class LibampKeyboardController extends KeyboardController {
       let dataView = new DataView(buf.buffer);  
       if (buf[0] == PacketCode.PacketCodeGet) {
         const dataLength = buf[2];
+        const tick = dataView.getUint32(3, true);
+        const updated_keys: number[] = [];
         for (var i = 0; i < dataLength; i++)
         {
-            const key_index = dataView.getUint16(3 + 0 + 12 * i, true);
+            const key_index = dataView.getUint16(7 + 0 + 8 * i, true);
+            updated_keys.push(key_index);
             if (key_index<this.advanced_keys.length)
             {
-                this.advanced_keys[key_index].state  = buf[3 + 12 * i + 2] > 0;
-                this.advanced_keys[key_index].report_state = buf[3 + 12 * i + 3] > 0;
-                this.advanced_keys[key_index].raw = dataView.getFloat32(3 + 12 * i + 4, true);
-                this.advanced_keys[key_index].value = dataView.getFloat32(3 + 12 * i + 8, true);
-            }
-            if (key_index == 0) {
-                //console.log(key_index, this.advanced_keys[key_index].raw);
+                this.advanced_keys[key_index].state  = buf[7 + 8 * i + 2] > 0;
+                this.advanced_keys[key_index].report_state = buf[7 + 8 * i + 3] > 0;
+                this.advanced_keys[key_index].raw = dataView.getUint16(7 + 8 * i + 4, true);
+                this.advanced_keys[key_index].value = dataView.getUint16(7 + 8 * i + 6, true)/65535;
             }
         }
+        this.dispatchEvent(new CustomEvent('updateDebugData', {
+            detail: {
+                tick: tick,
+                updated_keys: updated_keys,
+            }
+        }));
       }
     }
     packet_process_version(buf: Uint8Array) {
@@ -699,6 +785,11 @@ export class LibampKeyboardController extends KeyboardController {
             const infoBytes = buf.slice(16, 16 + infoLen);
             const decoder = new TextDecoder('utf-8');
             this.firmware_version.info = decoder.decode(infoBytes).replace(/\0/g, ''); // 去除可能的空字符
+            if (this.firmware_version.major == 0 &&
+                this.firmware_version.minor == 1
+            ) {
+                this.read_data();
+            }
             
             console.log("Firmware Version:", this.firmware_version);
         }
@@ -742,11 +833,13 @@ export class LibampKeyboardController extends KeyboardController {
                 const keycode = dataView.getUint16(offset + 10, true);
 
                 this.macros[macro_index][idx] = {
-                    delay,
-                    key_id,
-                    is_virtual,
-                    event,
-                    keycode
+                    delay : delay,
+                    event : {
+                        key_id : key_id,
+                        is_virtual : is_virtual,
+                        event : event,
+                        keycode : keycode
+                    }
                 }
             } 
             else if (code === PacketCode.PacketCodeSet) {
@@ -761,10 +854,10 @@ export class LibampKeyboardController extends KeyboardController {
                 if (action) {
                     dataView.setUint32(offset, action.delay, true);
                     // offset+4 (idx) 已经被调用者填好了，不需要重写，或者重写一遍也无妨
-                    dataView.setUint16(offset + 6, action.key_id, true);
-                    dataView.setUint8(offset + 8, action.is_virtual ? 1 : 0);
-                    dataView.setUint8(offset + 9, action.event);
-                    dataView.setUint16(offset + 10, action.keycode, true);
+                    dataView.setUint16(offset + 6, action.event.key_id, true);
+                    dataView.setUint8(offset + 8, action.event.is_virtual ? 1 : 0);
+                    dataView.setUint8(offset + 9, action.event.event);
+                    dataView.setUint16(offset + 10, action.event.keycode, true);
                 } else {
                     // 如果本地没有这个 Action (越界或空)，填充 0 或默认值
                     // 通常建议填充 MacroEnd (0)
@@ -787,12 +880,13 @@ export class LibampKeyboardController extends KeyboardController {
         return this.device != undefined;
     }
 
-    fetch_config(): void {
+    fetch(): void {
         throw new Error('Method not implemented.');
     }
 
-    async save_config() {
+    async save() {
         console.log("Starting save config...");
+        await this.write_config();
         await this.write_advanced_keys();
         await this.write_rgb_configs();
         await this.write_keymap();
@@ -805,65 +899,93 @@ export class LibampKeyboardController extends KeyboardController {
             }
         }
     }
-    flash_config(): void {
+    flash(): void {
         let send_buf = new Uint8Array(63);
-        send_buf[0] = PacketCode.PacketCodeAction;
-        send_buf[1] = KeyboardKeycode.KeyboardSave;
+        let dataView = new DataView(send_buf.buffer);
+        send_buf[0] = PacketCode.PacketCodeEvent;
+        send_buf[1] = 0x03;
+        send_buf[2] = Keycode.KeyboardOperation;
+        send_buf[3] = KeyboardKeycode.KeyboardSave;
+        send_buf[6] = 1;
         let res = this.write(send_buf);
         console.debug("Wrote Save Command: {:?} byte(s)", res);
     }
+
+    calibrate(): void {
+        let send_buf = new Uint8Array(63);
+        let dataView = new DataView(send_buf.buffer);
+        send_buf[0] = PacketCode.PacketCodeEvent;
+        send_buf[1] = 0x01;
+        send_buf[2] = Keycode.KeyboardOperation;
+        send_buf[3] = KeyboardKeycode.KeyboardCalibrate;
+        send_buf[6] = 1;
+        let res = this.write(send_buf);
+        console.debug("Wrote Calibrate Command: {:?} byte(s)", res);
+    }
     system_reset(): void {
         let send_buf = new Uint8Array(63);
-        send_buf[0] = PacketCode.PacketCodeAction;
-        send_buf[1] = KeyboardKeycode.KeyboardReboot;
+        send_buf[0] = PacketCode.PacketCodeEvent;
+        send_buf[1] = 0x03;
+        send_buf[2] = Keycode.KeyboardOperation;
+        send_buf[3] = KeyboardKeycode.KeyboardReboot;
+        send_buf[6] = 1;
         let res = this.write(send_buf);
         console.debug("Wrote System Reset Command: {:?} byte(s)", res);
     }
     factory_reset(): void {
         let send_buf = new Uint8Array(63);
-        send_buf[0] = PacketCode.PacketCodeAction;
-        send_buf[1] = KeyboardKeycode.KeyboardFactoryReset;
+        send_buf[0] = PacketCode.PacketCodeEvent;
+        send_buf[1] = 0x03;
+        send_buf[2] = Keycode.KeyboardOperation;
+        send_buf[3] = KeyboardKeycode.KeyboardFactoryReset;
+        send_buf[6] = 1;
         let res = this.write(send_buf);
         console.debug("Wrote Factory Reset Command: {:?} byte(s)", res);
     }
     enter_bootloader(): void {
         let send_buf = new Uint8Array(63);
-        send_buf[0] = PacketCode.PacketCodeAction;
-        send_buf[1] = KeyboardKeycode.KeyboardBootloader;
+        send_buf[0] = PacketCode.PacketCodeEvent;
+        send_buf[1] = 0x03;
+        send_buf[2] = Keycode.KeyboardOperation;
+        send_buf[3] = KeyboardKeycode.KeyboardBootloader;
+        send_buf[6] = 1;
         let res = this.write(send_buf);
         console.debug("Wrote Factory Reset Command: {:?} byte(s)", res);
     }
-    async request_config(): Promise<void> {
+    async read_data(): Promise<void> {
+        await this.read_config();
+        if (this.feature.advanced_key_flag) {
+          await this.read_advanced_keys();
+        }
+        if (this.feature.rgb_flag) {
+          await this.read_rgb_configs();
+        }
+        await this.read_keymap();
+        if (this.dynamic_keys.length > 0) {
+          await this.read_dynamic_keys();
+        }
+        if (this.macros.length > 0) {
+          await this.read_macros();
+        }
+        if (this.profile_number > 1) {
+          await this.read_config_index();
+        }
+        if (this.feature.script_level != ScriptLevel.Disable) {
+          await this.read_script_source();
+          await this.read_script_bytecode();
+        }
+        console.log("Config loaded successfully");
+        this.dispatchEvent(new Event('updateData'));
+    }
+    async request(): Promise<void> {
       try {
           await this.request_version();
-          if (this.feature.advanced_key_flag) {
-            await this.read_advanced_keys();
-          }
-          if (this.feature.rgb_flag) {
-            await this.read_rgb_configs();
-          }
-          await this.read_keymap();
-          if (this.dynamic_keys.length > 0) {
-            await this.read_dynamic_keys();
-          }
-          if (this.macros.length > 0) {
-            await this.read_macros();
-          }
-          if (this.profile_number > 1) {
-            await this.read_config_index();
-          }
-          if (this.feature.script_level != ScriptLevel.Disable) {
-            await this.read_script_source();
-            await this.read_script_bytecode();
-          }
-          console.log("Config loaded successfully");
-          this.dispatchEvent(new Event('updateData'));
       } catch (e) {
           console.error("Error loading config:", e);
       }
     }
     async request_debug(): Promise<void> {
-        const KEYS_PER_PACKET = 5; // 固件限制每包 5 个
+        const KEYS_PER_PACKET = 7; // 固件限制每包 5 个
         // 假设你有 80 个键，这里 advanced_keys.length = 80
         const total_keys = this.advanced_keys.length;
         const page_num = Math.ceil(total_keys / KEYS_PER_PACKET);
@@ -890,7 +1012,7 @@ export class LibampKeyboardController extends KeyboardController {
                 // item size = 12
                 // index offset inside item = 0
                 // 所以 offset = 3 + j * 12
-                dataView.setUint16(3 + j * 12, key_index, true);
+                dataView.setUint16(7 + j * 8, key_index, true);
             }
 
             // 关键：将发送任务加入数组，使用 enqueueCommand (记得你上一轮引入的队列方法)
@@ -905,17 +1027,73 @@ export class LibampKeyboardController extends KeyboardController {
         // 处理回包数据 (虽然 enqueueCommand 内部可能处理了，但为了保险可以在这里统一再处理一次，或者依赖内部的 packet_process)
         results.forEach(res => this.packet_process_debug(res));
     }
-    
+    async request_debug_at(ids: number[]): Promise<void> {
+        // 如果传入的数组为空，直接返回，避免发送无用数据包
+        if (!ids || ids.length === 0) {
+            return;
+        }
+
+        const KEYS_PER_PACKET = 4; // 固件限制每包 5 个
+        const total_keys = ids.length; // 总请求数为传入数组的长度
+        const page_num = Math.ceil(total_keys / KEYS_PER_PACKET);
+        
+        // 创建一个任务数组
+        const tasks: Promise<Uint8Array>[] = [];
+
+        for (let i = 0; i < page_num; i++) {
+            let send_buf = new Uint8Array(64);
+            // 假设 PacketCode 和 PacketData 已经在作用域或类成员中定义
+            send_buf[0] = PacketCode.PacketCodeGet;
+            send_buf[1] = PacketData.PacketDataDebug;
+
+            // 计算当前包实际要请求几个按键
+            let page_length = (i + 1) * KEYS_PER_PACKET > total_keys ? total_keys % KEYS_PER_PACKET : KEYS_PER_PACKET;
+            send_buf[2] = page_length; // 告诉固件我要读几个
+
+            let dataView = new DataView(send_buf.buffer);
+            
+            // 填充我要读的那些按键的 Index
+            for (let j = 0; j < page_length; j++) {
+                // 从 ids 数组中读取当前循环对应的具体按键 ID
+                let key_index = ids[i * KEYS_PER_PACKET + j];
+                
+                // PacketDebug data offset = 3
+                // item size = 12
+                // index offset inside item = 0
+                // 所以 offset = 3 + j * 12
+                dataView.setUint16(7 + j * 8, key_index, true);
+            }
+
+            // 将发送任务加入数组，使用 enqueueCommand
+            tasks.push(this.enqueueCommand(send_buf));
+        }
+
+        // 等待所有包发送并接收完成
+        const results = await Promise.all(tasks);
+        
+        // 处理回包数据
+        results.forEach(res => {
+            if (res) {
+                this.packet_process_debug(res);
+            }
+        });
+    }
     start_debug(): void {
         let send_buf = new Uint8Array(63);
-        send_buf[0] = PacketCode.PacketCodeAction;
-        send_buf[1] = 0xFE | (((1<<6) | (0x20 + 0)) << 8);
+        send_buf[0] = PacketCode.PacketCodeEvent;
+        send_buf[1] = 0x03;
+        send_buf[2] = Keycode.KeyboardOperation;
+        send_buf[3] = 32 | (1<<6);
+        send_buf[6] = 1;
         this.write(send_buf);
     }
     stop_debug(): void {
         let send_buf = new Uint8Array(63);
-        send_buf[0] = PacketCode.PacketCodeAction;
-        send_buf[1] = 0xFE | (((0<<6) | (0x20 + 0)) << 8);
+        send_buf[0] = PacketCode.PacketCodeEvent;
+        send_buf[1] = 0x03;
+        send_buf[2] = Keycode.KeyboardOperation;
+        send_buf[3] = 32 | (0<<6);
+        send_buf[6] = 1;
         this.write(send_buf);
     }
     
@@ -965,22 +1143,20 @@ export class LibampKeyboardController extends KeyboardController {
         } catch (e) {
             console.error("Failed to send RGB Base Config", e);
         }
-        const rgb_page_num = Math.ceil(this.rgb_configs.length / 6);
+        const rgb_page_num = Math.ceil(this.rgb_configs.length / 7);
         for (let i = 0; i < rgb_page_num; i++) {
             this.txBuffer.fill(0);
             this.txBuffer[0] = PacketCode.PacketCodeSet;
             this.txBuffer[1] = PacketData.PacketDataRgbConfig;
 
-            let page_length = (i + 1) * 6 > this.rgb_configs.length ? this.rgb_configs.length % 6 : 6;
+            let page_length = (i + 1) * 7 > this.rgb_configs.length ? this.rgb_configs.length % 7 : 7;
             this.txBuffer[2] = page_length;
             
             let dataView = new DataView(this.txBuffer.buffer);
 
-            // 【关键点】先填充“索引”，也就是告诉 packet_process 我们要发哪些键
             for (let j = 0; j < page_length; j++) {
-                let rgb_index = i * 6 + j;
-                // RGB Config 的 Index 偏移量是 3 + 10*j
-                dataView.setUint16(3 + 10 * j, rgb_index, true); 
+                let rgb_index = i * 7 + j;
+                dataView.setUint16(3 + 8 * j, rgb_index, true); 
             }
             this.packet_process(this.txBuffer);
 
@@ -1004,20 +1180,20 @@ export class LibampKeyboardController extends KeyboardController {
             console.error("Failed to read RGB Base Config", e);
         }
 
-        const rgb_page_num = Math.ceil(this.rgb_configs.length / 6);
+        const rgb_page_num = Math.ceil(this.rgb_configs.length / 7);
         for (let rgb_page_index = 0; rgb_page_index < rgb_page_num; rgb_page_index++) {
             this.txBuffer.fill(0);
             this.txBuffer[0] = PacketCode.PacketCodeGet;
             this.txBuffer[1] = PacketData.PacketDataRgbConfig;
             
-            let page_length = (rgb_page_index + 1) * 6 > this.rgb_configs.length ? this.rgb_configs.length % 6 : 6;
+            let page_length = (rgb_page_index + 1) * 7 > this.rgb_configs.length ? this.rgb_configs.length % 7 : 7;
             this.txBuffer[2] = page_length;
             
             const dataView = new DataView(this.txBuffer.buffer);
             for (let j = 0; j < page_length; j++) {
-                let rgb_index = rgb_page_index * 6 + j;
+                let rgb_index = rgb_page_index * 7 + j;
                 if (rgb_index < this.rgb_configs.length) {
-                    dataView.setUint16(3 + 0 + 10 * j, rgb_index, true);
+                    dataView.setUint16(3 + 0 + 8 * j, rgb_index, true);
                 }
             }
 
@@ -1223,29 +1399,79 @@ export class LibampKeyboardController extends KeyboardController {
         console.log("Macros read complete");
     }
 
-    get_config_file_num(): number {
+    async write_config() {
+        this.txBuffer.fill(0);
+        this.txBuffer[0] = PacketCode.PacketCodeSet;
+        this.txBuffer[1] = PacketData.PacketDataConfig;
+        
+        // 我们要写入的配置数量
+        const numConfigs = KeyboardConfigCode.KeyboardConfigNum; 
+        this.txBuffer[2] = numConfigs;
+        this.txBuffer[3] = 0; // reserved
+
+        // 预填充 Index
+        for (let i = 0; i < numConfigs; i++) {
+            this.txBuffer[4 + i * 2] = i; 
+        }
+
+        // 调用刚才写好的处理函数，它会根据上面填入的 index 将对应的数据值填入 Buffer
+        this.packet_process_config(this.txBuffer);
+
+        try {
+            await this.enqueueCommand(this.txBuffer);
+            console.debug("Sent Keyboard Config");
+        } catch (e) {
+            console.error("Failed to send Keyboard Config", e);
+        }
+    }
+
+    async read_config() {
+        this.txBuffer.fill(0);
+        this.txBuffer[0] = PacketCode.PacketCodeGet;
+        this.txBuffer[1] = PacketData.PacketDataConfig;
+        
+        const numConfigs = KeyboardConfigCode.KeyboardConfigNum;
+        this.txBuffer[2] = numConfigs;
+        this.txBuffer[3] = 0; // reserved
+
+        // 告诉下位机我们要查询哪几个 Index 的配置
+        for (let i = 0; i < numConfigs; i++) {
+            this.txBuffer[4 + i * 2] = i; 
+        }
+
+        try {
+            const res = await this.enqueueCommand(this.txBuffer);
+            this.packet_process_config(res);
+            console.debug("Read Keyboard Config");
+        } catch (e) {
+            console.error("Failed to read Keyboard Config", e);
+        }
+    }
+    get_profile_num(): number {
         return this.profile_number;
     }
 
-    get_config_file_index(): number {
+    get_profile_index(): number {
         return this.profile_index;
     }
 
-    async set_config_file_index(index: number) {
-        this.profile_number = index;
-        const commandId = this.profile_number + 0x10;
+    async set_profile_index(index: number) {
+        this.profile_index = index;
+        const commandId = this.profile_index + 0x10;
 
         // 1. 准备指令
         this.txBuffer.fill(0);
-        this.txBuffer[0] = PacketCode.PacketCodeAction;
-        this.txBuffer[1] = commandId;
-
+        this.txBuffer[0] = PacketCode.PacketCodeEvent;
+        this.txBuffer[1] = 0x03;
+        this.txBuffer[2] = Keycode.KeyboardOperation;
+        this.txBuffer[3] = commandId;
+        this.txBuffer[6] = 1;
         console.log(`Commanding switch to config ${index}...`);
 
         try {
             await this.enqueueCommand(this.txBuffer, 1000);
             console.log("MCU confirmed switch. Requesting data...");
-            await this.request_config();
+            //await this.request();
             
         } catch (e) {
             console.error("Config switch failed or timed out:", e);
@@ -1291,10 +1517,12 @@ export class LibampKeyboardController extends KeyboardController {
         // 将字符串编码为 UTF-8 字节流
         const encoder = new TextEncoder();
         const data = encoder.encode(sourceCode);
-        console.log("script source",data);
+        const dataWithNull = new Uint8Array(data.length + 1);
+        dataWithNull.set(data);
+        console.log("script source",dataWithNull);
         
         // 假设 PacketData.PacketDataScriptSource = 0x0C
-        await this._set_large_data(0x0C, data); 
+        await this._set_large_data(0x0C, dataWithNull); 
     }
 
     // 获取脚本源码
@@ -1351,6 +1579,23 @@ export class LibampKeyboardController extends KeyboardController {
         this.script_bytecode = bytecode;
     }
 
+    async emit(event : KeyboardKeyEvent, use_keymap: boolean) {
+        this.txBuffer.fill(0);
+        const dataView = new DataView(this.txBuffer.buffer);
+        this.txBuffer[0] = PacketCode.PacketCodeEvent;
+        this.txBuffer[1] = event.event;
+        dataView.setUint16(2, event.keycode ,true);
+        dataView.setUint16(4, event.key_id ,true);
+        this.txBuffer[6] = event.is_virtual ? 1 : 0;
+        this.txBuffer[7] = use_keymap ? 1 : 0;
+
+        try {
+            await this.enqueueCommand(this.txBuffer, 1000);
+            
+        } catch (e) {
+            console.error("emit timed out:", e);
+        }
+    }
 
     async send_advanced_key_packet(indexs: number[], advanced_key: IAdvancedKey){
 
@@ -1359,9 +1604,15 @@ export class LibampKeyboardController extends KeyboardController {
             send_buf[0] = PacketCode.PacketCodeSet;
             send_buf[1] = PacketData.PacketDataAdvancedKey;
             let dataView = new DataView(send_buf.buffer);
-            dataView.setUint16(2,index,true);
-            let key_bytes = AdvancedKeyToBytes(advanced_key);
-            send_buf.set(key_bytes,4);
+            dataView.setUint16(2,indexs[index],true);
+            dataView.setUint16(6 + 2 * 0, this.advanced_keys[indexs[index]].activation_value*65535, true);
+            dataView.setUint16(6 + 2 * 1, this.advanced_keys[indexs[index]].deactivation_value*65535, true);
+            dataView.setUint16(6 + 2 * 2, this.advanced_keys[indexs[index]].trigger_distance*65535, true);
+            dataView.setUint16(6 + 2 * 3, this.advanced_keys[indexs[index]].release_distance*65535, true);
+            dataView.setUint16(6 + 2 * 4, this.advanced_keys[indexs[index]].trigger_speed*65535, true);
+            dataView.setUint16(6 + 2 * 5, this.advanced_keys[indexs[index]].release_speed*65535, true);
+            dataView.setUint16(6 + 2 * 6, this.advanced_keys[indexs[index]].upper_deadzone*65535, true);
+            dataView.setUint16(6 + 2 * 7, this.advanced_keys[indexs[index]].lower_deadzone*65535, true);
             let res = await this.enqueueCommand(send_buf);
             console.debug("Wrote Advanced Key: {:?} byte(s)", res);
         }
@@ -1500,4 +1751,5 @@ export class LibampKeyboardController extends KeyboardController {
             //console.debug("Wrote RGB Configs: {:?} byte(s)", res);
         }
     }
-};
+}
+
