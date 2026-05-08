@@ -1,5 +1,15 @@
 <script lang="ts">
-  import { fade } from 'svelte/transition';
+  import {
+    AlertDialog,
+    AlertDialogContent,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogCancel,
+    AlertDialogAction,
+  } from '$lib/components/ui/alert-dialog';
+  import { cn } from '$lib/utils.js';
 
   interface Props {
     title: string;
@@ -10,45 +20,42 @@
     onCancel: () => void;
   }
 
-  let { title, message, confirmText, confirmColor = 'blue', onConfirm, onCancel }: Props = $props();
+  let {
+    title,
+    message,
+    confirmText,
+    confirmColor = 'blue',
+    onConfirm,
+    onCancel,
+  }: Props = $props();
+
+  let open = $state(true);
 
   const colorClasses = {
-    blue: 'glassmorphism-button bg-blue-600/80 border border-blue-500/50 text-white hover:bg-blue-600',
-    orange:
-      'glassmorphism-button bg-orange-600/80 border border-orange-500/50 text-white hover:bg-orange-600',
-    red: 'glassmorphism-button bg-red-600/80 border border-red-500/50 text-white hover:bg-red-600',
-  };
+    blue: 'bg-blue-600 hover:bg-blue-700 text-white',
+    orange: 'bg-orange-600 hover:bg-orange-700 text-white',
+    red: 'bg-destructive hover:bg-destructive/90 text-destructive-foreground',
+  } as const;
+
+  function handleOpenChange(value: boolean) {
+    open = value;
+    if (!value) onCancel();
+  }
 </script>
 
-<div
-  class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
-  transition:fade={{ duration: 150 }}
-  onclick={onCancel}
->
-  <div
-    class="border border-gray-700 rounded-xl shadow-2xl max-w-md w-full p-6 glassmorphism-card"
-    onclick={e => e.stopPropagation()}
-  >
-    <h3 class="text-xl font-bold text-white mb-3">{title}</h3>
-    <p class="text-sm text-gray-400 mb-6">
-      {@html message}
-    </p>
-
-    <div class="flex gap-3">
-      <button
-        class="flex-1 px-4 py-2.5 rounded-lg border font-medium transition-colors glassmorphism-button border-gray-600 text-gray-300"
-        onclick={onCancel}
-      >
-        Cancel
-      </button>
-      <button
-        class="flex-1 px-4 py-2.5 rounded-lg font-medium transition-colors {colorClasses[
-          confirmColor
-        ]}"
-        onclick={onConfirm}
-      >
+<AlertDialog bind:open onOpenChange={handleOpenChange}>
+  <AlertDialogContent class="glassmorphism-card">
+    <AlertDialogHeader>
+      <AlertDialogTitle>{title}</AlertDialogTitle>
+      <AlertDialogDescription>
+        {@html message}
+      </AlertDialogDescription>
+    </AlertDialogHeader>
+    <AlertDialogFooter>
+      <AlertDialogCancel onclick={onCancel}>Cancel</AlertDialogCancel>
+      <AlertDialogAction class={cn('glassmorphism-button', colorClasses[confirmColor])} onclick={onConfirm}>
         {confirmText}
-      </button>
-    </div>
-  </div>
-</div>
+      </AlertDialogAction>
+    </AlertDialogFooter>
+  </AlertDialogContent>
+</AlertDialog>

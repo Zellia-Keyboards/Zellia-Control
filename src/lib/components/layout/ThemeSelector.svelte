@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Palette } from 'lucide-svelte';
+  import { Palette, ChevronDown } from 'lucide-svelte';
   import { slide } from 'svelte/transition';
   import {
     selectedThemeColor,
@@ -7,6 +7,9 @@
     type ThemeColorName,
   } from '$lib/stores/DarkModeStore.svelte';
   import { language, t } from '$lib/stores/LanguageStore.svelte';
+  import { Button } from '$lib/components/ui/button';
+  import { Tooltip, TooltipTrigger, TooltipContent } from '$lib/components/ui/tooltip';
+  import { cn } from '$lib/utils.js';
 
   let showThemeSelector = $state(false);
   let currentTheme = $state<ThemeColorName | null>(null);
@@ -26,41 +29,45 @@
 </script>
 
 <div class="p-3">
-  <button
-    class="flex items-center justify-between w-full px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 glassmorphism-button"
+  <Button
+    variant="secondary"
+    class="w-full justify-between gap-3 glassmorphism-button"
     onclick={() => (showThemeSelector = !showThemeSelector)}
   >
-    <div class="flex items-center gap-3">
-      <Palette class="w-4 h-4" />
+    <span class="flex items-center gap-3">
+      <Palette class="size-4" />
       <span>{t('ui.themeColors', currentLanguage)}</span>
-    </div>
-    <svg
-      class="w-4 h-4 transition-transform duration-200"
-      class:rotate-180={showThemeSelector}
-      fill="none"
-      stroke="currentColor"
-      stroke-width="2"
-      viewBox="0 0 24 24"
-    >
-      <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
-    </svg>
-  </button>
+    </span>
+    <ChevronDown
+      class={cn('size-4 transition-transform', showThemeSelector && 'rotate-180')}
+    />
+  </Button>
 
   {#if showThemeSelector}
     <div class="grid grid-cols-4 gap-2 mt-2" transition:slide={{ duration: 300, axis: 'y' }}>
       {#each Object.entries(themeColors) as [name, color] (name)}
-        <!-- svelte-ignore a11y_consider_explicit_label -->
-        <button
-          title={name.charAt(0).toUpperCase() +
-            name.slice(1) +
-            (currentTheme === name ? ' (Click to deselect)' : '')}
-          class="w-full h-7 rounded border transition-all duration-150
-                             {currentTheme === name
-            ? 'border-white dark:border-white ring-2 ring-gray-400 dark:ring-white'
-            : 'border-gray-300 dark:border-gray-600 hover:border-gray-500 dark:hover:border-gray-400'}"
-          style="background-color: {color};"
-          onclick={() => setTheme(name as ThemeColorName)}
-        ></button>
+        {@const active = currentTheme === name}
+        <Tooltip>
+          <TooltipTrigger>
+            {#snippet child({ props })}
+              <button
+                {...props}
+                aria-label={name}
+                class={cn(
+                  'w-full h-7 rounded border transition-all duration-150',
+                  active
+                    ? 'border-foreground ring-2 ring-ring'
+                    : 'border-border hover:border-muted-foreground'
+                )}
+                style="background-color: {color};"
+                onclick={() => setTheme(name as ThemeColorName)}
+              ></button>
+            {/snippet}
+          </TooltipTrigger>
+          <TooltipContent side="top">
+            {name.charAt(0).toUpperCase() + name.slice(1)}{active ? ' (click to deselect)' : ''}
+          </TooltipContent>
+        </Tooltip>
       {/each}
     </div>
   {/if}

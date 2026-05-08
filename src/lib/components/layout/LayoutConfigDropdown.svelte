@@ -1,8 +1,23 @@
 <script lang="ts">
-  import { Settings } from 'lucide-svelte';
-  import { slide } from 'svelte/transition';
+  import { Settings, ChevronDown } from 'lucide-svelte';
   import { browser } from '$app/environment';
   import { layoutLabels, selectedLayoutIndices } from '$lib/stores/ControllerStore.svelte';
+  import { Button } from '$lib/components/ui/button';
+  import {
+    DropdownMenu,
+    DropdownMenuTrigger,
+    DropdownMenuContent,
+  } from '$lib/components/ui/dropdown-menu';
+  import {
+    Select,
+    SelectTrigger,
+    SelectContent,
+    SelectItem,
+  } from '$lib/components/ui/select';
+  import { Switch } from '$lib/components/ui/switch';
+  import { Label } from '$lib/components/ui/label';
+  import { Separator } from '$lib/components/ui/separator';
+  import { cn } from '$lib/utils.js';
 
   const STORAGE_KEY = 'zellia-layout-config';
 
@@ -19,32 +34,43 @@
       try {
         const stored = localStorage.getItem(STORAGE_KEY);
         if (stored) return JSON.parse(stored);
-      } catch { /* ignore invalid data */ }
+      } catch {
+        /* ignore invalid data */
+      }
     }
-    return { bottomRowConfig: '6.25u', splitSpacebar: false, rightShiftSplit: false, leftShiftSplit: false, splitBackspace: false };
+    return {
+      bottomRowConfig: '6.25u',
+      splitSpacebar: false,
+      rightShiftSplit: false,
+      leftShiftSplit: false,
+      splitBackspace: false,
+    };
   }
 
   const saved = loadLayoutConfig();
 
-  let showLayoutMenu = $state(false);
+  let open = $state(false);
   let bottomRowConfig = $state<'6.25u' | '7u'>(saved.bottomRowConfig);
   let splitSpacebar = $state(saved.splitSpacebar);
   let rightShiftSplit = $state(saved.rightShiftSplit);
   let leftShiftSplit = $state(saved.leftShiftSplit);
   let splitBackspace = $state(saved.splitBackspace);
 
-  // Persist layout config to localStorage whenever any toggle changes
   $effect(() => {
-    const config: LayoutConfig = { bottomRowConfig, splitSpacebar, rightShiftSplit, leftShiftSplit, splitBackspace };
+    const config: LayoutConfig = {
+      bottomRowConfig,
+      splitSpacebar,
+      rightShiftSplit,
+      leftShiftSplit,
+      splitBackspace,
+    };
     if (browser) {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
     }
   });
 
-  // Reactively update selectedLayoutIndices when toggles change
   $effect(() => {
     const labels = $layoutLabels;
-    // Read all toggle states to create reactive dependencies
     const _splitBackspace = splitBackspace;
     const _leftShiftSplit = leftShiftSplit;
     const _bottomRowConfig = bottomRowConfig;
@@ -53,164 +79,89 @@
 
     if (labels && labels.length > 0) {
       const indices = new Array(labels.length).fill(0);
-
-      // Group 0: Split backspace (toggle: off=0, on=1)
-      if (labels.length > 0 && labels[0].length > 0) {
-        indices[0] = _splitBackspace ? 1 : 0;
-      }
-
-      // Group 1: Split enter / right shift split (toggle: off=0, on=1)
-      if (labels.length > 1 && labels[1].length > 0) {
-        indices[1] = _rightShiftSplit ? 1 : 0;
-      }
-
-      // Group 2: Bottom row + split spacebar combination
-      // Maps to: 0=6.25u, 1=6.25u split, 2=7u, 3=7u split
+      if (labels.length > 0 && labels[0].length > 0) indices[0] = _splitBackspace ? 1 : 0;
+      if (labels.length > 1 && labels[1].length > 0) indices[1] = _rightShiftSplit ? 1 : 0;
       if (labels.length > 2 && labels[2].length > 0) {
         let baseIndex = _bottomRowConfig === '7u' ? 2 : 0;
         if (_splitSpacebar) baseIndex += 1;
-        // Clamp to available options
         indices[2] = Math.min(baseIndex, labels[2].length);
       }
-
-      // Group 3+: Additional layout groups
-      if (labels.length > 3 && labels[3].length > 0) {
-        indices[3] = _leftShiftSplit ? 1 : 0;
-      }
-
+      if (labels.length > 3 && labels[3].length > 0) indices[3] = _leftShiftSplit ? 1 : 0;
       selectedLayoutIndices.set(indices);
     }
   });
-
-  function applyConfiguration() {
-    console.log('Layout config applied:', {
-      bottomRowConfig,
-      splitSpacebar,
-      rightShiftSplit,
-      leftShiftSplit,
-      splitBackspace,
-    });
-    showLayoutMenu = false;
-  }
-
-  function handleOutsideClick() {
-    showLayoutMenu = false;
-  }
 </script>
 
-<svelte:window onclick={handleOutsideClick} />
+<DropdownMenu bind:open>
+  <DropdownMenuTrigger>
+    {#snippet child({ props })}
+      <Button
+        {...props}
+        variant="secondary"
+        class="glassmorphism-button hover:shadow-md gap-2"
+        title="Configure keyboard layout"
+      >
+        <Settings class="size-4 text-primary-500" />
+        <span class="text-sm font-semibold">Layout</span>
+        <ChevronDown
+          class={cn('size-4 text-muted-foreground transition-transform', open && 'rotate-180')}
+        />
+      </Button>
+    {/snippet}
+  </DropdownMenuTrigger>
 
-<div class="relative">
-  <button
-    class="flex items-center gap-2 px-4 py-2.5 rounded-lg transition-all duration-200 glassmorphism-button hover:shadow-md active:scale-95"
-    onclick={(e) => { e.stopPropagation(); showLayoutMenu = !showLayoutMenu; }}
-    title="Configure keyboard layout"
-  >
-    <Settings class="w-4 h-4 text-primary-500" />
-    <span class="text-sm font-semibold text-gray-900 dark:text-white">Layout</span>
-    <svg
-      class="w-4 h-4 transition-transform duration-300 text-gray-600 dark:text-gray-400 {showLayoutMenu ? 'rotate-180' : ''}"
-      fill="none"
-      stroke="currentColor"
-      stroke-width="2"
-      viewBox="0 0 24 24"
-    >
-      <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
-    </svg>
-  </button>
+  <DropdownMenuContent class="w-80 p-5 glassmorphism-card" align="end">
+    <div class="mb-4">
+      <h3 class="text-sm font-bold flex items-center gap-2">
+        <span class="size-2 rounded-full bg-primary-500"></span>
+        Layout Configuration
+      </h3>
+      <p class="text-xs text-muted-foreground mt-1">Customize your keyboard layout</p>
+    </div>
 
-  {#if showLayoutMenu}
-    <!-- svelte-ignore a11y_click_events_have_key_events -->
-    <!-- svelte-ignore a11y_no_static_element_interactions -->
-    <div
-      class="absolute right-0 top-14 w-80 glassmorphism-card border border-gray-300 dark:border-gray-600 rounded-xl shadow-xl z-50 p-5 backdrop-blu"
-      transition:slide={{ duration: 250, axis: 'y' }}
-      onclick={(e) => e.stopPropagation()}
-    >
-      <!-- Header -->
-      <div class="mb-5 pb-4 border-b border-gray-200 dark:border-gray-700">
-        <h3 class="text-sm font-bold text-gray-900 dark:text-white flex items-center gap-2">
-          <div class="w-2 h-2 rounded-full bg-primary-500"></div>
-          Layout Configuration
-        </h3>
-        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Customize your keyboard layout</p>
+    <Separator class="my-3" />
+
+    <div class="mb-4 space-y-2">
+      <Label class="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+        Bottom Row
+      </Label>
+      <Select type="single" bind:value={bottomRowConfig as never}>
+        <SelectTrigger class="w-full">
+          {bottomRowConfig === '7u' ? '7u (Tsangan)' : '6.25u (Standard)'}
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="6.25u" label="6.25u (Standard)" />
+          <SelectItem value="7u" label="7u (Tsangan)" />
+        </SelectContent>
+      </Select>
+    </div>
+
+    <div class="mb-4 flex items-center justify-between gap-3 px-1">
+      <div class="flex flex-col">
+        <Label for="split-spacebar" class="text-sm font-medium">Split spacebar</Label>
+        <span class="text-xs text-muted-foreground">
+          {bottomRowConfig === '7u' ? '(3u + 1u + 3u)' : '(2.25u + 1.25u + 2.75u)'}
+        </span>
       </div>
+      <Switch id="split-spacebar" bind:checked={splitSpacebar} />
+    </div>
 
-      <!-- Bottom Row Configuration -->
-      <div class="mb-4">
-        <h4 class="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-3 uppercase tracking-wide">Bottom Row</h4>
-        <div class="space-y-2">
-          <label
-            class="flex items-center px-3 py-2.5 text-sm cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50 rounded-lg transition-colors duration-150"
-          >
-            <input
-              type="radio"
-              bind:group={bottomRowConfig}
-              value="6.25u"
-              class="w-4 h-4 mr-3 text-primary-500 accent-primary-500 cursor-pointer"
-            />
-            <span class="text-gray-900 dark:text-white font-medium flex-1">6.25u (Standard)</span>
-          </label>
-          <label
-            class="flex items-center px-3 py-2.5 text-sm cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50 rounded-lg transition-colors duration-150"
-          >
-            <input
-              type="radio"
-              bind:group={bottomRowConfig}
-              value="7u"
-              class="w-4 h-4 mr-3 text-primary-500 accent-primary-500 cursor-pointer"
-            />
-            <span class="text-gray-900 dark:text-white font-medium flex-1">7u (Tsangan)</span>
-          </label>
+    <Separator class="my-3" />
+
+    <div>
+      <Label class="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3 block">
+        Split Keys
+      </Label>
+      <div class="space-y-3">
+        <div class="flex items-center justify-between px-1">
+          <Label for="right-shift-split" class="text-sm font-medium">Right shift split</Label>
+          <Switch id="right-shift-split" bind:checked={rightShiftSplit} />
         </div>
-      </div>
-      
-      <!-- Split Spacebar (only if 6.25u is selected) -->
-      {#if bottomRowConfig === '6.25u'}
-        <div class="mb-4 pb-4 border-b border-gray-200 dark:border-gray-700" transition:slide={{ duration: 200 }}>
-          <label
-            class="flex items-center px-3 py-2.5 text-sm cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50 rounded-lg transition-colors duration-150"
-          >
-            <input type="checkbox" bind:checked={splitSpacebar} class="w-4 h-4 mr-3 text-primary-500 accent-primary-500 cursor-pointer rounded" />
-            <span class="text-gray-900 dark:text-white font-medium flex-1">Split spacebar</span>
-            <span class="text-xs text-gray-500 dark:text-gray-400">(2.25u + 1.25u + 2.75u)</span>
-          </label>
-        </div>
-      {/if}
-
-
-      <!-- Split Spacebar (only if 7u is selected) -->
-      {#if bottomRowConfig === '7u'}
-        <div class="mb-4 pb-4 border-b border-gray-200 dark:border-gray-700" transition:slide={{ duration: 200 }}>
-          <label
-            class="flex items-center px-3 py-2.5 text-sm cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50 rounded-lg transition-colors duration-150"
-          >
-            <input type="checkbox" bind:checked={splitSpacebar} class="w-4 h-4 mr-3 text-primary-500 accent-primary-500 cursor-pointer rounded" />
-            <span class="text-gray-900 dark:text-white font-medium flex-1">Split spacebar</span>
-            <span class="text-xs text-gray-500 dark:text-gray-400">(3u+1u+3u)</span>
-          </label>
-        </div>
-      {/if}
-
-      <!-- Other Split Options -->
-      <div class="mb-4">
-        <h4 class="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-3 uppercase tracking-wide">Split Keys</h4>
-        <div class="space-y-2">
-          <label
-            class="flex items-center px-3 py-2.5 text-sm cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50 rounded-lg transition-colors duration-150"
-          >
-            <input type="checkbox" bind:checked={rightShiftSplit} class="w-4 h-4 mr-3 text-primary-500 accent-primary-500 cursor-pointer rounded" />
-            <span class="text-gray-900 dark:text-white font-medium">Right shift split</span>
-          </label>
-
-          <label
-            class="flex items-center px-3 py-2.5 text-sm cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50 rounded-lg transition-colors duration-150"
-          >
-            <input type="checkbox" bind:checked={splitBackspace} class="w-4 h-4 mr-3 text-primary-500 accent-primary-500 cursor-pointer rounded" />
-            <span class="text-gray-900 dark:text-white font-medium">Split backspace</span>
-          </label>
+        <div class="flex items-center justify-between px-1">
+          <Label for="split-backspace" class="text-sm font-medium">Split backspace</Label>
+          <Switch id="split-backspace" bind:checked={splitBackspace} />
         </div>
       </div>
     </div>
-  {/if}
-</div>
+  </DropdownMenuContent>
+</DropdownMenu>

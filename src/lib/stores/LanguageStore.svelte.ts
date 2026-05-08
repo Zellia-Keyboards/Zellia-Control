@@ -45,6 +45,7 @@ export const translations = {
     'nav.update': 'Update',
     // UI Elements
     'ui.sync': 'Sync',
+    'ui.save': 'Save',
     'ui.disconnect': 'Disconnect',
     'ui.profiles': 'Profiles',
     'ui.import': 'Import',
@@ -720,6 +721,7 @@ export const translations = {
 
     // UI Elements
     'ui.sync': '同步',
+    'ui.save': '保存',
     'ui.disconnect': '断开连接',
     'ui.profiles': '配置文件',
     'ui.import': '导入',

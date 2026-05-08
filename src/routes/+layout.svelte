@@ -1,24 +1,34 @@
 <script lang="ts">
   import '../app.css';
-  import { keyboardAPI} from '$lib/api/keyboardAPI.svelte';
+  import { keyboardAPI } from '$lib/api/keyboardAPI.svelte';
   import * as kle from '@ijprest/kle-serial';
   import { page } from '$app/stores';
   import { goto } from '$app/navigation';
   import { beforeNavigate, afterNavigate } from '$app/navigation';
   import { language } from '$lib/stores/LanguageStore.svelte';
-  import { advancedKeys, rgbConfigs, keymap, dynamicKeys } from '$lib/stores/ControllerStore.svelte';
+  import {
+    advancedKeys,
+    rgbConfigs,
+    keymap,
+    dynamicKeys,
+  } from '$lib/stores/ControllerStore.svelte';
   import { keyboardLayout as keyboardLayoutStore } from '$lib/stores/LayoutStore.svelte';
   import SmallScreenWarning from '$lib/components/layout/SmallScreenWarning.svelte';
   import Sidebar from '$lib/components/layout/Sidebar.svelte';
   import MainContentArea from '$lib/components/layout/MainContentArea.svelte';
+  import Sonner from '$lib/components/ui/Sonner.svelte';
+  import { TooltipProvider } from '$lib/components/ui/tooltip';
   import { shouldShowConfiguratorLayout, shouldShowLayerSelector } from '$lib/utils/layoutHelpers';
-  import { transformKeyboardKeys, mapToExtendedKeys, type ExtendedKey } from '$lib/utils/keyboardKeyTransformer.svelte';
+  import {
+    transformKeyboardKeys,
+    mapToExtendedKeys,
+    type ExtendedKey,
+  } from '$lib/utils/keyboardKeyTransformer.svelte';
   import { selectedLayer } from '$lib/stores/SelectedLayerStore.svelte';
 
   let { children } = $props();
   let isLoadingConfigurator = $state(false);
   let currentLanguage = $derived($language);
-
 
   // Keyboard layout for global KeyboardRender
   let layout = $derived($keyboardLayoutStore);
@@ -29,7 +39,15 @@
 
   // Transform keyboard keys based on the active page
   let keyboardKeys: ExtendedKey[] = $derived.by(() => {
-    return transformKeyboardKeys(extendedKeys, $advancedKeys, $rgbConfigs, $page.url.pathname, $keymap, $selectedLayer, $dynamicKeys);
+    return transformKeyboardKeys(
+      extendedKeys,
+      $advancedKeys,
+      $rgbConfigs,
+      $page.url.pathname,
+      $keymap,
+      $selectedLayer,
+      $dynamicKeys
+    );
   });
 
   // Derived variables for layout state
@@ -82,40 +100,44 @@
   });
 </script>
 
-<!-- Main Application -->
-{#if shouldShowLayout}
-  <!-- Small Screen Warning -->
-  <SmallScreenWarning />
+<TooltipProvider delayDuration={150}>
+  <!-- Main Application -->
+  {#if shouldShowLayout}
+    <!-- Small Screen Warning -->
+    <SmallScreenWarning />
 
-  <!-- Main Application (hidden on small screens) -->
-  <div class="hidden xl:flex h-screen bg-gray-50 dark:bg-black overflow-hidden">
-    <!-- Sidebar -->
-    <Sidebar />
+    <!-- Main Application (hidden on small screens) -->
+    <div class="hidden xl:flex h-screen bg-background text-foreground overflow-hidden">
+      <!-- Sidebar -->
+      <Sidebar />
 
-    <!-- Main Content -->
-    <div
-      class="flex-1 flex flex-col overflow-y-scroll overflow-x-hidden isolate glassmorphism-main"
-      style="gap: calc(1rem * var(--ui-scale, 1)); padding: calc(1rem * var(--ui-scale, 1));"
-    >
-      <MainContentArea
-        {children}
-        {keyboardKeys}
-        {isLoadingConfigurator}
-        shouldShowLayerSelector={showLayerSelector}
-      />
+      <!-- Main Content -->
+      <div
+        class="flex-1 flex flex-col overflow-y-scroll overflow-x-hidden isolate glassmorphism-main"
+        style="gap: calc(1rem * var(--ui-scale, 1)); padding: calc(1rem * var(--ui-scale, 1));"
+      >
+        <MainContentArea
+          {children}
+          {keyboardKeys}
+          {isLoadingConfigurator}
+          shouldShowLayerSelector={showLayerSelector}
+        />
+      </div>
     </div>
-  </div>
-{:else}
-  <!-- Show standalone pages (welcome, demo-select) without sidebar -->
-  <div class="min-h-screen">
-    {@render children()}
-  </div>
-{/if}
+  {:else}
+    <!-- Show standalone pages (welcome, demo-select) without sidebar -->
+    <div class="min-h-screen bg-background text-foreground">
+      {@render children()}
+    </div>
+  {/if}
+
+  <Sonner />
+</TooltipProvider>
 
 <style lang="postcss">
   @reference "tailwindcss";
   :global(html) {
-    background-color: theme(--color-gray-50);
-    --theme-color-primary: #6366f1; /* Default Indigo, will be overridden */
+    background-color: var(--background);
+    --theme-color-primary: #8b5cf6; /* Violet primary, override via theme selector */
   }
 </style>

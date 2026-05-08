@@ -7,9 +7,20 @@
   import LanguageSwitch from './LanguageSwitch.svelte';
   import DarkModeToggle from './DarkModeToggle.svelte';
   import { NAVIGATE } from '$lib/config/navigation';
-  import { LogOut, Save } from 'lucide-svelte';
+  import { ChevronRight, FolderKanban, LogOut, Save } from 'lucide-svelte';
   import { slide } from 'svelte/transition';
-  import { advancedKeys, dynamicKeys, keymap, rgbBaseConfig, rgbConfigs } from '$lib/stores/ControllerStore.svelte';
+  import {
+    advancedKeys,
+    dynamicKeys,
+    keymap,
+    rgbBaseConfig,
+    rgbConfigs,
+  } from '$lib/stores/ControllerStore.svelte';
+  import { Button } from '$lib/components/ui/button';
+  import { Separator } from '$lib/components/ui/separator';
+  import { ScrollArea } from '$lib/components/ui/scroll-area';
+  import { cn } from '$lib/utils.js';
+  import { toast } from 'svelte-sonner';
 
   let currentLanguage = $derived($language);
 
@@ -20,134 +31,121 @@
   function handleDisconnect() {
     keyboardAPI.disconnect();
     goto('/');
+    toast.success('Disconnected');
   }
+
   function handleSave() {
-    console.log("save");
-    console.log($advancedKeys);
     keyboardConnectionState.controller?.set_advanced_keys($advancedKeys);
-    console.log($rgbBaseConfig);
     keyboardConnectionState.controller?.set_rgb_base_config($rgbBaseConfig);
-    console.log($keymap);
     if ($keymap != undefined) {
       keyboardConnectionState.controller?.set_keymap($keymap);
     }
-    console.log($rgbConfigs);
     keyboardConnectionState.controller?.set_rgb_configs($rgbConfigs);
-    console.log($dynamicKeys);
     keyboardConnectionState.controller?.set_dynamic_keys($dynamicKeys);
-    var result = keyboardConnectionState.controller?.save_config();
-    console.debug(result);
+    keyboardConnectionState.controller?.save_config();
     keyboardConnectionState.controller?.flash_config();
+    toast.success('Configuration saved');
   }
 </script>
 
-<div
-  class="sidebar flex flex-col dark:bg-black dark:border-gray-600 bg-white border-gray-200 glassmorphism-sidebar shadow-xl h-full overflow-y-auto overflow-x-hidden border-r isolate"
+<aside
+  class="sidebar flex flex-col bg-sidebar text-sidebar-foreground border-r border-sidebar-border glassmorphism-sidebar shadow-xl h-full overflow-hidden isolate"
   style="width: var(--sidebar-width, 13rem);"
 >
   <!-- Header -->
   <div class="p-4">
-    <h1 class="font-black text-xl dark:text-white text-gray-900 text-center">
-      <span class="italic">{currentLanguage === 'en' ? 'ZELLIA' : 'ZELLIA'}</span>
+    <h1 class="font-black text-xl text-sidebar-foreground text-center tracking-tight">
+      <span class="italic">ZELLIA</span>
       {currentLanguage === 'en' ? 'Control' : '控制'}
     </h1>
 
     <!-- Connection Status -->
-    <div class="mt-3 text-center">
-      <div class="flex items-center justify-center gap-2 text-xs text-gray-600 dark:text-gray-400">
-        {#if keyboardAPI.shouldShowConfigurator}
-          <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-          <span>
-            <i>
-              {keyboardAPI.state.lastConnectedDevice || 'Connected'}
-            </i>
-          </span>
-        {:else}
-          <div class="w-2 h-2 bg-gray-400 rounded-full"></div>
-          <span><i>Waiting to connect</i></span>
-        {/if}
-      </div>
+    <div class="mt-3 flex items-center justify-center gap-2 text-xs text-muted-foreground">
+      {#if keyboardAPI.shouldShowConfigurator}
+        <span class="size-2 rounded-full bg-green-500 animate-pulse"></span>
+        <span class="italic">
+          {keyboardAPI.state.lastConnectedDevice || 'Connected'}
+        </span>
+      {:else}
+        <span class="size-2 rounded-full bg-muted-foreground/50"></span>
+        <span class="italic">Waiting to connect</span>
+      {/if}
     </div>
   </div>
 
-  <!-- Profile Section -->
-  <div class="px-3 pb-3 space-y-2">
-    <a
-      href="/profiles"
-      class="flex items-center justify-between w-full px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white shadow-md hover:shadow-lg glassmorphism-button"
-    >
-      <div class="flex items-center gap-2">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M5 19a2 2 0 01-2-2V7a2 2 0 012-2h4l2 2h4a2 2 0 012 2v1M5 19h14a2 2 0 002-2v-5a2 2 0 00-2-2H9a2 2 0 00-2 2v5a2 2 0 01-2 2z"
-          />
-        </svg>
-        <span><i>{t('ui.profiles', currentLanguage)}</i></span>
-      </div>
-      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-      </svg>
-    </a>
+  <Separator class="bg-sidebar-border/60" />
 
-    <!-- Save Button -->
+  <!-- Profile + Save + Disconnect -->
+  <div class="px-3 py-3 space-y-2">
+    <Button
+      href="/profiles"
+      variant="default"
+      class="w-full justify-between bg-primary-500 hover:bg-primary-600 text-white shadow-md hover:shadow-lg glassmorphism-button"
+    >
+      <span class="flex items-center gap-2">
+        <FolderKanban class="size-4" />
+        <i>{t('ui.profiles', currentLanguage)}</i>
+      </span>
+      <ChevronRight class="size-4" />
+    </Button>
+
     {#if keyboardAPI.shouldShowConfigurator}
-      <div in:slide|global={{ duration: 350, easing: t => t * (2 - t), axis: 'y' }}>
-        <button
-          class="w-full px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 text-white shadow-lg hover:shadow-xl glassmorphism-button flex items-center justify-center gap-2 active:scale-95 hover:animate-none"
+      <div in:slide|global={{ duration: 350, axis: 'y' }}>
+        <Button
+          variant="default"
+          class="w-full shadow-lg hover:shadow-xl glassmorphism-button"
           onclick={handleSave}
           title="Save configuration"
         >
-          <div class="flex items-center justify-center gap-1">
-            <Save class="w-3 h-3" />
-            <i>{t('ui.save', currentLanguage)}</i>
-          </div>
-        </button>
+          <Save class="size-4" />
+          <i>{t('ui.save', currentLanguage)}</i>
+        </Button>
       </div>
-    {/if}
-    
-    <!-- Disconnect Button -->
-    {#if keyboardAPI.shouldShowConfigurator}
-      <div in:slide|global={{ duration: 350, easing: t => t * (2 - t), axis: 'y' }}>
-        <button
-          class="w-full px-3 py-2 text-xs font-medium border rounded-md transition-colors duration-200 text-red-600 dark:text-red-400 border-red-300 dark:border-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 glassmorphism-button"
+
+      <div in:slide|global={{ duration: 350, axis: 'y' }}>
+        <Button
+          variant="outline"
+          size="sm"
+          class="w-full text-destructive border-destructive/40 hover:bg-destructive/10 hover:text-destructive glassmorphism-button"
           onclick={handleDisconnect}
         >
-          <div class="flex items-center justify-center gap-1">
-            <LogOut class="w-3 h-3" />
-            <i>{t('ui.disconnect', currentLanguage)}</i>
-          </div>
-        </button>
+          <LogOut class="size-4" />
+          <i>{t('ui.disconnect', currentLanguage)}</i>
+        </Button>
       </div>
     {/if}
   </div>
 
+  <Separator class="bg-sidebar-border/60" />
+
   <!-- Navigation -->
-  <div class="flex-1 p-3">
-    <nav class="space-y-1">
+  <ScrollArea class="flex-1">
+    <nav class="p-3 space-y-1">
       {#each NAVIGATE as [href, name]}
+        {@const active = isActive(href)}
         <a
           {href}
-          class="flex items-center gap-3 w-full px-3 py-2.5 text-sm font-medium rounded-lg relative overflow-hidden text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-900 data-[active=true]:bg-primary-500 data-[active=true]:text-white data-[active=true]:shadow-sm transition-all duration-200 ease-in glassmorphism-nav-item"
-          data-active={isActive(href)}
+          data-active={active}
+          class={cn(
+            'flex items-center gap-3 w-full px-3 py-2.5 text-sm font-medium rounded-md relative overflow-hidden transition-colors',
+            'text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground',
+            'data-[active=true]:bg-primary-500 data-[active=true]:text-white data-[active=true]:shadow-sm',
+            'glassmorphism-nav-item'
+          )}
         >
           <span class="relative z-10"><i>{t(name, currentLanguage)}</i></span>
         </a>
       {/each}
     </nav>
-  </div>
+  </ScrollArea>
 
-  <!-- Theme Selector -->
+  <Separator class="bg-sidebar-border/60" />
+
+  <!-- Theme / Language / Dark mode -->
   <ThemeSelector />
-
-  <!-- Language Selector -->
   <LanguageSwitch />
-
-  <!-- Dark Mode Toggle -->
   <DarkModeToggle />
-</div>
+</aside>
 
 <style lang="postcss">
   .sidebar {

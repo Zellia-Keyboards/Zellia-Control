@@ -1,5 +1,8 @@
 <script lang="ts">
   import { language, t } from '$lib/stores/LanguageStore.svelte';
+  import { ArrowLeft } from 'lucide-svelte';
+  import { Button } from '$lib/components/ui/button';
+  import { Separator } from '$lib/components/ui/separator';
 
   interface Props {
     onBack: () => void;
@@ -8,44 +11,33 @@
   }
 
   let { onBack, onApply, canApply }: Props = $props();
-
   let currentLanguage = $derived($language);
 </script>
 
-<div class="border-b px-6 py-4 -mx-8 -mt-8 mb-4">
+<div class="px-6 py-4 -mx-8 -mt-8 mb-4">
   <div class="flex items-center justify-between">
     <div class="flex items-center gap-4">
-      <button
-        class="flex items-center gap-2 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors"
-        onclick={onBack}
-      >
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M15 19l-7-7 7-7"
-          />
-        </svg>
+      <Button variant="ghost" size="sm" onclick={onBack} class="gap-2">
+        <ArrowLeft class="size-4" />
         {t('advancedkey.backToAdvanced', currentLanguage)}
-      </button>
+      </Button>
       <div>
-        <h1 class="text-xl font-semibold text-gray-900 dark:text-white">
+        <h1 class="text-xl font-semibold">
           {t('advancedkey.nullBindTitle', currentLanguage)}
         </h1>
-        <p class="text-sm text-gray-500 dark:text-gray-400">
+        <p class="text-sm text-muted-foreground">
           {t('advancedkey.nullBindSubtitle', currentLanguage)}
         </p>
       </div>
     </div>
-    <div class="flex gap-3">
-      <button
-        class="px-4 py-2 text-white bg-primary-500 hover:bg-primary-600 rounded-md transition-colors text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed glassmorphism-button"
-        onclick={onApply}
-        disabled={!canApply}
-      >
-        {t('advancedkey.applyConfiguration', currentLanguage)}
-      </button>
-    </div>
+    <Button
+      variant="default"
+      class="bg-primary-500 hover:bg-primary-600 text-white glassmorphism-button"
+      onclick={onApply}
+      disabled={!canApply}
+    >
+      {t('advancedkey.applyConfiguration', currentLanguage)}
+    </Button>
   </div>
 </div>
+<Separator class="-mx-8 mb-4" />

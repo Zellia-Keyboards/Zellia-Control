@@ -1,5 +1,8 @@
 <script lang="ts">
   import { language, t } from '$lib/stores/LanguageStore.svelte';
+  import { Slider } from '$lib/components/ui/slider';
+  import { Switch } from '$lib/components/ui/switch';
+  import { Label } from '$lib/components/ui/label';
 
   interface Props {
     separateSensitivity: boolean;
@@ -27,135 +30,82 @@
 
 <div class="flex-1 min-w-[260px] flex flex-col">
   <div class="flex items-center justify-between mb-3">
-    <h3 class="text-lg font-medium text-gray-900 dark:text-white">
+    <h3 class="text-lg font-medium">
       {t('performance.rapidTriggerSensitivity', currentLanguage)}
     </h3>
     <div class="flex items-center gap-2">
-      <span class="text-xs text-gray-500 dark:text-gray-400">Separate Press/Release</span>
-      <button
-        class="relative inline-flex items-center h-6 rounded-full w-11 transition-colors focus:outline-none {separateSensitivity
-          ? ''
-          : 'bg-gray-300 dark:bg-gray-600'}"
-        aria-label="Separate Sensitivity Toggle"
-        style="background: {separateSensitivity
-          ? 'linear-gradient(135deg, var(--theme-color-primary) 0%, color-mix(in srgb, var(--theme-color-primary) 80%, black) 100%)'
-          : ''};"
-        onclick={() => onToggleSeparate(!separateSensitivity)}
-      >
-        <span
-          class="inline-block w-4 h-4 transform rounded-full transition-all shadow"
-          class:translate-x-6={separateSensitivity}
-          class:translate-x-1={!separateSensitivity}
-          style="background: {separateSensitivity
-            ? 'linear-gradient(135deg, #ffffff 0%, #f0f0f0 50%, #e0e0e0 100%)'
-            : '#ffffff'};"
-        ></span>
-      </button>
+      <Label for="separate-sens" class="text-xs text-muted-foreground cursor-pointer">
+        Separate Press/Release
+      </Label>
+      <Switch
+        id="separate-sens"
+        checked={separateSensitivity}
+        onCheckedChange={onToggleSeparate}
+        class="data-[state=checked]:bg-primary-500"
+      />
     </div>
   </div>
-  <p class="text-sm text-gray-600 dark:text-gray-300 mb-3">
+  <p class="text-sm text-muted-foreground mb-3">
     {t('performance.adjustSensitivity', currentLanguage)}
   </p>
-  <div class="flex-1">
+
+  <div class="flex-1 space-y-4">
     {#if separateSensitivity}
-      <div class="mb-4">
-        <div class="flex justify-between text-sm dark:text-gray-400 text-gray-500 mb-1">
-          <div>↓ {t('performance.pressSensitivityLabel', currentLanguage)}</div>
-          <div>{pressSensitivity.toFixed(2)} mm</div>
+      <div>
+        <div class="flex justify-between text-sm text-muted-foreground mb-2">
+          <span>↓ {t('performance.pressSensitivityLabel', currentLanguage)}</span>
+          <span>{pressSensitivity.toFixed(2)} mm</span>
         </div>
-        <input
-          type="range"
-          min="0.01"
-          max="2"
-          step="0.01"
+        <Slider
+          type="single"
+          min={0.01}
+          max={2}
+          step={0.01}
           value={pressSensitivity}
-          oninput={e => onPressChange(Number((e.target as HTMLInputElement).value))}
-          class="sensitivity-slider"
+          onValueChange={v => onPressChange(v)}
         />
-        <div class="flex justify-between text-sm dark:text-gray-400 text-gray-500 mt-1">
-          <div>{t('performance.high', currentLanguage)}</div>
-          <div>{t('performance.low', currentLanguage)}</div>
+        <div class="flex justify-between text-xs text-muted-foreground mt-1">
+          <span>{t('performance.high', currentLanguage)}</span>
+          <span>{t('performance.low', currentLanguage)}</span>
         </div>
       </div>
       <div>
-        <div class="flex justify-between text-sm dark:text-gray-400 text-gray-500 mb-1">
-          <div>↑ {t('performance.releaseSensitivityLabel', currentLanguage)}</div>
-          <div>{releaseSensitivity.toFixed(2)} mm</div>
+        <div class="flex justify-between text-sm text-muted-foreground mb-2">
+          <span>↑ {t('performance.releaseSensitivityLabel', currentLanguage)}</span>
+          <span>{releaseSensitivity.toFixed(2)} mm</span>
         </div>
-        <input
-          type="range"
-          min="0.01"
-          max="2"
-          step="0.01"
+        <Slider
+          type="single"
+          min={0.01}
+          max={2}
+          step={0.01}
           value={releaseSensitivity}
-          oninput={e => onReleaseChange(Number((e.target as HTMLInputElement).value))}
-          class="sensitivity-slider"
+          onValueChange={v => onReleaseChange(v)}
         />
-        <div class="flex justify-between text-sm dark:text-gray-400 text-gray-500 mt-1">
-          <div>{t('performance.high', currentLanguage)}</div>
-          <div>{t('performance.low', currentLanguage)}</div>
+        <div class="flex justify-between text-xs text-muted-foreground mt-1">
+          <span>{t('performance.high', currentLanguage)}</span>
+          <span>{t('performance.low', currentLanguage)}</span>
         </div>
       </div>
     {:else}
       <div>
-        <div class="flex justify-between text-sm dark:text-gray-400 text-gray-500 mb-1">
-          <div>⇅ {t('performance.sensitivityLabel', currentLanguage)}</div>
-          <div>{sensitivityValue.toFixed(2)} mm</div>
+        <div class="flex justify-between text-sm text-muted-foreground mb-2">
+          <span>⇅ {t('performance.sensitivityLabel', currentLanguage)}</span>
+          <span>{sensitivityValue.toFixed(2)} mm</span>
         </div>
-        <input
-          type="range"
-          min="0.01"
-          max="2"
-          step="0.01"
+        <Slider
+          type="single"
+          min={0.01}
+          max={2}
+          step={0.01}
           value={sensitivityValue}
-          oninput={e => onSensitivityChange(Number((e.target as HTMLInputElement).value))}
-          class="sensitivity-slider"
+          onValueChange={v => onSensitivityChange(v)}
         />
-        <div class="flex justify-between text-sm dark:text-gray-400 text-gray-500 mt-1">
-          <div>{t('performance.high', currentLanguage)}</div>
-          <div>{t('performance.low', currentLanguage)}</div>
+        <div class="flex justify-between text-xs text-muted-foreground mt-1">
+          <span>{t('performance.high', currentLanguage)}</span>
+          <span>{t('performance.low', currentLanguage)}</span>
         </div>
       </div>
     {/if}
   </div>
 </div>
-
-<style>
-  .sensitivity-slider {
-    width: 100%;
-    height: 8px;
-    border-radius: 9999px;
-    appearance: none;
-    background: color-mix(in srgb, var(--theme-color-primary) 20%, transparent);
-  }
-
-  .sensitivity-slider::-webkit-slider-thumb {
-    appearance: none;
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    background: var(--theme-color-primary);
-    cursor: pointer;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-    transition: transform 0.1s ease;
-  }
-
-  .sensitivity-slider::-webkit-slider-thumb:hover {
-    transform: scale(1.1);
-  }
-
-  .sensitivity-slider::-moz-range-thumb {
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    background: var(--theme-color-primary);
-    cursor: pointer;
-    border: none;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-    transition: transform 0.1s ease;
-  }
-
-  .sensitivity-slider::-moz-range-thumb:hover {
-    transform: scale(1.1);
-  }
-</style>

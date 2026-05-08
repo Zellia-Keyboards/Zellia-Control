@@ -1,6 +1,7 @@
 <script lang="ts">
   import { language, t, tPlaceholder } from '$lib/stores/LanguageStore.svelte';
   import { keyActions } from '$lib/types/AdvancedKeyShared';
+  import { Card, CardContent, CardHeader, CardTitle } from '$lib/components/ui/card';
 
   interface Props {
     selectedToggleAction: string;
@@ -8,17 +9,16 @@
   }
 
   let { selectedToggleAction, toggleMode }: Props = $props();
-
   let currentLanguage = $derived($language);
 </script>
 
-<div
-  class="border border-gray-200 dark:border-gray-600 rounded-lg p-6 bg-primary-50 dark:bg-primary-900 glassmorphism-card"
->
-  <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">
-    {t('advancedkey.howItWorks', currentLanguage)}
-  </h3>
-  <p class="text-sm text-gray-600 dark:text-gray-400">
+<Card class="glassmorphism-card border-primary-500/20 bg-primary-500/5">
+  <CardHeader>
+    <CardTitle class="text-lg">
+      {t('advancedkey.howItWorks', currentLanguage)}
+    </CardTitle>
+  </CardHeader>
+  <CardContent class="text-sm text-muted-foreground">
     {@html tPlaceholder(
       'advancedkey.toggleDescription',
       currentLanguage,
@@ -27,5 +27,5 @@
         ? t('advancedkey.whenPressed', currentLanguage)
         : t('advancedkey.whenReleased', currentLanguage)
     )}
-  </p>
-</div>
+  </CardContent>
+</Card>

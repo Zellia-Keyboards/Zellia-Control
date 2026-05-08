@@ -1,6 +1,14 @@
 <script lang="ts">
   import { AlertCircle } from 'lucide-svelte';
-  import { fade } from 'svelte/transition';
+  import {
+    AlertDialog,
+    AlertDialogContent,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogAction,
+  } from '$lib/components/ui/alert-dialog';
 
   interface Props {
     message: string;
@@ -8,34 +16,29 @@
   }
 
   let { message, onClose }: Props = $props();
+  let open = $state(true);
+
+  function handleOpenChange(value: boolean) {
+    open = value;
+    if (!value) onClose();
+  }
 </script>
 
-<div
-  class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
-  transition:fade={{ duration: 150 }}
-  onclick={onClose}
->
-  <div
-    class="border border-gray-700 rounded-xl shadow-2xl max-w-md w-full p-6 glassmorphism-card"
-    onclick={e => e.stopPropagation()}
-  >
-    <div class="flex items-start gap-3 mb-4">
-      <AlertCircle class="w-6 h-6 text-yellow-500 flex-shrink-0 mt-0.5" />
-      <div>
-        <h3 class="text-xl font-bold text-white mb-2">Notice</h3>
-        <p class="text-sm text-gray-400">
-          {message}
-        </p>
+<AlertDialog bind:open onOpenChange={handleOpenChange}>
+  <AlertDialogContent class="glassmorphism-card">
+    <AlertDialogHeader>
+      <div class="flex items-start gap-3">
+        <AlertCircle class="size-6 text-yellow-500 flex-shrink-0 mt-0.5" />
+        <div class="flex-1">
+          <AlertDialogTitle>Notice</AlertDialogTitle>
+          <AlertDialogDescription class="mt-1">
+            {message}
+          </AlertDialogDescription>
+        </div>
       </div>
-    </div>
-
-    <div class="flex justify-end">
-      <button
-        class="px-4 py-2.5 rounded-lg font-medium transition-colors glassmorphism-button bg-gray-700/80 border border-gray-600/50 text-white hover:bg-gray-700"
-        onclick={onClose}
-      >
-        OK
-      </button>
-    </div>
-  </div>
-</div>
+    </AlertDialogHeader>
+    <AlertDialogFooter>
+      <AlertDialogAction onclick={onClose}>OK</AlertDialogAction>
+    </AlertDialogFooter>
+  </AlertDialogContent>
+</AlertDialog>

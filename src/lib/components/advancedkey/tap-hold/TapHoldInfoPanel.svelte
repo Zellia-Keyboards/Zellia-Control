@@ -1,6 +1,7 @@
 <script lang="ts">
   import { language, t, tPlaceholder } from '$lib/stores/LanguageStore.svelte';
   import { keyActions } from '$lib/types/AdvancedKeyShared';
+  import { Card, CardContent, CardHeader, CardTitle } from '$lib/components/ui/card';
 
   interface Props {
     tapAction: string;
@@ -13,11 +14,13 @@
   let currentLanguage = $derived($language);
 </script>
 
-<div class="border rounded-lg p-4 sm:p-6 glassmorphism-card">
-  <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">
-    {t('advancedkey.howItWorks', currentLanguage)}
-  </h3>
-  <div class="text-sm text-gray-800 dark:text-gray-300 space-y-2">
+<Card class="glassmorphism-card">
+  <CardHeader>
+    <CardTitle class="text-lg">
+      {t('advancedkey.howItWorks', currentLanguage)}
+    </CardTitle>
+  </CardHeader>
+  <CardContent class="text-sm space-y-2">
     <p>
       • {tPlaceholder('advancedkey.quickTap', currentLanguage, tapTimeout.toString())}:
       <strong>{keyActions.find(k => k.keycode === tapAction)?.name || tapAction}</strong>
@@ -26,6 +29,8 @@
       • {tPlaceholder('advancedkey.holdOver', currentLanguage, holdDelay.toString())}:
       <strong>{keyActions.find(k => k.keycode === holdAction)?.name || holdAction}</strong>
     </p>
-    <p class="mt-3 text-xs">{t('advancedkey.tapHoldDescription', currentLanguage)}</p>
-  </div>
-</div>
+    <p class="mt-3 text-xs text-muted-foreground">
+      {t('advancedkey.tapHoldDescription', currentLanguage)}
+    </p>
+  </CardContent>
+</Card>

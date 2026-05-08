@@ -1,6 +1,10 @@
 <script lang="ts">
   import { MoreVertical } from 'lucide-svelte';
   import type { Profile } from '$lib/stores/ProfileStore.svelte';
+  import { Card } from '$lib/components/ui/card';
+  import { Badge } from '$lib/components/ui/badge';
+  import { Button } from '$lib/components/ui/button';
+  import { cn } from '$lib/utils.js';
 
   interface Props {
     profile: Profile | null;
@@ -13,36 +17,37 @@
   let { profile, index, isActive, onActivate, onMenuClick }: Props = $props();
 </script>
 
-<div
-  class="relative rounded-lg border transition-all duration-200 p-6 {isActive
-    ? 'border-green-500/50 cursor-default'
-    : 'border-gray-700 cursor-pointer hover:border-gray-600'} glassmorphism-card"
-  onclick={() => !isActive && onActivate()}
+<Card
   role="button"
   tabindex={0}
+  onclick={() => !isActive && onActivate()}
+  onkeydown={e => (e.key === 'Enter' || e.key === ' ') && !isActive && onActivate()}
+  class={cn(
+    'relative p-6 transition-all duration-200 glassmorphism-card',
+    isActive
+      ? 'border-green-500/60 cursor-default'
+      : 'cursor-pointer hover:border-primary-500/60 hover:-translate-y-0.5'
+  )}
 >
-  <!-- Profile Name -->
-  <h3 class="text-base font-semibold text-gray-900 dark:text-white pr-12">
+  <h3 class="text-base font-semibold text-foreground pr-12">
     {profile?.name || `Profile ${index + 1}`}
   </h3>
 
-  <!-- Active Badge -->
   {#if isActive}
-    <div
-      class="absolute top-4 right-12 px-2 py-1 rounded-md bg-gray-700 text-white text-xs font-medium"
-    >
+    <Badge class="absolute top-4 right-12 bg-green-600 text-white hover:bg-green-600">
       Active
-    </div>
+    </Badge>
   {/if}
 
-  <!-- Menu Button -->
   {#if profile}
-    <button
-      class="absolute top-4 right-4 p-1 rounded hover:bg-gray-800 transition-colors z-10"
+    <Button
+      variant="ghost"
+      size="icon-sm"
+      class="absolute top-3 right-3 text-muted-foreground"
       onclick={onMenuClick}
       aria-label="Menu"
     >
-      <MoreVertical class="w-5 h-5 text-gray-400" />
-    </button>
+      <MoreVertical class="size-4" />
+    </Button>
   {/if}
-</div>
+</Card>

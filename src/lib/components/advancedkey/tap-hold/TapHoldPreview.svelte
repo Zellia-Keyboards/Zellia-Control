@@ -1,5 +1,7 @@
 <script lang="ts">
   import { keyActions } from '$lib/types/AdvancedKeyShared';
+  import { Card, CardContent, CardHeader, CardTitle } from '$lib/components/ui/card';
+  import { Separator } from '$lib/components/ui/separator';
 
   interface Props {
     currentKeyName: string;
@@ -11,35 +13,33 @@
   let { currentKeyName, tapAction, holdAction, holdDelay }: Props = $props();
 </script>
 
-<div class="rounded-lg border p-4 sm:p-6 glassmorphism-card">
-  <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Preview</h3>
-
-  <div class="space-y-3">
-    <div
-      class="flex justify-between items-center py-2 border-gray-100 dark:border-gray-700 border-b"
-    >
-      <span class="text-sm text-gray-600 dark:text-gray-400">Key</span>
-      <span class="font-mono font-medium text-gray-900 dark:text-white">{currentKeyName}</span>
-    </div>
-    <div
-      class="flex justify-between items-center py-2 border-gray-100 dark:border-gray-700 border-b"
-    >
-      <span class="text-sm text-gray-600 dark:text-gray-400">Tap</span>
-      <span class="font-medium text-primary-500"
-        >{keyActions.find(k => k.keycode === tapAction)?.name || tapAction}</span
-      >
-    </div>
-    <div
-      class="flex justify-between items-center py-2 border-gray-100 dark:border-gray-700 border-b"
-    >
-      <span class="text-sm text-gray-600 dark:text-gray-400">Hold</span>
-      <span class="font-medium text-green-500"
-        >{keyActions.find(k => k.keycode === holdAction)?.name || holdAction}</span
-      >
-    </div>
+<Card class="glassmorphism-card">
+  <CardHeader>
+    <CardTitle class="text-lg">Preview</CardTitle>
+  </CardHeader>
+  <CardContent class="space-y-0">
     <div class="flex justify-between items-center py-2">
-      <span class="text-sm text-gray-600 dark:text-gray-400">Delay</span>
-      <span class="font-medium text-gray-900 dark:text-white">{holdDelay}ms</span>
+      <span class="text-sm text-muted-foreground">Key</span>
+      <span class="font-mono font-medium">{currentKeyName}</span>
     </div>
-  </div>
-</div>
+    <Separator />
+    <div class="flex justify-between items-center py-2">
+      <span class="text-sm text-muted-foreground">Tap</span>
+      <span class="font-medium text-primary-500">
+        {keyActions.find(k => k.keycode === tapAction)?.name || tapAction}
+      </span>
+    </div>
+    <Separator />
+    <div class="flex justify-between items-center py-2">
+      <span class="text-sm text-muted-foreground">Hold</span>
+      <span class="font-medium text-green-500">
+        {keyActions.find(k => k.keycode === holdAction)?.name || holdAction}
+      </span>
+    </div>
+    <Separator />
+    <div class="flex justify-between items-center py-2">
+      <span class="text-sm text-muted-foreground">Delay</span>
+      <span class="font-medium">{holdDelay}ms</span>
+    </div>
+  </CardContent>
+</Card>
