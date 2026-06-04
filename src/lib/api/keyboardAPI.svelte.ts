@@ -1,283 +1,110 @@
 // keyboardAPI.svelte.ts
-// Manages keyboard connection state, device communication, and routing
+// Thin facade over ConnectionManager. Public surface preserved for callers.
 
-import {
-  Zellia80Controller,
-  ZelliaStarlightController,
-  OholeoKeyboardController,
-  TrinityPadController,
-  type IKeyboardController,
-} from '../../../src-controller/src/index';
 import { goto } from '$app/navigation';
-import * as api from '$lib/api/api.svelte';
-import type { KeyboardController } from 'emi-keyboard-controller';
-import * as ekc from 'emi-keyboard-controller';
 import {
-  advancedKeys,
-  dynamicKeys,
-  rgbBaseConfig,
-  rgbConfigs,
-  keymap,
-  layoutLabels,
-  selectedLayoutIndices,
-} from '$lib/stores/ControllerStore.svelte';
-import { keyboardLayout } from '$lib/stores/LayoutStore.svelte';
+  connectionManager,
+  availableControllers,
+  ConnectionError,
+  type KeyboardModel,
+  type KeyboardConnectionState,
+  type DeviceHint,
+} from './ConnectionManager.svelte';
 
-export type KeyboardModel = 'zellia_starlight' | 'zellia80he' | 'oholeo' | 'trinity_pad';
+export type { KeyboardModel, KeyboardConnectionState, DeviceHint };
+export { ConnectionError };
 
-export interface DetectedDevice {
-  device: any; // HIDDevice type from WebHID API
-  controller: IKeyboardController;
-  modelName: string;
-}
+export const keyboardConnectionState = connectionManager.state;
 
-export interface KeyboardConnectionState {
-  isConnected: boolean;
-  selectedModel: KeyboardModel | null;
-  connectionStatus: 'disconnected' | 'connecting' | 'connected' | 'error';
-  lastConnectedDevice?: string;
-  error?: string;
-  controller?: KeyboardController;
-  detectedDevices?: DetectedDevice[];
-}
-
-const defaultState: KeyboardConnectionState = {
-  isConnected: false,
-  selectedModel: null,
-  connectionStatus: 'disconnected',
-};
-
-// Create reactive state
-export let keyboardConnectionState = $state<KeyboardConnectionState>({
-  ...defaultState,
+connectionManager.addEventListener('connected', e => {
+  const detail = (e as CustomEvent).detail;
+  if (detail?.navigateOnSuccess) goto('/remap');
 });
 
-// Available controllers
-const availableControllers = [
-  {
-    controller: ZelliaStarlightController,
-    modelName: 'Zellia Starlight',
-    modelKey: 'zelliastarlight' as KeyboardModel,
-  },
-  {
-    controller: Zellia80Controller,
-    modelName: 'Zellia 80HE',
-    modelKey: 'zellia80he' as KeyboardModel,
-  },
-  {
-    controller: OholeoKeyboardController,
-    modelName: 'Oholeo Keyboard',
-    modelKey: 'oholeo' as KeyboardModel,
-  },
-  {
-    controller: TrinityPadController,
-    modelName: 'Trinity Pad',
-    modelKey: 'trinity_pad' as KeyboardModel,
-  },
-];
-
-// Store functions
 export const keyboardAPI = {
-  // Connect to a physical keyboard
   async connect(): Promise<boolean> {
-    keyboardConnectionState.connectionStatus = 'connecting';
-    keyboardConnectionState.error = undefined;
-
-    try {
-      // Try to request devices with all controller filters at once (single popup)
-      const allFilters = [
-        { vendorId: 0xfeed, productId: 22319, usagePage: 0xff60 }, // ZelliaStarlight, Zellia80 & Oholeo
-        { vendorId: 0xfeed, productId: 0xffff, usagePage: 0xff60 }, // Trinity Pad
-      ];
-
-      const devices = await (navigator as any).hid?.requestDevice?.({ filters: allFilters });
-
-      if (!devices || devices.length === 0) {
-        throw new Error('No compatible keyboards found');
-      }
-
-      // Match the first device to a controller
-      let selectedController: IKeyboardController | null = null;
-      let selectedModel: KeyboardModel = 'zellia_starlight';
-      let deviceName = 'Unknown Device';
-
-      for (const device of devices) {
-        for (const controllerConfig of availableControllers) {
-          if (this.deviceMatchesController(device, controllerConfig.controller)) {
-            selectedController = new controllerConfig.controller();
-            console.log(selectedController);
-            selectedModel = controllerConfig.modelKey;
-            deviceName = device.productName || controllerConfig.modelName;
-            break;
-          }
-        }
-        if (selectedController) break;
-      }
-
-      if (!selectedController) {
-        throw new Error('No compatible controller found for detected device');
-      }
-
-      // Connect to the device
-      const connected = await selectedController.connect(devices[0]);
-      //const connected = true;
-      if (!connected) {
-        throw new Error('Failed to connect to keyboard');
-      }
-
-      // Update state
-      keyboardConnectionState.isConnected = true;
-      keyboardConnectionState.connectionStatus = 'connected';
-      keyboardConnectionState.lastConnectedDevice = deviceName;
-      keyboardConnectionState.selectedModel = selectedModel;
-      keyboardConnectionState.controller = selectedController;
-
-      // Sync static layout data immediately (hardcoded in controller, not from keyboard)
-      const layout = selectedController.get_layout_json() as string;
-      keyboardLayout.set(layout || '[]');
-      const labels = selectedController.get_layout_labels() ?? [[]];
-      layoutLabels.set(labels);
-      selectedLayoutIndices.set(new Array(labels.length).fill(0));
-
-      // Listen for keyboard data as it arrives and sync to Svelte stores
-      selectedController.addEventListener('updateData', () => {
-        const ctrl = keyboardConnectionState.controller;
-        if (!ctrl) return;
-        advancedKeys.set([...(ctrl.get_advanced_keys() as ekc.IAdvancedKey[])]);
-        rgbConfigs.set([...(ctrl.get_rgb_configs() as ekc.IRGBConfig[])]);
-        rgbBaseConfig.set({ ...(ctrl.get_rgb_base_config() as ekc.IRGBBaseConfig) });
-        dynamicKeys.set([...(ctrl.get_dynamic_keys() as ekc.IDynamicKey[])]);
-        keymap.set((ctrl.get_keymap() as number[][]).map(layer => [...layer]));
-      });
-
-      // Redirect to remap page after successful connection
-      goto('/remap');
-
-      return true;
-    } catch (error) {
-      keyboardConnectionState.connectionStatus = 'error';
-      keyboardConnectionState.error = error instanceof Error ? error.message : 'Connection failed';
-      keyboardConnectionState.isConnected = false;
-      keyboardConnectionState.controller = undefined;
-      return false;
-    }
+    return connectionManager.connect();
   },
 
-  // Check if a device matches a controller (simplified matching)
-  deviceMatchesController(device: any, ControllerClass: any): boolean {
-    // For ZelliaStarlightController: vendorId: 0xFEED, productId: 22319
-    if (ControllerClass === ZelliaStarlightController) {
-      return device.vendorId === 0xfeed && device.productId === 22319;
-    }
-    // For Zellia80Controller: vendorId: 0xFEED, productId: 22319
-    if (ControllerClass === Zellia80Controller) {
-      return device.vendorId === 0xfeed && device.productId === 22319;
-    }
-    // For OholeoKeyboardController: vendorId: 0xFEED, productId: 22319 (same as Zellia80)
-    if (ControllerClass === OholeoKeyboardController) {
-      return device.vendorId === 0xfeed && device.productId === 22319;
-    }
-    // For TrinityPadController: vendorId: 0xFEED, productId: 0xFFFF
-    if (ControllerClass === TrinityPadController) {
-      return device.vendorId === 0xfeed && device.productId === 0xffff;
-    }
-    return false;
+  async tryReattach(): Promise<boolean> {
+    return connectionManager.tryReattach();
   },
 
-  // Disconnect keyboard and clear all data
   disconnect(): void {
-    // Disconnect physical device if connected
-    if (keyboardConnectionState.controller) {
-      keyboardConnectionState.controller.disconnect();
-    }
-
-    // Reset all state to default
-    Object.assign(keyboardConnectionState, {
-      ...defaultState,
-      controller: undefined,
-      detectedDevices: undefined,
-    });
-
-    // Clear any cached data
-    console.log('Keyboard disconnected and all data cleared');
+    connectionManager.disconnect();
   },
 
-  // Get the active keyboard controller
-  getController(): IKeyboardController | undefined {
-    return keyboardConnectionState.controller;
+  getController() {
+    return connectionManager.state.controller;
   },
 
-  // Send configuration to keyboard (if connected)
+  on(event: string, listener: EventListener): void {
+    connectionManager.addEventListener(event, listener);
+  },
+
+  off(event: string, listener: EventListener): void {
+    connectionManager.removeEventListener(event, listener);
+  },
+
   async saveConfiguration(): Promise<boolean> {
-    if (!keyboardConnectionState.controller) {
-      return false;
-    }
-
+    const ctrl = connectionManager.state.controller as any;
+    if (!ctrl) return false;
     try {
-      keyboardConnectionState.controller.save_config();
+      ctrl.save_config();
       return true;
     } catch (error) {
-      keyboardConnectionState.error =
+      connectionManager.state.error =
         error instanceof Error ? error.message : 'Failed to save configuration';
       return false;
     }
   },
 
-  // Flash configuration to keyboard firmware
   async flashConfiguration(): Promise<boolean> {
-    if (!keyboardConnectionState.controller) {
-      return false;
-    }
-
+    const ctrl = connectionManager.state.controller as any;
+    if (!ctrl) return false;
     try {
-      keyboardConnectionState.controller.flash_config();
+      ctrl.flash_config();
       return true;
     } catch (error) {
-      keyboardConnectionState.error =
+      connectionManager.state.error =
         error instanceof Error ? error.message : 'Failed to flash configuration';
       return false;
     }
   },
 
-  // Reset keyboard to factory defaults
   async factoryReset(): Promise<boolean> {
-    if (!keyboardConnectionState.controller) {
-      return false;
-    }
-
+    const ctrl = connectionManager.state.controller as any;
+    if (!ctrl) return false;
     try {
-      keyboardConnectionState.controller.factory_reset();
+      ctrl.factory_reset();
       return true;
     } catch (error) {
-      keyboardConnectionState.error =
+      connectionManager.state.error =
         error instanceof Error ? error.message : 'Failed to factory reset';
       return false;
     }
   },
 
-  // Check if we should show the configurator
   get shouldShowConfigurator(): boolean {
-    return keyboardConnectionState.isConnected && keyboardConnectionState.selectedModel !== null;
+    return connectionManager.state.isConnected && connectionManager.state.selectedModel !== null;
   },
 
-  // Get current state (for reactive subscriptions)
   get state(): KeyboardConnectionState {
-    return keyboardConnectionState;
+    return connectionManager.state;
   },
 };
 
-// Helper functions
-export const isKeyboard60HE = () => keyboardConnectionState.selectedModel === 'zelliastarlight';
-export const isKeyboard80HE = () => keyboardConnectionState.selectedModel === 'zellia80he';
-export const isOholeoKeyboard = () => keyboardConnectionState.selectedModel === 'oholeo';
-export const isTrinityPad = () => keyboardConnectionState.selectedModel === 'trinity_pad';
-export const isConnected = () => keyboardConnectionState.isConnected;
-export const getSelectedModel = () => keyboardConnectionState.selectedModel;
-export const getConnectionStatus = () => keyboardConnectionState.connectionStatus;
-export const getLastError = () => keyboardConnectionState.error;
-export const getDetectedDeviceCount = () => keyboardConnectionState.detectedDevices?.length || 0;
+export const isKeyboard60HE = () => connectionManager.state.selectedModel === 'zellia_starlight';
+export const isKeyboard80HE = () => connectionManager.state.selectedModel === 'zellia80he';
+export const isOholeoKeyboard = () => connectionManager.state.selectedModel === 'oholeo';
+export const isTrinityPad = () => connectionManager.state.selectedModel === 'trinity_pad';
+export const isConnected = () => connectionManager.state.isConnected;
+export const getSelectedModel = () => connectionManager.state.selectedModel;
+export const getConnectionStatus = () => connectionManager.state.connectionStatus;
+export const getLastError = () => connectionManager.state.error;
+export const getDetectedDeviceCount = () => connectionManager.state.detectedDevices?.length || 0;
 export const getControllerName = () => {
-  const model = keyboardConnectionState.selectedModel;
+  const model = connectionManager.state.selectedModel;
   const config = availableControllers.find(c => c.modelKey === model);
   return config?.modelName || 'Unknown Device';
 };

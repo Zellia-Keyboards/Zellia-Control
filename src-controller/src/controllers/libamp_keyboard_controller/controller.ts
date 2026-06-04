@@ -44,19 +44,23 @@ export class LibampKeyboardController extends KeyboardController {
     }
     async connect(device: HIDDevice): Promise<boolean> {
         this.device = device;
-        var result : boolean = false;
-        if (! this.device.opened) {
-            result = (await this.device.open()) == undefined
+        let result: boolean = device.opened;
+        if (!device.opened) {
+            result = (await device.open()) == undefined;
         }
         if (result) {
+            try { device.removeEventListener("inputreport", this.handleInputReport); } catch {}
+            device.addEventListener("inputreport", this.handleInputReport);
             this.request_config();
-            this.device.addEventListener("inputreport", this.handleInputReport);
         }
         return result;
     }
     disconnect(): void {
-        this.device?.close();
-        this.device?.removeEventListener("inputreport",this.handleInputReport);
+        const d = this.device;
+        if (!d) return;
+        try { d.removeEventListener("inputreport", this.handleInputReport); } catch {}
+        try { if (d.opened) d.close(); } catch {}
+        this.device = undefined;
     }
     prase_buffer(buf: Uint8Array): void {
         switch (buf[0]) {

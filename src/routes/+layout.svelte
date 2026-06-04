@@ -1,5 +1,7 @@
 <script lang="ts">
   import '../app.css';
+  import { onMount } from 'svelte';
+  import { toast } from 'svelte-sonner';
   import { keyboardAPI } from '$lib/api/keyboardAPI.svelte';
   import * as kle from '@ijprest/kle-serial';
   import { page } from '$app/stores';
@@ -59,6 +61,23 @@
     if (typeof document !== 'undefined') {
       document.documentElement.lang = currentLanguage;
     }
+  });
+
+  onMount(() => {
+    void keyboardAPI.tryReattach();
+    const onLost = () => toast.error('Keyboard disconnected — reconnecting…');
+    const onConnected = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      if (!detail?.navigateOnSuccess && detail?.deviceName) {
+        toast.success(`Reconnected to ${detail.deviceName}`);
+      }
+    };
+    keyboardAPI.on('connectionLost', onLost);
+    keyboardAPI.on('connected', onConnected);
+    return () => {
+      keyboardAPI.off('connectionLost', onLost);
+      keyboardAPI.off('connected', onConnected);
+    };
   });
 
   // Centralized navigation logic - single source of truth
