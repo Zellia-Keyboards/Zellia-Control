@@ -30,6 +30,7 @@
 
   let { children } = $props();
   let isLoadingConfigurator = $state(false);
+  let initialReattachDone = $state(false);
   let currentLanguage = $derived($language);
 
   // Keyboard layout for global KeyboardRender
@@ -64,7 +65,6 @@
   });
 
   onMount(() => {
-    void keyboardAPI.tryReattach();
     const onLost = () => toast.error('Keyboard disconnected — reconnecting…');
     const onConnected = (e: Event) => {
       const detail = (e as CustomEvent).detail;
@@ -74,6 +74,14 @@
     };
     keyboardAPI.on('connectionLost', onLost);
     keyboardAPI.on('connected', onConnected);
+
+    keyboardAPI
+      .tryReattach()
+      .catch(() => {})
+      .finally(() => {
+        initialReattachDone = true;
+      });
+
     return () => {
       keyboardAPI.off('connectionLost', onLost);
       keyboardAPI.off('connected', onConnected);
@@ -100,20 +108,19 @@
 
   // Handle loading state for smooth connection transition
   $effect(() => {
-    if (keyboardAPI.state.connectionStatus === 'connecting') {
+    const status = keyboardAPI.state.connectionStatus;
+    if (!initialReattachDone && shouldShowLayout && $page.url.pathname !== '/') {
+      // Block fallback flash until first silent reattach attempt resolves.
       isLoadingConfigurator = true;
-    } else if (
-      keyboardAPI.state.connectionStatus === 'connected' &&
-      keyboardAPI.shouldShowConfigurator
-    ) {
-      // Small delay to let loading animation complete
+      return;
+    }
+    if (status === 'connecting') {
+      isLoadingConfigurator = true;
+    } else if (status === 'connected' && keyboardAPI.shouldShowConfigurator) {
       setTimeout(() => {
         isLoadingConfigurator = false;
       }, 10);
-    } else if (
-      keyboardAPI.state.connectionStatus === 'error' ||
-      keyboardAPI.state.connectionStatus === 'disconnected'
-    ) {
+    } else if (status === 'error' || status === 'disconnected') {
       isLoadingConfigurator = false;
     }
   });

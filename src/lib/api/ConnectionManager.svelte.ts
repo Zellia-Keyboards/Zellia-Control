@@ -211,8 +211,18 @@ class ConnectionManager extends EventTarget {
     }
 
     this.state.connectionStatus = 'connecting';
-    const ctrl: IKeyboardController = new cfg.controller();
-    const ok = await ctrl.connect(device);
+    let ctrl: IKeyboardController;
+    let ok = false;
+    try {
+      ctrl = new cfg.controller();
+      ok = await ctrl.connect(device);
+    } catch (e) {
+      this.fail(
+        e instanceof Error ? e.message : 'Failed to open device',
+        ConnectionError.OpenFailed
+      );
+      return false;
+    }
     if (!ok) {
       this.fail('Failed to connect to keyboard', ConnectionError.OpenFailed);
       return false;
