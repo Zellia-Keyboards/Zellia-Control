@@ -1,6 +1,6 @@
 @import 'tailwindcss';
-@import "tw-animate-css";
-@import "@fontsource-variable/inter";
+@import 'tw-animate-css';
+@import '@fontsource-variable/inter';
 
 @custom-variant dark (&:where(.dark, .dark *));
 
@@ -162,7 +162,7 @@
   * {
     scrollbar-width: none;
     -ms-overflow-style: none;
-  	@apply border-border outline-ring/50;
+    @apply border-border outline-ring/50;
   }
 
   *::-webkit-scrollbar {
@@ -197,11 +197,11 @@
     width: 0 !important;
     height: 0 !important;
   }
-	body {
-		@apply bg-background text-foreground;
+  body {
+    @apply bg-background text-foreground;
   }
-	html {
-		@apply font-sans;
+  html {
+    @apply font-sans;
   }
 }
 
@@ -550,6 +550,26 @@
       var(--theme-color-primary) 4%,
       rgba(255, 255, 255, 0.3)
     ) !important;
+  }
+
+  .dropdown-surface {
+    background: color-mix(in srgb, var(--popover) 96%, transparent) !important;
+    border: 1px solid color-mix(in srgb, var(--border) 82%, transparent) !important;
+    color: var(--popover-foreground) !important;
+    text-shadow: none !important;
+    box-shadow:
+      0 18px 48px rgba(0, 0, 0, 0.18),
+      0 2px 8px rgba(0, 0, 0, 0.08) !important;
+    backdrop-filter: saturate(140%) blur(18px) !important;
+    -webkit-backdrop-filter: saturate(140%) blur(18px) !important;
+  }
+
+  .dark .dropdown-surface {
+    background: color-mix(in srgb, var(--popover) 94%, black 6%) !important;
+    border-color: color-mix(in srgb, var(--border) 90%, white 10%) !important;
+    box-shadow:
+      0 18px 48px rgba(0, 0, 0, 0.42),
+      0 2px 10px rgba(0, 0, 0, 0.28) !important;
   }
 
   /* Text readability improvements for glassmorphism */

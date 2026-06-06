@@ -7,7 +7,20 @@
   import LanguageSwitch from './LanguageSwitch.svelte';
   import DarkModeToggle from './DarkModeToggle.svelte';
   import { NAVIGATE } from '$lib/config/navigation';
-  import { ChevronRight, FolderKanban, LogOut, Save } from 'lucide-svelte';
+  import {
+    Bug,
+    ChevronRight,
+    Command,
+    Download,
+    FolderKanban,
+    Gauge,
+    Info,
+    Keyboard as KeyboardIcon,
+    Lightbulb,
+    LogOut,
+    Save,
+    Settings,
+  } from 'lucide-svelte';
   import { slide } from 'svelte/transition';
   import {
     advancedKeys,
@@ -21,6 +34,17 @@
   import { ScrollArea } from '$lib/components/ui/scroll-area';
   import { cn } from '$lib/utils.js';
   import { toast } from 'svelte-sonner';
+
+  const navigationIcons = {
+    '/performance': Gauge,
+    '/remap': KeyboardIcon,
+    '/lighting': Lightbulb,
+    '/dynamic': Command,
+    '/debug': Bug,
+    '/settings': Settings,
+    '/update': Download,
+    '/about': Info,
+  };
 
   let currentLanguage = $derived($language);
 
@@ -55,7 +79,7 @@
   <!-- Header -->
   <div class="p-4">
     <h1 class="font-black text-xl text-sidebar-foreground text-center tracking-tight">
-      <span class="italic">ZELLIA</span>
+      <span>ZELLIA</span>
       {currentLanguage === 'en' ? 'Control' : '控制'}
     </h1>
 
@@ -63,12 +87,12 @@
     <div class="mt-3 flex items-center justify-center gap-2 text-xs text-muted-foreground">
       {#if keyboardAPI.shouldShowConfigurator}
         <span class="size-2 rounded-full bg-green-500 animate-pulse"></span>
-        <span class="italic">
+        <span>
           {keyboardAPI.state.lastConnectedDevice || 'Connected'}
         </span>
       {:else}
         <span class="size-2 rounded-full bg-muted-foreground/50"></span>
-        <span class="italic">Waiting to connect</span>
+        <span>Waiting to connect</span>
       {/if}
     </div>
   </div>
@@ -84,7 +108,7 @@
     >
       <span class="flex items-center gap-2">
         <FolderKanban class="size-4" />
-        <i>{t('ui.profiles', currentLanguage)}</i>
+        <span>{t('ui.profiles', currentLanguage)}</span>
       </span>
       <ChevronRight class="size-4" />
     </Button>
@@ -98,7 +122,7 @@
           title="Save configuration"
         >
           <Save class="size-4" />
-          <i>{t('ui.save', currentLanguage)}</i>
+          <span>{t('ui.save', currentLanguage)}</span>
         </Button>
       </div>
 
@@ -110,7 +134,7 @@
           onclick={handleDisconnect}
         >
           <LogOut class="size-4" />
-          <i>{t('ui.disconnect', currentLanguage)}</i>
+          <span>{t('ui.disconnect', currentLanguage)}</span>
         </Button>
       </div>
     {/if}
@@ -123,17 +147,27 @@
     <nav class="p-3 space-y-1">
       {#each NAVIGATE as [href, name]}
         {@const active = isActive(href)}
+        {@const Icon = navigationIcons[href]}
         <a
           {href}
           data-active={active}
+          class:active
           class={cn(
-            'flex items-center gap-3 w-full px-3 py-2.5 text-sm font-medium rounded-md relative overflow-hidden transition-colors',
+            'group flex items-center gap-3 w-full px-3 py-2.5 text-sm font-medium rounded-md relative overflow-hidden transition-colors',
             'text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground',
             'data-[active=true]:bg-primary-500 data-[active=true]:text-white data-[active=true]:shadow-sm',
             'glassmorphism-nav-item'
           )}
         >
-          <span class="relative z-10"><i>{t(name, currentLanguage)}</i></span>
+          <Icon
+            class={cn(
+              'relative z-10 size-4 shrink-0 transition-colors',
+              active
+                ? 'text-white'
+                : 'text-sidebar-foreground/70 group-hover:text-sidebar-accent-foreground'
+            )}
+          />
+          <span class="relative z-10">{t(name, currentLanguage)}</span>
         </a>
       {/each}
     </nav>

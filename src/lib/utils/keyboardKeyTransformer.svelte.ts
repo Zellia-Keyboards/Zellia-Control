@@ -58,12 +58,16 @@ export function mapToExtendedKeys(keys: kle.Key[]): ExtendedKey[] {
  * Keys with a layout group are only visible when their option matches the selected index for that group.
  */
 export function filterVisibleKeys(keys: ExtendedKey[], selectedIndices: number[]): ExtendedKey[] {
-  return keys.filter((key) => {
+  return keys.filter(key => {
     if (key.layoutGroup != undefined) {
       return selectedIndices[key.layoutGroup.groupId] === key.layoutGroup.id;
     }
     return true;
   });
+}
+
+function emptyLabels(labels: string[] | undefined): string[] {
+  return (labels ?? []).map(() => '');
 }
 
 /**
@@ -87,15 +91,26 @@ export function transformKeyboardKeys(
   dynamicKeys?: ekc.IDynamicKey[]
 ): ExtendedKey[] {
   // Deep clone the keys to avoid mutation
-  let newKeys = keys.map(key => ({ ...JSON.parse(JSON.stringify(key)), id: key.id, layoutGroup: key.layoutGroup } as ExtendedKey));
+  let newKeys = keys.map(
+    key =>
+      ({
+        ...JSON.parse(JSON.stringify(key)),
+        id: key.id,
+        layoutGroup: key.layoutGroup,
+      }) as ExtendedKey
+  );
 
   // Performance page transformations
   if (activePage === '/performance' || activePage.startsWith('/performance/')) {
     newKeys.forEach((key, index) => {
       const keyId = key.id;
       const advanced_key = advancedKeys[keyId];
-      let labels = newKeys[index].labels;
-      labels = labels.map(() => '');
+      const labels = emptyLabels(newKeys[index].labels);
+      newKeys[index].labels = labels;
+
+      if (!advanced_key) {
+        return;
+      }
 
       // Helper to convert percentage (0-1) to mm and format nicely
       const toMm = (val: number) => (val * 4.0).toFixed(3);
@@ -197,8 +212,12 @@ export function transformKeyboardKeys(
     newKeys.forEach((key, index) => {
       const keyId = key.id;
       const rgb_config = rgbConfigs[keyId];
-      let labels = newKeys[index].labels;
-      labels = labels.map(() => '');
+      const labels = emptyLabels(newKeys[index].labels);
+      newKeys[index].labels = labels;
+
+      if (!rgb_config) {
+        return;
+      }
 
       switch (rgb_config.mode) {
         case ekc.RGBMode.RgbModeStatic: {

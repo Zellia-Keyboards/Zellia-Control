@@ -11,6 +11,7 @@
   } from '$lib/components/ui/dropdown-menu';
   import { Button } from '$lib/components/ui/button';
   import { cn } from '$lib/utils.js';
+  import { activeToolbarDropdown } from '$lib/stores/ToolbarDropdownStore';
 
   let currentLanguage = $derived($language);
   let profiles = $derived($profileStore.profiles);
@@ -19,6 +20,20 @@
   let availableProfiles = $derived(profiles.filter(p => p !== null));
 
   let open = $state(false);
+
+  $effect(() => {
+    if (open) {
+      activeToolbarDropdown.set('profile');
+    } else if ($activeToolbarDropdown === 'profile') {
+      activeToolbarDropdown.set(null);
+    }
+  });
+
+  $effect(() => {
+    if ($activeToolbarDropdown !== 'profile' && open) {
+      open = false;
+    }
+  });
 
   function selectProfile(profileId: number) {
     profileStore.setActiveProfile(profileId);
@@ -44,7 +59,7 @@
     {/snippet}
   </DropdownMenuTrigger>
 
-  <DropdownMenuContent class="w-72 glassmorphism-card" align="end">
+  <DropdownMenuContent class="z-[70] w-72 dropdown-surface" align="end" sideOffset={8}>
     {#if availableProfiles.length === 0}
       <div class="px-4 py-8 text-center text-sm text-muted-foreground">
         {t('ui.noProfilesAvailable', currentLanguage)}
@@ -58,7 +73,8 @@
           <div class="flex-1">
             <div class="text-sm font-semibold">{profile.name}</div>
             <div class="text-xs text-muted-foreground">
-              {t('profiles.slot', currentLanguage)} {profile.id}
+              {t('profiles.slot', currentLanguage)}
+              {profile.id}
             </div>
           </div>
           {#if profile.id === activeProfileId}

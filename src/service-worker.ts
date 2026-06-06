@@ -1,64 +1,51 @@
 /// <reference lib="webworker" />
-declare const self: ServiceWorkerGlobalScope;
+import { build, files, version } from '$service-worker';
 
-import { clientsClaim } from 'workbox-core';
-import { ExpirationPlugin } from 'workbox-expiration';
-import { precacheAndRoute, cleanupOutdatedCaches } from 'workbox-precaching';
-import { registerRoute, NavigationRoute } from 'workbox-routing';
-import { StaleWhileRevalidate, CacheFirst, NetworkFirst } from 'workbox-strategies';
+const worker = self as unknown as ServiceWorkerGlobalScope;
+const CACHE = `zellia-control-${version}`;
+const ASSETS = [...build, ...files];
+const ASSET_PATHS = new Set(ASSETS);
 
-clientsClaim();
-self.skipWaiting();
+worker.addEventListener('install', event => {
+  event.waitUntil(
+    caches
+      .open(CACHE)
+      .then(cache => cache.addAll(ASSETS))
+      .then(() => worker.skipWaiting())
+  );
+});
 
-// Precache static assets
-cleanupOutdatedCaches();
-precacheAndRoute(self.__WB_MANIFEST);
+worker.addEventListener('activate', event => {
+  event.waitUntil(
+    caches
+      .keys()
+      .then(keys => Promise.all(keys.filter(key => key !== CACHE).map(key => caches.delete(key))))
+      .then(() => worker.clients.claim())
+  );
+});
 
-// Cache first for images
-registerRoute(
-  ({ request }) => request.destination === 'image',
-  new CacheFirst({
-    cacheName: 'images-cache',
-    plugins: [
-      new ExpirationPlugin({
-        maxEntries: 50,
-        maxAgeSeconds: 30 * 24 * 60 * 60, // 30 days
-      }),
-    ],
-  })
-);
+worker.addEventListener('fetch', event => {
+  if (event.request.method !== 'GET') return;
 
-// Cache first for fonts
-registerRoute(
-  ({ request }) => request.destination === 'font',
-  new CacheFirst({
-    cacheName: 'fonts-cache',
-    plugins: [
-      new ExpirationPlugin({
-        maxEntries: 30,
-        maxAgeSeconds: 60 * 60 * 24 * 365, // 1 year
-      }),
-    ],
-  })
-);
+  const url = new URL(event.request.url);
+  if (url.origin !== worker.location.origin) return;
 
-// Network first for API calls
-registerRoute(
-  ({ url }) => url.pathname.startsWith('/api'),
-  new NetworkFirst({
-    cacheName: 'api-cache',
-    plugins: [
-      new ExpirationPlugin({
-        maxEntries: 20,
-        maxAgeSeconds: 5 * 60, // 5 minutes
-      }),
-    ],
-  })
-);
+  if (ASSET_PATHS.has(url.pathname)) {
+    event.respondWith(
+      caches.match(url.pathname).then(response => response ?? fetch(event.request))
+    );
+    return;
+  }
 
-// Message handler for skip waiting
-self.addEventListener('message', event => {
+  event.respondWith(
+    fetch(event.request).catch(() =>
+      caches.match(event.request).then(response => response ?? Response.error())
+    )
+  );
+});
+
+worker.addEventListener('message', event => {
   if (event.data && event.data.type === 'SKIP_WAITING') {
-    self.skipWaiting();
+    worker.skipWaiting();
   }
 });

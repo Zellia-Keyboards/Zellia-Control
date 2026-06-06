@@ -57,7 +57,7 @@ export default defineConfig(async () => ({
         ],
       },
       devOptions: {
-        enabled: false,
+        enabled: true,
       },
     }),
   ],
