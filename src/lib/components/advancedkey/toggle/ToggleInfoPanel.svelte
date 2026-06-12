@@ -22,7 +22,7 @@
     {@html tPlaceholder(
       'advancedkey.toggleDescription',
       currentLanguage,
-      `<strong class="text-primary-600">${keyActions.find(k => k.keycode === selectedToggleAction)?.name || selectedToggleAction}</strong>`,
+      `<strong class="text-primary-600">${keyActions.find(k => String(k.keycode) === selectedToggleAction)?.name || selectedToggleAction}</strong>`,
       toggleMode === 'press'
         ? t('advancedkey.whenPressed', currentLanguage)
         : t('advancedkey.whenReleased', currentLanguage)

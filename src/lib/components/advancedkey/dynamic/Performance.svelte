@@ -50,7 +50,7 @@
         const newKeys = [...currentKeys];
         for (const index of $selectedKeys) {
           if (index >= 0 && index < newKeys.length) {
-            newKeys[index] = { ...advancedKey };
+            newKeys[index] = ekc.normalizeAdvancedKey(advancedKey);
           }
         }
         return newKeys;

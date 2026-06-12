@@ -1,70 +1,4 @@
 <script lang="ts">
-  // WebUSB DFU types for AT32F405
-  declare global {
-    interface Navigator {
-      usb: {
-        requestDevice(options: USBDeviceRequestOptions): Promise<USBDevice>;
-        getDevices(): Promise<USBDevice[]>;
-      };
-    }
-  }
-
-  interface USBDeviceRequestOptions {
-    filters: USBDeviceFilter[];
-  }
-
-  interface USBDeviceFilter {
-    vendorId?: number;
-    productId?: number;
-    classCode?: number;
-    subclassCode?: number;
-    protocolCode?: number;
-    serialNumber?: string;
-  }
-
-  interface USBDevice {
-    productName?: string;
-    manufacturerName?: string;
-    open(): Promise<void>;
-    close(): Promise<void>;
-    selectConfiguration(configurationValue: number): Promise<void>;
-    claimInterface(interfaceNumber: number): Promise<void>;
-    releaseInterface(interfaceNumber: number): Promise<void>;
-    transferOut(endpointNumber: number, data: BufferSource): Promise<USBTransfer>;
-    transferIn(endpointNumber: number, length: number): Promise<USBInTransferResult>;
-    controlTransferOut(
-      setup: USBControlTransferParameters,
-      data?: BufferSource
-    ): Promise<USBTransfer>;
-    controlTransferIn(
-      setup: USBControlTransferParameters,
-      length: number
-    ): Promise<USBInTransferResult>;
-    reset(): Promise<void>;
-  }
-
-  interface USBTransfer {
-    status: USBTransferStatus;
-  }
-
-  interface USBInTransferResult {
-    data: DataView;
-    status: USBTransferStatus;
-  }
-
-  type USBTransferStatus = 'ok' | 'stall' | 'babble';
-
-  interface USBControlTransferParameters {
-    requestType: USBRequestType;
-    recipient: USBRecipient;
-    request: number;
-    value: number;
-    index: number;
-  }
-
-  type USBRequestType = 'standard' | 'class' | 'vendor' | 'reserved';
-  type USBRecipient = 'device' | 'interface' | 'endpoint' | 'other';
-
   import {
     Upload,
     CheckCircle,
@@ -276,15 +210,16 @@
   // DFU functions
   async function connectDFU(reconnect = false): Promise<boolean> {
     try {
-      dfuDevice = await navigator.usb.requestDevice({
+      const device = await navigator.usb.requestDevice({
         filters: [{ vendorId: AT32_VID, productId: AT32_DFU_PID }],
       });
+      dfuDevice = device;
 
-      console.log('DFU device connected:', dfuDevice);
+      console.log('DFU device connected:', device);
 
-      await dfuDevice.open();
-      await dfuDevice.selectConfiguration(1);
-      await dfuDevice.claimInterface(DFU_INTERFACE);
+      await device.open();
+      await device.selectConfiguration(1);
+      await device.claimInterface(DFU_INTERFACE);
 
       return true;
     } catch (error) {
@@ -696,7 +631,7 @@
           </div>
           <button
             class="px-6 py-2.5 bg-purple-600 hover:bg-purple-700 text-white font-medium text-sm rounded-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 border border-purple-500/30"
-            onclick={connectDFU}
+            onclick={() => connectDFU()}
           >
             <div class="flex items-center gap-2">
               <Usb class="w-4 h-4" />

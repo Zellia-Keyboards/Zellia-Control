@@ -5,13 +5,13 @@
     MouseKeycode,
     JoystickKeycode,
     KeyboardKeycode,
-    KeyboardConfig,
+    KeyboardConfigCode,
   } from '../../../../src-controller/src/interface';
 
   type KeyInfo = {
     label: string;
     keycode: Keycode;
-    subcode?: MouseKeycode | JoystickKeycode | KeyboardKeycode | KeyboardConfig;
+    subcode?: MouseKeycode | JoystickKeycode | KeyboardKeycode | KeyboardConfigCode;
   };
 
   const AvailableKeys: KeyInfo[] = [
@@ -94,7 +94,7 @@
     {
       label: 'NKRO\nToggle',
       keycode: Keycode.KeyboardOperation,
-      subcode: KeyboardConfig.KeyboardConfigNkro,
+      subcode: KeyboardConfigCode.KeyboardConfigNkro,
     },
 
     // Special keys

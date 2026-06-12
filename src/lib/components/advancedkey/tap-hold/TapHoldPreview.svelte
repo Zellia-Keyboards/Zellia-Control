@@ -26,14 +26,14 @@
     <div class="flex justify-between items-center py-2">
       <span class="text-sm text-muted-foreground">Tap</span>
       <span class="font-medium text-primary-500">
-        {keyActions.find(k => k.keycode === tapAction)?.name || tapAction}
+        {keyActions.find(k => String(k.keycode) === tapAction)?.name || tapAction}
       </span>
     </div>
     <Separator />
     <div class="flex justify-between items-center py-2">
       <span class="text-sm text-muted-foreground">Hold</span>
       <span class="font-medium text-green-500">
-        {keyActions.find(k => k.keycode === holdAction)?.name || holdAction}
+        {keyActions.find(k => String(k.keycode) === holdAction)?.name || holdAction}
       </span>
     </div>
     <Separator />

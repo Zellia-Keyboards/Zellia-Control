@@ -29,7 +29,7 @@
     <div class="flex justify-between items-center py-2">
       <span class="text-sm text-muted-foreground">Action</span>
       <span class="font-medium text-primary-600">
-        {keyActions.find(k => k.keycode === selectedToggleAction)?.name || selectedToggleAction}
+        {keyActions.find(k => String(k.keycode) === selectedToggleAction)?.name || selectedToggleAction}
       </span>
     </div>
     <Separator />

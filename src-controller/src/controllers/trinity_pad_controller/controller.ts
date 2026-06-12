@@ -1,21 +1,25 @@
 import { LibampKeyboardController } from '../libamp_keyboard_controller/controller';
-import { IAdvancedKey, IKeyboardController, IRGBConfig, KeyMode, CalibrationMode, RGBMode, Keycode, KeyModifier, AdvancedKeyToBytes, AdvancedKey, MouseKeycode, LayerControlKeycode, KeyboardController, DynamicKeyType, DynamicKeyStroke4x4, DynamicKeyModTap, DynamicKeyToggleKey, DynamicKeyMutex, DynamicKey, IDynamicKey, RGBBaseConfig } from './../../interface';
+import { IAdvancedKey, IKeyboardController, IRGBConfig, KeyMode, CalibrationMode, RGBMode, Keycode, KeyModifier, AdvancedKey, MouseKeycode, LayerControlKeycode, KeyboardController, DynamicKeyType, DynamicKeyStroke4x4, DynamicKeyModTap, DynamicKeyToggleKey, DynamicKeyMutex, DynamicKey, IDynamicKey, RGBBaseConfig, ScriptLevel, MacroAction, detectHIDDevice } from './../../interface';
 
-const layout = `[[{"a": 7},"Z","X","C","V"]]`;
+const layout = `[["0","1","2","3"]]`;
 
 export class TrinityPadController  extends LibampKeyboardController {
     ADVANCED_KEY_NUM: number = 4;
-    config_file_number:number = 4;
+    profile_number:number = 4;
 
     constructor() {
         super();
         this.reset_to_default();
+        this.feature.rgb_flag = true;
+        this.feature.script_level = ScriptLevel.AOT;
     }
 
-    async detect(): Promise<HIDDevice[]> {
-        return await navigator.hid.requestDevice({
-            filters: [{ vendorId: 0xFEED, productId: 0xFFFF, usagePage: 0xFF60 }]  // 使用示例，过滤器可以根据需求进行调整
-        });;
+    async detect(silent: boolean = false): Promise<HIDDevice[]> {
+        return detectHIDDevice({
+            vendorId: 0xFEED,
+            productId: 0xFFFF,
+            usagePage: 0xFF60
+            }, silent);
     }
     
     get_layout_json(): string {
@@ -24,15 +28,9 @@ export class TrinityPadController  extends LibampKeyboardController {
 
     reset_to_default(): void {
         
-        this.advanced_keys = Array(this.ADVANCED_KEY_NUM).fill(null).map(() => ({
-            state: false,
-            report_state: false,
-            value: 0.0,
-            raw: 0.0,
+        this.advanced_keys = Array(this.ADVANCED_KEY_NUM).fill(null).map(() => new AdvancedKey({
             mode: KeyMode.KeyAnalogRapidMode,
             calibration_mode: CalibrationMode.KeyAutoCalibrationUndefined,
-            maximum: 0.0,
-            minimum: 0.0,
             activation_value: 0.5,
             deactivation_value: 0.49,
             trigger_distance: 0.08,
@@ -52,7 +50,7 @@ export class TrinityPadController  extends LibampKeyboardController {
                 green: 55,
                 blue: 252,
             },
-            speed: 0.02
+            speed: 20
         }));
         this.keymap = [
             [
@@ -102,5 +100,6 @@ export class TrinityPadController  extends LibampKeyboardController {
             ]
         ];
         this.dynamic_keys = Array(32).fill(null).map(() => (new DynamicKey()));;
+        this.macros = Array(4).fill(Array(128).fill(new MacroAction()));
     }
 }

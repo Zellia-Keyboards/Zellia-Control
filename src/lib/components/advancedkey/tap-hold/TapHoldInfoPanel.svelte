@@ -23,11 +23,11 @@
   <CardContent class="text-sm space-y-2">
     <p>
       • {tPlaceholder('advancedkey.quickTap', currentLanguage, tapTimeout.toString())}:
-      <strong>{keyActions.find(k => k.keycode === tapAction)?.name || tapAction}</strong>
+      <strong>{keyActions.find(k => String(k.keycode) === tapAction)?.name || tapAction}</strong>
     </p>
     <p>
       • {tPlaceholder('advancedkey.holdOver', currentLanguage, holdDelay.toString())}:
-      <strong>{keyActions.find(k => k.keycode === holdAction)?.name || holdAction}</strong>
+      <strong>{keyActions.find(k => String(k.keycode) === holdAction)?.name || holdAction}</strong>
     </p>
     <p class="mt-3 text-xs text-muted-foreground">
       {t('advancedkey.tapHoldDescription', currentLanguage)}

@@ -100,7 +100,7 @@
         // 确保索引在数组范围内，并应用新的配置
         if (index >= 0 && index < newKeys.length) {
           // 创建一个新对象以避免直接修改旧对象（保持不变性）
-          newKeys[index] = { ...config };
+          newKeys[index] = ekc.normalizeAdvancedKey(config);
         }
       }
       return newKeys;

@@ -263,15 +263,16 @@
 
 <!-- Profile Menu -->
 {#if openMenuId !== null && menuPosition !== null}
+  {@const menuId = openMenuId}
   <ProfileMenu
-    profileId={openMenuId}
+    profileId={menuId}
     position={menuPosition}
-    isActive={openMenuId === activeProfileId}
-    canDelete={openMenuId > 4}
-    onExport={() => exportProfile(openMenuId)}
-    onDuplicate={() => showDuplicateDialog(openMenuId)}
-    onRestore={() => showRestoreDialog(openMenuId)}
-    onDelete={() => deleteProfile(openMenuId)}
+    isActive={menuId === activeProfileId}
+    canDelete={menuId > 4}
+    onExport={() => exportProfile(menuId)}
+    onDuplicate={() => showDuplicateDialog(menuId)}
+    onRestore={() => showRestoreDialog(menuId)}
+    onDelete={() => deleteProfile(menuId)}
   />
 {/if}
 

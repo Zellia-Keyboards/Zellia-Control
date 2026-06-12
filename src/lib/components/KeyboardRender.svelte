@@ -90,7 +90,6 @@
           rotationY={key.rotation_y}
           rotationAngle={key.rotation_angle}
           labels={key.labels}
-          id={key.id}
           index={key.id}
           {allowSelection}
           selected={$selectedKeys.includes(key.id)}

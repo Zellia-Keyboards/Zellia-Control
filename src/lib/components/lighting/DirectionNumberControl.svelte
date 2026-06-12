@@ -6,9 +6,10 @@
     onDirectionChange: (value: number) => void;
     min?: number;
     max?: number;
+    label?: string;
   }
 
-  let { direction, onDirectionChange, min = 0, max = 360 }: Props = $props();
+  let { direction, onDirectionChange, min = 0, max = 360, label }: Props = $props();
   let currentLanguage = $derived($language);
 
   function handleInput(e: Event) {
@@ -18,9 +19,9 @@
 </script>
 
 <div>
-  <label class="block text-xs text-gray-600 dark:text-gray-300 mb-1.5"
-    >{t('lighting.direction', currentLanguage)}</label
-  >
+  <label class="block text-xs text-gray-600 dark:text-gray-300 mb-1.5">
+    {label || t('lighting.direction', currentLanguage)}
+  </label>
   <input
     type="number"
     min={min}

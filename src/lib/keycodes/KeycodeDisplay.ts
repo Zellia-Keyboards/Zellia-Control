@@ -12,7 +12,7 @@ import {
   SystemRawKeycode,
   JoystickKeycode,
   MIDIKeycode,
-  KeyboardConfig,
+  KeyboardConfigCode,
   MacroKeycode,
 } from 'emi-keyboard-controller';
 import type {
@@ -21,7 +21,7 @@ import type {
   Srgb,
 } from 'emi-keyboard-controller';
 
-export const keyCodeToKeyName: { [key in Keycode]: string } = {
+export const keyCodeToKeyName: Partial<Record<Keycode, string>> = {
   [Keycode.NoEvent]: 'No Event',
   [Keycode.ErrorOverflow]: 'Error Overflow',
   [Keycode.PostFail]: 'Post Fail',
@@ -241,7 +241,7 @@ export const MouseKeycodeToKeyName: { [key in MouseKeycode]: string } = {
   [MouseKeycode.MouseMoveRight]: 'Mouse Move Right',
 };
 
-export const KeyboardOperationToKeyName: { [key in KeyboardKeycode]: string } = {
+export const KeyboardOperationToKeyName: Partial<Record<KeyboardKeycode, string>> = {
   [KeyboardKeycode.KeyboardReboot]: 'Reboot',
   [KeyboardKeycode.KeyboardFactoryReset]: 'Factory Reset',
   [KeyboardKeycode.KeyboardSave]: 'Save to flash',
@@ -256,12 +256,14 @@ export const KeyboardOperationToKeyName: { [key in KeyboardKeycode]: string } = 
   [KeyboardKeycode.KeyboardConfigBase]: 'Config Base',
 };
 
-export const KeyboardConfigToKeyName: { [key in KeyboardConfig]: string } = {
-  [KeyboardConfig.KeyboardConfigDebug]: 'Debug',
-  [KeyboardConfig.KeyboardConfigNkro]: 'NKRO',
-  [KeyboardConfig.KeyboardConfigWinlock]: 'Winlock',
-  [KeyboardConfig.KeyboardConfigContinousPoll]: 'Continous poll',
-  [KeyboardConfig.KeyboardConfigNum]: 'Num',
+export const KeyboardConfigToKeyName: Partial<Record<KeyboardConfigCode, string>> = {
+  [KeyboardConfigCode.KeyboardConfigDebug]: 'Debug',
+  [KeyboardConfigCode.KeyboardConfigNkro]: 'NKRO',
+  [KeyboardConfigCode.KeyboardConfigWinlock]: 'Winlock',
+  [KeyboardConfigCode.KeyboardConfigContinousPoll]: 'Continous poll',
+  [KeyboardConfigCode.KeyboardConfigEnableReport]: 'Enable Report',
+  [KeyboardConfigCode.KeyboardConfigConsole]: 'Console',
+  [KeyboardConfigCode.KeyboardConfigNum]: 'Num',
 };
 
 export const LayerControlToKeyName: { [key in LayerControlKeycode]: string } = {
@@ -271,7 +273,7 @@ export const LayerControlToKeyName: { [key in LayerControlKeycode]: string } = {
   [LayerControlKeycode.LayerToggle]: 'Toggle',
 };
 
-export const JoystickKeycodeToKeyName: { [key in JoystickKeycode]: string } = {
+export const JoystickKeycodeToKeyName: Partial<Record<JoystickKeycode, string>> = {
   [JoystickKeycode.JoystickButton]: 'Joystick Button',
   [JoystickKeycode.JoystickPositive]: 'Positive',
   [JoystickKeycode.JoystickNegative]: 'Negative',
@@ -421,7 +423,7 @@ export function keyCodeToString(keycode: number): { mainString: string; subStrin
           }
           mainString =
             KeyboardConfigToKeyName[
-              ((modifier & 0x3f) - KeyboardKeycode.KeyboardConfigBase) as KeyboardConfig
+              ((modifier & 0x3f) - KeyboardKeycode.KeyboardConfigBase) as KeyboardConfigCode
             ] ?? '';
         }
         break;
