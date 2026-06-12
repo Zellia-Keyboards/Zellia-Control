@@ -1,14 +1,26 @@
 <script lang="ts">
   import { fade } from 'svelte/transition';
-  import { ArrowRight, Loader2, AlertCircle } from 'lucide-svelte';
-  import { keyboardAPI } from '$lib/api/keyboardAPI.svelte';
+  import { ArrowRight, Loader2, AlertCircle, Cpu } from 'lucide-svelte';
+  import {
+    availableControllers,
+    keyboardAPI,
+    type KeyboardModel,
+  } from '$lib/api/keyboardAPI.svelte';
   import { language, t } from '$lib/stores/LanguageStore.svelte';
   import { Button } from '$lib/components/ui/button';
+  import * as Select from '$lib/components/ui/select';
 
   let currentLanguage = $derived($language);
   let buttonElement: HTMLButtonElement | null = $state(null);
   let mouseX = $state(0);
   let mouseY = $state(0);
+  let selectedModel = $state<KeyboardModel>(
+    keyboardAPI.state.selectedModel ?? availableControllers[0].modelKey
+  );
+  let selectedControllerName = $derived(
+    availableControllers.find(controller => controller.modelKey === selectedModel)?.modelName ??
+      'Keyboard'
+  );
 
   function handleMouseMove(event: MouseEvent) {
     if (!buttonElement) return;
@@ -18,10 +30,14 @@
   }
 
   async function handleConnect() {
-    await keyboardAPI.connect();
+    await keyboardAPI.connect(selectedModel);
   }
 
   let isConnecting = $derived(keyboardAPI.state.connectionStatus === 'connecting');
+
+  $effect(() => {
+    keyboardAPI.selectModel(selectedModel);
+  });
 </script>
 
 <div class="flex-1 flex items-center justify-center p-8 relative overflow-visible">
@@ -45,7 +61,23 @@
     </div>
 
     <!-- Connect button (liquid-glass effect) -->
-    <div class="text-center animate-fade-in-up" style="animation-delay: 0.2s">
+    <div class="mx-auto w-full max-w-xs animate-fade-in-up" style="animation-delay: 0.15s">
+      <Select.Select type="single" bind:value={selectedModel} disabled={isConnecting}>
+        <Select.SelectTrigger class="w-full justify-between rounded-xl bg-card/80 px-3">
+          <span class="flex min-w-0 items-center gap-2" data-slot="select-value">
+            <Cpu class="size-4 text-primary-500" />
+            <span class="truncate">{selectedControllerName}</span>
+          </span>
+        </Select.SelectTrigger>
+        <Select.SelectContent class="z-[100]">
+          {#each availableControllers as controller}
+            <Select.SelectItem value={controller.modelKey} label={controller.modelName} />
+          {/each}
+        </Select.SelectContent>
+      </Select.Select>
+    </div>
+
+    <div class="text-center animate-fade-in-up" style="animation-delay: 0.25s">
       <Button
         bind:ref={buttonElement}
         size="lg"

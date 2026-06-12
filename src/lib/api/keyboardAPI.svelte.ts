@@ -12,7 +12,7 @@ import {
 } from './ConnectionManager.svelte';
 
 export type { KeyboardModel, KeyboardConnectionState, DeviceHint };
-export { ConnectionError };
+export { ConnectionError, availableControllers };
 
 export const keyboardConnectionState = connectionManager.state;
 
@@ -22,8 +22,12 @@ connectionManager.addEventListener('connected', e => {
 });
 
 export const keyboardAPI = {
-  async connect(): Promise<boolean> {
-    return connectionManager.connect();
+  async connect(modelKey?: KeyboardModel): Promise<boolean> {
+    return connectionManager.connect(modelKey);
+  },
+
+  selectModel(modelKey: KeyboardModel): void {
+    connectionManager.selectModel(modelKey);
   },
 
   async tryReattach(): Promise<boolean> {

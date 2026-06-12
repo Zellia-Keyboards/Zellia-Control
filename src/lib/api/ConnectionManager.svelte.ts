@@ -100,6 +100,13 @@ export const availableControllers = [
   },
 ];
 
+const PRODUCT_NAME_PATTERNS: Record<KeyboardModel, RegExp[]> = {
+  zellia_starlight: [/starlight/i],
+  zellia80he: [/zellia\s*80/i, /80\s*he/i, /80he/i],
+  oholeo: [/oholeo/i],
+  trinity_pad: [/trinity/i],
+};
+
 class ConnectionManager extends EventTarget {
   state = $state<KeyboardConnectionState>({
     isConnected: false,
@@ -154,11 +161,34 @@ class ConnectionManager extends EventTarget {
     } catch {}
   }
 
-  private matchController(device: HIDDevice) {
-    for (const cfg of availableControllers) {
-      if (this.deviceMatchesController(device, cfg.controller)) return cfg;
+  selectModel(modelKey: KeyboardModel) {
+    this.state.selectedModel = modelKey;
+  }
+
+  private matchController(device: HIDDevice, preferredModel?: KeyboardModel | null) {
+    const matches = availableControllers.filter(cfg =>
+      this.deviceMatchesController(device, cfg.controller)
+    );
+    if (matches.length <= 1) return matches[0];
+
+    if (preferredModel) {
+      const preferred = matches.find(cfg => cfg.modelKey === preferredModel);
+      if (preferred) return preferred;
     }
-    return undefined;
+
+    const productName = device.productName || '';
+    const productMatch = matches.find(cfg =>
+      PRODUCT_NAME_PATTERNS[cfg.modelKey].some(pattern => pattern.test(productName))
+    );
+    if (productMatch) return productMatch;
+
+    const hint = this.loadHint();
+    if (hint && hint.vendorId === device.vendorId && hint.productId === device.productId) {
+      const hinted = matches.find(cfg => cfg.modelKey === hint.modelKey);
+      if (hinted) return hinted;
+    }
+
+    return matches[0];
   }
 
   deviceMatchesController(device: HIDDevice, ControllerClass: any): boolean {
@@ -187,7 +217,7 @@ class ConnectionManager extends EventTarget {
       const candidate =
         (hint &&
           devices.find(
-            d => d.vendorId === hint.vendorId && d.productId === hint.productId && this.matchController(d)
+              d => d.vendorId === hint.vendorId && d.productId === hint.productId && this.matchController(d)
           )) ||
         devices.find(d => this.matchController(d));
       if (!candidate) return false;
@@ -197,10 +227,11 @@ class ConnectionManager extends EventTarget {
     }
   }
 
-  async connect(): Promise<boolean> {
+  async connect(preferredModel?: KeyboardModel): Promise<boolean> {
     if (this.state.connectionStatus === 'connecting') return false;
     this.userInitiatedDisconnect = false;
     this.cancelReconnect();
+    if (preferredModel) this.selectModel(preferredModel);
     this.state.connectionStatus = 'connecting';
     this.state.error = undefined;
     this.state.lastError = ConnectionError.None;
@@ -212,15 +243,19 @@ class ConnectionManager extends EventTarget {
         this.fail('No compatible keyboards found', ConnectionError.NoDeviceSelected);
         return false;
       }
-      return await this.attach(devices[0], /* navigateOnSuccess */ true);
+      return await this.attach(devices[0], /* navigateOnSuccess */ true, preferredModel ?? this.state.selectedModel);
     } catch (e) {
       this.fail(e instanceof Error ? e.message : 'Connection failed', ConnectionError.Unknown);
       return false;
     }
   }
 
-  private async attach(device: HIDDevice, navigateOnSuccess: boolean): Promise<boolean> {
-    const cfg = this.matchController(device);
+  private async attach(
+    device: HIDDevice,
+    navigateOnSuccess: boolean,
+    preferredModel?: KeyboardModel | null
+  ): Promise<boolean> {
+    const cfg = this.matchController(device, preferredModel);
     if (!cfg) {
       this.fail('No compatible controller found for detected device', ConnectionError.NoCompatibleController);
       return false;
