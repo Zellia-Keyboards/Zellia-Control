@@ -28,6 +28,7 @@
     keymap,
     rgbBaseConfig,
     rgbConfigs,
+    configHydrationStatus,
   } from '$lib/stores/ControllerStore.svelte';
   import { Button } from '$lib/components/ui/button';
   import { Separator } from '$lib/components/ui/separator';
@@ -58,7 +59,7 @@
     toast.success('Disconnected');
   }
 
-  function handleSave() {
+  async function handleSave() {
     keyboardConnectionState.controller?.set_advanced_keys($advancedKeys);
     keyboardConnectionState.controller?.set_rgb_base_config($rgbBaseConfig);
     if ($keymap != undefined) {
@@ -66,8 +67,12 @@
     }
     keyboardConnectionState.controller?.set_rgb_configs($rgbConfigs);
     keyboardConnectionState.controller?.set_dynamic_keys($dynamicKeys);
-    keyboardConnectionState.controller?.save_config();
-    keyboardConnectionState.controller?.flash_config();
+    const saved = await keyboardAPI.saveConfiguration();
+    if (!saved) {
+      toast.error('Failed to save configuration');
+      return;
+    }
+    await keyboardAPI.flashConfiguration();
     toast.success('Configuration saved');
   }
 </script>
@@ -86,9 +91,18 @@
     <!-- Connection Status -->
     <div class="mt-3 flex items-center justify-center gap-2 text-xs text-muted-foreground">
       {#if keyboardAPI.shouldShowConfigurator}
-        <span class="size-2 rounded-full bg-green-500 animate-pulse"></span>
+        <span
+          class={cn(
+            'size-2 rounded-full',
+            $configHydrationStatus === 'loading'
+              ? 'bg-amber-400 animate-pulse'
+              : 'bg-green-500 animate-pulse'
+          )}
+        ></span>
         <span>
-          {keyboardAPI.state.lastConnectedDevice || 'Connected'}
+          {$configHydrationStatus === 'loading'
+            ? 'Loading config...'
+            : keyboardAPI.state.lastConnectedDevice || 'Connected'}
         </span>
       {:else}
         <span class="size-2 rounded-full bg-muted-foreground/50"></span>

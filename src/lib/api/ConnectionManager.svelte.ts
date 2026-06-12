@@ -18,8 +18,19 @@ import {
   keymap,
   layoutLabels,
   selectedLayoutIndices,
+  keyboardConfig,
+  firmwareVersion,
+  firmwareFeature,
+  profileIndex,
+  profileCount,
+  macros,
+  scriptSource,
+  scriptBytecode,
+  configHydrationStatus,
+  configHydrationError,
 } from '$lib/stores/ControllerStore.svelte';
 import { keyboardLayout } from '$lib/stores/LayoutStore.svelte';
+import { mapBackDynamicKey } from '$lib/utils/dynamicMap';
 
 export type KeyboardModel = 'zellia_starlight' | 'zellia80he' | 'oholeo' | 'trinity_pad';
 
@@ -51,6 +62,8 @@ export interface KeyboardConnectionState {
   lastError?: ConnectionError;
   reconnectAttempt?: number;
   lastDeviceHint?: DeviceHint;
+  configStatus?: 'idle' | 'loading' | 'ready' | 'error';
+  configError?: string;
 }
 
 const HID_FILTERS = [
@@ -95,7 +108,10 @@ class ConnectionManager extends EventTarget {
   });
 
   private activeDevice: HIDDevice | undefined;
+  private boundController: any;
   private updateDataHandler: (() => void) | undefined;
+  private updateDataStartHandler: (() => void) | undefined;
+  private deviceDisconnectedHandler: (() => void) | undefined;
   private hidConnectHandler = (e: Event) => this.onHidConnect(e as any);
   private hidDisconnectHandler = (e: Event) => this.onHidDisconnect(e as any);
   private heartbeatTimer: ReturnType<typeof setInterval> | undefined;
@@ -211,19 +227,23 @@ class ConnectionManager extends EventTarget {
     }
 
     this.state.connectionStatus = 'connecting';
-    let ctrl: IKeyboardController;
+    let ctrl: IKeyboardController | undefined;
     let ok = false;
     try {
       ctrl = new cfg.controller();
+      this.bindStores(ctrl as any);
+      this.setHydrationStatus('loading');
       ok = await ctrl.connect(device);
     } catch (e) {
+      this.unbindStores(ctrl as any);
       this.fail(
         e instanceof Error ? e.message : 'Failed to open device',
         ConnectionError.OpenFailed
       );
       return false;
     }
-    if (!ok) {
+    if (!ctrl || !ok) {
+      this.unbindStores(ctrl as any);
       this.fail('Failed to connect to keyboard', ConnectionError.OpenFailed);
       return false;
     }
@@ -253,7 +273,7 @@ class ConnectionManager extends EventTarget {
     layoutLabels.set(labels);
     selectedLayoutIndices.set(new Array(labels.length).fill(0));
 
-    this.bindStores(ctrl as any);
+    this.syncStoresFromController(ctrl as any);
     this.startHeartbeat();
     this.dispatchEvent(
       new CustomEvent('connected', {
@@ -264,19 +284,128 @@ class ConnectionManager extends EventTarget {
   }
 
   private bindStores(ctrl: any) {
+    this.unbindStores();
+    this.boundController = ctrl;
+    this.updateDataStartHandler = () => this.setHydrationStatus('loading');
+    this.updateDataHandler = () => {
+      this.syncStoresFromController(ctrl);
+      this.setHydrationStatus('ready');
+    };
+    this.deviceDisconnectedHandler = () => this.handleLost(ConnectionError.LostConnection);
+    ctrl.addEventListener('updateDataStart', this.updateDataStartHandler);
+    ctrl.addEventListener('updateData', this.updateDataHandler);
+    ctrl.addEventListener('deviceDisconnected', this.deviceDisconnectedHandler);
+  }
+
+  private unbindStores(ctrl = this.boundController) {
+    if (!ctrl) return;
+    if (this.updateDataStartHandler) {
+      try {
+        ctrl.removeEventListener?.('updateDataStart', this.updateDataStartHandler);
+      } catch {}
+    }
     if (this.updateDataHandler) {
       try {
         ctrl.removeEventListener?.('updateData', this.updateDataHandler);
       } catch {}
     }
-    this.updateDataHandler = () => {
-      advancedKeys.set([...(ctrl.get_advanced_keys() as ekc.IAdvancedKey[])]);
-      rgbConfigs.set([...(ctrl.get_rgb_configs() as ekc.IRGBConfig[])]);
-      rgbBaseConfig.set({ ...(ctrl.get_rgb_base_config() as ekc.IRGBBaseConfig) });
-      dynamicKeys.set([...(ctrl.get_dynamic_keys() as ekc.IDynamicKey[])]);
-      keymap.set((ctrl.get_keymap() as number[][]).map((layer: number[]) => [...layer]));
-    };
-    ctrl.addEventListener('updateData', this.updateDataHandler);
+    if (this.deviceDisconnectedHandler) {
+      try {
+        ctrl.removeEventListener?.('deviceDisconnected', this.deviceDisconnectedHandler);
+      } catch {}
+    }
+    this.boundController = undefined;
+    this.updateDataStartHandler = undefined;
+    this.updateDataHandler = undefined;
+    this.deviceDisconnectedHandler = undefined;
+  }
+
+  private setHydrationStatus(
+    status: 'idle' | 'loading' | 'ready' | 'error',
+    error: string | null = null
+  ) {
+    this.state.configStatus = status;
+    this.state.configError = error ?? undefined;
+    configHydrationStatus.set(status);
+    configHydrationError.set(error);
+  }
+
+  private syncStoresFromController(ctrl: any) {
+    const nextAdvancedKeys = (ctrl.get_advanced_keys?.() ?? []).map((key: ekc.IAdvancedKey) =>
+      ekc.normalizeAdvancedKey(key)
+    );
+    const nextRgbConfigs = (ctrl.get_rgb_configs?.() ?? []).map((config: ekc.IRGBConfig) => ({
+      ...config,
+      rgb: { ...config.rgb },
+    }));
+    const nextRgbBaseConfig = ctrl.get_rgb_base_config?.() as ekc.IRGBBaseConfig | undefined;
+    const nextDynamicKeys = [...(ctrl.get_dynamic_keys?.() ?? [])] as ekc.IDynamicKey[];
+    const nextKeymap = ((ctrl.get_keymap?.() ?? []) as number[][]).map(layer => [...layer]);
+
+    if (nextKeymap.length > 0 && nextDynamicKeys.length > 0) {
+      try {
+        mapBackDynamicKey(nextKeymap, nextDynamicKeys);
+      } catch (e) {
+        console.warn('Failed to map dynamic key locations from keymap', e);
+      }
+    }
+
+    advancedKeys.set(nextAdvancedKeys);
+    rgbConfigs.set(nextRgbConfigs);
+    if (nextRgbBaseConfig) {
+      rgbBaseConfig.set({
+        ...nextRgbBaseConfig,
+        rgb: { ...nextRgbBaseConfig.rgb },
+        secondary_rgb: { ...nextRgbBaseConfig.secondary_rgb },
+      });
+    }
+    dynamicKeys.set(nextDynamicKeys);
+    keymap.set(nextKeymap);
+
+    keyboardConfig.set(ctrl.get_config?.() ?? new ekc.KeyboardConfig());
+    firmwareVersion.set({ ...(ctrl.get_firmware_version?.() ?? { major: 0, minor: 0, patch: 0, info: '' }) });
+    firmwareFeature.set(ctrl.get_feature?.() ?? new ekc.Feature());
+    profileIndex.set(ctrl.get_profile_index?.() ?? 0);
+    profileCount.set(ctrl.get_profile_num?.() ?? 0);
+    macros.set((ctrl.get_macros?.() ?? [[]]).map((macro: ekc.IMacroAction[]) => [...macro]));
+    scriptSource.set(ctrl.get_script_source?.() ?? '');
+    const bytecode = ctrl.get_script_bytecode?.();
+    scriptBytecode.set(bytecode ? new Uint8Array(bytecode) : new Uint8Array());
+  }
+
+  async refreshConfiguration(): Promise<boolean> {
+    const ctrl: any = this.state.controller;
+    if (!ctrl) return false;
+    this.setHydrationStatus('loading');
+    try {
+      const request = ctrl.request?.() ?? ctrl.fetch?.() ?? ctrl.request_config?.();
+      if (request && typeof request.then === 'function') await request;
+      this.syncStoresFromController(ctrl);
+      this.setHydrationStatus('ready');
+      return true;
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Failed to read keyboard configuration';
+      this.setHydrationStatus('error', message);
+      this.state.error = message;
+      return false;
+    }
+  }
+
+  async setProfileIndex(index: number): Promise<boolean> {
+    const ctrl: any = this.state.controller;
+    if (!ctrl) return false;
+    this.setHydrationStatus('loading');
+    try {
+      const result = ctrl.set_profile_index?.(index) ?? ctrl.set_config_file_index?.(index);
+      if (result && typeof result.then === 'function') await result;
+      profileIndex.set(index);
+      return true;
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Failed to switch profile';
+      this.setHydrationStatus('error', message);
+      this.state.error = message;
+      return false;
+    }
   }
 
   private startHeartbeat() {
@@ -340,17 +469,12 @@ class ConnectionManager extends EventTarget {
   private teardownController() {
     this.stopHeartbeat();
     const ctrl: any = this.state.controller;
-    if (ctrl && this.updateDataHandler) {
-      try {
-        ctrl.removeEventListener?.('updateData', this.updateDataHandler);
-      } catch {}
-    }
+    this.unbindStores(ctrl);
     if (ctrl) {
       try {
         ctrl.disconnect();
       } catch {}
     }
-    this.updateDataHandler = undefined;
     this.activeDevice = undefined;
     this.state.controller = undefined;
   }
@@ -375,6 +499,7 @@ class ConnectionManager extends EventTarget {
     this.state.lastError = ConnectionError.None;
     this.state.reconnectAttempt = 0;
     this.state.lastDeviceHint = undefined;
+    this.setHydrationStatus('idle');
     this.clearHint();
     this.dispatchEvent(new CustomEvent('disconnected'));
   }

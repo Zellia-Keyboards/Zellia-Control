@@ -38,6 +38,14 @@ export const keyboardAPI = {
     return connectionManager.state.controller;
   },
 
+  async refreshConfiguration(): Promise<boolean> {
+    return connectionManager.refreshConfiguration();
+  },
+
+  async setProfileIndex(index: number): Promise<boolean> {
+    return connectionManager.setProfileIndex(index);
+  },
+
   on(event: string, listener: EventListener): void {
     connectionManager.addEventListener(event, listener);
   },
@@ -50,7 +58,8 @@ export const keyboardAPI = {
     const ctrl = connectionManager.state.controller as any;
     if (!ctrl) return false;
     try {
-      ctrl.save_config();
+      const result = ctrl.save?.() ?? ctrl.save_config?.();
+      if (result && typeof result.then === 'function') await result;
       return true;
     } catch (error) {
       connectionManager.state.error =
@@ -63,7 +72,8 @@ export const keyboardAPI = {
     const ctrl = connectionManager.state.controller as any;
     if (!ctrl) return false;
     try {
-      ctrl.flash_config();
+      const result = ctrl.flash?.() ?? ctrl.flash_config?.();
+      if (result && typeof result.then === 'function') await result;
       return true;
     } catch (error) {
       connectionManager.state.error =

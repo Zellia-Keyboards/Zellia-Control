@@ -107,9 +107,9 @@
     fileInput?.click();
   }
 
-  function setActive(profileId: number) {
+  async function setActive(profileId: number) {
     profileStore.setActiveProfile(profileId);
-    keyboardConnectionState.controller?.set_config_file_index(profileId - 1);
+    await keyboardAPI.setProfileIndex(profileId - 1);
     openMenuId = null;
   }
 
