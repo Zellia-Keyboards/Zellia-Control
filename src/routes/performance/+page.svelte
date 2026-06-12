@@ -46,6 +46,7 @@
   let lowerDeadzone = $state(3.5); // Bottom of key
   let keysSelected = $state(0);
   let maxTravelDistance = $state(4.0); // Maximum travel distance for the switch (default 4mm)
+  let lastLoadedKeySignature = $state('');
 
   let advancedKey: ekc.AdvancedKey = $derived.by(() => {
     var k = new ekc.AdvancedKey();
@@ -70,24 +71,49 @@
 
   let hasSelection = $state(false);
 
+  function keySignature(key: ekc.IAdvancedKey | undefined): string {
+    if (!key) return '';
+    return [
+      key.mode,
+      key.activation_value,
+      key.deactivation_value,
+      key.trigger_distance,
+      key.release_distance,
+      key.upper_deadzone,
+      key.lower_deadzone,
+    ].join(':');
+  }
+
+  $effect(() => {
+    const firstKeyIndex = $selectedKeys[0];
+    if (firstKeyIndex == null) {
+      hasSelection = false;
+      lastLoadedKeySignature = '';
+      return;
+    }
+
+    const sourceKey = $advancedKeys[firstKeyIndex];
+    const nextSignature = `${firstKeyIndex}:${keySignature(sourceKey)}`;
+    if (!sourceKey || nextSignature === lastLoadedKeySignature) return;
+
+    rapidTriggerEnabled = sourceKey.mode === ekc.KeyMode.KeyAnalogRapidMode;
+    separateSensitivity = sourceKey.trigger_distance != sourceKey.release_distance;
+    actuationPoint = percentToMm(sourceKey.activation_value);
+    deactivationPoint = percentToMm(sourceKey.deactivation_value);
+    pressSensitivity = percentToMm(sourceKey.trigger_distance);
+    sensitivityValue = percentToMm(sourceKey.trigger_distance);
+    releaseSensitivity = percentToMm(sourceKey.release_distance);
+    upperDeadzone = percentToMm(sourceKey.upper_deadzone);
+    lowerDeadzone = 4.0 - percentToMm(sourceKey.lower_deadzone);
+    hasSelection = true;
+    lastLoadedKeySignature = nextSignature;
+  });
+
   $effect(() => {
     const keysToUpdate = $selectedKeys;
-    const isSelected = $selectedKeys.length > 0;
-    if (isSelected && !hasSelection) {
-      let k = $advancedKeys[$selectedKeys[0]];
-      rapidTriggerEnabled = k.mode === ekc.KeyMode.KeyAnalogRapidMode;
-      separateSensitivity = k.trigger_distance != k.release_distance;
-      pressSensitivity = percentToMm(k.trigger_distance);
-      sensitivityValue = percentToMm(k.trigger_distance);
-      releaseSensitivity = percentToMm(k.release_distance);
-      upperDeadzone = percentToMm(k.upper_deadzone);
-      lowerDeadzone = percentToMm(k.lower_deadzone);
-    }
-    // 只有在有按键被选中的时候才更新
     if (keysToUpdate.length === 0) {
       return;
     }
-    hasSelection = isSelected;
 
     // 更新 advancedKeys 存储
     advancedKeys.update(currentKeys => {

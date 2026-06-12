@@ -38,6 +38,7 @@
   $effect(() => {
     if ($selectedKeys.length > 0) {
       let k = $advancedKeys[$selectedKeys[0]];
+      if (!k) return;
       actuationPoint = percentToMm(k.activation_value);
       deactivationPoint = percentToMm(k.deactivation_value);
     }

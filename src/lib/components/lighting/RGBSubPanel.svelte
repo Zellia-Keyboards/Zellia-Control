@@ -49,6 +49,7 @@
 
   // Initialize local state when config changes
   $effect(() => {
+    selectedMode = config.mode;
     localColor = rgbToHex(config.rgb);
     localSpeed = Math.round(config.speed * 1000);
   });

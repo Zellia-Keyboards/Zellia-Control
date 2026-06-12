@@ -6,19 +6,25 @@
   import ConfirmationModal from '$lib/components/profiles/ConfirmationModal.svelte';
   import ErrorModal from '$lib/components/profiles/ErrorModal.svelte';
   import { keyboardAPI, keyboardConnectionState } from '$lib/api/keyboardAPI.svelte';
+  import { profileCount, profileIndex } from '$lib/stores/ControllerStore.svelte';
 
   let profiles = $derived($profileStore.profiles);
-  let activeProfileId = $derived($profileStore.activeProfileId);
+  let maxProfileSlots = $derived(
+    keyboardAPI.shouldShowConfigurator ? Math.min($profileCount || 4, 16) : 16
+  );
+  let activeProfileId = $derived(
+    keyboardAPI.shouldShowConfigurator ? $profileIndex + 1 : $profileStore.activeProfileId
+  );
 
-  // Get first 4 default profiles
-  let defaultProfiles = $derived(profiles.slice(0, 4));
+  // Get default profiles supported by the connected controller
+  let defaultProfiles = $derived(profiles.slice(0, Math.min(4, maxProfileSlots)));
 
-  // Get additional profiles (5-16)
-  let additionalProfiles = $derived(profiles.slice(4, 16).filter(p => p !== null));
+  // Get additional profiles supported by the connected controller
+  let additionalProfiles = $derived(profiles.slice(4, maxProfileSlots).filter(p => p !== null));
 
-  // Count total number of profiles
-  let totalProfileCount = $derived(profiles.filter(p => p !== null).length);
-  let canAddMore = $derived(totalProfileCount < 16);
+  // Count total number of profiles available within the controller slot count
+  let totalProfileCount = $derived(profiles.slice(0, maxProfileSlots).filter(p => p !== null).length);
+  let canAddMore = $derived(totalProfileCount < maxProfileSlots);
 
   let openMenuId = $state<number | null>(null);
   let menuPosition = $state<{ top: number; right: number } | null>(null);
@@ -108,8 +114,13 @@
   }
 
   async function setActive(profileId: number) {
+    const changed = await keyboardAPI.setProfileIndex(profileId - 1);
+    if (!changed) {
+      errorMessage = keyboardConnectionState.error || 'Failed to switch profile';
+      showErrorModal = true;
+      return;
+    }
     profileStore.setActiveProfile(profileId);
-    await keyboardAPI.setProfileIndex(profileId - 1);
     openMenuId = null;
   }
 

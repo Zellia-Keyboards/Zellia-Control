@@ -39,6 +39,7 @@
 
   // Initialize local state when baseConfig changes
   $effect(() => {
+    selectedMode = baseConfig.mode;
     localColor = rgbToHex(baseConfig.rgb);
     localSubColor = rgbToHex(baseConfig.secondary_rgb);
     localSpeed = Math.round(baseConfig.speed * 1000);

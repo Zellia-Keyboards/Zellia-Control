@@ -29,6 +29,10 @@
     rgbBaseConfig,
     rgbConfigs,
     configHydrationStatus,
+    keyboardConfig,
+    macros,
+    scriptSource,
+    scriptBytecode,
   } from '$lib/stores/ControllerStore.svelte';
   import { Button } from '$lib/components/ui/button';
   import { Separator } from '$lib/components/ui/separator';
@@ -60,6 +64,7 @@
   }
 
   async function handleSave() {
+    keyboardConnectionState.controller?.set_config?.($keyboardConfig);
     keyboardConnectionState.controller?.set_advanced_keys($advancedKeys);
     keyboardConnectionState.controller?.set_rgb_base_config($rgbBaseConfig);
     if ($keymap != undefined) {
@@ -67,6 +72,9 @@
     }
     keyboardConnectionState.controller?.set_rgb_configs($rgbConfigs);
     keyboardConnectionState.controller?.set_dynamic_keys($dynamicKeys);
+    keyboardConnectionState.controller?.set_macros?.($macros);
+    keyboardConnectionState.controller?.set_script_source?.($scriptSource);
+    keyboardConnectionState.controller?.set_script_bytecode?.($scriptBytecode);
     const saved = await keyboardAPI.saveConfiguration();
     if (!saved) {
       toast.error('Failed to save configuration');
