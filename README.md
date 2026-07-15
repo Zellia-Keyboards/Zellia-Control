@@ -24,7 +24,6 @@
 > <br>
 > Contact our team at **[support@zellia.cn](mailto:support@zellia.cn)** for enhanced capabilities, Long-Term Support (LTS), and more!
 
-
 ## 📋 Table of Contents
 
 - [✨ Key Features](#key-features)
@@ -136,13 +135,13 @@ Once the application is running:
 
 1. **Connect your Zellia Hall Effect Keyboard.** The application should automatically detect it.
 2. **Navigate through the sections** using the sidebar:
-    - **Performance:** Adjust actuation points, rapid trigger settings.
-    - **Remap:** Customize key assignments across different layers.
-    - **Lighting:** Control RGB effects and colors.
-    - **Calibration:** Perform hardware calibration for your switches.
-    - **Debug:** View real-time key data and logs.
-    - **Settings:** Manage application preferences and keyboard profiles.
-    - **About:** View application information and acknowledgments.
+   - **Performance:** Adjust actuation points, rapid trigger settings.
+   - **Remap:** Customize key assignments across different layers.
+   - **Lighting:** Control RGB effects and colors.
+   - **Calibration:** Perform hardware calibration for your switches.
+   - **Debug:** View real-time key data and logs.
+   - **Settings:** Manage application preferences and keyboard profiles.
+   - **About:** View application information and acknowledgments.
 3. **Changes are applied in real-time** to your connected keyboard where applicable.
 4. **Use the Profile Management** features in Settings to save and load your configurations.
 
@@ -258,4 +257,3 @@ Distributed under the MIT License. See `LICENSE` file for more information.
 <div align="center">
   <p>Made with ❤️ by the Zellia Team and Community for Hall Effect Keyboard Enthusiasts</p>
 </div>
-

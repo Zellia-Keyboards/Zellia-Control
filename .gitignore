@@ -1,28 +1,23 @@
 # build output
+build/
 dist/
 
-# generated types
-.astro/
-.svelte-kit/
-build/
-
-# Optional npm and yarn cache directory
+# dependencies and tool caches
+node_modules/
 .npm/
 .yarn/
-
-# Output of 'npm pack'
 *.tgz
 
-# .vscode workspace settings file
+# test output
+coverage/
+playwright-report/
+test-results/
+e2e/.artifacts/
+
+# editor
 .vscode/settings.json
 .vscode/launch.json
 .vscode/tasks.json
-
-# rust compiled folders
-target/
-
-# dependencies
-node_modules/
 
 # logs
 npm-debug.log*
@@ -32,7 +27,7 @@ pnpm-debug.log*
 
 # environment variables
 .env
-.env.production
+.env.*
 
-# macOS-specific files
+# macOS
 .DS_Store
