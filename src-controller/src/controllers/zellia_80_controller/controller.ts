@@ -20,7 +20,7 @@ export class Zellia80Controller extends LibampKeyboardController {
             vendorId: 0xFEED,
             productId: 22319,
             usagePage: 0xFF60
-            }, silent, "Zellia");
+            }, silent, "Zellia 80");
     }
 
     get_layout_json(): string {

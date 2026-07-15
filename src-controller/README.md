@@ -135,6 +135,7 @@ Common operations include:
 - `flash()`: sends the firmware save command to persist the current configuration.
 - `request_debug()` and `request_debug_at(ids)`: request advanced-key debug data; `start_debug()` and `stop_debug()` control debugging.
 - `calibrate()`, `system_reset()`, `factory_reset()`, and `enter_bootloader()`: send the corresponding firmware commands. Present a confirmation UI according to the product firmware's capabilities before calling them.
+- `detect_bootloader(silent)`: returns authorized or user-selected USB devices exposing the model's configured standard DFU interface. Pass the returned `USBDevice` to the exported WebUSB DFU wrapper for upload/download operations.
 
 Supported features vary by model. Before sending scripts, RGB settings, profile changes, or debug requests, inspect `get_feature()` and the model's default data sizes. Do not treat a key count, layer count, or macro count from one model as a universal value.
 
@@ -178,6 +179,7 @@ Use `save()` for a complete save. RGB entries are still sent in consecutive prot
 - `connect()` can return `false` when the user cancels, the device is in use, or it cannot be opened. Do not access device data until it succeeds.
 - libamp single-packet methods reject when disconnected, on a device error response, on a response timeout, or when the device is unplugged; handle them with `try`/`catch`. Individual operations inside batch `save()` log their failures and continue with later items, so a resolved call does not prove that every item was acknowledged by firmware.
 - A physical disconnect cancels pending requests. Listen for `deviceDisconnected` and disable or dispose the associated UI.
+- WebUSB DFU discovery requires a Chromium-based secure context. Models without a configured Bootloader USB filter return an empty list from `detect_bootloader()` rather than scanning unrelated DFU devices.
 - libamp currently does not implement the synchronous `read()`, `read_timeout()`, or `fetch()` APIs. Use the automatic load after connecting, the `get_*`/`set_*` methods, and request-based debug APIs instead.
 - `flash()` queues an asynchronous command and returns `void`; it does not report whether firmware persistence completed or failed. For reliable feedback, design a confirmation flow around firmware capabilities, Console messages, or a read after reconnecting.
 

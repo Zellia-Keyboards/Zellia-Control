@@ -1,5 +1,7 @@
 import { LibampKeyboardController } from '../libamp_keyboard_controller/controller';
-import { IAdvancedKey, IKeyboardController, IRGBConfig, KeyMode, CalibrationMode, RGBMode, Keycode, KeyModifier, AdvancedKey, KeyboardKeycode, LayerControlKeycode, KeyboardController, DynamicKey, DynamicKeyType, DynamicKeyStroke4x4, DynamicKeyModTap, DynamicKeyToggleKey, DynamicKeyMutex, IDynamicKey, IDynamicKeyStroke4x4, IDynamicKeyModTap, IDynamicKeyToggleKey, IDynamicKeyMutex, RGBBaseConfig, MacroAction, detectHIDDevice } from './../../interface';
+import { IAdvancedKey, IKeyboardController, IRGBConfig, KeyMode, CalibrationMode, RGBMode, Keycode, KeyModifier, AdvancedKey, KeyboardKeycode, LayerControlKeycode, KeyboardController, DynamicKey, DynamicKeyType, DynamicKeyStroke4x4, DynamicKeyModTap, DynamicKeyToggleKey, DynamicKeyMutex, IDynamicKey, IDynamicKeyStroke4x4, IDynamicKeyModTap, IDynamicKeyToggleKey, IDynamicKeyMutex, RGBBaseConfig, MacroAction, detectHIDDevice, BootloaderFeature } from './../../interface';
+import { detectUSBDevice } from '../../dfu/web-dfu';
+import type { USBDevice } from '../../dfu/webusb-types';
 
 import layout from './keyboard_layout.json?raw';
 import markdown from './README.md?raw';
@@ -13,6 +15,10 @@ export class OholeoKeyboardController extends LibampKeyboardController {
         this.device = undefined;
         this.reset_to_default();
         this.feature.rgb_flag = true;
+        this.feature.bootloader = new BootloaderFeature(true);
+        this.feature.bootloader.download = true;
+        this.feature.bootloader.upload = true;
+        this.feature.bootloader.fetch_from_web = false;
     }
 
     async detect(silent: boolean = false): Promise<HIDDevice[]> {
@@ -21,6 +27,10 @@ export class OholeoKeyboardController extends LibampKeyboardController {
             productId: 22319,
             usagePage: 0xFF60,
             }, silent, "Oholeo");
+    }
+
+    async detect_bootloader(silent: boolean = false): Promise<USBDevice[]> {
+        return detectUSBDevice({ vendorId: 0x0483, productId: 0xDF11 }, silent);
     }
 
     get_layout_json(): string {

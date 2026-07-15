@@ -93,6 +93,8 @@ The controller inherits `addEventListener()`, `removeEventListener()`, and `disp
 | --- | --- | --- |
 | `updateDataStart` | none | A supported version was accepted and a configuration reload begins. |
 | `updateData` | none | `read_data()` completed and updated the local cache. |
+| `updateDataEnd` | none | A configuration reload finished, whether it succeeded, failed, or was interrupted. |
+| `updateDataError` | `{ error: unknown }` | A configuration reload failed for a real reason; `error` is the exception that aborted the reload. Interrupted (cancelled) reloads only log and do not emit this event. |
 | `updateDebugData` | `{ tick: number; updated_keys: number[] }` | A debug response updated one or more advanced-key cache entries. |
 | `consoleData` | `{ text: string; data: Uint8Array }` | A Console-channel frame arrives. `text` is UTF-8 decoded; `data` is the raw payload. |
 | `deviceDisconnected` | none | The active HID device is physically disconnected. Pending requests are cancelled first. |
@@ -135,13 +137,24 @@ The following methods are inherited from `KeyboardController`. Getters return th
 
 | Method | Returns | Behavior |
 | --- | --- | --- |
-| `request_version()` | `Promise<FirmwareVersion \| null>` | Queries and parses the firmware version. Errors are logged and result in `null`. |
+| `request_version()` | `Promise<FirmwareVersion \| null>` | Queries and parses the firmware version. Errors are logged and result in `null`. The resolved value is a snapshot of the parsed version. |
 | `request()` | `Promise<void>` | Requests the version and, for supported `0.1.x` firmware, loads the complete configuration. Errors are logged. Normally invoked by `connect()`. |
-| `read_data()` | `Promise<void>` | Reads the configuration cache in dependency order, honoring `feature`, current cache sizes, and `profile_number`, then dispatches `updateData`. |
-| `save()` | `Promise<void>` | Writes configuration, advanced keys, RGB, keymap, dynamic keys, macros, and enabled scripts from the local cache. It does not persist the result to non-volatile storage. |
+| `read_data()` | `Promise<void>` | Runs a **transaction session** that reads the configuration cache in dependency order, honoring `feature`, current cache sizes, and `profile_number`. On success it dispatches `updateData`; on the first failure it rejects and **cancels the remaining reads**. |
+| `save()` | `Promise<void>` | Runs a **transaction session** that writes configuration, advanced keys, RGB, keymap, dynamic keys, macros, and enabled scripts from the local cache. On the first failure it rejects and **cancels the remaining writes**. It does not persist the result to non-volatile storage. |
 | `flash()` | `void` | Queues the firmware save command that requests persistence. It cannot be awaited and does not report completion to the caller. |
 
 `read_data()` reads keyboard options first, then advanced keys, RGB, keymap, dynamic keys, macros, the selected profile, and enabled scripts. The exact groups depend on the model's feature flags and the cache arrays supplied by `reset_to_default()`.
+
+### Transaction sessions
+
+Every read and write command inside `read_data()` and `save()` belongs to a `TransactionSession`. The session guarantees:
+
+- **Atomic request/response pairing.** Each sub-command registers a pending transaction that records the request's `code` and `type`. A response resolves a transaction only when its sequence, code, and type match; mismatched frames are dropped and logged. The response is deserialized into the cache **inside the unified receive path** (before the request promise resolves), so a resolved transaction always means the cache was updated.
+- **Fail fast.** The first command that errors or times out rejects its sub-command, which aborts the whole session; remaining commands are never issued.
+- **Cancellation instead of rollback.** When the device signals a configuration change (a version notification) or the device disconnects, the active session is cancelled: the in-flight request is rejected with `SessionCancelledError` and queued-but-unsent tasks are dropped. Work already applied to the cache is kept (no rollback), because a reload follows.
+- **Session-cancelled tasks are skipped.** Queued tasks belonging to a cancelled session reject with `SessionCancelledError` before any report is sent.
+
+`SessionCancelledError` and `TransactionSession` are exported from the controller module.
 
 ### Explicit configuration I/O
 
@@ -149,13 +162,15 @@ The methods below operate on the existing cache and are normally used through `r
 
 | Data group | Read | Write | Paging / behavior |
 | --- | --- | --- | --- |
-| Keyboard options | `read_config()` | `write_config()` | Sends all `KeyboardConfigCode` values in one configuration request. |
-| Advanced keys | `read_advanced_keys()` | `write_advanced_keys()` | One request per advanced-key index. |
-| RGB base and per-key RGB | `read_rgb_configs()` | `write_rgb_configs()` | Base configuration plus consecutive per-key pages of at most **7** RGB entries. |
-| Layer keymap | `read_keymap()` | `write_keymap()` | Consecutive pages of **16** keycodes per layer. |
-| Dynamic keys | `read_dynamic_keys()` | `write_dynamic_keys()` | One request per dynamic-key index. |
-| Macros | `read_macros()` | `write_macros()` | Four macro actions per page. |
-| Active profile | `read_config_index()` | `set_profile_index(index)` | Profile switching uses a keyboard operation, then schedules a reload after acknowledgement. |
+| Keyboard options | `read_config(session)` | `write_config(session)` | Sends all `KeyboardConfigCode` values in one configuration request. |
+| Advanced keys | `read_advanced_keys(session)` | `write_advanced_keys(session)` | One request per advanced-key index. |
+| RGB base and per-key RGB | `read_rgb_configs(session)` | `write_rgb_configs(session)` | Base configuration plus consecutive per-key pages of at most **7** RGB entries. |
+| Layer keymap | `read_keymap(session)` | `write_keymap(session)` | Consecutive pages of **16** keycodes per layer. |
+| Dynamic keys | `read_dynamic_keys(session)` | `write_dynamic_keys(session)` | One request per dynamic-key index. |
+| Macros | `read_macros(session)` | `write_macros(session)` | Four macro actions per page. |
+| Active profile | `read_config_index(session)` | `set_profile_index(index)` | Profile switching uses a keyboard operation, then schedules a reload after acknowledgement. |
+
+The `session` argument is a `TransactionSession` that groups the sub-commands. Inside `read_data()` or `save()` the session is created automatically; callers using the explicit I/O methods outside a session can pass `undefined` (each command then behaves as an isolated transaction). Failures reject the whole group: the first failed sub-command aborts the remaining ones.
 
 Most bulk reads and writes catch individual transport failures, log them, and continue with later items or pages. Consequently, their returned promise can resolve even though some device operations failed. `save()` inherits this best-effort behavior for those groups.
 
@@ -189,69 +204,15 @@ These methods issue one acknowledged request and return `Promise<void>`. They us
 
 | Method | Arguments | Constraints and effect |
 | --- | --- | --- |
-| `send_advanced_key_packet(index, advancedKey)` | `number`, `IAdvancedKey` | Serializes the complete advanced-key configuration for one index. |
-| `send_keymap_packet(layer, start, length, keymap)` | `number`, `number`, `number`, `number[]` | Writes the exact `keymap` segment at `start`. `length` must be an integer from `0` to **27**, and `keymap.length` must equal `length`; invalid input rejects with `RangeError`. |
-| `send_dynamic_key_packet(index, dynamicKey)` | `number`, `IDynamicKey` | Serializes a Stroke, ModTap, ToggleKey, or Mutex dynamic key. Required target key locations must exist for the chosen type. |
-| `send_rgb_base_packet(rgbBaseConfig)` | `IRGBBaseConfig` | Writes the RGB base configuration. |
-| `send_rgb_packet(index, rgbConfig)` | `number`, `IRGBConfig` | Writes exactly one per-key RGB configuration. |
+| `send_advanced_key_packet(index, advancedKey, session?)` | `number`, `IAdvancedKey`, `TransactionSession?` | Serializes the complete advanced-key configuration for one index. |
+| `send_keymap_packet(layer, start, length, keymap, session?)` | `number`, `number`, `number`, `number[]`, `TransactionSession?` | Writes the exact `keymap` segment at `start`. `length` must be an integer from `0` to **27**, and `keymap.length` must equal `length`; invalid input rejects with `RangeError`. |
+| `send_dynamic_key_packet(index, dynamicKey, session?)` | `number`, `IDynamicKey`, `TransactionSession?` | Serializes a Stroke, ModTap, ToggleKey, or Mutex dynamic key. Required target key locations must exist for the chosen type. |
+| `send_rgb_base_packet(rgbBaseConfig, session?)` | `IRGBBaseConfig`, `TransactionSession?` | Writes the RGB base configuration. |
+| `send_rgb_packet(index, rgbConfig, session?)` | `number`, `IRGBConfig`, `TransactionSession?` | Writes exactly one per-key RGB configuration. |
 
-Direct packet methods reject if the device is not connected, a response has the protocol error flag, the request times out, or the device disconnects. The normal acknowledgement timeout is 200 ms. `send_keymap_packet()` and missing dynamic-key targets are additionally validated before transport.
+The optional `session` joins the command to an existing transaction; without one the command runs as an isolated transaction. Direct packet methods reject if the device is not connected, a response has the protocol error flag, the request times out, or the device disconnects. The normal acknowledgement timeout is 200 ms. `send_keymap_packet()` and missing dynamic-key targets are additionally validated before transport.
 
 `write_rgb_configs()` intentionally does not call `send_rgb_packet()` in a loop: it keeps the more efficient seven-entry RGB page encoding.
-
-## User key travel API
-
-The Key Travel API uses the libamp User channel:
-
-| AmpFrame field | Value |
-| --- | --- |
-| Channel | `User` |
-| Packet code | `PacketCodeUser` (`0xff`) |
-| GET type | `PacketDataUserGet` (`0x00`) |
-| SET type | `PacketDataUserSet` (`0x01`) |
-| User data type | `PacketTypeUserKeyTravel` (`0x01`) |
-
-Each item contains a key index and a travel value, both encoded as unsigned
-little-endian `uint16` values.
-
-| Method | Returns | Behavior |
-| --- | --- | --- |
-| `get_key_travel(indexs: number[])` | `Promise<number[]>` | Reads travel values for the requested key indices. The returned array preserves the order of `indexs`; an index absent from a response is returned as `0`. |
-| `set_key_travel(indexs: number[], key_travels: number[])` | `Promise<void>` | Writes travel values for the supplied key indices. `indexs.length` must equal `key_travels.length`, otherwise the method rejects with `RangeError`. |
-
-### Paging and failure behavior
-
-AmpFrame permits at most 58 payload bytes. A Key Travel payload has a four-byte
-header (`userType`, reserved byte, and `uint16` item count), followed by
-four-byte items (`uint16 index` and `uint16 travel`). Therefore each request can
-contain at most **13 items**:
-
-```text
-floor((58 - 4) / 4) = 13
-```
-
-Both methods split larger input arrays into consecutive 13-item requests and
-await each response before sending the next page. They do not modify the
-controller's local advanced-key, keymap, or RGB caches.
-
-Like other acknowledged libamp requests, these methods reject when the device is
-not connected, the device returns an error response, a response times out, or
-the device disconnects.
-
-### Example
-
-```ts
-const indexes = [0, 1, 2];
-
-const travels = await controller.get_key_travel(indexes);
-console.log(travels); // For example: [1240, 1188, 1301]
-
-await controller.set_key_travel(
-  indexes,
-  [1300, 1300, 1300],
-);
-```
-
 
 ## Scripts and large data
 
@@ -273,12 +234,17 @@ await controller.set_key_travel(
 | `add<T>(task: () => Promise<T>)` | `Promise<T>` | Adds `task` to the FIFO queue. The returned promise resolves or rejects with the task result after all earlier tasks finish. |
 | `clear(reason = new Error("Queue cleared"))` | `void` | Rejects queued tasks that have not started and removes them. It does not cancel a task already executing. |
 
+Session-cancelled tasks are rejected by the controller's queued-task wrapper (`SessionCancelledError`) before they reach the transport, so cancellation is honored even while earlier tasks occupy the queue.
+
 Use `RequestQueue` only when an integration owns all operations in that queue. Do not mix an external queue with the controller's private request sequencing to bypass controller serialization.
 
 ## Failure model and API boundary
 
-- AmpFrame decoding drops malformed frames and unknown/duplicate responses rather than exposing low-level callbacks.
-- `disconnect()` rejects pending response waits and tasks still waiting in the internal queue with a disconnect error.
+- AmpFrame decoding drops malformed frames and unknown/duplicate responses rather than exposing low-level callbacks. A response resolves a transaction only when its sequence, code, and type match the request; mismatched frames are dropped and logged.
+- Responses are deserialized inside the unified receive path. A resolved request promise therefore guarantees the cache was updated before `read_data()`/`save()` proceeds to the next command.
+- `read_data()` and `save()` are fail-fast transaction sessions: the first failed sub-command rejects the whole session and cancels the remaining commands. There is no rollback — previously applied cache updates are kept — and `updateData` is dispatched only when the entire session succeeds. The reload orchestration dispatches `updateDataError` (with `detail.error`) when a reload fails for a real reason and only logs when it was interrupted by a device-initiated cancellation.
+- A device version notification (the device's "config changed, re-read" request) cancels the active session, then schedules a debounced reload. Queued tasks of a cancelled session reject with `SessionCancelledError` before any report is sent.
+- `disconnect()` rejects pending response waits and tasks still waiting in the internal queue with a disconnect error, and cancels the active session.
 - Direct single-packet and Large Data calls expose transport failures through rejected promises. Handle them with `try`/`catch`.
-- Most page-oriented read/write methods log an individual failure and continue. Inspect application state or firmware feedback when a complete write must be verified.
+- Most page-oriented read/write methods previously logged an individual failure and continued; under transaction semantics they now fail fast, so inspect the session rejection instead.
 - `packet_process*`, legacy packet conversion, frame codecs, channel selection, and request sequencing are implementation details. Although TypeScript currently exposes some packet-processing methods without a `private` modifier, they are not stable consumer APIs. Use the typed methods documented here and the [libamp protocol](../../../../../LIBAMP_PROTOCOL.md) for interoperability work.

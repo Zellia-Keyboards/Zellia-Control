@@ -1,5 +1,7 @@
 import { LibampKeyboardController } from '../libamp_keyboard_controller/controller';
-import { IAdvancedKey, IKeyboardController, IRGBConfig, KeyMode, CalibrationMode, RGBMode, Keycode, KeyModifier, AdvancedKey, KeyboardController, DynamicKey, RGBBaseConfig, detectHIDDevice } from '../../interface';
+import { IAdvancedKey, IKeyboardController, IRGBConfig, KeyMode, CalibrationMode, RGBMode, Keycode, KeyModifier, AdvancedKey, KeyboardController, DynamicKey, RGBBaseConfig, detectHIDDevice, BootloaderFeature } from '../../interface';
+import { detectUSBDevice } from '../../dfu/web-dfu';
+import type { USBDevice } from '../../dfu/webusb-types';
 
 const layout = `[
     [
@@ -47,6 +49,10 @@ export class Zellia60Controller extends LibampKeyboardController {
         super();
         this.device = undefined;
         this.reset_to_default();
+        this.feature.bootloader = new BootloaderFeature(true);
+        this.feature.bootloader.download = true;
+        this.feature.bootloader.upload = true;
+        this.feature.bootloader.fetch_from_web = false;
     }
 
     async detect(silent: boolean = false): Promise<HIDDevice[]> {
@@ -54,7 +60,11 @@ export class Zellia60Controller extends LibampKeyboardController {
             vendorId: 0xFEED,
             productId: 22319,
             usagePage: 0xFF60
-            }, silent, "Zellia");
+            }, silent, "Zellia 60");
+    }
+
+    async detect_bootloader(silent: boolean = false): Promise<USBDevice[]> {
+        return detectUSBDevice({ vendorId: 0x2E3C, productId: 0xDF11 }, silent);
     }
 
     get_layout_json(): string {
