@@ -1,5 +1,6 @@
 import { Keycode as EmiKeycode, KeyModifier } from 'emi-keyboard-controller';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, expectTypeOf, it } from 'vitest';
+import type { Keycode } from '../../device/model/types';
 import { decodeKeycode, findAction } from '../../keycodes';
 import { DksAction } from './dks-bitmap';
 import { encodeKeyControl } from './dks-codec';
@@ -92,6 +93,14 @@ describe('tap-hold and toggle defaults', () => {
       modifiers: KeyModifier.KeyLeftCtrl,
     });
     expect(findAction(TAP_HOLD_DEFAULTS.hold)?.name).toBe('Left Ctrl');
+  });
+
+  it('types the tap-hold defaults as editable values, not literals', () => {
+    // `useState(TAP_HOLD_DEFAULTS.holdDelayMs)` must accept any other delay.
+    expectTypeOf(TAP_HOLD_DEFAULTS.tap).toEqualTypeOf<Keycode>();
+    expectTypeOf(TAP_HOLD_DEFAULTS.hold).toEqualTypeOf<Keycode>();
+    expectTypeOf(TAP_HOLD_DEFAULTS.holdDelayMs).toEqualTypeOf<number>();
+    expectTypeOf(TAP_HOLD_DEFAULTS.tapTimeoutMs).toEqualTypeOf<number>();
   });
 
   it('toggles Caps Lock by default', () => {

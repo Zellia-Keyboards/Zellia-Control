@@ -110,8 +110,27 @@ function keyboardConfig(action: KeyboardConfigAction | 'ignored', config: number
   return KEYBOARD | (sub << 8);
 }
 
+/** The {@link kc} constructors; results and constants are plain `Keycode`s, never literals. */
+export interface KeycodeConstructors {
+  readonly key: (code: number) => Keycode;
+  readonly withModifiers: (code: number, modifierMask: number) => Keycode;
+  readonly modifier: (mask: number) => Keycode;
+  readonly layer: (op: LayerControlKeycode, layer: number) => Keycode;
+  readonly mouse: (sub: MouseKeycode) => Keycode;
+  readonly consumer: (sub: ConsumerKeycode) => Keycode;
+  readonly system: (sub: number) => Keycode;
+  readonly joystick: (sub: number) => Keycode;
+  readonly keyboardOperation: (op: KeyboardKeycode) => Keycode;
+  readonly keyboardConfig: (action: KeyboardConfigAction, config: KeyboardConfigCode) => Keycode;
+  readonly profile: (index: 0 | 1 | 2 | 3) => Keycode;
+  readonly dynamicKey: (slot: number) => Keycode;
+  readonly user: (n: number) => Keycode;
+  readonly transparent: Keycode;
+  readonly none: Keycode;
+}
+
 /** Keycode constructors. Every argument is range-checked against its bit field. */
-export const kc = Object.freeze({
+export const kc: KeycodeConstructors = Object.freeze({
   key: (code: number): Keycode => byte('code', code),
   withModifiers: (code: number, modifierMask: number): Keycode =>
     byte('code', code) | (byte('modifierMask', modifierMask) << 8),
