@@ -19,6 +19,12 @@ export type KeyLabels = readonly string[];
 
 const emptyLabels = (): string[] => Array.from({ length: KLE_LABEL_SLOTS }, () => '');
 
+/** The key's own layout labels, as exactly `KLE_LABEL_SLOTS` slots. */
+const layoutLabels = (key: LayoutKey): KeyLabels =>
+  key.labels.length === KLE_LABEL_SLOTS
+    ? key.labels
+    : Array.from({ length: KLE_LABEL_SLOTS }, (_, slot) => key.labels[slot] ?? '');
+
 /** Labels per key id; for duplicate ids the first key wins. */
 function labelsById(
   keys: readonly LayoutKey[],
@@ -94,7 +100,7 @@ export function remapLabels(
   const layer = keymap[layerIndex];
   return labelsById(keys, key => {
     const keycode = layer?.[key.id];
-    if (keycode === undefined) return key.labels;
+    if (keycode === undefined) return layoutLabels(key);
     const labels = emptyLabels();
     const description = describeKeycode(keycode);
     const slot = dynamicKeySlotOf(keycode);
