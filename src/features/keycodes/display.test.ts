@@ -1,4 +1,4 @@
-import { KeyboardConfigCode, KeyboardKeycode } from 'emi-keyboard-controller';
+import { KeyboardConfigCode, KeyboardKeycode, KeyModifier } from 'emi-keyboard-controller';
 import { describe, expect, it } from 'vitest';
 import recording from './__fixtures__/svelte-keycode-display.json';
 import { kc } from './codec';
@@ -30,6 +30,8 @@ const OPERATIONS_NAMED_SINCE_SVELTE: ReadonlySet<number> = new Set<number>([
 
 /** What the Svelte app rendered for `keycode`, given our (corrected) description. */
 function asSvelteRendered(keycode: number, ours: KeycodeDescription): KeycodeDescription {
+  // Modifier-only: the Svelte port dropped upstream's rule and named the missing key "No Event".
+  if ((keycode & 0xff) === 0 && keycode !== 0) return { main: 'No Event', sub: ours.main };
   if ((keycode & 0xff) !== 0xfe) return ours;
   const sub = (keycode >> 8) & 0xff;
   if ((sub & 0x3f) < 0x20) {
@@ -74,6 +76,19 @@ describe('describeKeycode', () => {
     ]);
   });
 
+  it('names a modifier-only keycode by its modifiers, like upstream keyCodeToString (Svelte showed "No Event")', () => {
+    // The default Starlight keymap stores Shift/Ctrl/Alt/GUI keys this way (modifier << 8).
+    expect(describeKeycode(kc.modifier(KeyModifier.KeyLeftShift))).toEqual({
+      main: 'Left Shift ',
+      sub: '',
+    });
+    expect(describeKeycode(0x0f00)).toEqual({
+      main: 'Left Ctrl Left Shift Left Alt Left GUI ',
+      sub: '',
+    });
+    expect(describeKeycode(kc.none)).toEqual({ main: 'No Event', sub: '' });
+  });
+
   it('names keyboard configs from KeyboardConfigCode (Svelte used the removed KeyboardConfig enum and showed no name)', () => {
     const toggle = (config: KeyboardConfigCode) =>
       describeKeycode(kc.keyboardConfig('toggle', config));
@@ -101,9 +116,8 @@ describe('describeKeycode', () => {
       [0x0004, 'A', ''],
       [0x0204, 'A', 'Left Shift '],
       [0x0000, 'No Event', ''],
-      // Modifier-only keycodes (the default Shift/Ctrl/Alt/GUI keys) show "No Event" like Svelte.
-      [0x0200, 'No Event', 'Left Shift '],
-      [0x0f00, 'No Event', 'Left Ctrl Left Shift Left Alt Left GUI '],
+      [0x0200, 'Left Shift ', ''],
+      [0x0f00, 'Left Ctrl Left Shift Left Alt Left GUI ', ''],
       [0x8028, 'Enter', 'Right GUI '],
       [0x00a3, 'CrSel Props', ''],
       [0x01a6, 'Layer1', 'Temporarily switch to'],

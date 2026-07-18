@@ -146,7 +146,16 @@ describe('label builders replay the recorded Svelte transformKeyboardKeys', () =
     const dynamicKeys = recording.remap.dynamicKeyKinds.map(kind =>
       slotOfKind(dynamicKeyKind(kind))
     );
-    for (const [layer, expected] of Object.entries(recording.remap.layers)) {
+    for (const [layer, recorded] of Object.entries(recording.remap.layers)) {
+      const row = recording.remap.keymap[Number(layer)];
+      // Deliberate deviation: Svelte labelled modifier-only keycodes (the default Shift, Ctrl, Alt
+      // and GUI keys) "No Event" with the modifiers top-left; like upstream, the modifiers are
+      // now the key name.
+      const expected = recorded.map((labels, index) => {
+        const keycode = row?.[keys[index]?.id ?? -1];
+        const modifierOnly = keycode !== undefined && keycode !== 0 && (keycode & 0xff) === 0;
+        return modifierOnly ? withSlots({ 6: labels[0] ?? '' }) : labels;
+      });
       expect(
         labelsInKeyOrder(remapLabels(keys, recording.remap.keymap, Number(layer), dynamicKeys))
       ).toEqual(expected);
@@ -228,7 +237,8 @@ describe('remapLabels', () => {
   it('puts the modifier/category top-left and the key name bottom-left', () => {
     expect(labels.get(0)).toEqual(withSlots({ 0: 'Left Shift ', 6: 'Escape' }));
     expect(labels.get(1)).toEqual(withSlots({ 0: 'Temporarily switch to', 6: 'Layer1' }));
-    expect(labels.get(4)).toEqual(withSlots({ 0: 'Left Shift ', 6: 'No Event' }));
+    // A modifier-only keycode is named by its modifiers (Svelte showed "No Event").
+    expect(labels.get(4)).toEqual(withSlots({ 6: 'Left Shift ' }));
   });
 
   it('names a bound dynamic key by its kind and keeps the slot number in slot 9', () => {

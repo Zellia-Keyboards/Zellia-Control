@@ -424,10 +424,14 @@ const DESCRIBERS: Readonly<Partial<Record<number, Describer>>> = {
   }),
 };
 
-/** Keycap name and sub-label of a keycode (Svelte `keyCodeToString`). */
+/**
+ * Keycap name and sub-label of a keycode (Svelte `keyCodeToString`). A modifier-only keycode is
+ * named by its modifiers, as upstream `keyCodeToString` does; the Svelte port named it "No Event".
+ */
 export function describeKeycode(keycode: Keycode): KeycodeDescription {
   const modifier = (keycode >> 8) & 0xff;
   const code = keycode & 0xff;
+  if (code === 0 && modifier !== 0) return { main: modifierNames(modifier), sub: '' };
   if (code < EXSEL || code === TRANSPARENT) {
     return { main: nameOf(HID_KEY_NAMES, code) ?? '', sub: modifierNames(modifier) };
   }
