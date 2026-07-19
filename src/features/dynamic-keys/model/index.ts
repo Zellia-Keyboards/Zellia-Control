@@ -37,6 +37,9 @@ export {
   TAP_HOLD_DEFAULTS,
   TOGGLE_DEFAULT_BINDING,
   bottomOutMmOf,
+  dksBindingLabel,
+  strokeBindings,
   strokeDistances,
+  type DksBinding,
   type DksEditorState,
 } from './defaults';
