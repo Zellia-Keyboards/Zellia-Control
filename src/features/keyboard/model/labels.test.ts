@@ -185,7 +185,8 @@ describe('performanceLabels', () => {
     );
   });
 
-  it('shows rapid-trigger distances with the upper ↧ and lower ↥ deadzones', () => {
+  it('shows rapid-trigger distances with the deadzone sizes: ↧ from the top, ↥ from the bottom', () => {
+    // lowerDeadzone 0.2 is 0.8 mm above the bottom (a 3.2 mm bottom-out point).
     expect(
       labelsFor({
         mode: KeyMode.KeyAnalogRapidMode,

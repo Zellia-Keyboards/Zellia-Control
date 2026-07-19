@@ -51,6 +51,11 @@ function setPressRelease(labels: string[], press: number, release: number): void
   }
 }
 
+/**
+ * Deadzone sizes in mm, each measured from its end of the travel, as the Svelte labels computed
+ * them: `↧` down from the top, `↥` up from the bottom. So the lower one is its thickness, not the
+ * bottom-out point the Performance deadzone control edits (`lowerDeadzoneToBottomMm`, D12).
+ */
 function setDeadzones(labels: string[], config: AdvancedKeyConfig): void {
   labels[0] = `↧${mm(config.upperDeadzone)}`;
   labels[8] = `↥${mm(config.lowerDeadzone)}`;
