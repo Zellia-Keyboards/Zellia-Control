@@ -11,6 +11,12 @@
  * interval starts there). Decode: each maximal hold run becomes a press at its start and a
  * release (or the tap found there) at the first stage after it; a run reaching stage 3 — a hold
  * lasting into the next press, which the UI cannot show — is clamped to end at stage 3.
+ *
+ * Lossy cases (enumerated in the tests): the firmware applies one state per stage and only
+ * reports changes of the binding's state, so it cannot release and re-press at one stage.
+ * Touching intervals merge into one press. A tap at the stage that ends an interval sends no new
+ * key-down: the key stays down through the tap and is released 5 ms later, although the UI (and a
+ * decoded hold run ending at a tap) draws a release and a tap there.
  */
 import { DKS_STAGE_COUNT, DksAction, getIntervals, type DksBitmap } from './dks-bitmap';
 
