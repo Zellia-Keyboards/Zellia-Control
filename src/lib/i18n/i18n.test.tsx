@@ -1,5 +1,5 @@
-import { act, render, screen } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { act, cleanup, render, screen } from '@testing-library/react';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { en } from './en';
 import type * as I18nModule from './index';
 import { zh } from './zh';
@@ -24,6 +24,10 @@ const ADDED_KEYS = {
 beforeEach(() => {
   localStorage.clear();
   document.documentElement.lang = 'en';
+});
+
+afterEach(() => {
+  cleanup();
 });
 
 describe('dictionaries', () => {
