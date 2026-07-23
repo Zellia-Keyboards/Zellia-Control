@@ -7,6 +7,7 @@
  * theme color, the primary color is plain white on dark and black on light.
  */
 import { useSyncExternalStore } from 'react';
+import { createSignal } from '../signal';
 import { readString, writeString } from '../storage';
 
 export const THEME_COLORS = {
@@ -39,25 +40,6 @@ function root(): HTMLElement {
 
 function setPrimaryColor(color: string): void {
   root().style.setProperty('--color-primary', color);
-}
-
-type Listener = () => void;
-
-function createSignal() {
-  const listeners = new Set<Listener>();
-  return {
-    subscribe: (listener: Listener): (() => void) => {
-      listeners.add(listener);
-      return () => {
-        listeners.delete(listener);
-      };
-    },
-    emit: (): void => {
-      listeners.forEach(listener => {
-        listener();
-      });
-    },
-  };
 }
 
 // --- Theme color ------------------------------------------------------------------------------
