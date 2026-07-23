@@ -372,6 +372,7 @@ describe('Transition', () => {
     expect(animations.of(panel())).not.toHaveLength(0);
     expect(animations.of(screen.getByTestId('section'))).toHaveLength(0);
   });
+
   it('checks transition parameters against the transition function at compile time', () => {
     const child = <div />;
     const { container } = render(
@@ -392,6 +393,26 @@ describe('Transition', () => {
       </>
     );
     expect(container.children).toHaveLength(4);
+  });
+
+  it('rejects `transition` combined with `in` or `out` at compile time, as Svelte does', () => {
+    const child = <div />;
+    const { container } = render(
+      <>
+        <Transition show in={[fade]} out={[slide, { duration: 200 }]}>
+          {child}
+        </Transition>
+        {/* @ts-expect-error -- `transition` cannot be combined with `out` */}
+        <Transition show transition={[slide]} out={[fade, { duration: 150 }]}>
+          {child}
+        </Transition>
+        {/* @ts-expect-error -- `transition` cannot be combined with `in` */}
+        <Transition show transition={[slide]} in={[fade]}>
+          {child}
+        </Transition>
+      </>
+    );
+    expect(container.children).toHaveLength(3);
   });
 });
 
@@ -513,5 +534,21 @@ describe('KeyedTransition', () => {
     expect(children[2]).not.toBe(first);
     advance(1000);
     expect(tabs()).toEqual([children[2]]);
+  });
+
+  it('rejects `transition` combined with `in` or `out` at compile time, as Svelte does', () => {
+    const child = <div />;
+    const { container } = render(
+      <>
+        <KeyedTransition transitionKey="a" transition={[slide, { axis: 'y' }]}>
+          {child}
+        </KeyedTransition>
+        {/* @ts-expect-error -- `transition` cannot be combined with `in` and `out` */}
+        <KeyedTransition transitionKey="b" transition={[slide]} in={[fade]} out={[fade]}>
+          {child}
+        </KeyedTransition>
+      </>
+    );
+    expect(container.children).toHaveLength(2);
   });
 });

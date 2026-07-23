@@ -17,6 +17,7 @@ export {
   Transition,
   type KeyedTransitionProps,
   type TransitionChild,
+  type TransitionDirectives,
   type TransitionProps,
 } from './Transition';
 export type { EasingFunction, TransitionConfig, TransitionFn, TransitionSpec } from './types';
