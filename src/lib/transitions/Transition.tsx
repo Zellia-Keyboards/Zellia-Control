@@ -213,6 +213,25 @@ export type TransitionProps<P extends object, PI extends object, PO extends obje
   appear?: boolean;
 } & TransitionDirectives<P, PI, PO>;
 
+interface PresenceState {
+  /** `leaving`: hidden but still rendered while its outro plays. */
+  readonly phase: 'hidden' | 'shown' | 'leaving';
+  /** Bumped when a hidden child is shown again, so it mounts afresh and plays its intro. */
+  readonly generation: number;
+}
+
+/** A hidden child is mounted afresh when shown; one still leaving is reversed instead. */
+function followShow(state: PresenceState, show: boolean): PresenceState {
+  switch (state.phase) {
+    case 'hidden':
+      return show ? { phase: 'shown', generation: state.generation + 1 } : state;
+    case 'shown':
+      return show ? state : { ...state, phase: 'leaving' };
+    case 'leaving':
+      return show ? { ...state, phase: 'shown' } : state;
+  }
+}
+
 /** `{#if show}<child transition:…>{/if}` */
 export function Transition<
   P extends object = object,
@@ -226,30 +245,24 @@ export function Transition<
   out: outro,
   appear = false,
 }: TransitionProps<P, PI, PO>): ReactNode {
-  const [state, setState] = useState(() => ({ show, mounted: show, generation: 0 }));
-  let current = state;
-  if (show !== state.show) {
-    // A child hidden and fully exited is mounted afresh; one still leaving is reversed.
-    const remount = show && !state.mounted;
-    current = {
-      show,
-      mounted: show || state.mounted,
-      generation: remount ? state.generation + 1 : state.generation,
-    };
-    setState(current);
-  }
+  const [state, setState] = useState<PresenceState>(() => ({
+    phase: show ? 'shown' : 'hidden',
+    generation: 0,
+  }));
+  const current = followShow(state, show);
+  if (current !== state) setState(current);
 
   const handleExited = useCallback(() => {
-    setState(latest => (latest.show ? latest : { ...latest, mounted: false }));
+    setState(latest => (latest.phase === 'leaving' ? { ...latest, phase: 'hidden' } : latest));
   }, []);
 
-  if (!current.mounted) return null;
+  if (current.phase === 'hidden') return null;
 
   return (
     <PresenceItem
       key={current.generation}
       element={children}
-      present={show}
+      present={current.phase === 'shown'}
       animateOnMount={current.generation > 0 || appear}
       factories={{ transition: toFactory(transition), in: toFactory(intro), out: toFactory(outro) }}
       onExited={handleExited}

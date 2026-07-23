@@ -182,6 +182,30 @@ describe('Transition', () => {
     expect(element).toBeInTheDocument();
   });
 
+  it('mounts a fresh child with an intro when shown again after the outro ended', () => {
+    const view = (show: boolean) => (
+      <Transition show={show} transition={[opacity]}>
+        <Panel />
+      </Transition>
+    );
+    const { rerender } = render(view(true));
+    const first = panel();
+    rerender(view(false));
+    advance(0);
+    advance(300);
+    expect(first).not.toBeInTheDocument();
+    rerender(view(false));
+    expect(screen.queryByTestId('panel')).not.toBeInTheDocument();
+
+    rerender(view(true));
+    const second = panel();
+    expect(second).not.toBe(first);
+    advance(0);
+    expect(animations.of(second).at(-1)?.keyframes[0]).toEqual({ opacity: '0' });
+    advance(300);
+    expect(second).toBeInTheDocument();
+  });
+
   it('removes an intro-only child immediately', () => {
     const { rerender } = render(
       <Transition show in={[opacity]}>
