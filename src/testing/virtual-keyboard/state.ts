@@ -189,6 +189,11 @@ export const DEFAULT_FIRMWARE: WireVersion = {
 /** `KeyboardConfig` defaults: only `enable_report` is on. */
 const DEFAULT_CONFIG = [false, false, false, false, true, false] as const;
 
+/** Volatile keyboard config after a (re)boot, indexed by `KeyboardConfigCode`. */
+export function createDefaultConfig(): boolean[] {
+  return [...DEFAULT_CONFIG];
+}
+
 const PROFILE_BASE_COLORS: readonly WireRgb[] = [
   { red: 255, green: 96, blue: 0 },
   { red: 0, green: 200, blue: 120 },
@@ -391,7 +396,7 @@ export function createVirtualKeyboardState(
     model,
     firmware: { ...DEFAULT_FIRMWARE, ...options.firmware },
     feature: wireFeature(defaults.get_feature(), active, macros),
-    config: [...DEFAULT_CONFIG],
+    config: createDefaultConfig(),
     profileIndex: 0,
     active,
     profiles,

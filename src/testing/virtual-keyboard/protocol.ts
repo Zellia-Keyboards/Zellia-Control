@@ -19,6 +19,9 @@
 
 export const REPORT_SIZE = 64;
 
+/** A 64-byte report backed by its own ArrayBuffer (usable as a WebHID `BufferSource`). */
+export type Report = Uint8Array<ArrayBuffer>;
+
 export const PacketCode = {
   Event: 0x00,
   Set: 0x01,
@@ -289,11 +292,11 @@ export type DeviceReport =
 // Low-level helpers
 
 /** Copies `data` into a fresh zero-padded report of exactly {@link REPORT_SIZE} bytes. */
-export function toReport(data: ArrayBufferView | ArrayBuffer): Uint8Array {
-  const bytes =
-    data instanceof ArrayBuffer
-      ? new Uint8Array(data)
-      : new Uint8Array(data.buffer, data.byteOffset, data.byteLength);
+export function toReport(data: ArrayBufferView | ArrayBuffer): Report {
+  // `ArrayBuffer.isView` (unlike `instanceof`) also recognizes views from other realms.
+  const bytes = ArrayBuffer.isView(data)
+    ? new Uint8Array(data.buffer, data.byteOffset, data.byteLength)
+    : new Uint8Array(data);
   const report = new Uint8Array(REPORT_SIZE);
   report.set(bytes.subarray(0, REPORT_SIZE));
   return report;
@@ -907,7 +910,7 @@ function writePayload(report: Uint8Array, payload: DataPayload): void {
 }
 
 /** Encodes a host → device report (the inverse of {@link decodeHostReport}). */
-export function encodeHostPacket(packet: HostPacket): Uint8Array {
+export function encodeHostPacket(packet: HostPacket): Report {
   const report = new Uint8Array(REPORT_SIZE);
   const view = viewOf(report);
   switch (packet.op) {
@@ -956,30 +959,30 @@ export function encodeHostPacket(packet: HostPacket): Uint8Array {
 // Device → host
 
 /** The firmware's reply to any GET/SET/large request: the request echoed back unchanged. */
-export function encodeReply(request: Uint8Array): Uint8Array {
+export function encodeReply(request: Uint8Array): Report {
   return toReport(request);
 }
 
-export function encodeVersionReply(request: Uint8Array, version: WireVersion): Uint8Array {
+export function encodeVersionReply(request: Uint8Array, version: WireVersion): Report {
   const reply = encodeReply(request);
   writeVersion(reply, version);
   return reply;
 }
 
-export function encodeAdvancedKeyReply(request: Uint8Array, key: WireAdvancedKey): Uint8Array {
+export function encodeAdvancedKeyReply(request: Uint8Array, key: WireAdvancedKey): Report {
   const reply = encodeReply(request);
   writeAdvancedKey(reply, key);
   return reply;
 }
 
 /** Fills the requested keymap range; `keycodes[i]` is the code at `start + i`. */
-export function encodeKeymapReply(request: Uint8Array, keycodes: readonly number[]): Uint8Array {
+export function encodeKeymapReply(request: Uint8Array, keycodes: readonly number[]): Report {
   const reply = encodeReply(request);
   writeKeymapCodes(reply, keycodes);
   return reply;
 }
 
-export function encodeRgbBaseReply(request: Uint8Array, config: WireRgbBase): Uint8Array {
+export function encodeRgbBaseReply(request: Uint8Array, config: WireRgbBase): Report {
   const reply = encodeReply(request);
   writeRgbBase(reply, config);
   return reply;
@@ -989,7 +992,7 @@ export function encodeRgbBaseReply(request: Uint8Array, config: WireRgbBase): Ui
 export function encodeRgbConfigReply(
   request: Uint8Array,
   configs: readonly (WireRgbKey | undefined)[]
-): Uint8Array {
+): Report {
   const reply = encodeReply(request);
   const entries = count(byteAt(reply, 3), MAX_RGB_ENTRIES);
   for (let entry = 0; entry < entries; entry++) {
@@ -999,13 +1002,13 @@ export function encodeRgbConfigReply(
   return reply;
 }
 
-export function encodeDynamicKeyReply(request: Uint8Array, key: WireDynamicKey): Uint8Array {
+export function encodeDynamicKeyReply(request: Uint8Array, key: WireDynamicKey): Report {
   const reply = encodeReply(request);
   writeDynamicKey(reply, key);
   return reply;
 }
 
-export function encodeProfileIndexReply(request: Uint8Array, index: number): Uint8Array {
+export function encodeProfileIndexReply(request: Uint8Array, index: number): Report {
   const reply = encodeReply(request);
   reply[3] = index;
   return reply;
@@ -1015,7 +1018,7 @@ export function encodeProfileIndexReply(request: Uint8Array, index: number): Uin
 export function encodeConfigReply(
   request: Uint8Array,
   values: readonly (boolean | undefined)[]
-): Uint8Array {
+): Report {
   const reply = encodeReply(request);
   const entries = count(byteAt(reply, 3), MAX_CONFIG_ENTRIES);
   for (let entry = 0; entry < entries; entry++) {
@@ -1029,7 +1032,7 @@ export function encodeConfigReply(
 export function encodeMacroReply(
   request: Uint8Array,
   actions: readonly (WireMacroAction | undefined)[]
-): Uint8Array {
+): Report {
   const reply = encodeReply(request);
   const entries = count(viewOf(reply).getUint16(4, true), MAX_MACRO_ACTIONS);
   for (let entry = 0; entry < entries; entry++) {
@@ -1039,7 +1042,7 @@ export function encodeMacroReply(
   return reply;
 }
 
-export function encodeFeatureReply(request: Uint8Array, feature: WireFeature): Uint8Array {
+export function encodeFeatureReply(request: Uint8Array, feature: WireFeature): Report {
   const reply = encodeReply(request);
   writeFeature(reply, feature);
   return reply;
@@ -1049,7 +1052,7 @@ export function encodeLargeGetStartReply(
   request: Uint8Array,
   totalSize: number,
   checksum: number
-): Uint8Array {
+): Report {
   const reply = encodeReply(request);
   const view = viewOf(reply);
   view.setUint32(4, totalSize, true);
@@ -1061,7 +1064,7 @@ export function encodeLargeGetPayloadReply(
   request: Uint8Array,
   offset: number,
   data: Uint8Array
-): Uint8Array {
+): Report {
   const reply = encodeReply(request);
   const chunk = data.subarray(0, MAX_LARGE_PAYLOAD);
   const view = viewOf(reply);
@@ -1073,14 +1076,14 @@ export function encodeLargeGetPayloadReply(
 }
 
 /** Device notification asking the host to reload its configuration. */
-export function encodeConfigChangedEvent(): Uint8Array {
+export function encodeConfigChangedEvent(): Report {
   const report = new Uint8Array(REPORT_SIZE);
   report[0] = PacketCode.Event;
   report[1] = EventFlag.ConfigChanged;
   return report;
 }
 
-export function encodeConsoleReport(text: string): Uint8Array {
+export function encodeConsoleReport(text: string): Report {
   const report = new Uint8Array(REPORT_SIZE);
   const bytes = textEncoder.encode(text).subarray(0, REPORT_SIZE - CONSOLE_TEXT_OFFSET);
   report[0] = PacketCode.Console;
@@ -1089,7 +1092,7 @@ export function encodeConsoleReport(text: string): Uint8Array {
   return report;
 }
 
-export function encodeDebugReport(tick: number, items: readonly WireDebugItem[]): Uint8Array {
+export function encodeDebugReport(tick: number, items: readonly WireDebugItem[]): Report {
   const report = new Uint8Array(REPORT_SIZE);
   const view = viewOf(report);
   const included = items.slice(0, MAX_DEBUG_ITEMS);
