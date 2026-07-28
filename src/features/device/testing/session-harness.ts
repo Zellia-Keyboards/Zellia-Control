@@ -5,6 +5,7 @@
  */
 import {
   installVirtualHid,
+  type DataPayload,
   type HostPacket,
   type InstalledVirtualKeyboard,
   type VirtualKeyboardOptions,
@@ -90,6 +91,73 @@ export function createHarness(options: HarnessOptions = {}): SessionHarness {
     },
   };
 }
+
+/** Creates a harness, optionally edits the device state, connects and clears the history. */
+export async function createConnectedHarness(
+  options: HarnessOptions & { readonly prepare?: (vk: InstalledVirtualKeyboard) => void } = {}
+): Promise<SessionHarness> {
+  const harness = createHarness(options);
+  options.prepare?.(harness.vk);
+  await harness.session.connect();
+  const { connection } = harness.store.getState();
+  if (connection.status !== 'ready') {
+    harness.dispose();
+    throw new Error(`Expected a ready connection, got ${JSON.stringify(connection)}`);
+  }
+  harness.vk.clearHistory();
+  return harness;
+}
+
+const hex = (value: number) => `0x${value.toString(16).padStart(4, '0')}`;
+
+function describePayload(payload: DataPayload): string {
+  switch (payload.kind) {
+    case 'keymap':
+      return `keymap ${payload.layer}:${payload.start} [${payload.keycodes.map(hex).join(' ')}]`;
+    case 'advancedKey':
+      return `advancedKey ${payload.index}`;
+    case 'rgbConfig':
+      return `rgbConfig [${payload.entries.map(entry => entry.index).join(',')}]`;
+    case 'dynamicKey':
+      return `dynamicKey ${payload.index} ${payload.key.type}`;
+    case 'profileIndex':
+      return `profileIndex ${payload.index}`;
+    case 'other':
+      return `type ${payload.type}`;
+    default:
+      return payload.kind;
+  }
+}
+
+/** A short, readable description of a host → device packet (for ordering assertions). */
+export function describePacket(packet: HostPacket): string {
+  switch (packet.op) {
+    case 'set':
+      return `set ${describePayload(packet)}`;
+    case 'get':
+      return `get ${packet.kind}`;
+    case 'event':
+      return `event ${hex(packet.keycode)}`;
+    case 'debug':
+      return `debug [${packet.keyIds.join(',')}]`;
+    case 'largeGet':
+    case 'largeSet':
+      return `${packet.op} ${packet.command}`;
+    case 'unknown':
+      return `unknown ${packet.code}`;
+  }
+}
+
+/** Keycodes of the keyboard operations the controller sends as key-down events. */
+export const OPERATION_KEYCODES = {
+  reboot: 0x00fe,
+  factoryReset: 0x01fe,
+  save: 0x02fe,
+  bootloader: 0x03fe,
+  profile: (index: number) => 0xfe | ((0x10 + index) << 8),
+  debugOn: 0xfe | ((0x20 | (1 << 6)) << 8),
+  debugOff: 0xfe | (0x20 << 8),
+} as const;
 
 /** Lets the virtual keyboard and the controller queue finish every pending exchange. */
 export async function settle(): Promise<void> {
