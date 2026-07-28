@@ -324,6 +324,7 @@ describe('metadata', () => {
   });
 });
 
+// Values outside the declared types, as untyped callers could pass them.
 describe('validation of domain values before they reach the wire', () => {
   it('accepts valid configurations', () => {
     expect(() => {
@@ -337,7 +338,7 @@ describe('validation of domain values before they reach the wire', () => {
     }).not.toThrow();
   });
 
-  it.each([
+  it.each<[string, Record<string, unknown>]>([
     ['mode', { mode: 9 }],
     ['calibration mode', { calibrationMode: -1 }],
     ['activation', { activation: 1.01 }],
@@ -347,13 +348,13 @@ describe('validation of domain values before they reach the wire', () => {
     ['lower deadzone', { lowerDeadzone: 2 }],
     ['upper bound', { upperBound: 0x10000 }],
     ['lower bound', { lowerBound: 1.5 }],
-  ] as const)('rejects an advanced key with an invalid %s', (_, change) => {
+  ])('rejects an advanced key with an invalid %s', (_, change) => {
     expect(() => {
-      assertAdvancedKeyConfig({ ...ADVANCED, ...change });
+      assertAdvancedKeyConfig(Object.assign({}, ADVANCED, change));
     }).toThrow(RangeError);
   });
 
-  it.each([
+  it.each<[string, Record<string, unknown>]>([
     ['mode', { mode: 99 }],
     ['colour', { color: { red: 256, green: 0, blue: 0 } }],
     ['secondary colour', { secondaryColor: { red: 0, green: -1, blue: 0 } }],
@@ -361,19 +362,19 @@ describe('validation of domain values before they reach the wire', () => {
     ['direction', { direction: 12.5 }],
     ['density', { density: 256 }],
     ['brightness', { brightness: -1 }],
-  ] as const)('rejects an RGB base config with an invalid %s', (_, change) => {
+  ])('rejects an RGB base config with an invalid %s', (_, change) => {
     expect(() => {
-      assertRgbBaseConfig({ ...RGB_BASE, ...change });
+      assertRgbBaseConfig(Object.assign({}, RGB_BASE, change));
     }).toThrow(RangeError);
   });
 
-  it.each([
+  it.each<[string, Record<string, unknown>]>([
     ['mode', { mode: 42 }],
     ['colour', { color: { red: 0, green: 0, blue: 3.5 } }],
     ['speed', { speed: -2 }],
-  ] as const)('rejects a per-key RGB config with an invalid %s', (_, change) => {
+  ])('rejects a per-key RGB config with an invalid %s', (_, change) => {
     expect(() => {
-      assertRgbKeyConfig({ ...RGB_KEY, ...change });
+      assertRgbKeyConfig(Object.assign({}, RGB_KEY, change));
     }).toThrow(RangeError);
   });
 });
