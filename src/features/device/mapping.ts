@@ -32,6 +32,7 @@ import {
 } from 'emi-keyboard-controller';
 import type { DeviceController } from './controller';
 import { rebuildTargets } from './model/dynamic-key-binding';
+import { assertFraction, assertUint, clampFraction } from './model/validation';
 import type { ModelDefinition } from './models';
 import type {
   AdvancedKeyConfig,
@@ -68,10 +69,6 @@ const SCRIPT_LEVELS = enumValues(ScriptLevel);
 
 function asEnum<E extends number>(members: readonly E[], value: number, fallback: E): E {
   return members.find(member => member === value) ?? fallback;
-}
-
-function fraction(value: number): number {
-  return Number.isFinite(value) ? Math.min(Math.max(value, 0), 1) : 0;
 }
 
 function integer(value: number, max: number): number {
@@ -113,14 +110,14 @@ export function toAdvancedKeyConfig(key: IAdvancedKey): AdvancedKeyConfig {
       config.calibration_mode,
       CalibrationMode.KeyNoCalibration
     ),
-    activation: fraction(config.activation_value),
-    deactivation: fraction(config.deactivation_value),
-    triggerDistance: fraction(config.trigger_distance),
-    releaseDistance: fraction(config.release_distance),
-    triggerSpeed: fraction(config.trigger_speed),
-    releaseSpeed: fraction(config.release_speed),
-    upperDeadzone: fraction(config.upper_deadzone),
-    lowerDeadzone: fraction(config.lower_deadzone),
+    activation: clampFraction(config.activation_value),
+    deactivation: clampFraction(config.deactivation_value),
+    triggerDistance: clampFraction(config.trigger_distance),
+    releaseDistance: clampFraction(config.release_distance),
+    triggerSpeed: clampFraction(config.trigger_speed),
+    releaseSpeed: clampFraction(config.release_speed),
+    upperDeadzone: clampFraction(config.upper_deadzone),
+    lowerDeadzone: clampFraction(config.lower_deadzone),
     upperBound: integer(config.upper_bound, U16),
     lowerBound: integer(config.lower_bound, U16),
   };
@@ -167,10 +164,10 @@ export function toDynamicKeySlot(key: IDynamicKey): DynamicKeySlot {
       bindings: quad(key.bindings, keycode),
       keyControl: quad(key.key_control, control => integer(control, BYTE)),
       distances: {
-        pressBegin: fraction(key.press_begin_distance),
-        pressFully: fraction(key.press_fully_distance),
-        releaseBegin: fraction(key.release_begin_distance),
-        releaseFully: fraction(key.release_fully_distance),
+        pressBegin: clampFraction(key.press_begin_distance),
+        pressFully: clampFraction(key.press_fully_distance),
+        releaseBegin: clampFraction(key.release_begin_distance),
+        releaseFully: clampFraction(key.release_fully_distance),
       },
       target: null,
     };
@@ -353,18 +350,6 @@ export function toControllerKeymap(keymap: Keymap): number[][] {
 
 function assertMember(members: readonly number[], value: number, label: string): void {
   if (!members.includes(value)) throw new RangeError(`${label} ${value} is not supported`);
-}
-
-function assertUint(value: number, max: number, label: string): void {
-  if (!Number.isInteger(value) || value < 0 || value > max) {
-    throw new RangeError(`${label} ${value} is out of range 0..${max}`);
-  }
-}
-
-function assertFraction(value: number, label: string): void {
-  if (!Number.isFinite(value) || value < 0 || value > 1) {
-    throw new RangeError(`${label} ${value} is not a fraction of travel (0..1)`);
-  }
 }
 
 function assertRgb(color: Rgb, label: string): void {
