@@ -12,6 +12,9 @@
  * - Edits are rejected (and recorded in `lastError`) while a reload runs: the controller is then
  *   refilling its cache, and decisions made on the old snapshot (dynamic-key slots) could clobber
  *   the new one. Profile switches and factory resets count as reloads from the request on.
+ * - A failed load, first or later, ends the connection with its message (D2). The app then no
+ *   longer knows what the keyboard holds (after a profile switch it is already on the new
+ *   profile), and a save would write the old snapshot into it.
  *
  * Framework-agnostic: nothing here depends on React (the hooks live in `store.ts`).
  */
@@ -240,7 +243,7 @@ function withLiveReadings(
   });
 }
 
-type LoadOutcome = 'loaded' | 'failed' | 'closed' | 'timeout';
+type LoadOutcome = 'loaded' | 'closed' | 'timeout';
 
 interface DebugLoop {
   keyId: number;
@@ -260,9 +263,8 @@ interface Connection {
   reloading: boolean;
   /** Requests (profile switch, factory reset) still waiting for the reload they trigger. */
   expectedReloads: number;
-  /** Completed and failed loads, to tell which load answered a request. */
+  /** Completed loads, to tell which load answered a request. */
   loads: number;
-  failures: number;
   loadStarted: boolean;
   watchdog: ReturnType<typeof setTimeout> | null;
   readyState: ConnectionState | null;
@@ -416,7 +418,6 @@ class Session implements DeviceSession {
       reloading: false,
       expectedReloads: 0,
       loads: 0,
-      failures: 0,
       loadStarted: false,
       watchdog: null,
       readyState: null,
@@ -451,7 +452,7 @@ class Session implements DeviceSession {
       this.#onLoadEnd(connection);
     });
     on('updateDataError', ({ error }) => {
-      this.#onLoadError(connection, error);
+      this.#onLoadError(error);
     });
     on('updateDebugData', ({ tick, updatedKeys }) => {
       this.#onDebugData(connection, tick, updatedKeys);
@@ -526,7 +527,7 @@ class Session implements DeviceSession {
       };
       this.#syncCache(connection, config);
     } catch (error) {
-      this.#onLoadError(connection, error);
+      this.#onLoadError(error);
       return;
     }
     connection.loads += 1;
@@ -547,17 +548,9 @@ class Session implements DeviceSession {
     this.#notify(connection);
   }
 
-  #onLoadError(connection: Connection, error: unknown): void {
-    connection.failures += 1;
-    if (connection.phase !== 'ready') {
-      this.#fail(CONNECTION_ERRORS.loadFailed(messageOf(error, 'unknown error')));
-      return;
-    }
-    this.#recordError('reload', error);
-    // The controller holds a partial reload; put back what the UI shows.
-    const { config } = this.#store.getState();
-    if (config) this.#syncCache(connection, config);
-    this.#notify(connection);
+  /** A failed load ends the connection, also after the first one (see the file comment). */
+  #onLoadError(error: unknown): void {
+    this.#fail(CONNECTION_ERRORS.loadFailed(messageOf(error, 'unknown error')));
   }
 
   #onDebugData(connection: Connection, tick: number, updatedKeys: readonly number[]): void {
@@ -942,7 +935,7 @@ class Session implements DeviceSession {
   ): Promise<void> {
     connection.expectedReloads += 1;
     this.#syncReloading(connection);
-    const since = { loads: connection.loads, failures: connection.failures };
+    const since = connection.loads;
     try {
       await request();
       if (!this.#isCurrent(connection)) return;
@@ -953,15 +946,16 @@ class Session implements DeviceSession {
       if (this.#isCurrent(connection)) this.#recordError(operation, error);
     } finally {
       connection.expectedReloads -= 1;
-      if (this.#isCurrent(connection)) this.#syncReloading(connection);
+      if (this.#isCurrent(connection)) {
+        this.#syncReloading(connection);
+        // A save may be waiting for this request (see #whenIdle).
+        this.#notify(connection);
+      }
     }
   }
 
   /** The next load after `since`; times out when no reload starts within `loadStartMs`. */
-  #nextLoad(
-    connection: Connection,
-    since: { readonly loads: number; readonly failures: number }
-  ): Promise<LoadOutcome> {
+  #nextLoad(connection: Connection, since: number): Promise<LoadOutcome> {
     return new Promise(resolve => {
       let timer: ReturnType<typeof setTimeout> | null = null;
       const disarm = () => {
@@ -975,8 +969,7 @@ class Session implements DeviceSession {
       };
       const check = () => {
         if (!this.#isCurrent(connection)) finish('closed');
-        else if (connection.loads > since.loads) finish('loaded');
-        else if (connection.failures > since.failures) finish('failed');
+        else if (connection.loads > since) finish('loaded');
         else if (connection.reloading) disarm();
         else if (timer === null) {
           timer = setTimeout(() => {
