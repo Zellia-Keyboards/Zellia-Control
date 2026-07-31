@@ -8,6 +8,8 @@ import {
   KeyEvent,
   createFactoryProfile,
   decodeDeviceReport,
+  dynamicKeyKeycode,
+  unreachableDynamicKeySlots,
   type HostPacket,
 } from '../../testing/virtual-keyboard';
 import type { DebugSample } from './debug-stream';
@@ -176,6 +178,34 @@ describe('save (D9)', () => {
     expect(h.vk.state.active.dynamicKeys[2]).toEqual({ type: 'none' });
     expect(h.vk.state.active.dynamicKeys[3]).toEqual({ type: 'none' });
     expect(h.vk.state.active.keymap[0]?.[31]).toBe(Keycode.D);
+    expect(h.vk.state.profiles[0]).toEqual(h.vk.state.active);
+  });
+
+  it('moves dynamic keys stranded behind an empty slot so the keyboard runs them again', async () => {
+    const h = await connected({
+      prepare: vk => {
+        // Slot 1 was freed by another tool: libamp stops at it and never runs slots 2 and 3.
+        vk.state.active.dynamicKeys[1] = { type: 'none' };
+        vk.state.active.keymap[0]?.splice(30, 1, Keycode.S);
+      },
+    });
+    expect(unreachableDynamicKeySlots(h.vk.state.active)).toEqual([2, 3]);
+
+    await h.session.save();
+    await settle();
+    expect(h.state().lastError).toBeNull();
+    expect(
+      configOf(h)
+        .dynamicKeys.slice(0, 4)
+        .map(slot => slot.kind)
+    ).toEqual(['stroke', 'mutex', 'toggle', 'none']);
+    expect(unreachableDynamicKeySlots(h.vk.state.active)).toEqual([]);
+    expect(h.vk.state.active.dynamicKeys[1]).toMatchObject({ type: 'mutex', keyIds: [31, 33] });
+    expect(h.vk.state.active.keymap[0]?.slice(31, 34)).toEqual([
+      dynamicKeyKeycode(1),
+      dynamicKeyKeycode(0),
+      dynamicKeyKeycode(1),
+    ]);
     expect(h.vk.state.profiles[0]).toEqual(h.vk.state.active);
   });
 

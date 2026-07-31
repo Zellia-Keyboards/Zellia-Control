@@ -19,6 +19,7 @@ import {
   restoreProfile,
   saveProfile,
   selectProfile,
+  unreachableDynamicKeySlots,
 } from './state';
 
 const DYNAMIC_KEY: number = Keycode.DynamicKey;
@@ -212,6 +213,20 @@ describe('profile operations', () => {
     expect(state.profileIndex).toBe(0);
     expect(state.profiles).toEqual([factory, factory, factory, factory]);
     expect(state.active).toEqual(factory);
+  });
+});
+
+describe('unreachableDynamicKeySlots', () => {
+  it('lists dynamic keys behind the first empty slot, which libamp never runs', () => {
+    const state = createVirtualKeyboardState();
+    expect(unreachableDynamicKeySlots(state.active)).toEqual([]);
+    state.active.dynamicKeys[1] = { type: 'none' };
+    expect(unreachableDynamicKeySlots(state.active)).toEqual([2, 3]);
+    state.active.dynamicKeys[0] = { type: 'none' };
+    expect(unreachableDynamicKeySlots(state.active)).toEqual([2, 3]);
+    expect(
+      unreachableDynamicKeySlots(createVirtualKeyboardState({ seedDynamicKeys: false }).active)
+    ).toEqual([]);
   });
 });
 

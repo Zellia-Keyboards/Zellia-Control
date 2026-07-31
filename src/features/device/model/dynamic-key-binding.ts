@@ -4,8 +4,15 @@
  * The keymap is the source of truth: a key whose entry is `DynamicKey | slot << 8` runs that
  * slot. Device reads do not return targets, so they are rebuilt from those entries (upstream
  * `mapBackDynamicKey`), scanning layer-major with ascending key ids: single-key dynamic keys take
- * their first reference, a mutex its first two. Every change keeps that invariant: a dynamic key
- * that loses its key(s) is released and the keys it still held get their own binding back.
+ * their first reference, a mutex its first two. Every change keeps two invariants:
+ *
+ * - A dynamic key that loses its key(s) is released, and the keys it still held get their own
+ *   binding back.
+ * - The slots in use are contiguous from 0. libamp's `dynamic_key_process()` and
+ *   `dynamic_key_add_to_report()` stop at the first empty slot, and `keyboard_event_handler()`
+ *   ignores `DynamicKey` keycodes, so a dynamic key behind an empty slot does nothing at all.
+ *   When a change leaves a gap, the highest slots in use move down into it (their keys follow),
+ *   so slot numbers are not stable across changes.
  */
 import { DynamicKeyMutexMode } from 'emi-keyboard-controller';
 import type { DynamicKeySlot, KeyLocation, Keycode, Keymap, StrokeDistances } from './types';
@@ -214,6 +221,28 @@ function release(
   slots[slot] = NONE;
 }
 
+/**
+ * Moves the highest slots in use into empty lower slots until the slots in use are contiguous
+ * from 0 (see the file comment). Keys follow their dynamic key; keys still pointing at an empty
+ * slot are cleared before a dynamic key moves into it. Returns the moves (`from → to`).
+ */
+function compact(keymap: Keycode[][], slots: DynamicKeySlot[]): Map<number, number> {
+  const moves = new Map<number, number>();
+  for (;;) {
+    const gap = slots.findIndex(slot => slot.kind === 'none');
+    const last = slots.findLastIndex(slot => slot.kind !== 'none');
+    if (gap < 0 || last < gap) return moves;
+    const references = referencesBySlot(keymap, slots.length);
+    for (const location of references.get(gap) ?? []) setKeycode(keymap, location, NO_KEYCODE);
+    for (const location of references.get(last) ?? []) {
+      setKeycode(keymap, location, dynamicKeyKeycode(gap));
+    }
+    slots[gap] = slots[last] ?? NONE;
+    slots[last] = NONE;
+    moves.set(last, gap);
+  }
+}
+
 /** Releases candidates that no longer have all their keys after an edit. */
 function releaseIfIncomplete(
   keymap: Keycode[][],
@@ -252,12 +281,12 @@ export function findSlotForTargets(
   return null;
 }
 
-/** The first empty slot that no key references. */
-export function firstFreeSlot(keymap: Keymap, slots: readonly DynamicKeySlot[]): number | null {
-  const references = referencesBySlot(keymap, slots.length);
-  const index = slots.findIndex(
-    (slot, slotIndex) => slot.kind === 'none' && !references.has(slotIndex)
-  );
+/**
+ * The first empty slot (D6), where a new dynamic key keeps the slots in use contiguous. Stray keys
+ * still pointing at it are cleared when it is taken.
+ */
+export function firstFreeSlot(slots: readonly DynamicKeySlot[]): number | null {
+  const index = slots.findIndex(slot => slot.kind === 'none');
   return index < 0 ? null : index;
 }
 
@@ -364,7 +393,8 @@ function slotOf(draft: DynamicKeyDraft): DynamicKeySlot {
  * Writes `draft` to the slot already bound to one of its keys, else to the first free slot (D6),
  * and points its keys at it. Returns null when no slot is free; throws RangeError for invalid
  * drafts. Keys the reused slot no longer covers get their binding back, and dynamic keys that
- * lose their key(s) to the draft are released.
+ * lose their key(s) to the draft are released. `slot` is where the draft ends up once the slots
+ * are compacted.
  */
 export function bindDynamicKey(
   keymap: Keymap,
@@ -374,7 +404,7 @@ export function bindDynamicKey(
   assertDraft(keymap, draft);
   const normalized = normalizeDraft(draft);
   const targets = targetsOf(normalized);
-  const slot = findSlotForTargets(keymap, slots, targets) ?? firstFreeSlot(keymap, slots);
+  const slot = findSlotForTargets(keymap, slots, targets) ?? firstFreeSlot(slots);
   if (slot === null) return null;
   const previous = slots[slot] ?? NONE;
 
@@ -393,10 +423,11 @@ export function bindDynamicKey(
   const nextSlots = [...slots];
   nextSlots[slot] = slotOf(normalized);
   const released = releaseIfIncomplete(nextKeymap, nextSlots, displaced);
-  return { ...finish(keymap, slots, nextKeymap, released), slot };
+  const moves = compact(nextKeymap, released);
+  return { ...finish(keymap, slots, nextKeymap, released), slot: moves.get(slot) ?? slot };
 }
 
-/** Frees `slots` and gives their keys their own bindings back (D5). */
+/** Frees `slots` and gives their keys their own bindings back (D5), then compacts the slots. */
 export function unbindDynamicKeys(
   keymap: Keymap,
   slots: readonly DynamicKeySlot[],
@@ -408,7 +439,9 @@ export function unbindDynamicKeys(
     const slot = slots[index];
     if (slot && slot.kind !== 'none') release(nextKeymap, nextSlots, slot, index);
   }
-  return finish(keymap, slots, nextKeymap, rebuildTargets(nextKeymap, nextSlots));
+  const rebuilt = rebuildTargets(nextKeymap, nextSlots);
+  compact(nextKeymap, rebuilt);
+  return finish(keymap, slots, nextKeymap, rebuilt);
 }
 
 export function unbindDynamicKey(
@@ -442,10 +475,15 @@ export function setKeymapEntries(
     }
     setKeycode(nextKeymap, entry, entry.keycode);
   }
-  return finish(keymap, slots, nextKeymap, releaseIfIncomplete(nextKeymap, slots, overwritten));
+  const released = releaseIfIncomplete(nextKeymap, slots, overwritten);
+  compact(nextKeymap, released);
+  return finish(keymap, slots, nextKeymap, released);
 }
 
-/** Releases every dynamic key that is missing key(s), e.g. before a save (expects rebuilt slots). */
+/**
+ * Releases every dynamic key that is missing key(s) and compacts the slots, e.g. before a save
+ * (expects rebuilt slots).
+ */
 export function releaseIncompleteDynamicKeys(
   keymap: Keymap,
   slots: readonly DynamicKeySlot[]

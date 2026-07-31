@@ -11,9 +11,11 @@ import {
   setKeymapEntries,
   unbindDynamicKey,
   unbindDynamicKeys,
+  type DynamicKeyChange,
   type DynamicKeyDraft,
 } from './dynamic-key-binding';
 import type { DynamicKeySlot, KeyLocation, Keymap } from './types';
+import { isEqual } from './validation';
 
 const A = 0x04;
 const D = 0x07;
@@ -118,12 +120,10 @@ describe('slot lookup', () => {
     expect(findSlotForTargets([[dk(9)]], slots, [at(0, 0)])).toBeNull();
   });
 
-  it('returns the first empty slot that no key references', () => {
-    const { keymap, slots } = bound();
-    expect(firstFreeSlot(keymap, slots)).toBe(4);
-    const stray = keymap.map((layer, index) => (index === 1 ? [dk(4), ...layer.slice(1)] : layer));
-    expect(firstFreeSlot(stray, slots)).toBe(5);
-    expect(firstFreeSlot(keymap, fixture(4).slots)).toBeNull();
+  it('returns the first empty slot, even when stray keys still point at it (D6)', () => {
+    const { slots } = bound();
+    expect(firstFreeSlot(slots)).toBe(4);
+    expect(firstFreeSlot(fixture(4).slots)).toBeNull();
   });
 });
 
@@ -202,10 +202,36 @@ describe('bindDynamicKey', () => {
       mode: DynamicKeyMutexMode.DKMutexDistancePriority,
     });
     expect(result?.slot).toBe(1);
-    expect(result?.slots[0]).toEqual(NONE);
     expect(result?.slots[1]).toMatchObject({ kind: 'mutex', targets: [at(0, 0), at(0, 2)] });
-    expect(result?.changedSlots).toEqual([0, 1]);
-    expect(result?.changedKeymapEntries).toEqual([{ layer: 0, id: 2, keycode: dk(1) }]);
+    // The stroke's slot 0 is freed; the mutex from slot 3 moves into it (libamp stops at gaps).
+    expect(result?.slots.slice(0, 4)).toEqual([slots[3], result?.slots[1], slots[2], NONE]);
+    expect(result?.changedSlots).toEqual([0, 1, 3]);
+    expect(result?.changedKeymapEntries).toEqual([
+      { layer: 0, id: 1, keycode: dk(0) },
+      { layer: 0, id: 2, keycode: dk(1) },
+      { layer: 0, id: 3, keycode: dk(0) },
+    ]);
+  });
+
+  it('reports the slot the draft ends up in after the slots are compacted', () => {
+    const { keymap, slots } = bound();
+    // Re-targets the mutex (slot 3) onto the stroke's key: the stroke is released and the
+    // mutex moves down into its slot.
+    const result = bindDynamicKey(keymap, slots, {
+      kind: 'mutex',
+      targets: [at(0, 1), at(0, 2)],
+      bindings: [A, F],
+      mode: DynamicKeyMutexMode.DKMutexNeutral,
+    });
+    expect(result?.slot).toBe(0);
+    expect(result?.slots[0]).toEqual({
+      kind: 'mutex',
+      bindings: [A, F],
+      mode: DynamicKeyMutexMode.DKMutexNeutral,
+      targets: [at(0, 1), at(0, 2)],
+    });
+    expect(result?.slots.slice(1, 4)).toEqual([slots[1], slots[2], NONE]);
+    expect(result?.keymap[0]?.slice(0, 5)).toEqual([dk(1), dk(0), dk(0), D, dk(2)]);
   });
 
   it('orders mutex keys by keymap scan order, swapping bindings and key priority', () => {
@@ -249,7 +275,12 @@ describe('bindDynamicKey', () => {
     expect(result?.slots[4]).toEqual({ kind: 'toggle', binding: ESC, target: at(1, 0) });
 
     const elsewhere = bindDynamicKey(strayKeymap, slots, toggle(at(0, 9)));
-    expect(elsewhere?.slot).toBe(5);
+    expect(elsewhere?.slot).toBe(4);
+    expect(elsewhere?.changedKeymapEntries).toEqual([
+      { layer: 0, id: 9, keycode: dk(4) },
+      { layer: 1, id: 0, keycode: 0 },
+      { layer: 1, id: 1, keycode: 0 },
+    ]);
   });
 
   it('rejects targets outside the keymap and identical mutex keys', () => {
@@ -271,16 +302,6 @@ describe('bindDynamicKey', () => {
 describe('unbindDynamicKey', () => {
   it("restores each key to the dynamic key's own binding and frees the slot", () => {
     const { keymap, slots } = bound();
-    expect(unbindDynamicKey(keymap, slots, 0)).toMatchObject({
-      changedSlots: [0],
-      changedKeymapEntries: [{ layer: 0, id: 2, keycode: F }],
-    });
-    expect(unbindDynamicKey(keymap, slots, 1).changedKeymapEntries).toEqual([
-      { layer: 0, id: 0, keycode: S },
-    ]);
-    expect(unbindDynamicKey(keymap, slots, 2).changedKeymapEntries).toEqual([
-      { layer: 0, id: 4, keycode: H },
-    ]);
     const mutex = unbindDynamicKey(keymap, slots, 3);
     expect(mutex.changedKeymapEntries).toEqual([
       { layer: 0, id: 1, keycode: A },
@@ -288,6 +309,39 @@ describe('unbindDynamicKey', () => {
     ]);
     expect(mutex.slots[3]).toEqual(NONE);
     expect(mutex.slots[0]).toBe(slots[0]);
+    expect(mutex.changedSlots).toEqual([3]);
+  });
+
+  it('moves the highest dynamic key into a freed lower slot, keys included', () => {
+    const { keymap, slots } = bound();
+    const stroke = unbindDynamicKey(keymap, slots, 0);
+    expect(stroke.slots.slice(0, 4)).toEqual([slots[3], slots[1], slots[2], NONE]);
+    expect(stroke.changedSlots).toEqual([0, 3]);
+    expect(stroke.changedKeymapEntries).toEqual([
+      { layer: 0, id: 1, keycode: dk(0) },
+      { layer: 0, id: 2, keycode: F },
+      { layer: 0, id: 3, keycode: dk(0) },
+    ]);
+    expect(unbindDynamicKey(keymap, slots, 1).changedKeymapEntries).toEqual([
+      { layer: 0, id: 0, keycode: S },
+      { layer: 0, id: 1, keycode: dk(1) },
+      { layer: 0, id: 3, keycode: dk(1) },
+    ]);
+    expect(unbindDynamicKey(keymap, slots, 2).changedKeymapEntries).toEqual([
+      { layer: 0, id: 1, keycode: dk(2) },
+      { layer: 0, id: 3, keycode: dk(2) },
+      { layer: 0, id: 4, keycode: H },
+    ]);
+  });
+
+  it('clears stray references to an empty slot before a dynamic key moves into it', () => {
+    const { keymap, slots } = bound();
+    // Slot 1 is empty, but key 0 still points at it.
+    const gapped = [slots[0] ?? NONE, NONE, slots[2] ?? NONE, slots[3] ?? NONE, NONE, NONE];
+    const result = unbindDynamicKeys(keymap, gapped, []);
+    expect(result.slots.slice(0, 4)).toEqual([slots[0], slots[3], slots[2], NONE]);
+    expect(result.keymap[0]?.slice(0, 5)).toEqual([0, dk(1), dk(0), dk(1), dk(2)]);
+    expect(result.changedSlots).toEqual([1, 3]);
   });
 
   it('does nothing for empty or missing slots', () => {
@@ -299,12 +353,15 @@ describe('unbindDynamicKey', () => {
     }
   });
 
-  it('unbinds several slots at once', () => {
+  it('unbinds several slots at once and compacts the rest', () => {
     const { keymap, slots } = bound();
     const result = unbindDynamicKeys(keymap, slots, [0, 2]);
-    expect(result.changedSlots).toEqual([0, 2]);
+    expect(result.slots.slice(0, 3)).toEqual([slots[3], slots[1], NONE]);
+    expect(result.changedSlots).toEqual([0, 2, 3]);
     expect(result.changedKeymapEntries).toEqual([
+      { layer: 0, id: 1, keycode: dk(0) },
       { layer: 0, id: 2, keycode: F },
+      { layer: 0, id: 3, keycode: dk(0) },
       { layer: 0, id: 4, keycode: H },
     ]);
   });
@@ -325,9 +382,13 @@ describe('setKeymapEntries', () => {
   it('releases a dynamic key whose key is overwritten', () => {
     const { keymap, slots } = bound();
     const result = setKeymapEntries(keymap, slots, [{ layer: 0, id: 2, keycode: A }]);
-    expect(result.slots[0]).toEqual(NONE);
-    expect(result.changedSlots).toEqual([0]);
-    expect(result.changedKeymapEntries).toEqual([{ layer: 0, id: 2, keycode: A }]);
+    expect(result.slots.slice(0, 4)).toEqual([slots[3], slots[1], slots[2], NONE]);
+    expect(result.changedSlots).toEqual([0, 3]);
+    expect(result.changedKeymapEntries).toEqual([
+      { layer: 0, id: 1, keycode: dk(0) },
+      { layer: 0, id: 2, keycode: A },
+      { layer: 0, id: 3, keycode: dk(0) },
+    ]);
   });
 
   it('releases a mutex that loses one key and restores the other', () => {
@@ -368,9 +429,27 @@ describe('releaseIncompleteDynamicKeys', () => {
     const { slots } = fixture();
     const keymap = [[0, dk(3), 0, 0, dk(2)]];
     const result = releaseIncompleteDynamicKeys(keymap, rebuildTargets(keymap, slots));
-    expect(result.changedSlots).toEqual([0, 1, 3]);
-    expect(result.slots[2]).toMatchObject({ kind: 'toggle', target: at(0, 4) });
-    expect(result.changedKeymapEntries).toEqual([{ layer: 0, id: 1, keycode: A }]);
+    expect(result.changedSlots).toEqual([0, 1, 2, 3]);
+    expect(result.slots.slice(0, 2)).toEqual([
+      { kind: 'toggle', binding: H, target: at(0, 4) },
+      NONE,
+    ]);
+    expect(result.changedKeymapEntries).toEqual([
+      { layer: 0, id: 1, keycode: A },
+      { layer: 0, id: 4, keycode: dk(0) },
+    ]);
+  });
+
+  it('compacts slots left with gaps, e.g. by another tool', () => {
+    const { keymap, slots } = bound();
+    const gapped = [NONE, slots[1] ?? NONE, NONE, slots[3] ?? NONE, NONE, NONE];
+    const gappedKeymap = [[dk(1), dk(3), F, dk(3), H, ...(keymap[0] ?? []).slice(5)]];
+    const result = releaseIncompleteDynamicKeys(gappedKeymap, gapped);
+    expect(result.slots.slice(0, 3)).toEqual([slots[3], slots[1], NONE]);
+    expect(result.changedKeymapEntries).toEqual([
+      { layer: 0, id: 1, keycode: dk(0) },
+      { layer: 0, id: 3, keycode: dk(0) },
+    ]);
   });
 
   it('changes nothing when every dynamic key is placed', () => {
@@ -379,5 +458,156 @@ describe('releaseIncompleteDynamicKeys', () => {
       changedSlots: [],
       changedKeymapEntries: [],
     });
+  });
+});
+
+describe('invariants under random edits', () => {
+  const MUTEX_PRIORITIES = [
+    DynamicKeyMutexMode.DKMutexDistancePriority,
+    DynamicKeyMutexMode.DKMutexLastPriority,
+    DynamicKeyMutexMode.DKMutexKey1Priority,
+    DynamicKeyMutexMode.DKMutexKey2Priority,
+    DynamicKeyMutexMode.DKMutexNeutral,
+  ] as const;
+
+  /** Deterministic PRNG (mulberry32). */
+  function prng(seed: number): () => number {
+    let state = seed >>> 0;
+    return () => {
+      state = (state + 0x6d2b79f5) >>> 0;
+      let t = state;
+      t = Math.imul(t ^ (t >>> 15), t | 1);
+      t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
+  function isComplete(slot: DynamicKeySlot): boolean {
+    switch (slot.kind) {
+      case 'none':
+        return true;
+      case 'mutex':
+        return slot.targets[0] !== null && slot.targets[1] !== null;
+      default:
+        return slot.target !== null;
+    }
+  }
+
+  function expectConsistent(
+    before: { keymap: Keymap; slots: readonly DynamicKeySlot[] },
+    change: DynamicKeyChange
+  ): void {
+    const { keymap, slots } = change;
+    // libamp only runs the slots before the first empty one.
+    const firstEmpty = slots.findIndex(slot => slot.kind === 'none');
+    if (firstEmpty >= 0) {
+      expect(slots.slice(firstEmpty).map(slot => slot.kind)).toEqual(
+        slots.slice(firstEmpty).map(() => 'none')
+      );
+    }
+    // Every dynamic key sits on its keys, and every key points at a dynamic key.
+    expect(rebuildTargets(keymap, slots)).toEqual(slots);
+    expect(slots.every(isComplete)).toBe(true);
+    for (const layer of keymap) {
+      for (const keycode of layer) {
+        const slot = dynamicKeySlotOfKeycode(keycode);
+        if (slot !== null) expect(slots[slot]?.kind).not.toBe('none');
+      }
+    }
+    // The change lists describe exactly what changed.
+    const patched = before.keymap.map(layer => [...layer]);
+    for (const { layer, id, keycode } of change.changedKeymapEntries) {
+      const row = patched[layer];
+      if (row) row[id] = keycode;
+    }
+    expect(patched).toEqual(keymap);
+    expect(change.changedSlots).toEqual(
+      slots.flatMap((slot, index) => (isEqual(slot, before.slots[index]) ? [] : [index]))
+    );
+  }
+
+  it('keeps the slots in use contiguous from 0 and consistent with the keymap', () => {
+    let compactions = 0;
+    for (let seed = 1; seed <= 60; seed++) {
+      const random = prng(seed);
+      const pick = (count: number) => Math.floor(random() * count);
+      const location = () => at(pick(2), pick(12));
+      const keycode = () => 0x04 + pick(0x60);
+      const draft = (): DynamicKeyDraft => {
+        switch (pick(4)) {
+          case 0:
+            return {
+              kind: 'stroke',
+              target: location(),
+              bindings: [keycode(), keycode(), 0, 0],
+              keyControl: [0x3f, 0x04, 0, 0],
+              distances: DISTANCES,
+            };
+          case 1:
+            return {
+              kind: 'modTap',
+              target: location(),
+              tap: keycode(),
+              hold: LCTRL,
+              durationMs: 200,
+            };
+          case 2:
+            return { kind: 'toggle', target: location(), binding: keycode() };
+          default: {
+            const first = location();
+            let second = location();
+            while (second.layer === first.layer && second.id === first.id) second = location();
+            return {
+              kind: 'mutex',
+              targets: [first, second],
+              bindings: [keycode(), keycode()],
+              mode:
+                MUTEX_PRIORITIES[pick(MUTEX_PRIORITIES.length)] ??
+                DynamicKeyMutexMode.DKMutexNeutral,
+            };
+          }
+        }
+      };
+
+      const initial = fixture(8);
+      let state: { keymap: Keymap; slots: readonly DynamicKeySlot[] } = {
+        keymap: initial.keymap,
+        slots: rebuildTargets(initial.keymap, initial.slots),
+      };
+      for (let step = 0; step < 40; step++) {
+        const operation = random();
+        const used = state.slots.flatMap((slot, index) => (slot.kind === 'none' ? [] : [index]));
+        let change: DynamicKeyChange | null;
+        if (operation < 0.45) {
+          change = bindDynamicKey(state.keymap, state.slots, draft());
+        } else if (operation < 0.7) {
+          const slot = random() < 0.8 ? used[pick(used.length)] : undefined;
+          change = unbindDynamicKey(state.keymap, state.slots, slot ?? pick(state.slots.length));
+        } else {
+          const entries = Array.from({ length: 1 + pick(3) }, () => {
+            const target = location();
+            const slot = used[pick(used.length)];
+            return {
+              ...target,
+              keycode: slot !== undefined && random() < 0.3 ? dk(slot) : keycode(),
+            };
+          });
+          change = setKeymapEntries(state.keymap, state.slots, entries);
+        }
+        if (!change) continue;
+        expectConsistent(state, change);
+        const previous = state.slots;
+        const moved = change.changedSlots.some(index => {
+          const slot = change.slots[index];
+          return (
+            slot?.kind !== 'none' && previous.some((old, from) => from > index && old === slot)
+          );
+        });
+        if (moved) compactions += 1;
+        state = { keymap: change.keymap, slots: change.slots };
+      }
+    }
+    // The run moves dynamic keys down into freed slots, i.e. it exercises compaction.
+    expect(compactions).toBeGreaterThan(100);
   });
 });
