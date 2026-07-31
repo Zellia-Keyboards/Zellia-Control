@@ -14,7 +14,8 @@
  *   When a change leaves a gap, the highest slots in use move down into it (their keys follow),
  *   so slot numbers are not stable across changes.
  */
-import { DynamicKeyMutexMode } from 'emi-keyboard-controller';
+import type { DynamicKeyMutexMode } from 'emi-keyboard-controller';
+import { assertMutexMode, swapMutexKeyPriority } from './mutex-mode';
 import type { DynamicKeySlot, KeyLocation, Keycode, Keymap, StrokeDistances } from './types';
 import { assertFraction, assertUint, isEqual } from './validation';
 
@@ -44,6 +45,7 @@ export type DynamicKeyDraft =
       readonly kind: 'mutex';
       readonly targets: readonly [KeyLocation, KeyLocation];
       readonly bindings: readonly [Keycode, Keycode];
+      /** libamp's mode byte: priority plus bottom-out flag (see `mutex-mode.ts`). */
       readonly mode: DynamicKeyMutexMode;
     };
 
@@ -293,14 +295,6 @@ export function firstFreeSlot(slots: readonly DynamicKeySlot[]): number | null {
 // ---------------------------------------------------------------------------------------------
 // Changes
 
-function swapKeyPriority(mode: DynamicKeyMutexMode): DynamicKeyMutexMode {
-  if (mode === DynamicKeyMutexMode.DKMutexKey1Priority)
-    return DynamicKeyMutexMode.DKMutexKey2Priority;
-  if (mode === DynamicKeyMutexMode.DKMutexKey2Priority)
-    return DynamicKeyMutexMode.DKMutexKey1Priority;
-  return mode;
-}
-
 /** Mutex keys are stored in keymap scan order (the order targets are rebuilt in). */
 function normalizeDraft(draft: DynamicKeyDraft): DynamicKeyDraft {
   if (draft.kind !== 'mutex') return draft;
@@ -310,7 +304,7 @@ function normalizeDraft(draft: DynamicKeyDraft): DynamicKeyDraft {
     ...draft,
     targets: [second, first],
     bindings: [draft.bindings[1], draft.bindings[0]],
-    mode: swapKeyPriority(draft.mode),
+    mode: swapMutexKeyPriority(draft.mode),
   };
 }
 
@@ -345,7 +339,7 @@ function assertDraft(keymap: Keymap, draft: DynamicKeyDraft): void {
       draft.bindings.forEach(keycode => {
         assertUint(keycode, MAX_KEYCODE, 'Keycode');
       });
-      assertUint(draft.mode, DynamicKeyMutexMode.DKMutexNeutral, 'Mutex mode');
+      assertMutexMode(draft.mode);
       if (sameLocation(draft.targets[0], draft.targets[1])) {
         throw new RangeError('A mutex needs two different keys');
       }

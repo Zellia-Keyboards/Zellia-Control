@@ -20,6 +20,7 @@ import {
 } from '../../testing/virtual-keyboard';
 import { createDeviceStore } from './device-store';
 import { readDeviceConfig } from './mapping';
+import { mutexMode } from './model/mutex-mode';
 import type { AdvancedKeyConfig, DeviceConfig, RgbBaseConfig, RgbKeyConfig } from './model/types';
 import { COMMAND_ERRORS, createDeviceSession, keymapRuns } from './session';
 import {
@@ -464,6 +465,36 @@ describe('dynamic keys', () => {
       keyId: 30,
     });
     expectAllDynamicKeysRun(h);
+  });
+
+  it('keeps the mutex bottom-out flag (libamp mode bits 0xF0) through load, edits and save', async () => {
+    const h = await connected({
+      prepare: vk => {
+        const mutex = vk.state.active.dynamicKeys[3];
+        if (mutex?.type !== 'mutex') throw new Error('No seeded mutex');
+        vk.state.active.dynamicKeys[3] = { ...mutex, mode: 0xf1 };
+      },
+    });
+    expect(configOf(h).dynamicKeys[3]).toMatchObject({ kind: 'mutex', mode: 0xf1 });
+    h.session.setKeycodes(2, [10], Keycode.Tab);
+    await h.session.save();
+    await settle();
+    expect(h.state().lastError).toBeNull();
+    expect(h.vk.state.active.dynamicKeys[3]).toMatchObject({ type: 'mutex', mode: 0xf1 });
+    expect(h.vk.state.profiles[0]?.dynamicKeys[3]).toMatchObject({ type: 'mutex', mode: 0xf1 });
+
+    const slot = h.session.applyDynamicKey({
+      kind: 'mutex',
+      targets: [
+        { layer: 0, id: 42 },
+        { layer: 0, id: 43 },
+      ],
+      bindings: [Keycode.Z, Keycode.X],
+      mode: mutexMode(DynamicKeyMutexMode.DKMutexNeutral, true),
+    });
+    expect(slot).toBe(4);
+    await settle();
+    expect(h.vk.state.active.dynamicKeys[4]).toMatchObject({ type: 'mutex', mode: 0xf4 });
   });
 
   it('rejects a dynamic key when every slot is taken', async () => {
