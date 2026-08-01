@@ -260,30 +260,61 @@ interface DebugLoop {
   wake: (() => void) | null;
 }
 
+/** Opening the device (listeners are attached first, so the first load may already run). */
+interface ConnectingPhase {
+  readonly kind: 'connecting';
+  /** The first load started before `controller.connect()` returned: no watchdog needed. */
+  loadStarted: boolean;
+}
+
+/** Open, waiting for the first complete load. */
+interface LoadingPhase {
+  readonly kind: 'loading';
+  /** Fails the connection when the first load does not start in time (D2). */
+  watchdog: ReturnType<typeof setTimeout> | null;
+}
+
+/** Loaded at least once: commands are accepted. */
+interface ReadyPhase {
+  readonly kind: 'ready';
+  /** The store's connection state: one object per connection, kept across reloads. */
+  readonly state: Extract<ConnectionState, { status: 'ready' }>;
+  /** Edits are rejected while any request is pending; a save waits only for sent ones. */
+  readonly reloadRequests: Set<ReloadRequest>;
+  debug: DebugLoop | null;
+  saving: Promise<void> | null;
+}
+
+/**
+ * The store's `connecting` / `loading` / `ready` statuses with their own data. Phases only move
+ * forward: connecting → loading → ready, or connecting → ready when the first load completes
+ * while the device is still being opened.
+ */
+type Phase = ConnectingPhase | LoadingPhase | ReadyPhase;
+
 interface Connection {
   readonly controller: DeviceController;
   readonly model: ModelDefinition;
   readonly info: ModelInfo;
   readonly deviceName: string;
-  phase: 'connecting' | 'loading' | 'ready';
+  phase: Phase;
   /** `controller.connect()` is still running; tear-down leaves closing to its continuation. */
   opening: boolean;
-  /** `updateDataStart` … `updateDataEnd`. */
+  /** `updateDataStart` … `updateDataEnd`, the first load included. */
   reloading: boolean;
-  /** Edits are rejected while any request is pending; a save waits only for sent ones. */
-  readonly reloadRequests: Set<ReloadRequest>;
   /** Completed loads, to tell which load answered a request. */
   loads: number;
-  loadStarted: boolean;
-  watchdog: ReturnType<typeof setTimeout> | null;
-  readyState: ConnectionState | null;
-  debug: DebugLoop | null;
-  saving: Promise<void> | null;
   /** Re-evaluated after every connection event. */
   readonly waiters: Set<() => void>;
   readonly unsubscribers: (() => void)[];
   readonly settled: Promise<void>;
   readonly settle: () => void;
+}
+
+/** A connection whose commands are enabled, with its ready phase. */
+interface Ready {
+  readonly connection: Connection;
+  readonly phase: ReadyPhase;
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -327,7 +358,9 @@ class Session implements DeviceSession {
   disconnect(): void {
     const connection = this.#connection;
     // Best effort: stop the keyboard streaming debug packets to a host that no longer listens.
-    if (connection?.debug && connection.phase === 'ready') connection.controller.stop_debug();
+    if (connection?.phase.kind === 'ready' && connection.phase.debug) {
+      connection.controller.stop_debug();
+    }
     this.#teardown();
     this.#reset({ status: 'disconnected' });
   }
@@ -384,8 +417,16 @@ class Session implements DeviceSession {
     }
 
     this.#lastModel = match.model;
-    if (connection.phase === 'connecting') {
-      connection.phase = 'loading';
+    const { phase } = connection;
+    if (phase.kind === 'connecting') {
+      connection.phase = {
+        kind: 'loading',
+        watchdog: phase.loadStarted
+          ? null
+          : setTimeout(() => {
+              this.#onNoLoadStart(connection);
+            }, this.#timeouts.loadStartMs),
+      };
       this.#patch({
         connection: {
           status: 'loading',
@@ -393,11 +434,6 @@ class Session implements DeviceSession {
           deviceName: connection.deviceName,
         },
       });
-      if (!connection.loadStarted) {
-        connection.watchdog = setTimeout(() => {
-          this.#onNoLoadStart(connection);
-        }, this.#timeouts.loadStartMs);
-      }
     }
     await connection.settled;
   }
@@ -422,16 +458,10 @@ class Session implements DeviceSession {
       model,
       info: readModelInfo(model, controller),
       deviceName: device.productName || model.displayName,
-      phase: 'connecting',
+      phase: { kind: 'connecting', loadStarted: false },
       opening: true,
       reloading: false,
-      reloadRequests: new Set(),
       loads: 0,
-      loadStarted: false,
-      watchdog: null,
-      readyState: null,
-      debug: null,
-      saving: null,
       waiters: new Set(),
       unsubscribers: [],
       settled,
@@ -492,21 +522,23 @@ class Session implements DeviceSession {
     if (!connection) return;
     this.#connection = null;
     for (const unsubscribe of connection.unsubscribers.splice(0)) unsubscribe();
-    this.#clearWatchdog(connection);
-    this.#stopDebugLoop(connection);
+    const { phase } = connection;
+    if (phase.kind === 'loading') this.#clearWatchdog(phase);
+    if (phase.kind === 'ready') this.#stopDebugLoop(phase);
     if (!connection.opening) connection.controller.disconnect();
     connection.settle();
     this.#notify(connection);
   }
 
-  #clearWatchdog(connection: Connection): void {
-    if (connection.watchdog !== null) clearTimeout(connection.watchdog);
-    connection.watchdog = null;
+  #clearWatchdog(phase: LoadingPhase): void {
+    if (phase.watchdog !== null) clearTimeout(phase.watchdog);
+    phase.watchdog = null;
   }
 
   #onNoLoadStart(connection: Connection): void {
-    connection.watchdog = null;
-    if (!this.#isCurrent(connection) || connection.loadStarted) return;
+    const { phase } = connection;
+    if (!this.#isCurrent(connection) || phase.kind !== 'loading') return;
+    phase.watchdog = null;
     const { major, minor, patch, info } = connection.controller.get_firmware_version();
     const answered = major !== 0 || minor !== 0 || patch !== 0 || info !== '';
     this.#fail(
@@ -517,8 +549,9 @@ class Session implements DeviceSession {
   }
 
   #onLoadStart(connection: Connection): void {
-    connection.loadStarted = true;
-    this.#clearWatchdog(connection);
+    const { phase } = connection;
+    if (phase.kind === 'connecting') phase.loadStarted = true;
+    if (phase.kind === 'loading') this.#clearWatchdog(phase);
     connection.reloading = true;
     this.#syncReloading(connection);
     this.#notify(connection);
@@ -540,15 +573,29 @@ class Session implements DeviceSession {
       return;
     }
     connection.loads += 1;
-    connection.phase = 'ready';
-    connection.readyState ??= deepFreeze({
-      status: 'ready',
-      model: connection.info,
-      deviceName: connection.deviceName,
-    });
-    this.#patch({ connection: connection.readyState, config, ...snapshot });
+    const ready =
+      connection.phase.kind === 'ready' ? connection.phase : this.#enterReady(connection);
+    this.#patch({ connection: ready.state, config, ...snapshot });
     connection.settle();
     this.#notify(connection);
+  }
+
+  /** Moves to the ready phase after the first complete load. */
+  #enterReady(connection: Connection): ReadyPhase {
+    if (connection.phase.kind === 'loading') this.#clearWatchdog(connection.phase);
+    const ready: ReadyPhase = {
+      kind: 'ready',
+      state: deepFreeze({
+        status: 'ready',
+        model: connection.info,
+        deviceName: connection.deviceName,
+      }),
+      reloadRequests: new Set(),
+      debug: null,
+      saving: null,
+    };
+    connection.phase = ready;
+    return ready;
   }
 
   #onLoadEnd(connection: Connection): void {
@@ -567,7 +614,8 @@ class Session implements DeviceSession {
    * reaches it: the previous key, or a rotation through every key when its window is empty.
    */
   #onDebugData(connection: Connection, tick: number, updatedKeys: readonly number[]): void {
-    const keyId = connection.debug?.keyId;
+    const { phase } = connection;
+    const keyId = phase.kind === 'ready' ? phase.debug?.keyId : undefined;
     if (keyId === undefined || !updatedKeys.includes(keyId)) return;
     const key = connection.controller.get_advanced_keys()[keyId];
     if (!key) return;
@@ -594,7 +642,9 @@ class Session implements DeviceSession {
   }
 
   #syncReloading(connection: Connection): void {
-    const reloading = connection.reloading || connection.reloadRequests.size > 0;
+    const { phase } = connection;
+    const reloading =
+      connection.reloading || (phase.kind === 'ready' && phase.reloadRequests.size > 0);
     if (this.#store.getState().reloading !== reloading) this.#patch({ reloading });
   }
 
@@ -642,23 +692,24 @@ class Session implements DeviceSession {
   // Commands
 
   /** The ready connection, or null (recorded in `lastError`). */
-  #ready(operation: string): Connection | null {
+  #ready(operation: string): Ready | null {
     const connection = this.#connection;
-    if (connection?.phase === 'ready') return connection;
+    if (connection?.phase.kind === 'ready') return { connection, phase: connection.phase };
     this.#reject(operation, COMMAND_ERRORS.notConnected);
     return null;
   }
 
   /** The ready connection and its snapshot when edits are allowed (not during reloads). */
   #editable(operation: string): { connection: Connection; config: DeviceConfig } | null {
-    const connection = this.#ready(operation);
-    if (!connection) return null;
+    const ready = this.#ready(operation);
+    if (!ready) return null;
+    const { connection, phase } = ready;
     const { config } = this.#store.getState();
     if (!config) {
       this.#reject(operation, COMMAND_ERRORS.notConnected);
       return null;
     }
-    if (connection.reloading || connection.reloadRequests.size > 0) {
+    if (connection.reloading || phase.reloadRequests.size > 0) {
       this.#reject(operation, COMMAND_ERRORS.reloading);
       return null;
     }
@@ -873,20 +924,21 @@ class Session implements DeviceSession {
   }
 
   save(): Promise<void> {
-    const connection = this.#ready('save');
-    if (!connection) return Promise.resolve();
-    if (connection.saving) return connection.saving;
-    const saving = this.#save(connection).finally(() => {
-      connection.saving = null;
+    const ready = this.#ready('save');
+    if (!ready) return Promise.resolve();
+    const { phase } = ready;
+    if (phase.saving) return phase.saving;
+    const saving = this.#save(ready).finally(() => {
+      phase.saving = null;
     });
-    connection.saving = saving;
+    phase.saving = saving;
     return saving;
   }
 
-  async #save(connection: Connection): Promise<void> {
+  async #save({ connection, phase }: Ready): Promise<void> {
     this.#patch({ saving: true });
     try {
-      await this.#whenIdle(connection);
+      await this.#whenIdle(connection, phase);
       if (!this.#isCurrent(connection)) return;
       const { config } = this.#store.getState();
       if (!config) return;
@@ -902,7 +954,7 @@ class Session implements DeviceSession {
       if (!this.#isCurrent(connection)) return;
       connection.controller.flash();
       // save() rewrote the keyboard config bits from the load; keep debugging if it is running.
-      if (connection.debug) connection.controller.start_debug();
+      if (phase.debug) connection.controller.start_debug();
     } catch (error) {
       if (this.#isCurrent(connection)) this.#recordError('save', error);
     } finally {
@@ -911,31 +963,31 @@ class Session implements DeviceSession {
   }
 
   async switchProfile(index: number): Promise<void> {
-    const connection = this.#ready('switchProfile');
-    if (!connection) return;
+    const ready = this.#ready('switchProfile');
+    if (!ready) return;
     const profileCount = this.#store.getState().config?.profileCount ?? 0;
     if (!Number.isInteger(index) || index < 0 || index >= profileCount) {
       this.#reject('switchProfile', COMMAND_ERRORS.noSuchProfile(index));
       return;
     }
-    await this.#expectReload(connection, 'switchProfile', () =>
-      connection.controller.set_profile_index(index)
-    );
+    const { controller } = ready.connection;
+    await this.#expectReload(ready, 'switchProfile', () => controller.set_profile_index(index));
   }
 
   systemReset(): void {
-    this.#ready('systemReset')?.controller.system_reset();
+    this.#ready('systemReset')?.connection.controller.system_reset();
   }
 
   enterBootloader(): void {
-    this.#ready('enterBootloader')?.controller.enter_bootloader();
+    this.#ready('enterBootloader')?.connection.controller.enter_bootloader();
   }
 
   factoryReset(): void {
-    const connection = this.#ready('factoryReset');
-    if (!connection) return;
-    void this.#expectReload(connection, 'factoryReset', () => {
-      connection.controller.factory_reset();
+    const ready = this.#ready('factoryReset');
+    if (!ready) return;
+    const { controller } = ready.connection;
+    void this.#expectReload(ready, 'factoryReset', () => {
+      controller.factory_reset();
     });
   }
 
@@ -947,15 +999,15 @@ class Session implements DeviceSession {
    * wait for each other.
    */
   async #expectReload(
-    connection: Connection,
+    { connection, phase }: Ready,
     operation: string,
     request: () => void | Promise<void>
   ): Promise<void> {
     const pending: ReloadRequest = { sent: false };
-    connection.reloadRequests.add(pending);
+    phase.reloadRequests.add(pending);
     this.#syncReloading(connection);
     try {
-      while (connection.saving && this.#isCurrent(connection)) await connection.saving;
+      while (phase.saving && this.#isCurrent(connection)) await phase.saving;
       if (!this.#isCurrent(connection)) return;
       pending.sent = true;
       const since = connection.loads;
@@ -967,7 +1019,7 @@ class Session implements DeviceSession {
     } catch (error) {
       if (this.#isCurrent(connection)) this.#recordError(operation, error);
     } finally {
-      connection.reloadRequests.delete(pending);
+      phase.reloadRequests.delete(pending);
       if (this.#isCurrent(connection)) {
         this.#syncReloading(connection);
         // A save may be waiting for this request (see #whenIdle).
@@ -1005,12 +1057,12 @@ class Session implements DeviceSession {
   }
 
   /** Resolves once no reload runs or is expected from a sent request (or the connection ended). */
-  #whenIdle(connection: Connection): Promise<void> {
+  #whenIdle(connection: Connection, phase: ReadyPhase): Promise<void> {
     return new Promise(resolve => {
       const check = () => {
         if (
           !this.#isCurrent(connection) ||
-          (!connection.reloading && ![...connection.reloadRequests].some(({ sent }) => sent))
+          (!connection.reloading && ![...phase.reloadRequests].some(({ sent }) => sent))
         ) {
           connection.waiters.delete(check);
           resolve();
@@ -1025,39 +1077,40 @@ class Session implements DeviceSession {
   // Debug (D16)
 
   startDebug(keyId: number): void {
-    const connection = this.#ready('startDebug');
-    if (!connection) return;
+    const ready = this.#ready('startDebug');
+    if (!ready) return;
+    const { connection, phase } = ready;
     const keyCount = this.#store.getState().config?.advancedKeys.length ?? 0;
     if (!Number.isInteger(keyId) || keyId < 0 || keyId >= keyCount) {
       this.#reject('startDebug', COMMAND_ERRORS.noSuchKey(keyId));
       return;
     }
-    const running = connection.debug;
+    const running = phase.debug;
     if (running) {
       running.keyId = keyId;
       running.wake?.();
       return;
     }
     const loop: DebugLoop = { keyId, wake: null };
-    connection.debug = loop;
+    phase.debug = loop;
     // libamp only streams while its debug config bit is set, and keeps its debug window while it
     // is not, so subscribe first (the controller sends in call order), then switch streaming on.
     const subscribed = connection.controller.request_debug_at([keyId]);
     connection.controller.start_debug();
-    void this.#runDebugLoop(connection, loop, subscribed);
+    void this.#runDebugLoop(ready, loop, subscribed);
   }
 
   stopDebug(): void {
     const connection = this.#connection;
-    if (!connection?.debug) return;
-    this.#stopDebugLoop(connection);
+    if (connection?.phase.kind !== 'ready' || !connection.phase.debug) return;
+    this.#stopDebugLoop(connection.phase);
     connection.controller.stop_debug();
   }
 
-  #stopDebugLoop(connection: Connection): void {
-    const loop = connection.debug;
+  #stopDebugLoop(phase: ReadyPhase): void {
+    const loop = phase.debug;
     if (!loop) return;
-    connection.debug = null;
+    phase.debug = null;
     loop.wake?.();
   }
 
@@ -1067,7 +1120,7 @@ class Session implements DeviceSession {
    * controller skips requests meanwhile). A new key is subscribed at once.
    */
   async #runDebugLoop(
-    connection: Connection,
+    { connection, phase }: Ready,
     loop: DebugLoop,
     firstRequest: Promise<void>
   ): Promise<void> {
@@ -1079,9 +1132,9 @@ class Session implements DeviceSession {
       } catch (error) {
         console.warn('[device] debug request failed', error);
       }
-      if (connection.debug !== loop || !this.#isCurrent(connection)) return;
+      if (phase.debug !== loop || !this.#isCurrent(connection)) return;
       if (loop.keyId === keyId) await this.#debugPause(loop);
-      if (connection.debug !== loop || !this.#isCurrent(connection)) return;
+      if (phase.debug !== loop || !this.#isCurrent(connection)) return;
       keyId = loop.keyId;
       request = connection.controller.request_debug_at([keyId]);
     }
