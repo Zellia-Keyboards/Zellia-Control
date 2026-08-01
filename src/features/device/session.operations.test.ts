@@ -497,8 +497,11 @@ describe('debug tracking (D16)', () => {
       expect(samples.length).toBeGreaterThanOrEqual(3);
     });
 
-    expect(operations(h)[0]).toBe(OPERATION_KEYCODES.debugOn);
-    expect(debugRequests(h)[0]).toEqual([5]);
+    // The key is subscribed before streaming is switched on (libamp keeps the window meanwhile).
+    const debugOn = h.packets().findIndex(packet => packet.op === 'event');
+    expect(h.packets()[0]).toMatchObject({ op: 'debug', keyIds: [5] });
+    expect(h.packets()[debugOn]).toMatchObject({ keycode: OPERATION_KEYCODES.debugOn });
+    expect(debugOn).toBeGreaterThan(0);
     expect(samples.every(sample => sample.keyId === 5)).toBe(true);
     const reports = h.vk.inputReports.map(decodeDeviceReport);
     const last = reports.findLast(report => report.kind === 'debug');
@@ -525,10 +528,13 @@ describe('debug tracking (D16)', () => {
     await vi.waitFor(() => {
       expect(debugRequests(h).length).toBeGreaterThanOrEqual(3);
     });
+    const switchedAt = samples.length;
     h.session.startDebug(7);
     await vi.waitFor(() => {
       expect(samples.some(sample => sample.keyId === 7)).toBe(true);
     });
+    // Samples of the previous key still in flight are not published as the new key's.
+    expect(samples.slice(switchedAt).every(sample => sample.keyId === 7)).toBe(true);
     expect(debugRequests(h)[debugRequests(h).length - 1]).toEqual([7]);
     expect(operations(h).filter(keycode => keycode === OPERATION_KEYCODES.debugOn)).toHaveLength(1);
 
@@ -542,6 +548,31 @@ describe('debug tracking (D16)', () => {
     await new Promise(resolve => setTimeout(resolve, 60));
     expect(samples).toHaveLength(sampleCount);
     expect(debugRequests(h)).toHaveLength(requestCount);
+  });
+
+  it('publishes the tracked key only, also while the keyboard streams every key', async () => {
+    const h = await connected({
+      keyboard: { debugIntervalMs: 2 },
+      // Left streaming (e.g. by another tool): with an empty window libamp rotates through the keys.
+      prepare: vk => {
+        vk.state.config[0] = true;
+      },
+    });
+    const samples: DebugSample[] = [];
+    h.debug.subscribe(sample => {
+      samples.push(sample);
+    });
+    await vi.waitFor(() => {
+      const reports = h.vk.inputReports.map(decodeDeviceReport);
+      expect(reports.filter(report => report.kind === 'debug').length).toBeGreaterThan(5);
+    });
+    expect(samples).toEqual([]);
+
+    h.session.startDebug(5);
+    await vi.waitFor(() => {
+      expect(samples.length).toBeGreaterThanOrEqual(3);
+    });
+    expect(samples.every(sample => sample.keyId === 5)).toBe(true);
   });
 
   it('asks the keyboard to stop streaming on disconnect()', async () => {

@@ -1,7 +1,7 @@
 /**
- * Debug samples (spec §5.4, D16). DeviceSession forwards every `updateDebugData` here instead of
- * into the store, so the debug chart can append points imperatively without a React render per
- * sample.
+ * Debug samples (spec §5.4, D16). DeviceSession forwards the tracked key's samples from
+ * `updateDebugData` here instead of into the store, so the debug chart can append points
+ * imperatively without a React render per sample.
  */
 
 export interface DebugSample {

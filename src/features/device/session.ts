@@ -158,7 +158,10 @@ export interface DeviceSession {
   systemReset(): void;
   enterBootloader(): void;
   factoryReset(): void;
-  /** Streams debug samples of `keyId` into the debug stream until `stopDebug()` (D16). */
+  /**
+   * Streams debug samples of `keyId` into the debug stream until `stopDebug()` (D16); a call
+   * while streaming switches to the new key. Samples of other keys are never published.
+   */
   startDebug(keyId: number): void;
   stopDebug(): void;
   /** The model's DFU bootloader; uses the last connected model after a disconnect. */
@@ -559,21 +562,24 @@ class Session implements DeviceSession {
     this.#fail(CONNECTION_ERRORS.loadFailed(messageOf(error, 'unknown error')));
   }
 
+  /**
+   * Publishes the tracked key's sample. libamp may stream other keys until the subscription
+   * reaches it: the previous key, or a rotation through every key when its window is empty.
+   */
   #onDebugData(connection: Connection, tick: number, updatedKeys: readonly number[]): void {
-    const keys = connection.controller.get_advanced_keys();
-    for (const keyId of updatedKeys) {
-      const key = keys[keyId];
-      if (!key) continue;
-      this.#debugStream.publish({
-        tick,
-        keyId,
-        value: clampFraction(key.value),
-        raw: key.raw,
-        filteredRaw: key.filtered_raw,
-        state: key.state,
-        reportState: key.report_state,
-      });
-    }
+    const keyId = connection.debug?.keyId;
+    if (keyId === undefined || !updatedKeys.includes(keyId)) return;
+    const key = connection.controller.get_advanced_keys()[keyId];
+    if (!key) return;
+    this.#debugStream.publish({
+      tick,
+      keyId,
+      value: clampFraction(key.value),
+      raw: key.raw,
+      filteredRaw: key.filtered_raw,
+      state: key.state,
+      reportState: key.report_state,
+    });
   }
 
   // -------------------------------------------------------------------------------------------
@@ -1034,9 +1040,11 @@ class Session implements DeviceSession {
     }
     const loop: DebugLoop = { keyId, wake: null };
     connection.debug = loop;
-    // libamp only streams debug packets while its debug config bit is set.
+    // libamp only streams while its debug config bit is set, and keeps its debug window while it
+    // is not, so subscribe first (the controller sends in call order), then switch streaming on.
+    const subscribed = connection.controller.request_debug_at([keyId]);
     connection.controller.start_debug();
-    void this.#runDebugLoop(connection, loop);
+    void this.#runDebugLoop(connection, loop, subscribed);
   }
 
   stopDebug(): void {
@@ -1054,29 +1062,42 @@ class Session implements DeviceSession {
   }
 
   /**
-   * Keeps the keyboard's debug window subscribed to the tracked key: libamp streams the window
-   * continuously; re-subscribing recovers after reloads (the controller skips requests meanwhile).
+   * Keeps the keyboard's debug window subscribed to the tracked key, starting from the first
+   * request: libamp streams the window continuously; re-subscribing recovers after reloads (the
+   * controller skips requests meanwhile). A new key is subscribed at once.
    */
-  async #runDebugLoop(connection: Connection, loop: DebugLoop): Promise<void> {
-    while (connection.debug === loop && this.#isCurrent(connection)) {
-      const keyId = loop.keyId;
+  async #runDebugLoop(
+    connection: Connection,
+    loop: DebugLoop,
+    firstRequest: Promise<void>
+  ): Promise<void> {
+    let keyId = loop.keyId;
+    let request = firstRequest;
+    for (;;) {
       try {
-        await connection.controller.request_debug_at([keyId]);
+        await request;
       } catch (error) {
         console.warn('[device] debug request failed', error);
       }
-      if (connection.debug !== loop) return;
-      if (loop.keyId !== keyId) continue;
-      await new Promise<void>(resolve => {
-        const timer = setTimeout(done, this.#timeouts.debugPollMs);
-        function done() {
-          clearTimeout(timer);
-          loop.wake = null;
-          resolve();
-        }
-        loop.wake = done;
-      });
+      if (connection.debug !== loop || !this.#isCurrent(connection)) return;
+      if (loop.keyId === keyId) await this.#debugPause(loop);
+      if (connection.debug !== loop || !this.#isCurrent(connection)) return;
+      keyId = loop.keyId;
+      request = connection.controller.request_debug_at([keyId]);
     }
+  }
+
+  /** Waits `debugPollMs`, or until `loop.wake()` (a new key, or the loop stopping). */
+  #debugPause(loop: DebugLoop): Promise<void> {
+    return new Promise(resolve => {
+      const timer = setTimeout(done, this.#timeouts.debugPollMs);
+      function done() {
+        clearTimeout(timer);
+        loop.wake = null;
+        resolve();
+      }
+      loop.wake = done;
+    });
   }
 
   detectBootloader(silent: boolean): Promise<USBDevice[]> {
