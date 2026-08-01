@@ -9,6 +9,8 @@ import {
   createFactoryProfile,
   decodeDeviceReport,
   dynamicKeyKeycode,
+  fractionToRaw,
+  rawToFraction,
   unreachableDynamicKeySlots,
   type HostPacket,
 } from '../../testing/virtual-keyboard';
@@ -75,6 +77,13 @@ function runLengths(values: readonly string[]): string[] {
     else runs.push({ value, count: 1 });
   }
   return runs.map(({ value, count }) => (count === 1 ? value : `${value} ×${count}`));
+}
+
+/** Index of the keyboard-operation event `keycode` on the wire, and the SET packets after it. */
+function setsAfterEvent(h: SessionHarness, keycode: number) {
+  const packets = h.packets();
+  const at = packets.findIndex(packet => packet.op === 'event' && packet.keycode === keycode);
+  return { at, sets: packets.slice(at + 1).filter(packet => packet.op === 'set') };
 }
 
 function packetKinds(h: SessionHarness): string[] {
@@ -261,6 +270,68 @@ describe('profiles (D7)', () => {
     expect(h.vk.state.profileIndex).toBe(2);
   });
 
+  it('lets an in-flight save finish before switching, so no save packet reaches the new profile', async () => {
+    const h = await connected({ keyboard: { latencyMs: 1 } });
+    const profile1 = structuredClone(h.vk.state.profiles[1]);
+    const key = configOf(h).advancedKeys[14];
+    if (!key || !profile1) throw new Error('Missing fixture data');
+    h.session.setAdvancedKeys([14], { ...key, activation: 0.9 });
+    await vi.waitFor(() => {
+      expect(h.vk.state.active.advancedKeys[14]?.activation).toBe(fractionToRaw(0.9));
+    });
+    h.vk.clearHistory();
+
+    const saving = h.session.save();
+    await new Promise(resolve => setTimeout(resolve, 20));
+    expect(h.state().saving).toBe(true);
+    const switching = h.session.switchProfile(1);
+    expect(h.state().reloading).toBe(true);
+    h.session.setKeycodes(0, [1], Keycode.A);
+    expect(h.state().lastError).toEqual({
+      operation: 'setKeycodes',
+      message: COMMAND_ERRORS.reloading,
+    });
+
+    await Promise.all([saving, switching]);
+    const flashAt = setsAfterEvent(h, OPERATION_KEYCODES.save).at;
+    const { at, sets } = setsAfterEvent(h, OPERATION_KEYCODES.profile(1));
+    expect(flashAt).toBeGreaterThanOrEqual(0);
+    expect(at).toBeGreaterThan(flashAt);
+    expect(sets).toEqual([]);
+    // The save completed (not cancelled) into profile 0; profile 1 loaded exactly as stored.
+    expect(h.state()).toMatchObject({
+      saving: false,
+      reloading: false,
+      lastError: { operation: 'setKeycodes' },
+      config: { profileIndex: 1 },
+    });
+    expect(h.vk.state.profiles[0]?.advancedKeys[14]?.activation).toBe(fractionToRaw(0.9));
+    expect(h.vk.state.profiles[1]).toEqual(profile1);
+    expect(h.vk.state.active).toEqual(profile1);
+    expect(configOf(h).advancedKeys[14]?.activation).toBe(
+      rawToFraction(profile1.advancedKeys[14]?.activation ?? -1)
+    );
+  });
+
+  it('saves, then switches, when a switch is requested while a save waits for a reload', async () => {
+    const h = await connected();
+    h.vk.notifyConfigChanged();
+    await waitForState(h.store, state => state.reloading);
+    const saving = h.session.save();
+    const switching = h.session.switchProfile(1);
+
+    await Promise.all([saving, switching]);
+    expect(h.state()).toMatchObject({
+      saving: false,
+      reloading: false,
+      lastError: null,
+      config: { profileIndex: 1 },
+    });
+    const flashAt = setsAfterEvent(h, OPERATION_KEYCODES.save).at;
+    expect(flashAt).toBeGreaterThanOrEqual(0);
+    expect(setsAfterEvent(h, OPERATION_KEYCODES.profile(1)).at).toBeGreaterThan(flashAt);
+  });
+
   it('rejects profiles the keyboard does not have', async () => {
     const h = await connected();
     for (const index of [4, -1, 1.5]) {
@@ -373,6 +444,23 @@ describe('keyboard operations', () => {
       factory.rgbKeys.map(key => key.color)
     );
     expect(state.lastError).toBeNull();
+  });
+
+  it('lets an in-flight save finish before a factory reset', async () => {
+    const h = await connected({ keyboard: { latencyMs: 1 } });
+    const saving = h.session.save();
+    await new Promise(resolve => setTimeout(resolve, 20));
+    h.session.factoryReset();
+    expect(h.state().reloading).toBe(true);
+    await saving;
+    const state = await waitForState(h.store, current => !current.reloading);
+
+    expect(operations(h)).toEqual([OPERATION_KEYCODES.save, OPERATION_KEYCODES.factoryReset]);
+    expect(setsAfterEvent(h, OPERATION_KEYCODES.factoryReset).sets).toEqual([]);
+    expect(state.lastError).toBeNull();
+    const factory = createFactoryProfile(h.vk.state.model);
+    expect(h.vk.state.active).toEqual(factory);
+    expect(state.config?.keymap).toEqual(factory.keymap);
   });
 
   it('enters the bootloader; its DFU device is found after the HID device left (D3)', async () => {

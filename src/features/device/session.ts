@@ -245,6 +245,12 @@ function withLiveReadings(
 
 type LoadOutcome = 'loaded' | 'closed' | 'timeout';
 
+/** A profile switch or factory reset, from the call until the reload it triggers has finished. */
+interface ReloadRequest {
+  /** Sent to the keyboard (it waits for an in-flight save first). */
+  sent: boolean;
+}
+
 interface DebugLoop {
   keyId: number;
   /** Ends the loop's current pause early. */
@@ -261,8 +267,8 @@ interface Connection {
   opening: boolean;
   /** `updateDataStart` … `updateDataEnd`. */
   reloading: boolean;
-  /** Requests (profile switch, factory reset) still waiting for the reload they trigger. */
-  expectedReloads: number;
+  /** Edits are rejected while any request is pending; a save waits only for sent ones. */
+  readonly reloadRequests: Set<ReloadRequest>;
   /** Completed loads, to tell which load answered a request. */
   loads: number;
   loadStarted: boolean;
@@ -416,7 +422,7 @@ class Session implements DeviceSession {
       phase: 'connecting',
       opening: true,
       reloading: false,
-      expectedReloads: 0,
+      reloadRequests: new Set(),
       loads: 0,
       loadStarted: false,
       watchdog: null,
@@ -582,7 +588,7 @@ class Session implements DeviceSession {
   }
 
   #syncReloading(connection: Connection): void {
-    const reloading = connection.reloading || connection.expectedReloads > 0;
+    const reloading = connection.reloading || connection.reloadRequests.size > 0;
     if (this.#store.getState().reloading !== reloading) this.#patch({ reloading });
   }
 
@@ -646,7 +652,7 @@ class Session implements DeviceSession {
       this.#reject(operation, COMMAND_ERRORS.notConnected);
       return null;
     }
-    if (connection.reloading || connection.expectedReloads > 0) {
+    if (connection.reloading || connection.reloadRequests.size > 0) {
       this.#reject(operation, COMMAND_ERRORS.reloading);
       return null;
     }
@@ -927,16 +933,26 @@ class Session implements DeviceSession {
     });
   }
 
-  /** Runs a request that makes the keyboard reload and waits for that reload to finish. */
+  /**
+   * Runs a request that makes the keyboard reload and waits for that reload to finish. Edits are
+   * rejected from the call on. An in-flight save finishes first: the firmware restores the new
+   * profile into RAM at once, and the rest of the save would overwrite it before the host sees
+   * the change. A save waiting for reloads (#whenIdle) ignores unsent requests, so the two never
+   * wait for each other.
+   */
   async #expectReload(
     connection: Connection,
     operation: string,
     request: () => void | Promise<void>
   ): Promise<void> {
-    connection.expectedReloads += 1;
+    const pending: ReloadRequest = { sent: false };
+    connection.reloadRequests.add(pending);
     this.#syncReloading(connection);
-    const since = connection.loads;
     try {
+      while (connection.saving && this.#isCurrent(connection)) await connection.saving;
+      if (!this.#isCurrent(connection)) return;
+      pending.sent = true;
+      const since = connection.loads;
       await request();
       if (!this.#isCurrent(connection)) return;
       if ((await this.#nextLoad(connection, since)) === 'timeout') {
@@ -945,7 +961,7 @@ class Session implements DeviceSession {
     } catch (error) {
       if (this.#isCurrent(connection)) this.#recordError(operation, error);
     } finally {
-      connection.expectedReloads -= 1;
+      connection.reloadRequests.delete(pending);
       if (this.#isCurrent(connection)) {
         this.#syncReloading(connection);
         // A save may be waiting for this request (see #whenIdle).
@@ -982,13 +998,13 @@ class Session implements DeviceSession {
     });
   }
 
-  /** Resolves once no reload runs or is expected (or the connection ended). */
+  /** Resolves once no reload runs or is expected from a sent request (or the connection ended). */
   #whenIdle(connection: Connection): Promise<void> {
     return new Promise(resolve => {
       const check = () => {
         if (
           !this.#isCurrent(connection) ||
-          (!connection.reloading && connection.expectedReloads === 0)
+          (!connection.reloading && ![...connection.reloadRequests].some(({ sent }) => sent))
         ) {
           connection.waiters.delete(check);
           resolve();
