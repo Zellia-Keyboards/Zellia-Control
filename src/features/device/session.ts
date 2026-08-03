@@ -153,10 +153,15 @@ export interface DeviceSession {
    */
   removeDynamicKey(slot: number): void;
   removeDynamicKeysOfKind(kind: Exclude<DynamicKeyKind, 'none'>): void;
-  /** 0-based. Resolves once the keyboard has reloaded that profile (or failed to). */
+  /**
+   * 0-based. Sent after an in-flight save finishes; resolves once the keyboard has reloaded that
+   * profile, or gave up (no reload within `loadStartMs`: `lastError`; a failed reload ends the
+   * connection). Edits are rejected from the call on.
+   */
   switchProfile(index: number): Promise<void>;
   systemReset(): void;
   enterBootloader(): void;
+  /** Like `switchProfile`: sent after an in-flight save, then the keyboard reloads its defaults. */
   factoryReset(): void;
   /**
    * Streams debug samples of `keyId` into the debug stream until `stopDebug()` (D16); a call
