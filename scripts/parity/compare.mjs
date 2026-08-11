@@ -1,10 +1,17 @@
 // Compares the parity captures of the Svelte baseline and the React app.
 //
-//   node scripts/parity/compare.mjs [--dir e2e/.artifacts/parity] [--threshold 0.1]
+//   node scripts/parity/compare.mjs [--dir e2e/.artifacts/parity] [--threshold <0..1>] [--ignore-aa]
 //
 // Reads <dir>/captures/{baseline,react}/<id>.png and the <id>.json records written by capture.ts,
 // runs pixelmatch per pair (the smaller image is padded, so size changes count as differences) and
 // writes <dir>/diff/<id>.png, <dir>/summary.json and the HTML report <dir>/index.html.
+//
+// The comparison is strict by default: every changed pixel counts, including pixels pixelmatch
+// classifies as anti-aliasing. Both apps are captured by the same browser with the same fonts, so
+// any difference is real (a neighbouring Tailwind shade is below pixelmatch's default threshold).
+// --threshold and --ignore-aa only exist for exploring a large diff; such a report is marked as
+// tolerant and is not a parity result.
+//
 // Exit code: 0 all identical, 1 differences or missing captures, 2 nothing to compare / bad input.
 
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
@@ -18,7 +25,6 @@ const { PNG } = pngjs;
 
 const repoRoot = fileURLToPath(new URL('../..', import.meta.url));
 export const PARITY_DIR = path.join(repoRoot, 'e2e/.artifacts/parity');
-export const DEFAULT_THRESHOLD = 0.1;
 const APPS = ['baseline', 'react'];
 const STATUS_ORDER = { missing: 0, different: 1, identical: 2 };
 
@@ -54,7 +60,7 @@ function onCanvas(image, width, height) {
   return canvas.data;
 }
 
-function comparePair(baselineFile, reactFile, diffFile, threshold) {
+function comparePair(baselineFile, reactFile, diffFile, { threshold, includeAA }) {
   const baseline = PNG.sync.read(readFileSync(baselineFile));
   const react = PNG.sync.read(readFileSync(reactFile));
   const width = Math.max(baseline.width, react.width);
@@ -66,7 +72,7 @@ function comparePair(baselineFile, reactFile, diffFile, threshold) {
     diff.data,
     width,
     height,
-    { threshold }
+    { threshold, includeAA }
   );
   writeFileSync(diffFile, PNG.sync.write(diff));
   return {
@@ -85,8 +91,11 @@ function describeBrowser(browser) {
   return `${browser.name} (${browser.channel}) ${browser.version}`;
 }
 
-/** Compares all captures in `dir` and writes the diff images, summary.json and index.html. */
-export function compareCaptures({ dir = PARITY_DIR, threshold = DEFAULT_THRESHOLD } = {}) {
+/**
+ * Compares all captures in `dir` and writes the diff images, summary.json and index.html.
+ * Strict unless told otherwise: `threshold` 0 (any colour change) and anti-aliased pixels counted.
+ */
+export function compareCaptures({ dir = PARITY_DIR, threshold = 0, includeAA = true } = {}) {
   const capturesDir = path.join(dir, 'captures');
   const ids = existsSync(capturesDir) ? captureIds(capturesDir) : [];
   if (ids.length === 0) {
@@ -127,12 +136,10 @@ export function compareCaptures({ dir = PARITY_DIR, threshold = DEFAULT_THRESHOL
         diff: null,
       };
     }
-    const comparison = comparePair(
-      images.baseline,
-      images.react,
-      path.join(diffDir, `${id}.png`),
-      threshold
-    );
+    const comparison = comparePair(images.baseline, images.react, path.join(diffDir, `${id}.png`), {
+      threshold,
+      includeAA,
+    });
     return {
       ...base,
       status: comparison.mismatchedPixels === 0 ? 'identical' : 'different',
@@ -152,6 +159,8 @@ export function compareCaptures({ dir = PARITY_DIR, threshold = DEFAULT_THRESHOL
   const summary = {
     generatedAt: new Date().toISOString(),
     threshold,
+    includeAA,
+    strict: threshold === 0 && includeAA,
     browsers: [...new Set(results.map(result => result.browser).filter(Boolean))].sort(),
     totals: {
       captures: results.length,
@@ -174,6 +183,18 @@ const escapeHtml = value =>
     .replaceAll('<', '&lt;')
     .replaceAll('>', '&gt;')
     .replaceAll('"', '&quot;');
+
+/** How the captures were compared; anything but the strict default is not a parity result. */
+function comparisonNote({ threshold, includeAA, strict }) {
+  if (strict) {
+    return 'strict comparison: every changed pixel counts (pixelmatch threshold 0, anti-aliased pixels included)';
+  }
+  const tolerances = [
+    threshold > 0 ? `pixelmatch threshold ${threshold}` : null,
+    includeAA ? null : 'anti-aliased pixels ignored',
+  ].filter(Boolean);
+  return `tolerant comparison (${tolerances.join(', ')}): not a parity result`;
+}
 
 function percent(ratio) {
   if (ratio === null) return '—';
@@ -234,12 +255,18 @@ function renderReport(summary) {
   tr.different .status { color: #b91c1c; }
   tr.missing .status, td.absent { color: #b45309; }
   .errors { margin: 6px 0 0; padding-left: 16px; color: #b91c1c; font-size: 12px; }
+  .tolerant { padding: 8px 12px; border: 2px solid #b45309; background: #fffbeb; }
 </style>
 </head>
 <body>
 <h1>Visual parity: Svelte baseline vs React</h1>
 <p>${totals.captures} captures · ${totals.identical} identical · ${totals.different} different · ${totals.missing} missing</p>
-<p><small>Generated ${escapeHtml(summary.generatedAt)} · pixelmatch threshold ${summary.threshold} · browser ${escapeHtml(summary.browsers.join(', ') || 'unknown')}</small></p>
+${
+  summary.strict
+    ? `<p><small>${escapeHtml(comparisonNote(summary))}</small></p>`
+    : `<p class="tolerant"><b>${escapeHtml(comparisonNote(summary))}.</b> Parity is only established by the strict default.</p>`
+}
+<p><small>Generated ${escapeHtml(summary.generatedAt)} · browser ${escapeHtml(summary.browsers.join(', ') || 'unknown')}</small></p>
 <p><small>Every difference must be fixed or recorded in docs/migration/parity-log.md.</small></p>
 <table>
 <thead><tr><th>Capture</th><th>Status</th><th>Mismatch</th><th>Baseline (Svelte)</th><th>React</th><th>Diff</th></tr></thead>
@@ -256,7 +283,8 @@ function main() {
   const { values } = parseArgs({
     options: {
       dir: { type: 'string', default: PARITY_DIR },
-      threshold: { type: 'string', default: String(DEFAULT_THRESHOLD) },
+      threshold: { type: 'string', default: '0' },
+      'ignore-aa': { type: 'boolean', default: false },
     },
   });
   const threshold = Number(values.threshold);
@@ -264,7 +292,7 @@ function main() {
     throw new UsageError(`--threshold must be between 0 and 1 (got ${values.threshold})`);
   }
   const dir = path.resolve(values.dir);
-  const summary = compareCaptures({ dir, threshold });
+  const summary = compareCaptures({ dir, threshold, includeAA: !values['ignore-aa'] });
   printSummary(summary, dir);
   return summary.totals.identical === summary.totals.captures ? 0 : 1;
 }
@@ -276,6 +304,7 @@ export function printSummary(summary, dir = PARITY_DIR) {
     `[parity:compare] ${totals.captures} captures: ${totals.identical} identical, ` +
       `${totals.different} different, ${totals.missing} missing`
   );
+  if (!summary.strict) console.log(`[parity:compare] ${comparisonNote(summary)}`);
   for (const result of summary.results.filter(result => result.status !== 'identical')) {
     console.log(
       `  ${result.status.padEnd(9)} ${percent(result.mismatchRatio).padStart(7)}  ${result.id}`

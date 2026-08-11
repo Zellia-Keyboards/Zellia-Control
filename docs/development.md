@@ -153,6 +153,16 @@ Output in `e2e/.artifacts/parity/`:
 - `captures/{baseline,react}/<id>.png`, `captures/<id>.json` and
   `diff/<id>.png`.
 
+The comparison is strict: every changed pixel counts, including pixels that
+pixelmatch classifies as anti-aliasing (pixelmatch threshold 0, `includeAA`).
+Both apps are captured with the same browser and fonts, so any difference is
+real; pixelmatch's default threshold would pass neighbouring Tailwind shades
+such as `gray-800` and `gray-700`. To explore a large diff, re-compare the last
+captures tolerantly, e.g.
+`corepack yarn parity:compare --threshold 0.1 --ignore-aa`. That report is
+marked as tolerant and is not a parity result; `corepack yarn parity` always
+compares strictly.
+
 `compare` exits 1 when any capture differs or is missing. A difference is either
 fixed or recorded in [docs/migration/parity-log.md](migration/parity-log.md).
 

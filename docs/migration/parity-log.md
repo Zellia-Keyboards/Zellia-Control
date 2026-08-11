@@ -51,5 +51,6 @@ they were built to show. Screenshots are added when the screen is ported.
 
 ## Known capture noise
 
-Differences that come from the capture itself rather than from the apps
-(for example anti-aliasing that pixelmatch does not classify). None so far.
+Differences that come from the capture itself rather than from the apps. The
+comparison counts every changed pixel, anti-aliasing included, so such noise
+would show up as a difference and must be explained here. None so far.
