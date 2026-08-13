@@ -7,6 +7,7 @@
 // controller, installs dependencies (yarn 1 via corepack, frozen lockfile), builds (SvelteKit
 // adapter-static → build/) and serves build/ like the production static host. It never commits in
 // the baseline checkout. Install and build are skipped while the stamp in build/ matches.
+// prepare-baseline.d.mts types the exports for TypeScript (tests).
 
 import { execFileSync, spawn } from 'node:child_process';
 import { createHash } from 'node:crypto';
@@ -23,8 +24,9 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 import { preview } from 'vite';
+import { staticHostPreview } from '../static-host.mjs';
 
-export const BASELINE_COMMIT = '4f232a2';
+const BASELINE_COMMIT = '4f232a2';
 export const BASELINE_PORT = 4180;
 
 const STAMP_VERSION = 1;
@@ -135,12 +137,17 @@ function readStamp(baselineDir) {
   }
 }
 
-function sameStamp(a, b) {
-  return a !== null && JSON.stringify(a) === JSON.stringify(b);
+/** Whether the stamp read from the baseline's build/ matches the one the current inputs produce. */
+export function isUpToDate(stamp, expected) {
+  return (
+    typeof stamp === 'object' &&
+    stamp !== null &&
+    Object.entries(expected).every(([key, value]) => stamp[key] === value)
+  );
 }
 
 /** Replaces the baseline's (outdated) src-controller with this repository's synced copy. */
-export function syncController(baselineDir) {
+function syncController(baselineDir) {
   const target = path.join(baselineDir, 'src-controller');
   rmSync(target, { recursive: true, force: true });
   cpSync(controllerSource, target, {
@@ -172,7 +179,7 @@ function run(command, args, cwd) {
 export async function prepareBaseline({ baselineDir = resolveBaselineDir(), force = false } = {}) {
   const buildDir = path.join(baselineDir, 'build');
   const stamp = expectedStamp(baselineDir);
-  if (!force && sameStamp(readStamp(baselineDir), stamp)) {
+  if (!force && isUpToDate(readStamp(baselineDir), stamp)) {
     log(`build is up to date (${buildDir})`);
     return buildDir;
   }
@@ -195,34 +202,10 @@ export async function prepareBaseline({ baselineDir = resolveBaselineDir(), forc
   return buildDir;
 }
 
-/** Redirects `/remap` to `/remap/` when `remap/index.html` exists, like common static hosts. */
-function directoryRedirect(buildDir) {
-  return {
-    name: 'parity:directory-redirect',
-    configurePreviewServer(server) {
-      server.middlewares.use((req, res, next) => {
-        const url = new URL(req.url ?? '/', 'http://localhost');
-        if (!url.pathname.endsWith('/') && path.extname(url.pathname) === '') {
-          let index = null;
-          try {
-            index = path.join(buildDir, decodeURIComponent(url.pathname), 'index.html');
-          } catch {
-            // Malformed URL: let the static server answer.
-          }
-          if (index?.startsWith(buildDir + path.sep) && existsSync(index)) {
-            res.statusCode = 301;
-            res.setHeader('Location', `${url.pathname}/${url.search}`);
-            res.end();
-            return;
-          }
-        }
-        next();
-      });
-    },
-  };
-}
-
-/** Serves the baseline build like the production static host (no SPA fallback). */
+/**
+ * Serves the baseline build like the production static host, with the same emulation as this
+ * app's `vite preview` (scripts/static-host.mjs). Port 0 picks a free port (see serverUrl).
+ */
 export async function serveBaseline({ buildDir, port = BASELINE_PORT }) {
   if (!statSync(buildDir, { throwIfNoEntry: false })?.isDirectory()) {
     throw new Error(`${buildDir} does not exist; prepare the baseline first`);
@@ -232,13 +215,21 @@ export async function serveBaseline({ buildDir, port = BASELINE_PORT }) {
     envDir: false,
     root: path.dirname(buildDir),
     logLevel: 'warn',
-    appType: 'mpa',
-    plugins: [directoryRedirect(buildDir)],
+    plugins: [staticHostPreview()],
     build: { outDir: path.basename(buildDir) },
     preview: { port, strictPort: true, host: 'localhost' },
   });
-  log(`serving ${buildDir} at http://localhost:${port}/`);
+  log(`serving ${buildDir} at ${serverUrl(server)}`);
   return server;
+}
+
+/** Root URL of a server started by serveBaseline (resolves port 0 to the port it got). */
+export function serverUrl(server) {
+  const address = server.httpServer.address();
+  if (address === null || typeof address === 'string') {
+    throw new Error('The baseline server is not listening on a TCP port');
+  }
+  return `http://localhost:${address.port}/`;
 }
 
 async function main() {
