@@ -67,6 +67,8 @@ async function main() {
   // A baseline already served (e.g. `corepack yarn parity:baseline`) serves the same build/.
   const server = (await isServing(baselineURL)) ? null : await serveBaseline({ buildDir });
   try {
+    // The parity-setup project empties it as well, but only when some capture matches the
+    // arguments; this way a run that captures nothing ends in "No captures", not in the last report.
     rmSync(path.join(PARITY_DIR, 'captures'), { recursive: true, force: true });
     const playwrightExit = await runPlaywright(options.playwright);
     const summary = compareCaptures({ dir: PARITY_DIR });

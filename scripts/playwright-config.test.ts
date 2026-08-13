@@ -68,4 +68,23 @@ describe('playwright.config.ts', () => {
     expect(result.code).not.toBe(0);
     expect(result.output).toContain(`http://localhost:${port} is already used`);
   });
+
+  it('starts every parity capture run, filtered or not, by removing earlier captures', async () => {
+    // `--list` resolves the run (projects, dependencies, --grep) without starting the server.
+    const result = await playwright(
+      ['--project=parity', '--list', '--grep', 'welcome--dark-en-1440x900'],
+      {}
+    );
+
+    expect(result.code, result.output).toBe(0);
+    const listed = result.output.split('\n').filter(line => line.includes(' › '));
+    expect(listed).toEqual([
+      expect.stringMatching(
+        /\[parity-setup\] › scripts\/parity\/reset-captures\.ts:\d+:\d+ › remove the captures of earlier runs$/
+      ),
+      expect.stringMatching(
+        /\[parity\] › scripts\/parity\/capture\.ts:\d+:\d+ › welcome--dark-en-1440x900$/
+      ),
+    ]);
+  });
 });

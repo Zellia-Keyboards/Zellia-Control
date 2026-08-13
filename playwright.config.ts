@@ -33,11 +33,18 @@ export default defineConfig({
       testMatch: '**/*.spec.ts',
     },
     {
+      // Empties the captures directory before every parity run (dependencies ignore --grep).
+      name: 'parity-setup',
+      testDir: './scripts/parity',
+      testMatch: 'reset-captures.ts',
+    },
+    {
       // Visual parity capture: the Svelte baseline and this app, driven by the same scenarios.
       // Run through `corepack yarn parity` (see docs/development.md).
       name: 'parity',
       testDir: './scripts/parity',
       testMatch: 'capture.ts',
+      dependencies: ['parity-setup'],
       fullyParallel: true,
       timeout: 120_000,
     },
