@@ -8,6 +8,8 @@ const repoRoot = fileURLToPath(new URL('..', import.meta.url));
 
 // A utility that only appears in this file (outside src/).
 const TOOLING_ONLY_CANDIDATE = 'underline-offset-[7.77px]';
+/** The selector Tailwind generates for it: `.underline-offset-\[7\.77px\]`. */
+const TOOLING_ONLY_SELECTOR = `.${TOOLING_ONLY_CANDIDATE.replace(/[[\].]/g, '\\$&')}`;
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null;
@@ -26,15 +28,25 @@ async function tailwindOptions(): Promise<{ base?: string }> {
   return base === undefined ? {} : { base };
 }
 
+/** The app stylesheet's Tailwind output for the given plugin options. */
+async function generate(options: { base?: string }): Promise<string> {
+  const result = await postcss([tailwind(options)]).process("@import 'tailwindcss';", {
+    from: path.join(repoRoot, 'src/styles/probe.css'),
+  });
+  return result.css;
+}
+
 describe('postcss.config.js', () => {
   it('generates utilities from app sources only', async () => {
-    const result = await postcss([tailwind(await tailwindOptions())]).process(
-      "@import 'tailwindcss';",
-      { from: path.join(repoRoot, 'src/styles/probe.css') }
-    );
+    const css = await generate(await tailwindOptions());
 
-    expect(result.css).toContain('.min-h-screen');
-    expect(TOOLING_ONLY_CANDIDATE).toContain('7.77px');
-    expect(result.css).not.toContain('7\\.77px');
+    expect(css).toContain('.min-h-screen');
+    expect(css).not.toContain(TOOLING_ONLY_SELECTOR);
+  });
+
+  it('would generate the probe utility if tooling files were scanned (control)', async () => {
+    const css = await generate({ base: path.join(repoRoot, 'scripts') });
+
+    expect(css).toContain(`${TOOLING_ONLY_SELECTOR} {`);
   });
 });
