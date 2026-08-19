@@ -161,8 +161,8 @@ Output in `e2e/.artifacts/parity/`:
 
 - `index.html`: report with baseline, React and diff side by side, worst first,
   including page errors seen during capture.
-- `summary.json`: totals and per-capture results (mismatched pixels, ratio,
-  size mismatch).
+- `summary.json`: comparison settings (`threshold`, `includeAA`, `strict`),
+  totals and per-capture results (mismatched pixels, ratio, size mismatch).
 - `captures/{baseline,react}/<id>.png`, `captures/<id>.json` and
   `diff/<id>.png`.
 
