@@ -48,7 +48,14 @@ export default tseslint.config(
   },
   {
     files: ['**/*.js', '**/*.mjs'],
+    ignores: ['public/**'],
     extends: [js.configs.recommended, tseslint.configs.disableTypeChecked],
     languageOptions: { globals: globals.node },
+  },
+  {
+    // Served verbatim; service-worker.js runs as a classic script in a ServiceWorkerGlobalScope.
+    files: ['public/**/*.js'],
+    extends: [js.configs.recommended, tseslint.configs.disableTypeChecked],
+    languageOptions: { sourceType: 'script', globals: globals.serviceworker },
   }
 );

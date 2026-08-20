@@ -15,7 +15,11 @@
     "format:check": "prettier --check .",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:e2e": "playwright test",
+    "test:e2e": "playwright test --project=e2e",
+    "parity": "node scripts/parity/run.mjs",
+    "parity:baseline": "node scripts/parity/prepare-baseline.mjs",
+    "parity:capture": "playwright test --project=parity",
+    "parity:compare": "node scripts/parity/compare.mjs",
     "validate": "yarn typecheck && yarn lint && yarn format:check && yarn test && yarn build"
   },
   "dependencies": {
