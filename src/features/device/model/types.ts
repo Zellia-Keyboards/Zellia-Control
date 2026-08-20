@@ -10,7 +10,6 @@
  */
 import type {
   CalibrationMode,
-  DynamicKeyMutexMode,
   KeyMode,
   RGBBaseMode,
   RGBMode,
@@ -137,11 +136,19 @@ export type DynamicKeySlot =
   | {
       readonly kind: 'mutex';
       readonly bindings: readonly [Keycode, Keycode];
-      readonly mode: DynamicKeyMutexMode;
+      readonly mode: MutexModeByte;
       readonly targets: readonly [KeyLocation | null, KeyLocation | null];
     };
 
 export type DynamicKeyKind = DynamicKeySlot['kind'];
+
+/**
+ * A mutex (null-bind) `mode` byte exactly as libamp stores it: the low nibble is the priority
+ * (`DynamicKeyMutexMode`), any high-nibble bit additionally reports both keys while both are
+ * bottomed out. Read and build it with `model/mutex-mode.ts` (`mutexPriority`,
+ * `mutexReportsBothOnBottomOut`, `mutexMode`).
+ */
+export type MutexModeByte = number;
 
 export interface DeviceConfig {
   readonly advancedKeys: readonly AdvancedKeyConfig[];
@@ -168,7 +175,7 @@ export type ConnectionState =
 export type ConnectionStatus = ConnectionState['status'];
 
 export interface DeviceError {
-  /** Command or phase that failed, e.g. `'save'`, `'setKeycodes'`, `'reload'`. */
+  /** Command that failed, e.g. `'save'`, `'setKeycodes'`, `'switchProfile'`. */
   readonly operation: string;
   readonly message: string;
 }
