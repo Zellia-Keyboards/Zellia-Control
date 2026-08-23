@@ -188,7 +188,7 @@ describe('setKeycodes', () => {
       'set dynamicKey 3 none',
     ]);
     expect(h.vk.state.active.dynamicKeys.slice(0, 4)).toEqual([
-      { type: 'mutex', bindings: [Keycode.D, Keycode.G], keyIds: [31, 33], mode: 1 },
+      { type: 'mutex', bindings: [Keycode.A, Keycode.D], keyIds: [31, 33], mode: 1 },
       expect.objectContaining({ type: 'modTap' }),
       expect.objectContaining({ type: 'toggle' }),
       { type: 'none' },
@@ -202,11 +202,11 @@ describe('setKeycodes', () => {
     h.session.setKeycodes(0, [33], Keycode.A);
     await settle();
     expect(wire(h)).toEqual([
-      'set keymap 0:31 [0x0007]',
+      'set keymap 0:31 [0x0004]',
       'set keymap 0:33 [0x0004]',
       'set dynamicKey 3 none',
     ]);
-    expect(h.vk.state.active.keymap[0]?.slice(31, 34)).toEqual([Keycode.D, dk(0), Keycode.A]);
+    expect(h.vk.state.active.keymap[0]?.slice(31, 34)).toEqual([Keycode.A, dk(0), Keycode.A]);
     expect(configOf(h).dynamicKeys[3]).toEqual({ kind: 'none' });
     expectAllDynamicKeysRun(h);
   });
@@ -428,7 +428,7 @@ describe('dynamic keys', () => {
     const modTap = h.session.applyDynamicKey({
       kind: 'modTap',
       target: { layer: 0, id: 30 },
-      tap: Keycode.S,
+      tap: Keycode.CapsLock,
       hold: KeyModifier.KeyLeftAlt << 8,
       durationMs: 300,
     });
@@ -460,7 +460,7 @@ describe('dynamic keys', () => {
     });
     expect(dynamicKeys[1]).toEqual({
       type: 'modTap',
-      bindings: [Keycode.S, KeyModifier.KeyLeftAlt << 8],
+      bindings: [Keycode.CapsLock, KeyModifier.KeyLeftAlt << 8],
       duration: 300,
       keyId: 30,
     });
@@ -537,18 +537,23 @@ describe('dynamic keys', () => {
     const h = await connected();
     const mutex = configOf(h).dynamicKeys[3];
     h.session.removeDynamicKey(1);
-    expect(configOf(h).keymap[0]?.[30]).toBe(Keycode.S);
+    expect(configOf(h).keymap[0]?.[30]).toBe(Keycode.CapsLock);
     // The mutex moves from slot 3 into the freed slot 1, so the keyboard keeps running it.
     expect(configOf(h).dynamicKeys[1]).toEqual(mutex);
     expect(configOf(h).dynamicKeys[3]).toEqual({ kind: 'none' });
     await settle();
     expect(wire(h)).toEqual([
       'set dynamicKey 1 mutex',
-      'set keymap 0:30 [0x0016 0x01a7]',
+      'set keymap 0:30 [0x0039 0x01a7]',
       'set keymap 0:33 [0x01a7]',
       'set dynamicKey 3 none',
     ]);
-    expect(h.vk.state.active.keymap[0]?.slice(30, 34)).toEqual([Keycode.S, dk(1), dk(0), dk(1)]);
+    expect(h.vk.state.active.keymap[0]?.slice(30, 34)).toEqual([
+      Keycode.CapsLock,
+      dk(1),
+      dk(0),
+      dk(1),
+    ]);
     expect(h.vk.state.active.dynamicKeys[1]).toMatchObject({ type: 'mutex', keyIds: [31, 33] });
     expect(h.vk.state.active.dynamicKeys[3]).toEqual({ type: 'none' });
     expectAllDynamicKeysRun(h);
@@ -602,8 +607,8 @@ describe('dynamic keys', () => {
     await settle();
     // Freed from the top down, so the slots in use stay contiguous after every packet.
     expect(wire(h)).toEqual([
-      'set keymap 0:31 [0x0007]',
-      'set keymap 0:33 [0x000a]',
+      'set keymap 0:31 [0x0004]',
+      'set keymap 0:33 [0x0007]',
       'set keymap 0:42 [0x001d 0x001b]',
       'set dynamicKey 4 none',
       'set dynamicKey 3 none',
@@ -630,9 +635,9 @@ describe('dynamic keys', () => {
     expect(h.vk.state.active.keymap[0]?.slice(30, 35)).toEqual([
       dk(1),
       dk(0),
-      Keycode.F,
+      Keycode.S,
       dk(0),
-      Keycode.H,
+      Keycode.F,
     ]);
     expectAllDynamicKeysRun(h);
   });

@@ -72,6 +72,11 @@ export interface VirtualModel {
   readonly bootloader: VirtualBootloader | null;
   /** Key ids (layer 0) of the seeded stroke, mod-tap, toggle and mutex (two keys) dynamic keys. */
   readonly seedKeyIds: readonly [number, number, number, number, number];
+  /**
+   * Firmware keymap order when the controller's default keymap does not follow its layout:
+   * entry `id` is the default-keymap index whose keycode layout key `id` gets (every layer).
+   */
+  readonly keymapSource?: readonly number[];
   readonly createController: () => ControllerDefaults;
 }
 
@@ -88,6 +93,25 @@ const STM32_DFU: VirtualBootloader = {
 };
 const FULL_SIZE_SEED_KEYS = [32, 30, 34, 31, 33] as const;
 
+/**
+ * Upstream's Starlight controller defaults to a 64-key keymap of another physical layout (arrow
+ * cluster, no split keys) while its layout JSON has 70 keys, and it only transfers those 64
+ * entries (src-controller/UPSTREAM.md). The firmware keymap follows the layout ids, so the
+ * simulator re-indexes the defaults onto ids 0–63; ids 64–69 are beyond what the controller reads.
+ */
+const STARLIGHT_KEYMAP_SOURCE: readonly number[] = [
+  // Escape … Backspace (0–13), split backspace halves (14, 15): Backspace, Delete.
+  0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 13, 54,
+  // Tab … Backslash (16–29).
+  14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27,
+  // Caps Lock … Enter (30–42).
+  28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40,
+  // Left Shift … Slash (43–53), right shift 2.75u (54), split right shift (55, 56): Shift, Up.
+  41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 52, 53,
+  // Bottom row (57–63): Ctrl, Gui, Alt, Space, Right Alt, MO(1), Left.
+  55, 56, 57, 58, 59, 60, 61,
+];
+
 export const VIRTUAL_MODELS: Readonly<Record<VirtualModelId, VirtualModel>> = {
   'zellia-starlight': {
     id: 'zellia-starlight',
@@ -97,6 +121,7 @@ export const VIRTUAL_MODELS: Readonly<Record<VirtualModelId, VirtualModel>> = {
     ...RAW_HID,
     bootloader: AT32_DFU,
     seedKeyIds: FULL_SIZE_SEED_KEYS,
+    keymapSource: STARLIGHT_KEYMAP_SOURCE,
     createController: () => new ZelliaStarlightController(),
   },
   'zellia-60': {
@@ -270,7 +295,13 @@ export function createFactoryProfile(model: VirtualModel): VirtualProfile {
   const defaults = model.createController();
   return {
     advancedKeys: defaults.get_advanced_keys().map(wireAdvancedKey),
-    keymap: defaults.get_keymap().map(layer => [...layer]),
+    keymap: defaults
+      .get_keymap()
+      .map(layer =>
+        model.keymapSource
+          ? model.keymapSource.map(source => layer[source] ?? Keycode.KeyTransparent)
+          : [...layer]
+      ),
     rgbBase: wireRgbBase(defaults.get_rgb_base_config()),
     rgbKeys: defaults.get_rgb_configs().map(wireRgbKey),
     dynamicKeys: defaults.get_dynamic_keys().map((): WireDynamicKey => ({ type: 'none' })),

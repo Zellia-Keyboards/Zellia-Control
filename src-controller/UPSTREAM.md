@@ -30,6 +30,15 @@ protocol is supported.
   for every model; remove it once upstream is fixed.
 - libamp's `QK_DEBUG_TOGGLE` alias sets keyboard-config action bits 3, which the firmware's
   operation handler ignores (FYI; the app encodes toggles with action 2).
+- `ZelliaStarlightController`'s default keymap has 64 entries per layer, written for another
+  physical layout (arrow cluster, no split keys), while `ADVANCED_KEY_NUM` and its layout JSON
+  have 70 keys. `read_keymap`/`write_keymap` transfer exactly `keymap[layer].length` entries, so
+  keys 64–69 (the default layout's last bottom-row key and the split/7u space bar variants) are
+  never read or written, and have no keycode in the app. The app does not pad the keymap: libamp's
+  keymap handler has no bounds check, so transferring more entries than the firmware's
+  `TOTAL_KEY_NUM` would read or corrupt unrelated firmware memory. Confirm the firmware key
+  count upstream, then fix the default keymap there. The virtual keyboard seeds the Starlight
+  keymap in layout order (`src/testing/virtual-keyboard/state.ts`), as the firmware stores it.
 
 ## Re-syncing
 

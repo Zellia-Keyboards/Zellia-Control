@@ -113,7 +113,7 @@ describe('connect', () => {
     expect(config?.dynamicKeys.slice(0, 4)).toEqual([
       {
         kind: 'stroke',
-        bindings: [Keycode.F, KeyModifier.KeyLeftShift << 8, 0, 0],
+        bindings: [Keycode.S, KeyModifier.KeyLeftShift << 8, 0, 0],
         keyControl: [0x3f, 0x04, 0, 0],
         distances: {
           pressBegin: distance(0.25),
@@ -125,15 +125,15 @@ describe('connect', () => {
       },
       {
         kind: 'modTap',
-        tap: Keycode.S,
+        tap: Keycode.CapsLock,
         hold: KeyModifier.KeyLeftCtrl << 8,
         durationMs: 200,
         target: { layer: 0, id: 30 },
       },
-      { kind: 'toggle', binding: Keycode.H, target: { layer: 0, id: 34 } },
+      { kind: 'toggle', binding: Keycode.F, target: { layer: 0, id: 34 } },
       {
         kind: 'mutex',
-        bindings: [Keycode.D, Keycode.G],
+        bindings: [Keycode.A, Keycode.D],
         mode: DynamicKeyMutexMode.DKMutexLastPriority,
         targets: [
           { layer: 0, id: 31 },

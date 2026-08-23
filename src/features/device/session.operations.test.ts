@@ -164,13 +164,13 @@ describe('save (D9)', () => {
   it('frees dynamic keys whose keys were remapped on the keyboard, so the save succeeds', async () => {
     const h = await connected({
       prepare: vk => {
-        vk.state.active.keymap[0]?.splice(34, 1, Keycode.H);
-        vk.state.active.keymap[0]?.splice(33, 1, Keycode.G);
+        vk.state.active.keymap[0]?.splice(34, 1, Keycode.F);
+        vk.state.active.keymap[0]?.splice(33, 1, Keycode.D);
       },
     });
     expect(configOf(h).dynamicKeys[2]).toEqual({
       kind: 'toggle',
-      binding: Keycode.H,
+      binding: Keycode.F,
       target: null,
     });
     expect(configOf(h).dynamicKeys[3]).toMatchObject({
@@ -182,11 +182,11 @@ describe('save (D9)', () => {
     expect(h.state().lastError).toBeNull();
     expect(configOf(h).dynamicKeys[2]).toEqual({ kind: 'none' });
     expect(configOf(h).dynamicKeys[3]).toEqual({ kind: 'none' });
-    expect(configOf(h).keymap[0]?.[31]).toBe(Keycode.D);
+    expect(configOf(h).keymap[0]?.[31]).toBe(Keycode.A);
     await settle();
     expect(h.vk.state.active.dynamicKeys[2]).toEqual({ type: 'none' });
     expect(h.vk.state.active.dynamicKeys[3]).toEqual({ type: 'none' });
-    expect(h.vk.state.active.keymap[0]?.[31]).toBe(Keycode.D);
+    expect(h.vk.state.active.keymap[0]?.[31]).toBe(Keycode.A);
     expect(h.vk.state.profiles[0]).toEqual(h.vk.state.active);
   });
 
@@ -195,7 +195,7 @@ describe('save (D9)', () => {
       prepare: vk => {
         // Slot 1 was freed by another tool: libamp stops at it and never runs slots 2 and 3.
         vk.state.active.dynamicKeys[1] = { type: 'none' };
-        vk.state.active.keymap[0]?.splice(30, 1, Keycode.S);
+        vk.state.active.keymap[0]?.splice(30, 1, Keycode.CapsLock);
       },
     });
     expect(unreachableDynamicKeySlots(h.vk.state.active)).toEqual([2, 3]);
