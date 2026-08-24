@@ -19,12 +19,6 @@ export type KeyLabels = readonly string[];
 
 const emptyLabels = (): string[] => Array.from({ length: KLE_LABEL_SLOTS }, () => '');
 
-/** The key's own layout labels, as exactly `KLE_LABEL_SLOTS` slots. */
-const layoutLabels = (key: LayoutKey): KeyLabels =>
-  key.labels.length === KLE_LABEL_SLOTS
-    ? key.labels
-    : Array.from({ length: KLE_LABEL_SLOTS }, (_, slot) => key.labels[slot] ?? '');
-
 /** Labels per key id; for duplicate ids the first key wins. */
 function labelsById(
   keys: readonly LayoutKey[],
@@ -94,7 +88,8 @@ export function performanceLabels(
 /**
  * Remap page: the keycode on layer `layerIndex` (0-based) — modifiers/category top-left and the
  * key name bottom-left; a dynamic key shows its kind (or its slot number when the slot does not
- * exist) with the slot number in slot 9. Keys without a keymap entry keep their layout labels.
+ * exist) with the slot number in slot 9. Keys without a keymap entry stay blank (Svelte showed
+ * their KLE legends, i.e. key ids and layout-group tags).
  */
 export function remapLabels(
   keys: readonly LayoutKey[],
@@ -105,8 +100,8 @@ export function remapLabels(
   const layer = keymap[layerIndex];
   return labelsById(keys, key => {
     const keycode = layer?.[key.id];
-    if (keycode === undefined) return layoutLabels(key);
     const labels = emptyLabels();
+    if (keycode === undefined) return labels;
     const description = describeKeycode(keycode);
     const slot = dynamicKeySlotOf(keycode);
     if (slot === null) {
