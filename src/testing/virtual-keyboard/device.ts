@@ -46,6 +46,7 @@ import {
   type VirtualScripts,
 } from './state';
 import { VirtualDfuDevice, VirtualUsb, type VirtualDfuOptions } from './dfu';
+import type { VirtualKeyboardHandle, VirtualPicker } from './handle';
 
 const KEYBOARD_OPERATION = 0xfe;
 const KEYBOARD_CONFIG_BASE = 0x20;
@@ -69,7 +70,7 @@ const Operation = {
   Profile3: 0x13,
 } as const;
 
-type Picker = 'first' | 'cancel';
+type Picker = VirtualPicker;
 
 class VirtualInputReportEvent extends Event implements HIDInputReportEvent {
   constructor(
@@ -383,7 +384,7 @@ export interface VirtualKeyboardOptions extends VirtualKeyboardStateOptions {
   firmwareAfterUpdate?: Partial<WireVersion>;
 }
 
-export interface VirtualKeyboard {
+export interface VirtualKeyboard extends VirtualKeyboardHandle {
   readonly device: VirtualHidDevice;
   readonly hid: VirtualHid;
   readonly usb: VirtualUsb;

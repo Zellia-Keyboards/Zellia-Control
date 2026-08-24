@@ -1,4 +1,5 @@
 import type { Page } from '@playwright/test';
+import type { VirtualKeyboardBrowserOptions } from '../../src/testing/virtual-keyboard/handle';
 
 /**
  * One screen state captured in both the Svelte baseline and the React app by the parity harness
@@ -16,8 +17,12 @@ export interface ParityScenario {
    * or copy matched in both languages.
    */
   readonly setup?: (page: Page) => Promise<void>;
-  /** Inject the virtual keyboard (navigator.hid) before the page loads. */
-  readonly virtualKeyboard?: boolean;
+  /**
+   * Inject the virtual keyboard (navigator.hid) before the page loads, optionally with options.
+   * Connected scenarios need `{ seedDynamicKeys: false }`: the baseline cannot load a keyboard
+   * with dynamic keys (upstream parsing bug, src-controller/UPSTREAM.md).
+   */
+  readonly virtualKeyboard?: boolean | VirtualKeyboardBrowserOptions;
   /** localStorage entries seeded before the first page script (`darkMode`/`language` are set per variant). */
   readonly storage?: Readonly<Record<string, string>>;
 }
