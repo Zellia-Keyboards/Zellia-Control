@@ -51,10 +51,11 @@ sections named in your task).
 | C ui-foundation | `rw/ui-foundation` · `/Users/liang/worktrees/ui-foundation` | `src/lib/**`, `src/components/ui/**` |
 | D tooling | `rw/tooling` · `/Users/liang/worktrees/tooling` | `eslint.config.js`, `vite.config.ts`, `playwright.config.ts`, `postcss.config.js`, `.github/**`, `e2e/**`, `scripts/**`, `public/service-worker.js`, `src/main.tsx`, `src/lib/pwa.ts`, `package.json` (scripts only), `docs/development.md`, `docs/migration/**` |
 
-Wave 2 (after integration 1): E shell `src/app/**`, `src/features/keyboard/**` (not `model/`) ·
-F `src/features/remap/**`, `src/features/profiles/**` · G `src/features/performance/**`,
-`src/features/lighting/**` · H `src/features/dynamic-keys/**` · I `src/features/debug/**`,
-`src/features/settings/**`, `src/features/about/**`, `src/features/firmware-update/**`.
+Wave 2 (after integration 1; details in the Wave 2 sections): E shell `src/app/**`,
+`src/features/keyboard/**`, `src/styles/app.css` · F `src/features/remap/**`,
+`src/features/profiles/**` · G `src/features/performance/**`, `src/features/lighting/**` ·
+H `src/features/dynamic-keys/**` · I `src/features/debug/**`, `src/features/settings/**`,
+`src/features/about/**`, `src/features/firmware-update/**`.
 
 ---
 
@@ -332,23 +333,282 @@ Spec: §3.2 D18–D20, §9. Reference: baseline `.github/workflows/web.yml`, `vi
 
 ## Integration 1 (lead)
 
-- [ ] Review each branch diff against this plan; merge `rw/domain`, `rw/ui-foundation`,
+- [x] Review each branch diff against this plan; merge `rw/domain`, `rw/ui-foundation`,
   `rw/device`, `rw/tooling` into `react-rewrite`; resolve; run all gates; run parity `welcome`.
-- [ ] Add Wave 2 stubs (each feature's `index.ts` exporting its page component and the
+- [x] Add Wave 2 stubs (each feature's `index.ts` exporting its page component and the
   cross-feature exports: `ProfileDropdown`, `useFirmwareUpdateSession`), then write Wave 2 briefs.
 
-## Wave 2 (briefs finalized after integration 1)
+## Wave 2 — shared rules (all workers E–I)
 
-- E shell & keyboard: routes (trailing-slash URLs, lazy pages, 404), AppShell/Sidebar/
-  MainContentArea/Toolbar/LayerSelector/LayoutConfigDropdown/Connection screens/SmallScreenWarning,
-  KeyboardRender/Key (+ CSS module with global `label-cell-N`), key-selection + layer store,
-  layout-options store, Save/Disconnect wiring, `/` redirect, firmware-update gate exception.
-- F remap + profiles (page, dropdown, store; D7, D8, paint brush).
-- G performance + lighting (D11, D12, paint brush, dual sliders, direction dial, rainbow).
-- H dynamic keys (dashboard, tap-hold, toggle, null-bind, DKS; D4–D6, D13–D15).
-- I debug + settings + about + firmware update (D16, confirmations, WebDFU flow).
+Base: `react-rewrite` after integration 1. Everything below adds to the Global Constraints.
 
-Each: port markup 1:1, CSS Modules, unit/component tests, e2e journey, parity scenarios file.
+**Ownership.** Only the paths in your section, plus your own `e2e/<key>.spec.ts`,
+`e2e/parity/scenarios/<key>.ts`, `docs/migration/parity-notes/<key>.md` and screenshots
+`docs/migration/parity/pl-*` / `<key>-*`. Read-only for everyone: `src-controller/`,
+`src/features/device/**`, `src/lib/**`, `src/components/ui/**`, `src/testing/**`, `scripts/**`,
+`e2e/fixtures.ts`, `e2e/parity/scenario.ts`, config files, `package.json`, `yarn.lock`,
+`docs/migration/parity-log.md`, the spec and this plan. If you need a change there (a device
+command, a translation key, a shared primitive), do not work around it with a copy: implement
+against the documented contract where you can and list the change under `notesForIntegrator`.
+
+**Consume** only public modules: `src/features/device` (index: `deviceSession` commands, store
+hooks `useConnection`/`useDeviceConfig`/`useIsReady`/`useModel`/`useDeviceName`/`useDeviceStore`,
+`subscribeDebugSamples`), `src/features/keycodes`, `src/features/keyboard` (index: selection and
+layout-option stores, `useLayoutKeys`, `KeyboardRender`), `src/features/keyboard/model`,
+`src/features/dynamic-keys/model`, `src/features/lighting/model`,
+`src/features/device/model/units`, `src/lib/{i18n,theme,transitions,storage,signal}`,
+`src/components/ui`. Another feature only through its `index.ts`. `emi-keyboard-controller` only
+for enums and types, except `features/firmware-update`, which may use its `WebDfuDevice` API.
+Keyboard access only through `deviceSession`.
+
+**Port 1:1.** Read every Svelte file you port (baseline `/Users/liang/worktrees/svelte-baseline/src`)
+before writing its React version: same element tree, `class` strings (`className`), inline
+`style` strings (as objects with identical values, including `calc(… var(--ui-scale, 1))`), copy
+and icons (`lucide-react` 0.511.0 has the same names as `lucide-svelte`). `<style>` →
+`Component.module.css` with selectors unchanged; class names referenced from outside the
+component stay global (`:global(...)`). Svelte transitions → `src/lib/transitions`
+(`Transition` for `{#if}`, `KeyedTransition` for `{#key}`; same parameters). Svelte reactivity →
+derived values during render; effects only for real side effects (subscriptions, timers, DOM
+listeners), always cleaned up. Component state stays local; shared state only in the stores
+listed above. Fix only what the spec, the parity log or your section calls a bug; everything else
+keeps the Svelte behavior, even when odd.
+
+**Layers and units.** The key-selection store's `layer` is 1-based (UI); device commands take
+0-based layers (`layer - 1`). Distances are fractions of travel on the wire; display with
+`features/device/model/units` (`mm = fraction × 4.0`).
+
+**Tests.**
+- Component and integration tests (Vitest + Testing Library + jsdom) against the real device
+  layer: connect the app session with `connectVirtualKeyboard()` from `src/testing/app-keyboard`
+  (dispose it after each test) and assert on `keyboard.vk.state` (device-side result) or
+  `keyboard.vk.sentPackets`, never by mocking our own modules. Render pages inside a
+  `MemoryRouter`. Reset shared stores you touch (e.g. `keySelection.deselectAll()`) between tests.
+  `installFakeAnimations()` from `src/lib/transitions/testing` for components with transitions.
+- E2E (`e2e/<key>.spec.ts`, Playwright): import `test`/`expect` from `./fixtures`; request the
+  `virtualKeyboard` fixture (options via `test.use({ virtualKeyboardOptions: {...} })`), open
+  `/`, click "Get Started", wait for `/remap/`, then drive the feature through the UI and assert
+  on the page and on the device (`(await virtualKeyboard.handle()).evaluate(vk => vk.state…)`).
+- Always run Playwright with your own port: `E2E_PORT=<your port> corepack yarn test:e2e` (and
+  `E2E_PORT=<port> corepack yarn parity …`). Ports: E 4311, F 4312, G 4313, H 4314, I 4315.
+
+**Visual parity.** Add `e2e/parity/scenarios/<key>.ts` (default export `ParityScenario[]`, see
+`e2e/parity/scenario.ts`) covering each screen and meaningful state of your feature (default,
+selection, open dropdowns/modals, each tab/mode, empty/error states). A connected scenario uses
+`path: '/'`, `virtualKeyboard: { seedDynamicKeys: false }` (the baseline cannot load seeded
+dynamic keys) and a `setup` that clicks "Get Started" (`/Get Started|开始使用/`), waits for the
+keyboard and navigates like a user. `setup` runs unchanged against both apps, in en and zh: use
+roles/structure or both languages' copy. Run `E2E_PORT=<port> corepack yarn parity --grep <prefix>`
+and open `e2e/.artifacts/parity/index.html`. Every difference inside your screens is either fixed
+or an intended deviation. Differences in regions owned by a worker who is not merged yet (another
+feature's stub, e.g. the toolbar's profile dropdown before F lands) are expected: say so in your
+notes. Do not edit `parity-log.md`: write your rows to `docs/migration/parity-notes/<key>.md`
+using the log's table format — existing ids (PL-001…PL-024) you implement, and new deviations
+with temporary ids `<KEY>-1`, `<KEY>-2`, … — and copy their captures to
+`docs/migration/parity/<id>-before.png` / `<id>-after.png` (lower-case id). The lead merges them
+into the log.
+
+**Accessibility** (spec §7.4): keep the visible UI identical; add `type="button"`, `aria-pressed`/
+`role="switch"` state, `aria-label` on icon-only buttons, dialog roles and focus return, and keep
+the Svelte keyboard shortcuts. Satisfy `jsx-a11y` without disabling rules; if the Svelte markup
+forces an exception, disable the single rule on the single line with a reason.
+
+**Report** changes, decisions, tests, the parity results (scenario → identical / explained
+diff) and limitations. No AI attribution in commits.
+
+## Wave 2 — Worker E: app shell + keyboard
+
+Branch `rw/shell`, worktree `/Users/liang/worktrees/shell`, port 4311. Owns `src/app/**`,
+`src/features/keyboard/**` (including `model/`), `src/styles/app.css`, `e2e/smoke.spec.ts`,
+`e2e/shell.spec.ts`, `e2e/parity/scenarios/{welcome,shell}.ts`. Spec §5.1, §7, §8 Shell and
+Keyboard/selection, D2, D3, D19.
+
+Port: `routes/+layout.svelte` (+ its `:global(html)` style), `routes/+layout.js`
+(`trailingSlash: 'always'`), `routes/+page.svelte`, `config/navigation.ts`,
+`utils/layoutHelpers.ts`, `components/layout/*` (ConnectionInterface, DarkModeToggle,
+LanguageSwitch, LayerSelector, LayoutConfigDropdown, LoadingOverlay, MainContentArea,
+NotConnectedFallback, Sidebar, SmallScreenWarning, ThemeSelector, ToolbarSection),
+`components/KeyboardRender.svelte`, `components/Key.svelte`; the connection flow of
+`api/keyboardAPI.svelte.ts` maps onto `deviceSession`/`useConnection`.
+
+- **Router** (React Router 8 library mode, `createBrowserRouter`): `/`, `/performance/`,
+  `/remap/`, `/lighting/`, `/dynamic/`, `/debug/`, `/settings/`, `/update/`, `/about/`,
+  `/profiles/`, each page `lazy`-loaded from its feature index; URLs without the trailing slash
+  redirect to the slash form (`replace`, keep search/hash); unknown paths render a NotFound page
+  that looks like SvelteKit's default error page (`404` / `Not Found`). Keep `STATIC_ROUTES`
+  (scripts/static-hosting.ts) in sync; tell the lead if it must change.
+- **Layout** exactly like `+layout.svelte`/`MainContentArea.svelte`: sidebar layout on `/` and the
+  sidebar pages; SmallScreenWarning below `xl`; toolbar + global keyboard only when ready and not
+  on About/Profiles/Debug/Settings/Update. Layer selector on Performance, Remap **and Dynamic
+  Keys** (PL-024). Loading overlay while the session is `selecting`/`connecting`/`loading`
+  (mirror when the Svelte `connecting` status was set); connection screen on `/` when not ready;
+  `NotConnectedFallback` on other pages when not ready — except `/update/` while
+  `useFirmwareUpdateSession().active` (D3). Connected `/` redirects to `/remap/` (replace).
+  `document.documentElement.lang` is handled by `lib/i18n`; do not duplicate it.
+- **Sidebar**: status line, Profiles link, Save (`deviceSession.save()`, label via the existing
+  `ui.save` key; PL-002) and Disconnect (`deviceSession.disconnect()`), with their
+  `in:slide|global` transitions (`Transition` with `global`); nav with prefix-active matching;
+  ThemeSelector, LanguageSwitch, DarkModeToggle from `lib/theme`/`lib/i18n`.
+- **Toolbar**: LayerSelector (key-selection `layer`), `ProfileDropdown` from `features/profiles`
+  (stub until F lands), LayoutConfigDropdown (layout-options store; the Starlight-shaped group
+  mapping stays as in Svelte, spec §11).
+- **KeyboardRender/Key**: `KeyboardRender` renders the visible keys of `useLayoutKeys()`
+  (`all` is passed; the renderer filters with the layout options, animating position changes
+  with the existing CSS transitions) with per-route labels: Performance `performanceLabels`
+  (wrapper class `performance-page-keys`), Remap `remapLabels` for layer `layer - 1`, Lighting
+  `lightingLabels` (`lighting-page-keys`), Dynamic Keys `remapLabels` (PL-023). Label cells keep
+  the global class names (`label-cell-N`, `keycap`, …). Selection: left press toggles a key,
+  entering a key with the button held toggles it, nothing when `allowSelection` is false;
+  `setTotalKeys` = max visible id + 1 whenever the visible keys change. Keep
+  `KeyboardRenderProps` (`keys`, `allowSelection?`, `onSelect?`) or change it only inside your
+  area; the pages never render the keyboard themselves.
+- **Performance**: selecting one key must not re-render every keycap; subscribe with narrow
+  selectors (`useIsKeySelected`) and memoize label maps per input.
+- Tests: routing (slash redirect, lazy pages, 404, redirect when connected, fallback, update
+  gate), connection flow (overlay, error message slot, physical disconnect returns to `/`),
+  sidebar save/disconnect, layer selector, layout dropdown persistence, keyboard selection
+  (click, drag, disabled, select-all bound), label rendering. E2E: `e2e/shell.spec.ts` (connect →
+  remap, navigation, disconnect via `vk.disconnect()`, theme/language persistence across reload);
+  replace the placeholder assertions in `e2e/smoke.spec.ts`. Parity: welcome (exists), not
+  connected fallback, loading overlay (`virtualKeyboard: { latencyMs: <long> }`), 404, connected
+  shell states (layout dropdown open, each layer) — the page region below the keyboard belongs to
+  F–I.
+- You finish first: F–I build their page content in parallel and verify it inside your shell
+  after the lead merges `rw/shell`.
+
+## Wave 2 — Worker F: remap + profiles
+
+Branch `rw/remap-profiles`, worktree `/Users/liang/worktrees/remap-profiles`, port 4312. Owns
+`src/features/remap/**`, `src/features/profiles/**`. Spec §8 Remap and Profiles, §1.4, D7, D8,
+PL-008, PL-013, PL-015–PL-019.
+
+Port: `routes/remap/+page.svelte`, `components/remap/{TabNavigation,Basic,System,Layer,Profile,
+Extension}.svelte` (not the dead `KeyGrid`, `KeyboardLayout`); `routes/profiles/+page.svelte`,
+`components/profiles/{AddProfileCard,ProfileCard,ProfileMenu}.svelte` (the modals are
+`ConfirmationModal`/`ErrorModal` in `src/components/ui`), `components/ProfileDropdown.svelte`,
+`stores/ProfileStore.svelte.ts`.
+
+- Palettes come from `REMAP_PALETTES` (labels verbatim; `null` keycode = inert placeholder, D8).
+  Clicking a palette key with keys selected writes it to every selected key on the selected layer
+  (`deviceSession.setKeycodes(layer - 1, keys, keycode)`) and loads the brush; with no selection
+  it shows the 3 s toast. Brush (§1.4): keys added to the selection afterwards get the brush
+  keycode (use `keySelectionStore.subscribe` + `addedKeys(previous, next)`); the brush survives
+  deselect-all; switching layers never writes (PL-015).
+- Tabs: the vertical `slideMove` transition via `KeyedTransition` (350 ms, direction by tab
+  order). Shortcuts: Ctrl+A toggles select-all, Escape deselects (exact Svelte conditions).
+- Profiles: a Zustand store persisted under `keyboard-profiles` with the Svelte schema, parsed
+  and validated on read (invalid → defaults), 16 slots with the first 4 defaults;
+  create/duplicate/restore/delete (hold-to-delete 1.5 s)/import/export with the error and
+  confirmation modals. D7: activating 1–4 (page or dropdown) calls
+  `deviceSession.switchProfile(n - 1)`; 5–16 only become active locally; on every completed
+  device load the active profile follows `config.profileIndex + 1`. `ProfileDropdown` (no props)
+  is exported from `features/profiles` for the shell's toolbar.
+- Tests: palette encodings through the UI to the device, toast, brush add/survive/no layer write,
+  shortcuts, tab transition, profile store parsing/migration, every profile action, D7 in both
+  directions (UI → device, device load → UI). E2E: remap assign + save (`vk.state.profiles`
+  after Save), profiles journey incl. import/export and switching. Parity: each remap tab, toast,
+  profiles page (default, menu open, confirmation, error), dropdown open.
+
+## Wave 2 — Worker G: performance + lighting
+
+Branch `rw/performance-lighting`, worktree `/Users/liang/worktrees/performance-lighting`, port
+4313. Owns `src/features/performance/**`, `src/features/lighting/**`. Spec §8 Performance and
+Lighting, §1.4, D10–D12, PL-005–PL-007.
+
+Port: `routes/performance/+page.svelte`, `components/performance/{ActuationPointControl,
+DeadzoneControl,MaxTravelDistanceControl,RapidTriggerToggle,SensitivityControl}.svelte`;
+`routes/lighting/+page.svelte`, `components/lighting/{RGBPanel,RGBSubPanel,DirectionSelector}
+.svelte` (not the dead `ColorPicker`, `DensityControl`, `DirectionNumberControl`, `ModeSelector`,
+`RainbowPreset`, `SecondaryColorPicker`, `SpeedControl`).
+
+- Performance: selecting keys loads **all** values of the first selected key (D12, symmetric mm
+  conversions, lower deadzone stored as `(4.0 − bottom) / 4.0`); every change applies to all
+  selected keys (`deviceSession.setAdvancedKeys`); keys added to the selection get the current
+  settings (brush); controls, clamps, animations and the 1.0–4.0 travel badge (bounds the sliders
+  only) as in Svelte; the dual-thumb sliders live in this feature (no shared primitive).
+  Shortcuts: Ctrl/⌘+A select all, Ctrl/⌘+Escape deselect.
+- Lighting: base panel Apply → `setRgbBase`; key panel Apply → `setRgbKeys` for the selected keys,
+  or all keys when none are selected; speed is the integer device value shown as `{n}%` (D11,
+  PL-006); the rainbow preset uses `rainbowColors` with the real layout geometry (PL-007);
+  DirectionSelector dial as in Svelte; colours via `rgbToHex`/`hexToRgb`.
+- Tests: D12 load/convert round trips through the UI, brush, clamps, shortcuts, every lighting
+  apply path on the device state, rainbow per key, direction dial input. E2E: tune a key and
+  save; apply base and per-key lighting. Parity: performance default, keys selected (normal and
+  rapid trigger), each lighting mode/panel state.
+
+## Wave 2 — Worker H: dynamic keys
+
+Branch `rw/dynamic-keys`, worktree `/Users/liang/worktrees/dynamic-keys`, port 4314. Owns
+`src/features/dynamic-keys/**` (including `model/`). Spec §6.3, §6.4, §8 Dynamic keys, D4–D6,
+D13–D15, PL-009, PL-010, PL-019–PL-021.
+
+Port: `routes/dynamic/+page.svelte`, `components/advancedkey/{ModeSelectionView,TapHoldMode,
+ToggleMode,NullBindMode,DynamicMode}.svelte` and their `tap-hold/`, `toggle/`, `nullbind/`,
+`dynamic/`, `shared/KeycodePicker.svelte` parts.
+
+- Configured-keys tables and counts are derived from `config.dynamicKeys` (targets already
+  rebuilt by the device layer), never from local lists (D5, PL-009). Apply →
+  `deviceSession.applyDynamicKey(draft)` (`DynamicKeyDraft`; null means rejected: keep the
+  editor state, no crash); delete → `removeDynamicKey(slot)`; tap-hold/toggle "Reset all" →
+  `removeDynamicKeysOfKind(kind)`. Slot numbers move when slots are freed: never keep a slot
+  across commands; re-derive from the store.
+- UI-only fields (tap-hold hold delay, toggle mode/state, null-bind bottom-out/rapid trigger)
+  live in a session-memory store keyed by the dynamic key's target `KeyLocation` (a mutex's first
+  target), defaulting when absent (D5).
+- Use the domain helpers: DKS codec and bitmap editing (`dragInterval`, `commitDrag`,
+  `deleteInterval`, `clickNode`, geometry constants), `DKS_EMPTY_EDITOR`, `DKS_RESET_PRESET`,
+  `strokeBindings`/`strokeDistances`, `TAP_HOLD_DEFAULTS` (D15), `TOGGLE_DEFAULT_BINDING`,
+  `NULL_BIND_BEHAVIORS` with `behaviorToMutexMode`/`mutexModeToBehavior` (D13), the device's
+  mutex-mode helpers, `ACTION_CATEGORIES`/`findAction` for pickers, `ThemedSlider` (value +
+  onChange/onCommit), `useTRich` for rich copy. All layers are `layer - 1`.
+- Dashboard: selection disabled (`keySelection.setAllowSelection(false)`, restored when leaving);
+  back clears the selection; DKS Reset per §8.
+- Tests: each editor end to end on the device state (apply, edit, delete, reset, reset-all),
+  slot reuse and rejection (D6), compaction (delete a lower slot, the rest keep working),
+  UI-only fields following their key across compaction, the dashboard counts. E2E: one journey
+  per mode incl. delete. Parity: dashboard (empty), each editor (empty and with keys), key
+  pickers open.
+
+## Wave 2 — Worker I: debug, settings, about, firmware update
+
+Branch `rw/system`, worktree `/Users/liang/worktrees/system`, port 4315. Owns
+`src/features/debug/**`, `src/features/settings/**`, `src/features/about/**`,
+`src/features/firmware-update/**`. Spec §8 Debug, Settings, Update, About, §1.3, §1.5, D3,
+D16, PL-011, PL-012.
+
+Port: `routes/debug/+page.svelte`, `components/debug/{KeyboardSelector,KeyTest,KeyTracking}
+.svelte` (not the dead `KeyPressReportingToggle`); `routes/settings/+page.svelte` (not the dead
+`SettingsCard`); `routes/about/+page.svelte`, `components/about/*`; `routes/update/+page.svelte`,
+`components/WebUSBFirmwareFlasher.svelte`.
+
+- Debug: Key Tracking picks a key in the modal keyboard, `deviceSession.startDebug(keyId)`,
+  `subscribeDebugSamples` pushes points straight into Chart.js (chart.js 4.4.9 + zoom plugin,
+  loaded lazily with the page; no React state per sample), clear, reset zoom, theme colours;
+  `stopDebug()` on deselect/unmount. Key Test logs keydown/keyup as in Svelte.
+- Settings: Restart = `systemReset()` immediately; Bootloader and Factory Reset open a
+  `ConfirmationModal` first (§1.3, PL-012), then `enterBootloader()` / `factoryReset()`.
+- About: static content, GitHub link, donation QR (`/alipayqr.jpg`).
+- Update: the identical 7-step UI and copy driven by upstream WebDFU (§8 Update):
+  `.bin` 1 KiB–1 MiB → `enterBootloader()` → `detectBootloader(true)`, and only from a user click
+  `detectBootloader(false)` (the picker needs transient activation) → open `WebDfuDevice` →
+  erase → download with progress → manifest/finish; abort and error states.
+  `setFirmwareUpdateActive(true)` for the whole session (the shell keeps the page mounted
+  through the HID disconnect, D3), `false` when it ends in any way. Test with the simulator's
+  DFU device (`virtualKeyboardOptions: { dfu, reconnectDelayMs, firmwareAfterUpdate }`,
+  `vk.dfu.image`).
+- Tests: debug stream start/switch/stop and chart updates, settings confirmations (cancel sends
+  nothing), the update flow incl. abort, errors, file validation and the session flag. E2E:
+  debug tracking, settings confirmations, firmware update happy path and abort. Parity: debug
+  (both tabs, selector open), settings (each confirmation), about, update steps that are
+  reachable without a device.
+
+## Wave 2 execution
+
+E implements, is reviewed, fixed, and merged into `react-rewrite` first. F–I start at the same
+time: **stage 1** ports their pages with component/integration tests (all gates green) without
+the shell; after `rw/shell` is merged, **stage 2** merges `react-rewrite` into their branch
+(`git merge --no-edit react-rewrite`, merge commit), adds the e2e journeys and parity scenarios,
+runs them inside the shell, fixes every difference in their screens and records deviations.
+Each branch is then reviewed (correctness lens, parity/quality lens) and fixed.
 
 ## Integration 2 and Wave 3 (lead)
 
