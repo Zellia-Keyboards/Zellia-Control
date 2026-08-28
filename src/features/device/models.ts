@@ -12,6 +12,7 @@ import {
   Zellia60Controller,
   Zellia80Controller,
   ZelliaStarlightController,
+  type DfuUsbFilter,
 } from 'emi-keyboard-controller';
 import { withUpstreamFixes, type DeviceController } from './controller';
 import type { ModelId } from './model/types';
@@ -30,11 +31,18 @@ export interface ModelDefinition {
   readonly filter: HidFilter;
   /** Product names matched in addition to the controller's own rules. */
   readonly productNameFallbacks: readonly string[];
+  /**
+   * The DFU bootloader the model's controller finds in `detect_bootloader()`, for the lookup
+   * without a known model (§1.7); null when the controller has none.
+   */
+  readonly bootloaderFilter: DfuUsbFilter | null;
   readonly create: () => DeviceController;
 }
 
 const ZELLIA_FILTER: HidFilter = { vendorId: 0xfeed, productId: 22319, usagePage: 0xff60 };
 const TRINITY_FILTER: HidFilter = { vendorId: 0xfeed, productId: 0xffff, usagePage: 0xff60 };
+const AT32_BOOTLOADER: DfuUsbFilter = { vendorId: 0x2e3c, productId: 0xdf11 };
+const STM32_BOOTLOADER: DfuUsbFilter = { vendorId: 0x0483, productId: 0xdf11 };
 
 export const MODELS = [
   {
@@ -42,6 +50,7 @@ export const MODELS = [
     displayName: 'Zellia Starlight',
     filter: ZELLIA_FILTER,
     productNameFallbacks: ['Zellia Starlight'],
+    bootloaderFilter: AT32_BOOTLOADER,
     create: () => withUpstreamFixes(new ZelliaStarlightController()),
   },
   {
@@ -49,6 +58,7 @@ export const MODELS = [
     displayName: 'Zellia 60HE',
     filter: ZELLIA_FILTER,
     productNameFallbacks: [],
+    bootloaderFilter: AT32_BOOTLOADER,
     create: () => withUpstreamFixes(new Zellia60Controller()),
   },
   {
@@ -56,6 +66,7 @@ export const MODELS = [
     displayName: 'Zellia 80HE',
     filter: ZELLIA_FILTER,
     productNameFallbacks: [],
+    bootloaderFilter: null,
     create: () => withUpstreamFixes(new Zellia80Controller()),
   },
   {
@@ -63,6 +74,7 @@ export const MODELS = [
     displayName: 'Oholeo Keyboard',
     filter: ZELLIA_FILTER,
     productNameFallbacks: [],
+    bootloaderFilter: STM32_BOOTLOADER,
     create: () => withUpstreamFixes(new OholeoKeyboardController()),
   },
   {
@@ -70,6 +82,7 @@ export const MODELS = [
     displayName: 'Trinity Pad',
     filter: TRINITY_FILTER,
     productNameFallbacks: [],
+    bootloaderFilter: null,
     create: () => withUpstreamFixes(new TrinityPadController()),
   },
 ] as const satisfies readonly ModelDefinition[];
