@@ -70,12 +70,9 @@ const scenarios: readonly ParityScenario[] = [
       // A client-side navigation both routers follow: a popstate to a pushed entry. SvelteKit
       // only handles entries that carry its history indices.
       await page.evaluate(() => {
-        history.pushState(
-          { 'sveltekit:history': 1_000_000, 'sveltekit:navigation': 1_000_000 },
-          '',
-          '/not-a-route/'
-        );
-        window.dispatchEvent(new PopStateEvent('popstate', { state: history.state }));
+        const state = { 'sveltekit:history': 1_000_000, 'sveltekit:navigation': 1_000_000 };
+        history.pushState(state, '', '/not-a-route/');
+        window.dispatchEvent(new PopStateEvent('popstate', { state }));
       });
       await page.getByText('Not Found').waitFor();
     },
@@ -145,19 +142,17 @@ const scenarios: readonly ParityScenario[] = [
       await parkPointer(page);
     },
   },
-  ...[2, 3, 4].map(
-    (layer): ParityScenario => ({
-      name: `shell-remap-layer-${layer}`,
-      path: '/',
-      virtualKeyboard: KEYBOARD,
-      setup: async page => {
-        await connect(page);
-        await page.getByTitle(`Layer ${layer}`, { exact: true }).click();
-        await hidePageRegion(page);
-        await parkPointer(page);
-      },
-    })
-  ),
+  ...[2, 3, 4].map((layer): ParityScenario => ({
+    name: `shell-remap-layer-${layer}`,
+    path: '/',
+    virtualKeyboard: KEYBOARD,
+    setup: async page => {
+      await connect(page);
+      await page.getByTitle(`Layer ${layer}`, { exact: true }).click();
+      await hidePageRegion(page);
+      await parkPointer(page);
+    },
+  })),
   {
     name: 'shell-remap-selection',
     path: '/',
