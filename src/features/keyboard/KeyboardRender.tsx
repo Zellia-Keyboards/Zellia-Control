@@ -41,9 +41,10 @@ export function KeyboardRender({ keys, allowSelection = true, onSelect }: Keyboa
   );
 
   // Select-all covers every id up to the highest visible one.
+  const totalKeys = Math.max(...new Set(visible.map(key => key.id)), 0) + 1;
   useEffect(() => {
-    keySelection.setTotalKeys(Math.max(...new Set(visible.map(key => key.id)), 0) + 1);
-  }, [visible]);
+    keySelection.setTotalKeys(totalKeys);
+  }, [totalKeys]);
 
   // The latest callback, so the keycaps' handlers stay the same between renders.
   const onSelectRef = useRef(onSelect);
