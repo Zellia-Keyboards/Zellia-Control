@@ -4,6 +4,7 @@ import { deviceSession, useDeviceName, useIsReady } from '../../features/device'
 import { useLanguage, useT } from '../../lib/i18n';
 import { Transition, slide, type SlideParams } from '../../lib/transitions';
 import { NAVIGATE, isActivePage } from '../navigation';
+import { preloadPage } from '../pages';
 import { DarkModeToggle } from './DarkModeToggle';
 import { LanguageSwitch } from './LanguageSwitch';
 import { ThemeSelector } from './ThemeSelector';
@@ -62,6 +63,12 @@ export function Sidebar() {
       <div className="px-3 pb-3 space-y-2">
         <Link
           to="/profiles/"
+          onMouseEnter={() => {
+            preloadPage('/profiles/');
+          }}
+          onFocus={() => {
+            preloadPage('/profiles/');
+          }}
           className="flex items-center justify-between w-full px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white shadow-md hover:shadow-lg glassmorphism-button"
         >
           <div className="flex items-center gap-2">
@@ -144,6 +151,12 @@ export function Sidebar() {
                 className="flex items-center gap-3 w-full px-3 py-2.5 text-sm font-medium rounded-lg relative overflow-hidden text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-900 data-[active=true]:bg-primary-500 data-[active=true]:text-white data-[active=true]:shadow-sm transition-all duration-200 ease-in glassmorphism-nav-item"
                 data-active={active}
                 aria-current={active ? 'page' : undefined}
+                onMouseEnter={() => {
+                  preloadPage(href);
+                }}
+                onFocus={() => {
+                  preloadPage(href);
+                }}
               >
                 <span className="relative z-10">
                   <i>{t(name)}</i>

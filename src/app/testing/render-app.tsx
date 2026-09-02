@@ -15,8 +15,8 @@ import {
 import { DEFAULT_LAYOUT_OPTIONS } from '../../features/keyboard/model';
 import { setLanguage } from '../../lib/i18n';
 import { setThemeColor } from '../../lib/theme';
-import type { PagePath } from '../pages';
-import { createAppRoutes, type PageLoader, type PageLoaders } from '../routes';
+import type { PageLoader, PageLoaders, PagePath } from '../pages';
+import { createAppRoutes } from '../routes';
 
 function standInPage(path: PagePath): PageLoader {
   return () => {

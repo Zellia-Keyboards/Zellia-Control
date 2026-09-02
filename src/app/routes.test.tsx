@@ -11,8 +11,7 @@ import { ProfilesPage } from '../features/profiles';
 import { RemapPage } from '../features/remap';
 import { SettingsPage } from '../features/settings';
 import { connectVirtualKeyboard } from '../testing/app-keyboard';
-import { PAGE_PATHS } from './pages';
-import { APP_PAGES } from './routes';
+import { APP_PAGES, PAGE_PATHS } from './pages';
 import { currentPath, renderApp, resetShellState, standInPages } from './testing/render-app';
 
 afterEach(resetShellState);
