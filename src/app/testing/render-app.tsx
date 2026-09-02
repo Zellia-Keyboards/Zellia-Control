@@ -14,7 +14,7 @@ import {
 } from '../../features/keyboard';
 import { DEFAULT_LAYOUT_OPTIONS } from '../../features/keyboard/model';
 import { setLanguage } from '../../lib/i18n';
-import { setThemeColor } from '../../lib/theme';
+import { bootstrapTheme, setThemeColor } from '../../lib/theme';
 import type { PageLoader, PageLoaders, PagePath } from '../pages';
 import { createAppRoutes } from '../routes';
 
@@ -65,6 +65,7 @@ export function resetShellState(): void {
   layoutOptionsStore.setState(DEFAULT_LAYOUT_OPTIONS, true);
   setLanguage('en');
   setThemeColor(null);
-  document.documentElement.classList.add('dark');
+  // Forget the preferences, then apply the defaults as the app does on start (dark mode).
   localStorage.clear();
+  bootstrapTheme();
 }
