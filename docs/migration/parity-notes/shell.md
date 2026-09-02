@@ -34,14 +34,15 @@ Keyboard and toolbar check without the pending profile dropdown: the connected s
 captured once more with the baseline's profile dropdown and both apps' Save button hidden (a
 local, uncommitted scenario file). Then `shell-settings` is identical (one noise pixel in one
 variant), `shell-lighting` differs only by keycap corner noise (0–32 px), `shell-remap-layer-2`
-and `-4` only at key 64 (PL-022, 240–346 px),
-and every other connected scenario only at the keycaps of PL-005, PL-016, PL-017, PL-022,
-PL-023 and the layer selector of PL-024 — at both viewports, in every theme and language.
+and `-4` only at key 64 (PL-022, 240–346 px), and every other connected scenario only at the
+keycaps of PL-005, PL-016, PL-017, PL-022, PL-023 and the layer selector of PL-024 — at both
+viewports, in every theme and language.
 
 ## Deviations
 
-Rows for `docs/migration/parity-log.md` (same format). Screenshots are the
-`dark-en-1440x900` captures; every variant shows the same difference.
+Rows for `docs/migration/parity-log.md` (same format; links are relative to
+`docs/migration/`, as in the log). Screenshots are the `dark-en-1440x900` captures; every
+variant shows the same difference.
 
 | ID     | Screen / route          | State and captures                                                                                                         | Deviation                                                                                                                                                                                              | Reason                                     | Before                             | After                            | Status |
 | ------ | ----------------------- | -------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------ | ---------------------------------- | -------------------------------- | ------ |
