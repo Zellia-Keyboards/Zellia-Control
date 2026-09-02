@@ -1,6 +1,6 @@
 import { act, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { afterEach, describe, expect, it, onTestFinished } from 'vitest';
+import { afterEach, describe, expect, it, onTestFinished, vi } from 'vitest';
 import { AboutPage } from '../features/about';
 import { DebugPage } from '../features/debug';
 import { DynamicKeysPage } from '../features/dynamic-keys';
@@ -13,7 +13,7 @@ import { SettingsPage } from '../features/settings';
 import { connectVirtualKeyboard } from '../testing/app-keyboard';
 import { PAGE_PATHS } from './pages';
 import { APP_PAGES } from './routes';
-import { currentPath, renderApp, resetShellState } from './testing/render-app';
+import { currentPath, renderApp, resetShellState, standInPages } from './testing/render-app';
 
 afterEach(resetShellState);
 
@@ -136,6 +136,19 @@ describe('routes', () => {
     renderApp('/update/');
 
     expect(await screen.findByTestId('page')).toHaveTextContent('update page');
+  });
+
+  it('shows an error page when a page fails to load', async () => {
+    const logged = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    const pages = standInPages();
+    renderApp('/about/', {
+      ...pages,
+      about: () => Promise.reject(new Error('chunk failed')),
+    });
+
+    expect(await screen.findByRole('heading', { name: '500' })).toBeInTheDocument();
+    expect(screen.getByText('Internal Error')).toBeInTheDocument();
+    expect(logged).toHaveBeenCalledWith('[app] route error', expect.any(Error));
   });
 });
 
