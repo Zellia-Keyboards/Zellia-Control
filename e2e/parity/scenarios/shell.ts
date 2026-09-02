@@ -93,9 +93,11 @@ const scenarios: readonly ParityScenario[] = [
     path: '/',
     virtualKeyboard: { ...KEYBOARD, picker: 'cancel' },
     setup: async page => {
-      await page.getByRole('button', { name: GET_STARTED }).click();
+      // From the keyboard: the new "Get Started" button would appear under the pointer, and
+      // its highlight follows the pointer.
+      await page.getByRole('button', { name: GET_STARTED }).focus();
+      await page.keyboard.press('Enter');
       await page.getByText('No compatible keyboards found').waitFor();
-      await parkPointer(page);
       // The connection screen is shown afresh: let its entrance animations end.
       await page.waitForTimeout(1000);
     },
@@ -200,6 +202,8 @@ const scenarios: readonly ParityScenario[] = [
       await connect(page);
       await openLayoutMenu(page);
       await page.getByText('7u (Tsangan)').click();
+      // The 6.25u split-spacebar option slides out while the 7u one slides in.
+      await page.getByText('(2.25u + 1.25u + 2.75u)').waitFor({ state: 'detached' });
       await page.getByText('Split spacebar').click();
       await page.getByText('Right shift split').click();
       await page.getByText('Split backspace').click();
