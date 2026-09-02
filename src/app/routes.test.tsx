@@ -137,17 +137,32 @@ describe('routes', () => {
     expect(await screen.findByTestId('page')).toHaveTextContent('update page');
   });
 
-  it('shows an error page when a page fails to load', async () => {
+  it('shows the error page inside the shell when a page fails to load', async () => {
     const logged = vi.spyOn(console, 'error').mockImplementation(() => undefined);
-    const pages = standInPages();
-    renderApp('/about/', {
-      ...pages,
+    await connect();
+    const { container } = renderApp('/about/', {
+      ...standInPages(),
       about: () => Promise.reject(new Error('chunk failed')),
     });
 
     expect(await screen.findByRole('heading', { name: '500' })).toBeInTheDocument();
     expect(screen.getByText('Internal Error')).toBeInTheDocument();
+    // Like SvelteKit's error page, it replaces the page only: the sidebar stays.
+    expect(container.querySelector('.glassmorphism-main')).toContainElement(
+      screen.getByRole('heading', { name: '500' })
+    );
+    expect(screen.getByRole('navigation')).toBeInTheDocument();
     expect(logged).toHaveBeenCalledWith('[app] route error', expect.any(Error));
+  });
+
+  it('still asks for a keyboard when a page fails to load without one', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    renderApp('/about/', {
+      ...standInPages(),
+      about: () => Promise.reject(new Error('chunk failed')),
+    });
+
+    expect(await screen.findByText('No Keyboard Connected')).toBeInTheDocument();
   });
 });
 
