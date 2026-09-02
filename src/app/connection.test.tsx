@@ -8,7 +8,7 @@ import {
   type VirtualKeyboardOptions,
 } from '../testing/virtual-keyboard';
 import { isConnecting, sessionEnded } from './connection';
-import { currentPath, renderApp, resetShellState } from './testing/render-app';
+import { currentPath, renderApp, resetShellState, standInPages } from './testing/render-app';
 
 afterEach(resetShellState);
 
@@ -78,6 +78,43 @@ describe('connecting from the welcome screen', () => {
     expect(screen.getByRole('button', { name: 'Get Started' })).toBeInTheDocument();
     expect(screen.getByText('Waiting to connect')).toBeInTheDocument();
     expect(deviceStore.getState().connection.status).toBe('disconnected');
+  });
+
+  it('stays on the connection screen when the keyboard goes away before Remap has loaded', async () => {
+    const keyboard = install();
+    let loadRemap = () => {};
+    const remapLoaded = new Promise<void>(resolve => {
+      loadRemap = resolve;
+    });
+    const user = userEvent.setup();
+    const { router } = renderApp('/', {
+      ...standInPages(),
+      remap: async () => {
+        await remapLoaded;
+        return function RemapStandIn() {
+          return <p data-testid="page">remap page</p>;
+        };
+      },
+    });
+    await user.click(await screen.findByRole('button', { name: 'Get Started' }));
+    // Ready: the redirect to /remap/ waits for the page's chunk.
+    await waitFor(() => {
+      expect(router.state.navigation.location?.pathname).toBe('/remap/');
+    });
+
+    act(() => {
+      keyboard.disconnect();
+    });
+    await act(async () => {
+      loadRemap();
+      await remapLoaded;
+    });
+
+    await waitFor(() => {
+      expect(router.state.navigation.state).toBe('idle');
+    });
+    expect(currentPath(router)).toBe('/');
+    expect(screen.getByRole('button', { name: 'Get Started' })).toBeInTheDocument();
   });
 
   it('shows the error on the connection screen when a later reload fails', async () => {

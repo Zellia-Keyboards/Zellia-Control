@@ -13,11 +13,16 @@ import styles from './Sidebar.module.css';
 /** `in:slide|global` of the Save and Disconnect buttons (quadratic ease-out). */
 const BUTTON_SLIDE: SlideParams = { duration: 350, easing: t => t * (2 - t), axis: 'y' };
 
+interface SidebarProps {
+  /** Ends the keyboard session and returns to the connection screen. */
+  onDisconnect: () => void;
+}
+
 /**
  * The sidebar (port of `Sidebar.svelte`): connection status, Profiles, Save and Disconnect while
  * connected, page navigation and the appearance settings.
  */
-export function Sidebar() {
+export function Sidebar({ onDisconnect }: SidebarProps) {
   const t = useT();
   const { language } = useLanguage();
   const ready = useIsReady();
@@ -120,15 +125,13 @@ export function Sidebar() {
           </div>
         </Transition>
 
-        {/* Disconnect Button: the shell returns to the connection screen. */}
+        {/* Disconnect Button */}
         <Transition show={ready} in={[slide, BUTTON_SLIDE]} appear>
           <div>
             <button
               type="button"
               className="w-full px-3 py-2 text-xs font-medium border rounded-md transition-colors duration-200 text-red-600 dark:text-red-400 border-red-300 dark:border-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 glassmorphism-button"
-              onClick={() => {
-                deviceSession.disconnect();
-              }}
+              onClick={onDisconnect}
             >
               <div className="flex items-center justify-center gap-1">
                 <LogOut className="w-3 h-3" />

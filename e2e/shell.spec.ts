@@ -120,6 +120,8 @@ test.describe('app shell', () => {
 
     await expect(page).toHaveURL(/:\d+\/$/);
     await expect(sidebar(page).getByText('Waiting to connect')).toBeVisible();
+    // One new history entry, like Svelte's goto('/'): about:blank, /remap/, /.
+    expect(await page.evaluate(() => history.length)).toBe(3);
 
     // The keyboard stays plugged in and connects again.
     expect(await (await virtualKeyboard.handle()).evaluate(vk => vk.connected)).toBe(true);
