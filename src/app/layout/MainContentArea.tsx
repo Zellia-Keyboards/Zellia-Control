@@ -1,7 +1,6 @@
 import type { ReactNode } from 'react';
 import { Outlet, useLocation } from 'react-router';
 import { useDeviceStore } from '../../features/device';
-import { useFirmwareUpdateSession } from '../../features/firmware-update';
 import { isConnecting } from '../connection';
 import { hidesToolbarAndKeyboard, isActivePage, shouldShowLayerSelector } from '../navigation';
 import { ConnectionScreen } from './ConnectionScreen';
@@ -12,22 +11,21 @@ import { Toolbar } from './Toolbar';
 
 /**
  * The main column (port of `MainContentArea.svelte`): toolbar and global keyboard while
- * connected, then the loading overlay, the connection screen (`/`), the page, or the
- * not-connected fallback. The page is always the last child, so it stays mounted when the
- * Update page is kept through a disconnect (D3).
+ * connected, then the page, the loading overlay, the connection screen (`/`) or the
+ * not-connected fallback. The page is always the last child, so the Update page stays mounted
+ * when the keyboard goes away (D3).
  */
 export function MainContentArea() {
   const { pathname } = useLocation();
   const status = useDeviceStore(state => state.connection.status);
-  const firmwareUpdateActive = useFirmwareUpdateSession().active;
 
   const ready = status === 'ready';
   const showConfigurator = ready && !hidesToolbarAndKeyboard(pathname);
-  // A firmware update keeps its page through the keyboard's reboot into the bootloader.
-  const keepUpdatePage = firmwareUpdateActive && isActivePage(pathname, '/update');
+  // The Update page needs no keyboard: it also flashes a keyboard waiting in its bootloader.
+  const updatePage = isActivePage(pathname, '/update');
 
   let content: ReactNode;
-  if (ready || keepUpdatePage) content = <Outlet />;
+  if (ready || updatePage) content = <Outlet />;
   else if (isConnecting(status)) content = <LoadingOverlay />;
   else if (pathname === '/') content = <ConnectionScreen />;
   else content = <NotConnectedFallback />;

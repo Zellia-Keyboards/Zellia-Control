@@ -113,6 +113,25 @@ test.describe('app shell', () => {
     await expect(page.getByRole('button', { name: 'Disconnect' })).toHaveCount(0);
   });
 
+  test('stays on the Update page when the keyboard goes away', async ({
+    page,
+    virtualKeyboard,
+  }) => {
+    await connect(page);
+    await page.getByRole('link', { name: 'Update' }).click();
+    await expect(page).toHaveURL(/\/update\/$/);
+
+    await (
+      await virtualKeyboard.handle()
+    ).evaluate(vk => {
+      vk.disconnect();
+    });
+
+    await expect(sidebar(page).getByText('Waiting to connect')).toBeVisible();
+    await expect(page).toHaveURL(/\/update\/$/);
+    await expect(page.getByText('No Keyboard Connected')).toBeHidden();
+  });
+
   test('disconnects from the sidebar', async ({ page, virtualKeyboard }) => {
     await connect(page);
 
@@ -156,11 +175,22 @@ test.describe('app shell', () => {
   });
 
   test('opens every page URL of the static host inside the shell', async ({ page }) => {
+    const noKeyboard = page.getByText('No Keyboard Connected');
     for (const route of STATIC_ROUTES) {
       await page.goto(`/${route}/`);
-      await expect(page.getByText('No Keyboard Connected'), `/${route}/`).toBeVisible();
+      await expect(sidebar(page), `/${route}/`).toBeVisible();
+      if (route === 'update') {
+        // The Update page needs no keyboard (PL-025).
+        await expect(
+          page.getByRole('navigation').getByRole('link', { name: 'Update', exact: true })
+        ).toHaveAttribute('aria-current', 'page');
+        await expect(noKeyboard).toBeHidden();
+      } else {
+        await expect(noKeyboard, `/${route}/`).toBeVisible();
+      }
     }
 
+    await page.goto('/remap/');
     await page.getByRole('button', { name: 'Go to Home' }).click();
     await expect(page).toHaveURL(/:\d+\/$/);
     await expect(page.getByRole('button', { name: 'Get Started' })).toBeVisible();
