@@ -67,7 +67,7 @@ describe('routes', () => {
     await waitFor(() => {
       expect(currentPath(router)).toBe('/');
     });
-    expect(screen.getByRole('button', { name: 'Get Started' })).toBeInTheDocument();
+    expect(await screen.findByRole('button', { name: 'Get Started' })).toBeInTheDocument();
   });
 
   it('renders the lazily loaded page below the toolbar and the keyboard', async () => {
@@ -152,7 +152,9 @@ describe('routes', () => {
       screen.getByRole('heading', { name: '500' })
     );
     expect(screen.getByRole('navigation')).toBeInTheDocument();
-    expect(logged).toHaveBeenCalledWith('[app] route error', expect.any(Error));
+    await waitFor(() => {
+      expect(logged).toHaveBeenCalledWith('[app] route error', expect.any(Error));
+    });
   });
 
   it('still asks for a keyboard when a page fails to load without one', async () => {

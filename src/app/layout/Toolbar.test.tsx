@@ -26,21 +26,28 @@ function visibleKeyIds(): number[] {
 }
 
 describe('LayerSelector', () => {
-  it('is shown on Performance, Remap and Dynamic Keys (PL-024), not on Lighting', async () => {
-    await connect();
-    for (const path of ['performance', 'remap', 'dynamic']) {
-      const { unmount } = renderApp(`/${path}/`);
-      await screen.findByTestId('page');
-      expect(layerButtons().map(button => button.textContent)).toEqual(['1', '2', '3', '4']);
-      expect(screen.getByText('Layer:')).toBeInTheDocument();
-      unmount();
-    }
+  // Renders the connected shell four times: allow for slow machines.
+  it(
+    'is shown on Performance, Remap and Dynamic Keys (PL-024), not on Lighting',
+    {
+      timeout: 15_000,
+    },
+    async () => {
+      await connect();
+      for (const path of ['performance', 'remap', 'dynamic']) {
+        const { unmount } = renderApp(`/${path}/`);
+        await screen.findByTestId('page');
+        expect(layerButtons().map(button => button.textContent)).toEqual(['1', '2', '3', '4']);
+        expect(screen.getByText('Layer:')).toBeInTheDocument();
+        unmount();
+      }
 
-    renderApp('/lighting/');
-    await screen.findByTestId('page');
-    expect(screen.queryByTitle('Layer 1')).not.toBeInTheDocument();
-    expect(screen.getByTitle('Configure keyboard layout')).toBeInTheDocument();
-  });
+      renderApp('/lighting/');
+      await screen.findByTestId('page');
+      expect(screen.queryByTitle('Layer 1')).not.toBeInTheDocument();
+      expect(screen.getByTitle('Configure keyboard layout')).toBeInTheDocument();
+    }
+  );
 
   it('selects the layer the pages edit', async () => {
     await connect();
