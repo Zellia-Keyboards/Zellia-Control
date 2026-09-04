@@ -25,6 +25,8 @@ interface SidebarProps {
 export function Sidebar({ onDisconnect }: SidebarProps) {
   const t = useT();
   const { language } = useLanguage();
+  // Svelte's `shouldShowConfigurator` also ended the loading overlay: while the configuration
+  // loads, the sidebar keeps waiting under the overlay, as it did while connecting (PL-003).
   const ready = useIsReady();
   const deviceName = useDeviceName();
   const { pathname } = useLocation();
