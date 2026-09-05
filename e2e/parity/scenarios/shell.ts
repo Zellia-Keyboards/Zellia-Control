@@ -1,5 +1,6 @@
 import type { Page } from '@playwright/test';
 import type { ParityScenario } from '../scenario';
+import { settleConnectionScreen } from './welcome';
 
 /**
  * App shell and on-screen keyboard: connection states, the 404 page and the connected shell
@@ -85,7 +86,7 @@ const scenarios: readonly ParityScenario[] = [
       await page.getByTitle('Teal', { exact: true }).click();
       await parkPointer(page);
       // Let the recoloured, blurred background blobs settle before the capture.
-      await page.waitForTimeout(1000);
+      await settleConnectionScreen(page);
     },
   },
   {
@@ -98,8 +99,8 @@ const scenarios: readonly ParityScenario[] = [
       await page.getByRole('button', { name: GET_STARTED }).focus();
       await page.keyboard.press('Enter');
       await page.getByText('No compatible keyboards found').waitFor();
-      // The connection screen is shown afresh: let its entrance animations end.
-      await page.waitForTimeout(1000);
+      // The connection screen is shown afresh.
+      await settleConnectionScreen(page);
     },
   },
   {
@@ -281,7 +282,7 @@ const scenarios: readonly ParityScenario[] = [
       await page.evaluate(() => {
         window.__virtualKeyboard?.disconnect();
       });
-      await page.waitForTimeout(500);
+      await settleConnectionScreen(page);
       await hidePageRegion(page);
       await parkPointer(page);
     },
