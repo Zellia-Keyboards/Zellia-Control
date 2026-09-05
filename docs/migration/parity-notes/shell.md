@@ -10,9 +10,11 @@ keyboard. `shell-settings` hides the whole page region.
 
 ## Results
 
-Final run of 2026-09-30 (168 captures, strict comparison): 48 identical, 120 different, as
-listed. The run before it, taken before `welcome` waited for the background blobs, had the same
-differences (within 0.07 % per capture) plus two `welcome` captures with blob noise (below).
+Final run of 2026-09-30, after the second review (168 captures, strict comparison): 48
+identical, 120 different, as listed. The run before it, taken before the connection-screen
+scenarios stopped the background blobs' pulse (below), had the same differences — connected
+captures within 0.01 %, `shell-unplugged` within 0.07 % — plus one `shell-connection-error`
+capture with blob noise.
 
 | Scenario                                                | Identical | Differences                                                       |
 | ------------------------------------------------------- | --------- | ----------------------------------------------------------------- |
@@ -80,11 +82,14 @@ No new deviations (`E-n`).
   match exactly. Expect up to a few dozen such pixels per connected capture while PL-002 applies.
 - **Raster glitches.** About one capture in 10–20, in either app, gets a small block of wrong
   pixels (roughly 7×7 px, 40–70 px in total) over text; a re-run of the capture is identical.
-- **Background blobs of the connection screen.** The second blob starts its infinite pulse after
-  1 s; a capture around that moment can render the blurred blob one colour level off (about
-  28 000 px at ±1) in either app. `welcome`, `shell-theme-colors` and `shell-connection-error`
-  wait 1–1.5 s before the capture; `shell-unplugged` (PL-004), captured 0.5 s after the unplug,
-  varies by up to 0.07 % between runs for this reason.
+- **Background blobs of the connection screen.** The capture stops infinite animations itself
+  (`animations: 'disabled'`); the blurred, pulsing blobs then sometimes came out one or two
+  colour levels off (12 000–46 000 px) in either app, as they also did when stopped around the
+  moment the second blob starts pulsing (1 s after the screen appears). The scenarios that show
+  the connection screen (`welcome`, `shell-theme-colors`, `shell-connection-error`,
+  `shell-unplugged`) therefore wait 1.5 s, stop the pulse and capture half a second later
+  (`settleConnectionScreen` in `welcome.ts`): in three runs in a row and in the final run, their
+  captures came out the same every time.
 
 ## Implementation notes
 
