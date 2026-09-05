@@ -9,7 +9,8 @@ const isCI = Boolean(process.env.CI);
 
 // The production build served like the static host (see scripts/static-hosting.ts). CI builds in
 // an earlier step; locally every run builds first so tests never see a stale build/.
-const preview = `corepack yarn preview --port ${PORT} --strictPort`;
+// Plain binaries (node_modules/.bin is on PATH under any package manager's `run`).
+const preview = `vite preview --port ${PORT} --strictPort`;
 
 export default defineConfig({
   outputDir: 'e2e/.artifacts/test-results',
@@ -40,7 +41,7 @@ export default defineConfig({
     },
     {
       // Visual parity capture: the Svelte baseline and this app, driven by the same scenarios.
-      // Run through `corepack yarn parity` (see docs/development.md).
+      // Run through `npm run parity` (see docs/development.md).
       name: 'parity',
       testDir: './scripts/parity',
       testMatch: 'capture.ts',
@@ -50,7 +51,7 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: isCI ? preview : `corepack yarn build && ${preview}`,
+    command: isCI ? preview : `vite build && ${preview}`,
     url: baseURL,
     // Only ever test the server this run started. Anything already answering on the port (a
     // preview of another worktree, the Svelte baseline) fails the run instead of being tested;
