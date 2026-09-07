@@ -92,12 +92,20 @@ Tailwind only looks for class candidates in `src/` (`base` in
      before navigating, then drive the device through its handle:
 
      ```ts
+     test.use({ virtualKeyboardOptions: { seedDynamicKeys: false } }); // optional
+
      test('connects', async ({ page, virtualKeyboard }) => {
        await page.goto('/');
        const keyboard = await virtualKeyboard.handle();
        await keyboard.evaluate(handle => handle.disconnect());
      });
      ```
+
+     The handle's type (`VirtualKeyboardHandle`) is shared with the simulator,
+     so specs see its real state (`state.active.keymap`, …) and controls.
+     Component tests connect the app's session the same way with
+     `connectVirtualKeyboard()` from `src/testing/app-keyboard.ts`; see
+     [device.md](device.md#testing).
 
 4. **Visual parity** (Playwright, project `parity`), below.
 
@@ -193,7 +201,7 @@ const scenarios: readonly ParityScenario[] = [
   {
     name: 'remap-connected',
     path: '/',
-    virtualKeyboard: true,
+    virtualKeyboard: { seedDynamicKeys: false },
     setup: async page => {
       await page.getByRole('button', { name: /Get Started|开始使用/ }).click();
       await page.waitForURL('**/remap/');
@@ -208,19 +216,26 @@ export default scenarios;
 - `path`: path to open, e.g. `/remap/` (routes use trailing slashes).
 - `setup(page)`: optional. It runs unchanged in both apps and in every variant,
   including Chinese, so select by role and structure or match both languages.
-- `virtualKeyboard`: inject the virtual keyboard before the page loads.
+- `virtualKeyboard`: inject the virtual keyboard before the page loads — `true`
+  or its options (`model`, `seedDynamicKeys`, `latencyMs`, `picker`, …; see
+  `VirtualKeyboardBrowserOptions` in `src/testing/virtual-keyboard/handle.ts`).
+  Connected scenarios need `{ seedDynamicKeys: false }`: the baseline cannot
+  load a keyboard with dynamic keys (upstream bug, `src-controller/UPSTREAM.md`).
 - `storage`: extra `localStorage` entries seeded before the first page script.
 
 ## PWA
 
-- `vite-plugin-pwa` generates the Workbox worker `/sw.js` (autoUpdate, precache
-  id `zellia-control`, Google Fonts runtime cache).
-  `src/lib/pwa.ts` registers it from `main.tsx`; a new deployment activates
-  immediately (`skipWaiting`, `clientsClaim`) and reloads open pages. The
-  reload cannot be postponed: by then the old build's precache is gone, so a
-  page left on the old build could not load its lazy routes. Holding updates
-  back (for example during a firmware flash) would need a waiting-worker flow
-  (`registerType: 'prompt'`).
+- `vite-plugin-pwa` generates the Workbox worker `/sw.js` (precache id
+  `zellia-control`, Google Fonts runtime cache) with `registerType: 'prompt'`;
+  `src/lib/pwa.ts` registers it from `main.tsx`.
+- Updates wait for an idle app. A new deployment installs as a _waiting_
+  worker, so the running page keeps its old worker and precache (its lazy route
+  chunks stay loadable even after `rsync --delete` removed them from the
+  server). The update is applied — the waiting worker activated, the page
+  reloaded — only while `src/app/update-policy.ts` reports the app idle: no
+  keyboard connecting or connected and no firmware update running. There is no
+  update prompt. `clientsClaim` only lets the very first install control the
+  page at once, so the app works offline right after the first visit.
 - `public/service-worker.js` is a kill switch for browsers that still hold the
   SvelteKit worker registration: it deletes that worker's caches and
   unregisters itself.
