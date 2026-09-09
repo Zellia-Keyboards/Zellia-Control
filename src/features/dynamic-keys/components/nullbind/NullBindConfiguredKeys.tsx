@@ -47,15 +47,16 @@ export function NullBindConfiguredKeys({
           </div>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-          {configuredPairs.map(pair => {
+          {configuredPairs.map((pair, index) => {
             const pairId = locationKey(pair.targets[0]);
             const bottomOutPoint = mutexBottomOutMm(pair.dynamicKey, fields[pairId]);
             const { rtDown, actuationMm } = mutexFields(pair.dynamicKey, fields[pairId]);
             const isDeleting = deletingPairs.has(pairId);
             const isNewlyAdded = newlyAddedPairs.has(pairId);
             return (
+              // Unkeyed in Svelte: the markup is reused by position.
               <div
-                key={pairId}
+                key={index}
                 className={`group relative overflow-hidden rounded-xl border border-primary-600 bg-gradient-to-br from-primary-800 to-primary-900 transition-all duration-300 ease-out hover:shadow-lg hover:shadow-primary/10 ${
                   isDeleting
                     ? 'opacity-0 scale-95 pointer-events-none'
