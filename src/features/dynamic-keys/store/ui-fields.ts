@@ -6,7 +6,7 @@
 import { useStore } from 'zustand';
 import { createStore } from 'zustand/vanilla';
 import type { KeyLocation } from '../../device';
-import { locationKey } from '../model/configured-keys';
+import { locationKey, type ConfiguredDynamicKey } from '../model/configured-keys';
 import type { NullBindFields, TapHoldFields, ToggleFields } from '../model/ui-fields';
 
 export interface UiFieldsState {
@@ -62,6 +62,23 @@ export const uiFields = {
   },
   forgetKind(kind: UiFieldsKind): void {
     uiFieldsStore.setState({ [kind]: {} });
+  },
+  /** Drops the fields of a deleted dynamic key (a mutex's are under its first key). */
+  forgetDynamicKey(dynamicKey: ConfiguredDynamicKey): void {
+    switch (dynamicKey.kind) {
+      case 'stroke':
+        return;
+      case 'modTap':
+        if (dynamicKey.target) uiFields.forget('tapHold', [dynamicKey.target]);
+        return;
+      case 'toggle':
+        if (dynamicKey.target) uiFields.forget('toggle', [dynamicKey.target]);
+        return;
+      case 'mutex': {
+        const [first] = dynamicKey.targets;
+        if (first) uiFields.forget('nullBind', [first]);
+      }
+    }
   },
   /** Forgets everything (tests). */
   reset(): void {

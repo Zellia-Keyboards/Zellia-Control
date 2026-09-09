@@ -8,9 +8,11 @@ import {
   dashboardRows,
   dynamicKeyAt,
   dynamicKeyOfKindAt,
+  dynamicKeySignature,
   locationKey,
   ownBinding,
   sameLocation,
+  type DynamicKeyOf,
 } from './configured-keys';
 
 const A = 0x04;
@@ -22,22 +24,22 @@ const LCTRL = 0x0100;
 const at = (layer: number, id: number): KeyLocation => ({ layer, id });
 const dk = (slot: number): Keycode => kc.dynamicKey(slot);
 
-const STROKE: DynamicKeySlot = {
+const STROKE: DynamicKeyOf<'stroke'> = {
   kind: 'stroke',
   bindings: [F, 0, 0, 0],
   keyControl: [0x3f, 0, 0, 0],
   distances: { pressBegin: 0.25, pressFully: 0.75, releaseBegin: 0.75, releaseFully: 0.25 },
   target: at(0, 2),
 };
-const MOD_TAP: DynamicKeySlot = {
+const MOD_TAP: DynamicKeyOf<'modTap'> = {
   kind: 'modTap',
   tap: S,
   hold: LCTRL,
   durationMs: 200,
   target: at(1, 0),
 };
-const TOGGLE: DynamicKeySlot = { kind: 'toggle', binding: H, target: at(0, 4) };
-const MUTEX: DynamicKeySlot = {
+const TOGGLE: DynamicKeyOf<'toggle'> = { kind: 'toggle', binding: H, target: at(0, 4) };
+const MUTEX: DynamicKeyOf<'mutex'> = {
   kind: 'mutex',
   bindings: [A, D],
   mode: DynamicKeyMutexMode.DKMutexLastPriority,
@@ -157,6 +159,28 @@ describe('dashboardRows', () => {
   it('leaves out dynamic keys that are missing a key', () => {
     const half: DynamicKeySlot = { ...MUTEX, targets: [null, at(0, 3)] };
     expect(dashboardRows([ORPHAN, half, NONE])).toEqual([]);
+  });
+});
+
+describe('dynamicKeySignature', () => {
+  it('is equal for equal content and differs for any changed field', () => {
+    const copy = { ...STROKE, bindings: [...STROKE.bindings] as const };
+    expect(dynamicKeySignature(copy)).toBe(dynamicKeySignature(STROKE));
+    expect(dynamicKeySignature({ ...STROKE, keyControl: [0x3f, 1, 0, 0] })).not.toBe(
+      dynamicKeySignature(STROKE)
+    );
+    expect(dynamicKeySignature({ ...MUTEX, mode: 0x04 })).not.toBe(dynamicKeySignature(MUTEX));
+    expect(dynamicKeySignature({ ...MUTEX, targets: [at(0, 1), at(0, 5)] })).not.toBe(
+      dynamicKeySignature(MUTEX)
+    );
+    expect(dynamicKeySignature({ ...MOD_TAP, durationMs: 201 })).not.toBe(
+      dynamicKeySignature(MOD_TAP)
+    );
+    expect(dynamicKeySignature({ ...TOGGLE, binding: A })).not.toBe(dynamicKeySignature(TOGGLE));
+    expect(dynamicKeySignature({ ...TOGGLE, target: at(1, 4) })).not.toBe(
+      dynamicKeySignature(TOGGLE)
+    );
+    expect(dynamicKeySignature(null)).toBe('');
   });
 });
 
