@@ -21,6 +21,7 @@ import {
   modTapDraft,
   mutexBottomOutMm,
   mutexDraft,
+  mutexFields,
   nullBindFieldsOnApply,
   strokeDraft,
   toggleDraft,
@@ -223,6 +224,16 @@ describe('null-bind draft', () => {
       uiBottomOutMm: 3,
     });
     expect(mutexBottomOutMm(plain, FIELDS)).toBe(0);
+  });
+
+  it('treats a mutex the editor never applied as applied with the defaults', () => {
+    const flagged = mutex(mutexMode(DynamicKeyMutexMode.DKMutexNeutral, true));
+    expect(mutexFields(flagged, undefined)).toEqual({
+      ...NULL_BIND_FIELD_DEFAULTS,
+      bottomOutMm: 4,
+    });
+    expect(mutexFields(mutex(1), undefined)).toEqual(NULL_BIND_FIELD_DEFAULTS);
+    expect(mutexFields(flagged, FIELDS)).toBe(FIELDS);
   });
 
   it('keeps the editor values for keys without a mutex', () => {

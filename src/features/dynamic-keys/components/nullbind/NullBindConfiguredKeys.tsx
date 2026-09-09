@@ -5,7 +5,7 @@
  */
 import { useT } from '../../../../lib/i18n';
 import { locationKey, type ConfiguredMutex } from '../../model/configured-keys';
-import { NULL_BIND_FIELD_DEFAULTS, mutexBottomOutMm } from '../../model/editor-drafts';
+import { mutexBottomOutMm, mutexFields } from '../../model/editor-drafts';
 import { mutexModeToBehavior } from '../../model/null-bind';
 import { useUiFields } from '../../store/ui-fields';
 import { PairArrow, type KeyLabel } from './NullBindParts';
@@ -49,9 +49,8 @@ export function NullBindConfiguredKeys({
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
           {configuredPairs.map(pair => {
             const pairId = locationKey(pair.targets[0]);
-            const pairFields = fields[pairId] ?? NULL_BIND_FIELD_DEFAULTS;
             const bottomOutPoint = mutexBottomOutMm(pair.dynamicKey, fields[pairId]);
-            const { rtDown, actuationMm } = pairFields;
+            const { rtDown, actuationMm } = mutexFields(pair.dynamicKey, fields[pairId]);
             const isDeleting = deletingPairs.has(pairId);
             const isNewlyAdded = newlyAddedPairs.has(pairId);
             return (

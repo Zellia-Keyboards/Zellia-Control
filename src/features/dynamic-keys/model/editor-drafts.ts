@@ -186,6 +186,17 @@ export function mutexBottomOutMm(
 }
 
 /**
+ * The remembered fields of a mutex: what an Apply stored, or for a mutex the editor never applied
+ * (set on the keyboard or before a reload) the editor defaults with its bottom-out switch.
+ */
+export function mutexFields(
+  mutex: DynamicKeyOf<'mutex'>,
+  fields: NullBindFields | undefined
+): NullBindFields {
+  return fields ?? { ...NULL_BIND_FIELD_DEFAULTS, bottomOutMm: mutexBottomOutMm(mutex, undefined) };
+}
+
+/**
  * A pair whose first key runs a mutex loads its behavior and bottom-out switch from the device's
  * mode byte (D13), with the remembered bottom-out point; other pairs keep the editor's values.
  */
