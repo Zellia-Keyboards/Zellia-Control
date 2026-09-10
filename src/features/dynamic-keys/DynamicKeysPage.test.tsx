@@ -163,6 +163,21 @@ describe('Dynamic Keys dashboard', () => {
     expect(selection().selected).toEqual([]);
   });
 
+  it('follows a profile switch: the table shows the new profile’s dynamic keys', async () => {
+    await renderDynamicKeysPage();
+    expect(
+      screen.getByRole('heading', { level: 2, name: 'Configured Dynamic Keys (5)' })
+    ).toBeInTheDocument();
+
+    // Only profile 0 of the virtual keyboard has dynamic keys.
+    await act(() => deviceSession.switchProfile(1));
+
+    expect(
+      await screen.findByRole('heading', { level: 2, name: 'Configured Dynamic Keys (0)' })
+    ).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'No dynamic keys available' })).toBeInTheDocument();
+  });
+
   it('follows the keyboard: dynamic keys applied elsewhere appear in the table', async () => {
     await renderDynamicKeysPage({ seedDynamicKeys: false });
     act(() => {

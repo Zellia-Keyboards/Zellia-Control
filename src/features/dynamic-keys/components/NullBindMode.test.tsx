@@ -1,6 +1,7 @@
 import { DynamicKeyMutexMode, Keycode as EmiKeycode } from 'emi-keyboard-controller';
-import { fireEvent, screen, waitFor, within } from '@testing-library/react';
+import { act, fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
+import { deviceSession } from '../../device';
 import { mutexMode } from '../../device/model/mutex-mode';
 import { keySelectionStore } from '../../keyboard';
 import { kc } from '../../keycodes';
@@ -172,6 +173,31 @@ describe('Null-bind editor', () => {
     selectKeys(20);
     selectKeys(20, 22);
     expect(screen.getByRole('slider', { name: 'Bottom Out Point' })).toHaveValue('3.2');
+  });
+
+  it('keeps a pair’s remembered fields when its slot moves', async () => {
+    const { keyboard, user } = await openNullBind();
+    selectKeys(20, 22);
+    await user.click(screen.getByRole('switch', { name: 'Alternative Bottom Out Behavior' }));
+    const slider = screen.getByRole('slider', { name: 'Bottom Out Point' });
+    fireEvent.input(slider, { target: { value: '3.3' } });
+    fireEvent.change(slider);
+    await user.click(applyButton());
+    await expect
+      .poll(() => keyboard.vk.state.active.dynamicKeys[4])
+      .toMatchObject({ type: 'mutex', keyIds: [20, 22] });
+
+    // Freeing slot 0 moves the new mutex down into it.
+    act(() => {
+      deviceSession.removeDynamicKey(0);
+    });
+    await expect
+      .poll(() => keyboard.vk.state.active.dynamicKeys[0])
+      .toMatchObject({ type: 'mutex', keyIds: [20, 22] });
+    const cards = pairCards();
+    expect(cards.some(card => within(card).queryByText('3.3mm') !== null)).toBe(true);
+    selectKeys(20, 22);
+    expect(screen.getByRole('slider', { name: 'Bottom Out Point' })).toHaveValue('3.3');
   });
 
   it('writes the performance tab of a configured pair to its remembered fields', async () => {
