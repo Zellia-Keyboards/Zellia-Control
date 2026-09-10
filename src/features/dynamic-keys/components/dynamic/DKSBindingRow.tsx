@@ -148,10 +148,13 @@ export function DKSBindingRow({
   ...handlers
 }: DKSBindingRowProps) {
   const selected = selectedBindingIndex === bindingIndex;
+  const label = dksBindingLabel(binding);
   return (
     <div className="flex items-center gap-4">
       <button
         type="button"
+        // An unset binding shows no text; name the button for assistive technology.
+        aria-label={`Binding ${bindingIndex + 1}${label ? `: ${label}` : ''}`}
         aria-pressed={selected}
         className="w-16 h-16 p-0.5 rounded-lg border-2 text-xs transition-all font-medium glassmorphism-button"
         style={{ borderColor: selected ? 'var(--theme-color-primary)' : undefined }}
@@ -171,7 +174,7 @@ export function DKSBindingRow({
           onSelectBinding(bindingIndex);
         }}
       >
-        {dksBindingLabel(binding)}
+        {label}
       </button>
       <div className="flex justify-between grow relative">
         <DKSSlider uiBitmap={uiBitmap} bindingIndex={bindingIndex} {...handlers} />
