@@ -124,11 +124,26 @@ export interface DashboardRow {
 }
 
 /**
- * Rows of the dashboard's configured-keys table: one per configured key, as the Svelte table
- * listed one entry per key (a mutex has a row for each of its two keys).
+ * The Svelte table's order. It listed an object of configurations in key order: tap-hold, toggle
+ * and null-bind entries were keyed by key id (integer keys, ascending), DKS entries by
+ * `layer,key` (string keys, after them, in the order they were added: here slot order, as a new
+ * dynamic key takes the slot after the last one in use). Its sort by key name kept that order,
+ * every name being "Unknown".
+ */
+function tableOrder(a: DashboardRow, b: DashboardRow): number {
+  const aStroke = a.dynamicKey.kind === 'stroke';
+  const bStroke = b.dynamicKey.kind === 'stroke';
+  if (aStroke !== bStroke) return aStroke ? 1 : -1;
+  if (aStroke) return a.slot - b.slot;
+  return a.target.id - b.target.id || a.target.layer - b.target.layer;
+}
+
+/**
+ * Rows of the dashboard's configured-keys table, in the Svelte table's order: one per configured
+ * key, as the Svelte table listed one entry per key (a mutex has a row for each of its two keys).
  */
 export function dashboardRows(dynamicKeys: readonly DynamicKeySlot[]): DashboardRow[] {
-  return dynamicKeys.flatMap((dynamicKey, slot): DashboardRow[] => {
+  const rows = dynamicKeys.flatMap((dynamicKey, slot): DashboardRow[] => {
     switch (dynamicKey.kind) {
       case 'none':
         return [];
@@ -150,6 +165,7 @@ export function dashboardRows(dynamicKeys: readonly DynamicKeySlot[]): Dashboard
       }
     }
   });
+  return rows.sort(tableOrder);
 }
 
 /**

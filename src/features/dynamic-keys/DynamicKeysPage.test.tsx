@@ -21,6 +21,25 @@ function configuredTable() {
   return screen.getByRole('table');
 }
 
+/** The table rows below the header. */
+function tableRows(): HTMLElement[] {
+  return within(configuredTable()).getAllByRole('row').slice(1);
+}
+
+/** The text of column `column` in every table row. */
+function columnTexts(column: number): (string | null | undefined)[] {
+  return tableRows().map(row => within(row).getAllByRole('cell')[column]?.textContent);
+}
+
+/** The `index`-th table row whose Mode column reads `mode`. */
+function rowOfMode(mode: string, index = 0): HTMLElement {
+  const row = tableRows().filter(
+    candidate => within(candidate).getAllByRole('cell')[1]?.textContent === mode
+  )[index];
+  if (!row) throw new Error(`no ${mode} row ${index}`);
+  return row;
+}
+
 describe('Dynamic Keys dashboard', () => {
   it('shows the mode list and an empty configured-keys panel for a keyboard without dynamic keys', async () => {
     await renderDynamicKeysPage({ seedDynamicKeys: false });
@@ -65,27 +84,22 @@ describe('Dynamic Keys dashboard', () => {
     expect(
       screen.getByRole('heading', { level: 2, name: 'Configured Dynamic Keys (5)' })
     ).toBeInTheDocument();
-    const rows = within(configuredTable()).getAllByRole('row').slice(1);
-    expect(rows.map(row => within(row).getAllByRole('cell')[1]?.textContent)).toEqual([
-      'Dynamic Key',
-      'Tap Hold',
-      'Toggle',
-      'Null Bind',
-      'Null Bind',
-    ]);
+    // In the Svelte table's order: by key id (mod-tap 30, null bind 31 + 33, toggle 34), the
+    // DKS keys last.
+    expect(columnTexts(1)).toEqual(['Tap Hold', 'Null Bind', 'Null Bind', 'Toggle', 'Dynamic Key']);
     const config = deviceStore.getState().config;
     const modTap = config?.dynamicKeys[1];
     expect(modTap?.kind).toBe('modTap');
     const tap = modTap?.kind === 'modTap' ? modTap.tap : -1;
-    expect(rows.map(row => within(row).getAllByRole('cell')[2]?.textContent)).toEqual([
-      '2 bindings',
+    expect(columnTexts(2)).toEqual([
       `Tap: ${tap} / Hold: ${kc.modifier(KeyModifier.KeyLeftCtrl)}`,
+      'Bottom out: 0mm',
+      'Bottom out: 0mm',
       '0 states',
-      'Bottom out: 0mm',
-      'Bottom out: 0mm',
+      '2 bindings',
     ]);
     // Key names as the Svelte table showed them.
-    for (const row of rows) {
+    for (const row of tableRows()) {
       const [keyCell] = within(row).getAllByRole('cell');
       expect(keyCell?.textContent).toBe('UNUnknown');
     }
@@ -97,10 +111,9 @@ describe('Dynamic Keys dashboard', () => {
     expect(original?.type).toBe('toggle');
     const binding = original?.type === 'toggle' ? original.binding : -1;
 
-    const toggleRow = within(configuredTable()).getAllByRole('row')[3];
-    expect(toggleRow).toBeDefined();
-    if (!toggleRow) return;
-    await user.click(within(toggleRow).getByRole('button', { name: 'Delete configuration' }));
+    await user.click(
+      within(rowOfMode('Toggle')).getByRole('button', { name: 'Delete configuration' })
+    );
 
     await expect.poll(() => keyboard.vk.state.active.keymap[0]?.[TOGGLE_KEY]).toBe(binding);
     expect(keyboard.vk.state.active.dynamicKeys.filter(key => key.type === 'toggle')).toEqual([]);
@@ -111,9 +124,9 @@ describe('Dynamic Keys dashboard', () => {
 
   it('deleting a null-bind row removes the pair', async () => {
     const { keyboard, user } = await renderDynamicKeysPage();
-    const mutexRow = within(configuredTable()).getAllByRole('row')[4];
-    if (!mutexRow) throw new Error('missing mutex row');
-    await user.click(within(mutexRow).getByRole('button', { name: 'Delete configuration' }));
+    await user.click(
+      within(rowOfMode('Null Bind')).getByRole('button', { name: 'Delete configuration' })
+    );
 
     await expect
       .poll(() => keyboard.vk.state.active.dynamicKeys.some(key => key.type === 'mutex'))
@@ -128,9 +141,9 @@ describe('Dynamic Keys dashboard', () => {
     act(() => {
       keySelection.setLayer(2);
     });
-    const modTapRow = within(configuredTable()).getAllByRole('row')[2];
-    if (!modTapRow) throw new Error('missing mod-tap row');
-    await user.click(within(modTapRow).getByRole('button', { name: 'Edit configuration' }));
+    await user.click(
+      within(rowOfMode('Tap Hold')).getByRole('button', { name: 'Edit configuration' })
+    );
 
     expect(screen.getByRole('heading', { name: 'Tap-Hold Configuration' })).toBeInTheDocument();
     expect(selection()).toMatchObject({ selected: [MOD_TAP_KEY], layer: 1 });
@@ -139,9 +152,10 @@ describe('Dynamic Keys dashboard', () => {
 
   it('edits a null bind with both of its keys selected', async () => {
     const { user } = await renderDynamicKeysPage();
-    const mutexRow = within(configuredTable()).getAllByRole('row')[5];
-    if (!mutexRow) throw new Error('missing mutex row');
-    await user.click(within(mutexRow).getByRole('button', { name: 'Edit configuration' }));
+    // The pair's second row edits the same pair.
+    await user.click(
+      within(rowOfMode('Null Bind', 1)).getByRole('button', { name: 'Edit configuration' })
+    );
 
     expect(screen.getByRole('heading', { name: 'Null Bind Configuration' })).toBeInTheDocument();
     expect(selection().selected).toEqual(MUTEX_KEYS);

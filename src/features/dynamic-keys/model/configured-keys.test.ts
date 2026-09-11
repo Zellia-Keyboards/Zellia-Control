@@ -144,16 +144,35 @@ describe('configured keys', () => {
 });
 
 describe('dashboardRows', () => {
-  it('lists every configured key, a mutex once per key', () => {
+  it('lists every configured key, a mutex once per key, by key id with the DKS keys last', () => {
     const rows = dashboardRows([STROKE, MOD_TAP, TOGGLE, MUTEX, ORPHAN, NONE]);
     expect(rows.map(row => [row.id, row.slot, row.dynamicKey.kind])).toEqual([
-      ['0:2', 0, 'stroke'],
       ['1:0', 1, 'modTap'],
-      ['0:4', 2, 'toggle'],
       ['0:1', 3, 'mutex'],
       ['0:3', 3, 'mutex'],
+      ['0:4', 2, 'toggle'],
+      ['0:2', 0, 'stroke'],
     ]);
-    expect(rows[4]?.target).toEqual(at(0, 3));
+    expect(rows[2]?.target).toEqual(at(0, 3));
+  });
+
+  it('orders keys with the same id by layer and the DKS keys by slot', () => {
+    const strokeAt = (layer: number, id: number): DynamicKeySlot => ({
+      ...STROKE,
+      target: at(layer, id),
+    });
+    const toggleAt = (layer: number, id: number): DynamicKeySlot => ({
+      ...TOGGLE,
+      target: at(layer, id),
+    });
+    const rows = dashboardRows([
+      strokeAt(0, 9),
+      toggleAt(2, 5),
+      strokeAt(1, 1),
+      toggleAt(0, 5),
+      toggleAt(3, 2),
+    ]);
+    expect(rows.map(row => row.id)).toEqual(['3:2', '0:5', '2:5', '0:9', '1:1']);
   });
 
   it('leaves out dynamic keys that are missing a key', () => {
