@@ -341,8 +341,7 @@ export function NullBindBottomOutSlider({
           </div>
         </div>
         <span className="text-sm text-gray-500 dark:text-gray-400">
-          {uiBottomOutPoint.toFixed(1)}
-          {t('units.mm')}
+          {`${uiBottomOutPoint.toFixed(1)}${t('units.mm')}`}
         </span>
       </div>
       <ThemedSlider
@@ -357,14 +356,8 @@ export function NullBindBottomOutSlider({
         onCommit={onCommitBottomOutPoint}
       />
       <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-1">
-        <span>
-          {(actuationPoint + 0.1).toFixed(1)}
-          {t('units.mm')}
-        </span>
-        <span>
-          {switchDistance.toFixed(1)}
-          {t('units.mm')}
-        </span>
+        <span>{`${(actuationPoint + 0.1).toFixed(1)}${t('units.mm')}`}</span>
+        <span>{`${switchDistance.toFixed(1)}${t('units.mm')}`}</span>
       </div>
     </div>
   );
@@ -426,19 +419,19 @@ export function NullBindKeyTesterTab({
 
         <div className="mt-6 p-4 glassmorphism-card rounded-lg">
           <div className="text-sm text-gray-600 dark:text-gray-400">
-            {t('advancedkey.currentBehavior')}{' '}
+            {`${t('advancedkey.currentBehavior')} `}
             <span className="font-medium text-gray-900 dark:text-white">
               {getBehaviorName(behavior)}
             </span>
           </div>
           <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-            {t('advancedkey.bottomOut')}{' '}
+            {`${t('advancedkey.bottomOut')} `}
             <span className="font-medium text-gray-900 dark:text-white">
               {bottomOutPoint > 0 ? t('advancedkey.enabled') : t('advancedkey.disabled')}
             </span>
           </div>
           <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-            {t('advancedkey.rapidTrigger')}:{' '}
+            {`${t('advancedkey.rapidTrigger')}: `}
             <span className="font-medium text-gray-900 dark:text-white">
               {rtDown > 0 ? t('advancedkey.enabled') : t('advancedkey.disabled')}
             </span>

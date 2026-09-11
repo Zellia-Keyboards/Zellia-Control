@@ -38,8 +38,8 @@ export function DeadzoneControl({
 
       <div>
         <div className="flex justify-between items-center text-sm dark:text-gray-400 text-gray-500 mb-2">
-          <div>Start: {upperDeadzone.toFixed(3)}mm</div>
-          <div>Bottom: {lowerDeadzone.toFixed(3)}mm</div>
+          <div>{`Start: ${upperDeadzone.toFixed(3)}mm`}</div>
+          <div>{`Bottom: ${lowerDeadzone.toFixed(3)}mm`}</div>
         </div>
 
         <div className="relative mb-4" style={{ height: '24px' }}>

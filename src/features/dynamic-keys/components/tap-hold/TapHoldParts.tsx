@@ -75,13 +75,15 @@ export function TapHoldSelectedKeyInfo({
                 {t('advancedkey.selectedKey')}
               </h3>
               <p className="text-sm text-gray-500 dark:text-gray-400">
-                Key Index: {currentSelectedIndex}
+                {`Key Index: ${currentSelectedIndex}`}
               </p>
             </div>
           </div>
         </div>
         <div className="flex items-center gap-3">
-          <span className="text-sm text-gray-600 dark:text-gray-400">{t('advancedkey.mode')}:</span>
+          <span className="text-sm text-gray-600 dark:text-gray-400">
+            {`${t('advancedkey.mode')}:`}
+          </span>
           <span className="px-3 py-1 rounded-full text-sm font-medium text-white glassmorphism-button">
             {t('advancedkey.tapHold')}
           </span>
@@ -112,8 +114,7 @@ export function TapHoldTimingConfig({
   return (
     <div className="rounded-lg border p-4 sm:p-6 glassmorphism-card">
       <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
-        {t('advancedkey.tapAction')} & {t('advancedkey.holdAction')}{' '}
-        {t('advancedkey.actionCategories')}
+        {`${t('advancedkey.tapAction')} & ${t('advancedkey.holdAction')} ${t('advancedkey.actionCategories')}`}
       </h3>
 
       <div className="space-y-6">
@@ -125,7 +126,7 @@ export function TapHoldTimingConfig({
             >
               Hold Delay
             </label>
-            <span className="text-sm text-gray-500 dark:text-gray-400">{holdDelay}ms</span>
+            <span className="text-sm text-gray-500 dark:text-gray-400">{`${holdDelay}ms`}</span>
           </div>
           <ThemedSlider
             id="hold-delay-slider"
@@ -150,7 +151,7 @@ export function TapHoldTimingConfig({
             >
               Tap Timeout
             </label>
-            <span className="text-sm text-gray-500 dark:text-gray-400">{tapTimeout}ms</span>
+            <span className="text-sm text-gray-500 dark:text-gray-400">{`${tapTimeout}ms`}</span>
           </div>
           <ThemedSlider
             id="tap-timeout-slider"
@@ -206,7 +207,7 @@ export function TapHoldPreview({
         </div>
         <div className="flex justify-between items-center py-2">
           <span className="text-sm text-gray-600 dark:text-gray-400">Delay</span>
-          <span className="font-medium text-gray-900 dark:text-white">{holdDelay}ms</span>
+          <span className="font-medium text-gray-900 dark:text-white">{`${holdDelay}ms`}</span>
         </div>
       </div>
     </div>
@@ -235,11 +236,11 @@ export function TapHoldInfoPanel({
       </h3>
       <div className="text-sm text-gray-800 dark:text-gray-300 space-y-2">
         <p>
-          • {t('advancedkey.quickTap', tapTimeout.toString())}:{' '}
+          {`• ${t('advancedkey.quickTap', tapTimeout.toString())}: `}
           <strong>{actionName(tapAction)}</strong>
         </p>
         <p>
-          • {t('advancedkey.holdOver', holdDelay.toString())}:{' '}
+          {`• ${t('advancedkey.holdOver', holdDelay.toString())}: `}
           <strong>{actionName(holdAction)}</strong>
         </p>
         <p className="mt-3 text-xs">{t('advancedkey.tapHoldDescription')}</p>

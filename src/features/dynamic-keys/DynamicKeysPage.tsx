@@ -224,7 +224,7 @@ function Dashboard({ onCreate, onEdit }: DashboardProps) {
           <div className="rounded-lg border flex-1 flex flex-col bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 glassmorphism-card">
             <div className="p-6 border-b border-gray-200 dark:border-gray-700">
               <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-                {t('advancedkey.configuredDynamicKeys')} ({configuredKeys.length})
+                {`${t('advancedkey.configuredDynamicKeys')} (${configuredKeys.length})`}
               </h2>
               <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
                 {t('advancedkey.infoDesc')}
@@ -242,7 +242,7 @@ function Dashboard({ onCreate, onEdit }: DashboardProps) {
                       {t('ui.noProfilesAvailable')}
                     </h3>
                     <p className="text-gray-600 dark:text-gray-400 mb-4">
-                      {t('advancedkey.step1Desc')} {t('advancedkey.step2Desc')}
+                      {`${t('advancedkey.step1Desc')} ${t('advancedkey.step2Desc')}`}
                     </p>
                   </div>
                 </div>

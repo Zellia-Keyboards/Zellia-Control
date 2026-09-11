@@ -41,8 +41,9 @@ export function NullBindConfiguredKeys({
           </h3>
           <div className="flex items-center gap-2">
             <span className="text-sm text-gray-500 dark:text-gray-400">
-              {configuredPairs.length}{' '}
-              {configuredPairs.length === 1 ? t('advancedkey.pair') : t('advancedkey.pairs')}
+              {`${configuredPairs.length} ${
+                configuredPairs.length === 1 ? t('advancedkey.pair') : t('advancedkey.pairs')
+              }`}
             </span>
           </div>
         </div>
@@ -161,16 +162,14 @@ export function NullBindConfiguredKeys({
                     <div className="flex justify-between text-xs">
                       <span className="text-gray-500 dark:text-gray-400">Actuation</span>
                       <span className="text-gray-700 dark:text-gray-300">
-                        {actuationMm.toFixed(1)}
-                        {t('units.mm')}
+                        {`${actuationMm.toFixed(1)}${t('units.mm')}`}
                       </span>
                     </div>
                     {bottomOutPoint > 0 && (
                       <div className="flex justify-between text-xs">
                         <span className="text-gray-500 dark:text-gray-400">Bottom Out</span>
                         <span className="text-gray-700 dark:text-gray-300">
-                          {bottomOutPoint.toFixed(1)}
-                          {t('units.mm')}
+                          {`${bottomOutPoint.toFixed(1)}${t('units.mm')}`}
                         </span>
                       </div>
                     )}
@@ -178,8 +177,7 @@ export function NullBindConfiguredKeys({
                       <div className="flex justify-between text-xs">
                         <span className="text-gray-500 dark:text-gray-400">RT Sensitivity</span>
                         <span className="text-gray-700 dark:text-gray-300">
-                          {rtDown.toFixed(2)}
-                          {t('units.mm')}
+                          {`${rtDown.toFixed(2)}${t('units.mm')}`}
                         </span>
                       </div>
                     )}

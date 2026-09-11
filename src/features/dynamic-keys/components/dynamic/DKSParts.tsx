@@ -69,15 +69,16 @@ export function SelectedKeyInfo({ currentKeyName, currentSelectedCoords }: Selec
               </h3>
               {currentSelectedCoords && (
                 <p className="text-sm text-gray-500 dark:text-gray-400">
-                  {t('advancedkey.position')}: {currentSelectedCoords[0]},{' '}
-                  {currentSelectedCoords[1]}
+                  {`${t('advancedkey.position')}: ${currentSelectedCoords[0]}, ${currentSelectedCoords[1]}`}
                 </p>
               )}
             </div>
           </div>
         </div>
         <div className="flex items-center gap-3">
-          <span className="text-sm text-gray-600 dark:text-gray-400">{t('advancedkey.mode')}:</span>
+          <span className="text-sm text-gray-600 dark:text-gray-400">
+            {`${t('advancedkey.mode')}:`}
+          </span>
           <span className="px-3 py-1 rounded-full text-sm font-medium border bg-primary-200 dark:bg-black dark:text-white text-primary dark:border-white/40">
             {t('advancedkey.dynamicKeystroke')}
           </span>

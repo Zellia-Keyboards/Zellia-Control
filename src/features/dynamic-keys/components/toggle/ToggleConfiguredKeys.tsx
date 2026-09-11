@@ -33,10 +33,11 @@ export function ToggleConfiguredKeys({
           {t('advancedkey.configuredToggle')}
         </h3>
         <span className="text-sm text-gray-500 dark:text-gray-400">
-          {configuredKeys.length}{' '}
-          {configuredKeys.length !== 1
-            ? t('advancedkey.keysCountPlural')
-            : t('advancedkey.keysCount')}
+          {`${configuredKeys.length} ${
+            configuredKeys.length !== 1
+              ? t('advancedkey.keysCountPlural')
+              : t('advancedkey.keysCount')
+          }`}
         </span>
       </div>
       <div className="space-y-3 mb-6">
@@ -78,7 +79,7 @@ export function ToggleConfiguredKeys({
               <div className="text-xs space-y-1">
                 <div className="flex justify-between">
                   <span className="text-gray-600 dark:text-gray-400">
-                    {t('advancedkey.actions')}:
+                    {`${t('advancedkey.actions')}:`}
                   </span>
                   <span className="font-medium text-primary-600">
                     {actionNameOrHex(entry.dynamicKey.binding)}
@@ -86,7 +87,7 @@ export function ToggleConfiguredKeys({
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600 dark:text-gray-400">
-                    {t('advancedkey.trigger')}:
+                    {`${t('advancedkey.trigger')}:`}
                   </span>
                   <span className="font-medium text-gray-700 dark:text-gray-300">
                     {trigger === 'press' ? t('advancedkey.onPress') : t('advancedkey.onRelease')}
@@ -94,7 +95,7 @@ export function ToggleConfiguredKeys({
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-gray-600 dark:text-gray-400">
-                    {t('advancedkey.state')}:
+                    {`${t('advancedkey.state')}:`}
                   </span>
                   <div className="flex items-center gap-1">
                     <div

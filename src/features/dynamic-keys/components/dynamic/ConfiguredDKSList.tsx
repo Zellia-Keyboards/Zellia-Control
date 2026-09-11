@@ -56,10 +56,11 @@ export function ConfiguredDKSList({
           </h3>
           <div className="flex items-center gap-2">
             <span className="text-sm text-gray-500 dark:text-gray-400">
-              {configuredDynamicKeys.length}{' '}
-              {configuredDynamicKeys.length !== 1
-                ? t('advancedkey.keysCountPlural')
-                : t('advancedkey.keysCount')}
+              {`${configuredDynamicKeys.length} ${
+                configuredDynamicKeys.length !== 1
+                  ? t('advancedkey.keysCountPlural')
+                  : t('advancedkey.keysCount')
+              }`}
             </span>
           </div>
         </div>
@@ -109,7 +110,7 @@ export function ConfiguredDKSList({
                 <div className="text-sm space-y-2">
                   <div className="flex items-center justify-between">
                     <span className="text-gray-600 dark:text-gray-400">
-                      {t('advancedkey.bindingsLabel')}:
+                      {`${t('advancedkey.bindingsLabel')}:`}
                     </span>
                     <span className="text-gray-700 dark:text-gray-300">
                       {entry.dynamicKey.bindings.length}
@@ -117,10 +118,10 @@ export function ConfiguredDKSList({
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-gray-600 dark:text-gray-400">
-                      {t('advancedkey.bottomOutLabel')}:
+                      {`${t('advancedkey.bottomOutLabel')}:`}
                     </span>
                     <span className="text-gray-700 dark:text-gray-300">
-                      {bottomOutMmOf(entry.dynamicKey.distances).toFixed(1)}mm
+                      {`${bottomOutMmOf(entry.dynamicKey.distances).toFixed(1)}mm`}
                     </span>
                   </div>
                 </div>
