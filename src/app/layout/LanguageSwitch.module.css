@@ -1,0 +1,38 @@
+/* Port of the <style> block of LanguageSwitch.svelte, selectors unchanged. */
+
+/* Language switch slider */
+.language-switch-slider {
+  will-change: left;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Glassmorphism default styling for language slider (no theme) */
+.language-slider-bg:not(:global(.bg-gray-900)):not(:global(.bg-white)):not(
+    :global(.bg-primary-500)
+  ) {
+  /* Prefixed first: Lightning CSS drops an unprefixed declaration that precedes its prefixed
+     twin, and the Svelte build kept both. */
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  background: linear-gradient(135deg, rgba(17, 24, 39, 0.85), rgba(17, 24, 39, 0.7));
+  box-shadow:
+    0 8px 16px -4px rgba(0, 0, 0, 0.25),
+    0 4px 8px -2px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.15),
+    inset 0 -1px 0 0 rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(0, 0, 0, 0.2);
+}
+
+/* Dark mode: use white glassmorphism when no theme is selected */
+:global(.dark)
+  .language-slider-bg:not(:global(.bg-gray-900)):not(:global(.bg-white)):not(
+    :global(.bg-primary-500)
+  ) {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0.7));
+  box-shadow:
+    0 8px 16px -4px rgba(255, 255, 255, 0.25),
+    0 4px 8px -2px rgba(255, 255, 255, 0.2),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.3),
+    inset 0 -1px 0 0 rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}

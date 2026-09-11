@@ -28,6 +28,13 @@ Hard constraints (from the product owner):
 5. **Firmware update uses upstream WebDFU** (`WebDfuDevice`, `detect_bootloader`) behind the
    identical 7-step UI.
 6. Do not use `Zellia-Keyboards/zllia` / `@zllia/ui`. Build from scratch in this repo.
+7. **The Update page works without a connected keyboard**, so a keyboard stuck in its bootloader
+   (after a reload or crash mid-flash, or after Settings → Enter Bootloader) can still be
+   flashed. Without a keyboard, the flasher looks for the DFU bootloaders of all supported models.
+8. **Confirming "Enter Bootloader" in Settings opens the Update page** with an update session
+   started, ready to flash the waiting bootloader.
+9. **About's "Support Development" button is hidden**: it linked to the placeholder
+   `https://github.com/sponsors/your-username`.
 
 ## 2. Findings that motivate the design (baseline 4f232a2)
 
@@ -79,7 +86,7 @@ See §1 items 1–6.
 |---|---|---|
 | D1 | Model registry: Zellia Starlight, Zellia 60, Zellia 80, Oholeo, Trinity Pad. Match a picked HID device to a model with each controller's own `detect(true)` rules; one picker with the union of HID filters. | Reuses upstream matching rules verbatim; fixes wrong-model connections. Zellia 60 added because upstream Starlight now excludes "Zellia 60" names. |
 | D2 | Connection shows the existing "Loading configurator…" overlay until the first `updateData`. `updateDataError`, or no `updateDataStart` within 3 s of opening the device (no reply / unsupported firmware version), ends in the error state with its message in the existing error slot. The full load itself has no timeout. A failed reload after the first load also ends the connection in the error state ("Failed to load keyboard configuration: …"), so the UI never edits a stale snapshot. | Removes the flash of controller-default data; unsupported firmware no longer hangs. |
-| D3 | Physical disconnect (`deviceDisconnected`) returns to the connect screen. The Update page stays mounted while a firmware-update session is active. | Intended behavior; the flasher must survive the reboot into DFU. |
+| D3 | Physical disconnect (`deviceDisconnected`) returns to the connect screen, except on the Update page, which never needs a keyboard (§1.7). A firmware update session outlives the page: navigating away does not abort a flash, and returning shows its progress. | Intended behavior; the flasher must survive the reboot into DFU. |
 | D4 | The keymap is the source of truth for dynamic-key placement: targets are rebuilt from `DynamicKey \| slot<<8` entries on every load (upstream `mapBackDynamicKey` semantics), before any `save()`. | Device reads don't return target ids; `save()` is fail-fast and rejects DKs without targets. |
 | D5 | "Configured keys" tables (dashboard, tap-hold, toggle, null-bind, DKS) are **derived from device dynamic keys**. Delete/Reset/Reset-all remove the DK from the device and restore each target's keymap entry to that DK's own binding (mutex: its per-key binding). UI-only fields (hold delay, toggle mode/state, null-bind bottom-out/RT) live in session memory keyed by the dynamic key's target `KeyLocation` (a mutex's first target) — not by slot: libamp stops scanning at the first empty slot, so freeing a slot compacts the table and slot numbers change. They fall back to defaults. | No duplicated server state; delete actually deletes; matches upstream `last_binding` restore. |
 | D6 | Applying a dynamic key reuses the slot already bound to that key/layer, else the first `DynamicKeyNone` slot; if none is free, the apply is rejected and logged. | Svelte leaked slots and could write to index -1. |
@@ -358,16 +365,21 @@ behavior to implement (✱ = deliberate change, logged in the parity log).
   colors) and Key Test (keydown/keyup log) as today.
 - **Profiles:** 16 slots, first 4 defaults, create/duplicate/restore/delete (hold-to-delete
   1.5 s)/import/export, error and confirmation modals; activation per D7.
-- **Settings:** Restart (immediate), Bootloader and Factory Reset (✱ confirmation).
+- **Settings:** Restart (immediate), Bootloader and Factory Reset (✱ confirmation); a confirmed
+  Bootloader opens the Update page with an update session started (✱ §1.8).
 - **Update:** identical 7-step UI and copy; driven by WebDFU: choose `.bin` (1 KiB–1 MiB) →
   `enter_bootloader()` → `detect_bootloader()` picker + open → erase → (connect step completes
   immediately) → download with progress → manifest/finish; abort and error states. WebUSB's
   picker needs transient user activation (~5 s in Chromium): try `detect_bootloader(true)`
   first (already-authorized device), and open the picker only from a user click, reusing the
-  flasher's existing buttons/prompts. The page stays mounted through the HID disconnect (D3) via
-  `useFirmwareUpdateSession().active` exported by `features/firmware-update` and read by the
-  shell's connection gate.
-- **About:** static content, GitHub link, donation QR.
+  flasher's existing buttons/prompts. A silently found device is flashed only if it appeared
+  after the app asked the keyboard to reboot into its bootloader (a bootloader that was already
+  attached could be another board); anything else needs the click. The page renders with or
+  without a keyboard (✱ §1.7: without one, the "enter bootloader" step is skipped and the
+  bootloaders of all supported models are searched). The update session lives outside the page
+  (D3); `useFirmwareUpdateSession().active` tells the shell and the update policy that a flash
+  is in progress.
+- **About:** static content, GitHub link, donation QR; no "Support Development" button (✱ §1.9).
 
 ## 9. Verification
 
