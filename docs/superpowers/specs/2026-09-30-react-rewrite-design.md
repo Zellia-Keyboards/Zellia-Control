@@ -123,7 +123,7 @@ See §1 items 1–6.
 | Firmware update | `WebDfuDevice` + `controller.detect_bootloader()` from `emi-keyboard-controller` | Tested DfuSe implementation. |
 | Tests | Vitest 5 + jsdom + Testing Library; Playwright 1.63 (Chrome channel); shared virtual libamp keyboard | See §9. |
 | Lint/format | ESLint 10 flat config, typescript-eslint (type-aware), react-hooks, jsx-a11y; Prettier 3 (existing options, Svelte plugin removed) | Repo had no linter. |
-| Package manager | yarn 1.22.22 via corepack (existing `packageManager`, CI); `bun.lock` removed | One lockfile. |
+| Package manager | npm 11 with `package-lock.json` (switched from yarn 1 on 2026-10-01 at the product owner's request; npm resolved identical versions); `bun.lock` removed | One lockfile, no corepack needed. |
 
 ### 4.2 Repository layout (after migration)
 
