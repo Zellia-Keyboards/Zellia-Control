@@ -1,0 +1,142 @@
+# Parity notes: Dynamic Keys (worker H)
+
+Scenarios: `e2e/parity/scenarios/dynamic-keys.ts` (30 scenarios), captured in both apps in
+dark/light × en/zh × 1440×900/2560×1440 with
+`E2E_PORT=4314 npm run parity -- --workers=2 --grep dynamic-keys-`.
+
+Every scenario connects through "Get Started" with an unseeded virtual keyboard, opens Dynamic
+Keys from the sidebar and drives the page like a user: the dashboard's mode cards, the on-screen
+keyboard, the editors' pickers, tabs, switches and sliders, Apply, Reset and Edit. Before the
+capture it hides the toolbar and the keyboard above the page and makes the sidebar's Save label
+invisible: they belong to the shell (the toolbar's profile dropdown to worker F) and the `shell-*`
+scenarios compare them. The pending profile dropdown makes the React toolbar 16 px shorter, which
+would shift the whole page, and the Save label differs by PL-002. Where a click scrolled the page,
+the scenario scrolls the main column explicitly afterwards (to its start, its end or a heading),
+because where the click left it depends on that shell region.
+
+## Results
+
+Final run of 2026-10-01 (240 captures, strict comparison): 75 identical, 165 different, as
+listed. "Text runs" and "noise" are explained below the deviation table.
+
+| Scenario                                 | Identical | Differences                                                      |
+| ---------------------------------------- | --------- | ---------------------------------------------------------------- |
+| `dynamic-keys-dashboard`                 | 0/8       | PL-009 (the count)                                               |
+| `dynamic-keys-dashboard-configured`      | 0/8       | PL-009, PL-010 (the tap-hold row's hold keycode)                 |
+| `dynamic-keys-dashboard-edit`            | 0/8       | H-4; PL-001; text runs (2560×1440)                               |
+| `dynamic-keys-tap-hold`                  | 5/8       | text runs of the "Tip" (en; 1 px in zh)                          |
+| `dynamic-keys-tap-hold-key`              | 0/8       | PL-010                                                           |
+| `dynamic-keys-tap-hold-actions`          | 6/8       | noise (picker button corners, 16 px)                             |
+| `dynamic-keys-tap-hold-category-actions` | 0/8       | PL-019                                                           |
+| `dynamic-keys-tap-hold-timing`           | 0/8       | H-3                                                              |
+| `dynamic-keys-tap-hold-pickers`          | 0/8       | PL-010                                                           |
+| `dynamic-keys-tap-hold-configured`       | 0/8       | PL-010                                                           |
+| `dynamic-keys-toggle`                    | 5/8       | text runs of the "Tip" (en; 1 px in zh)                          |
+| `dynamic-keys-toggle-key`                | 3/8       | text runs of "How it works" (2560×1440; 1 px at 1440×900 zh)     |
+| `dynamic-keys-toggle-configured`         | 0/8       | PL-001; text runs (2560×1440)                                    |
+| `dynamic-keys-toggle-options`            | 4/8       | text runs of "How it works" (2560×1440)                          |
+| `dynamic-keys-toggle-options-configured` | 0/8       | PL-001; text runs (2560×1440)                                    |
+| `dynamic-keys-null-bind`                 | 6/8       | noise (sidebar icons, 1–2 px)                                    |
+| `dynamic-keys-null-bind-one-key`         | 4/8       | noise (sidebar, 2–35 px)                                         |
+| `dynamic-keys-null-bind-pair`            | 8/8       |                                                                  |
+| `dynamic-keys-null-bind-bottom-out`      | 0/8       | H-3; noise (the toggled switch's thumb, 2560×1440)               |
+| `dynamic-keys-null-bind-rapid-trigger`   | 0/8       | H-3; noise (the toggled switch's thumb, 2560×1440)               |
+| `dynamic-keys-null-bind-key-tester`      | 8/8       |                                                                  |
+| `dynamic-keys-null-bind-configured`      | 7/8       | noise (73 px of circle edges and sidebar corners in one variant) |
+| `dynamic-keys-dks`                       | 3/8       | text runs of the "Tip" (en; 1 px in zh); noise (sidebar)         |
+| `dynamic-keys-dks-key`                   | 8/8       |                                                                  |
+| `dynamic-keys-dks-bindings`              | 0/8       | PL-001 ("Done")                                                  |
+| `dynamic-keys-dks-performance`           | 0/8       | H-1                                                              |
+| `dynamic-keys-dks-key-tester`            | 8/8       |                                                                  |
+| `dynamic-keys-dks-reset`                 | 0/8       | PL-020; noise (button corners)                                   |
+| `dynamic-keys-dks-reloaded`              | 0/8       | PL-021 (and PL-020 in the baseline); noise (button corners)      |
+| `dynamic-keys-dks-configured`            | 0/8       | H-2 (the page is longer, so the whole capture moves)             |
+
+The report is `e2e/.artifacts/parity/index.html` (not committed).
+
+## Deviations
+
+Rows for `docs/migration/parity-log.md` (same format; links are relative to
+`docs/migration/`, as in the log). Screenshots are the `dark-en-1440x900` captures; every
+variant shows the same difference.
+
+| ID     | Screen / route                     | State and captures                                                                                                                                                                            | Deviation                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 | Reason                                                            | Before                             | After                            | Status |
+| ------ | ---------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------- | ---------------------------------- | -------------------------------- | ------ |
+| PL-001 | `/dynamic/` toggle and DKS editors | toggle key applied: `dynamic-keys-toggle-configured--*`, `-toggle-options-configured--*`, `-dashboard-edit--*`; a DKS binding being picked: `dynamic-keys-dks-bindings--*`                    | The configured toggle cards read "Trigger:" / "State:" (zh "触发:" / "状态:") and the DKS keycode picker's close button "Done" ("完成"); the baseline showed the raw keys `advancedkey.trigger`, `advancedkey.state` and `advancedkey.done`. The DKS and null-bind delete buttons' tooltips and accessible names read "Delete key" / "Delete pair" (were `advancedkey.deleteKey` / `advancedkey.deletePair`).                                                                             | §1.1, D17                                                         | [before](parity/pl-001-before.png) | [after](parity/pl-001-after.png) | logged |
+| PL-009 | `/dynamic/` dashboard and editors  | empty: `dynamic-keys-dashboard--*`; one key of each mode applied through the editors: `dynamic-keys-dashboard-configured--*`                                                                  | The heading counts the keyboard's dynamic keys, "Configured Dynamic Keys (0)" / "(5)"; the baseline printed the literal text "(configuredKeys.length)". The table, the counts and the editors' configured lists are the keyboard's dynamic keys (one table row per key, a null bind has two) and their deletes and resets remove them from the keyboard; for the same keys they show what the baseline showed (order, "Unknown" / "Key N" names, configuration texts), apart from PL-010. | §8 Dynamic keys, D5                                               | [before](parity/pl-009-before.png) | [after](parity/pl-009-after.png) | logged |
+| PL-010 | `/dynamic/` tap-hold, dashboard    | key selected: `dynamic-keys-tap-hold-key--*`, `-tap-hold-pickers--*`; applied: `dynamic-keys-tap-hold-configured--*`, `-dashboard-configured--*`                                              | The default hold action is Left Ctrl: the preview and the "how it works" panel read "Left Ctrl" (were "224", the invalid code `0xE0`, which no action has), the configured card "Left Ctrl" (was "0xE0"), the dashboard row "Hold: 256" (was "Hold: 224"; the row prints the keycode, now `KeyLeftCtrl << 8`).                                                                                                                                                                            | D15                                                               | [before](parity/pl-010-before.png) | [after](parity/pl-010-after.png) | logged |
+| PL-019 | `/dynamic/` editors                | tap-hold with a System action tapped and a Mouse action held: `dynamic-keys-tap-hold-category-actions--*`                                                                                     | The preview and the "how it works" panel name the picked actions, "Vol+" and "Wheel Up": every action keeps its full keycode. The baseline named the first action of each category, "BRT-" and "Mouse Left", because all actions of a category had the same keycode.                                                                                                                                                                                                                      | D15                                                               | [before](parity/pl-019-before.png) | [after](parity/pl-019-after.png) | logged |
+| PL-020 | `/dynamic/` DKS                    | key selected, Reset clicked: `dynamic-keys-dks-reset--*`                                                                                                                                      | Reset loads the preset: Esc, Enter, Space and Backspace with their intervals, bottom-out 4.0 mm. The baseline's editor came out empty (no bindings, no intervals, 3.0 mm): its Reset set the preset, then the editor's configuration-store effect reloaded the empty editor for the key. (The preset's codes `esc`, `enter`, … would have shown as those literal strings.)                                                                                                                | §8 Dynamic keys; intended UI                                      | [before](parity/pl-020-before.png) | [after](parity/pl-020-after.png) | logged |
+| PL-021 | `/dynamic/` DKS                    | the Reset preset applied, the key deselected and selected again: `dynamic-keys-dks-reloaded--*`                                                                                               | The editor loads the key's DKS back from the keyboard in the firmware's form: Space's [0,1] + [1,3] comes back as one interval [0,3]; Esc, Enter and Backspace come back unchanged. The baseline never loaded from the keyboard; its capture shows the empty editor of PL-020.                                                                                                                                                                                                            | firmware encoding limit, spec §11                                 | [before](parity/pl-021-before.png) | [after](parity/pl-021-after.png) | logged |
+| H-1    | `/dynamic/` DKS Performance tab    | key selected: `dynamic-keys-dks-performance--*`                                                                                                                                               | The actuation control shows the selected key's actuation and deactivation points ("Actuation: 2.000mm", "Deactivation: 1.960mm" on the virtual keyboard), both thumbs and the coloured track, and the inputs hold the values. The baseline read the removed top-level advanced-key fields and showed "NaNmm", one thumb on a grey track and empty inputs. Changing a value writes the selected keys (in normal mode); the baseline rewrote them as soon as the tab opened.                | §2 API drift (`activation_value` moved to the key's `config`)     | [before](parity/h-1-before.png)    | [after](parity/h-1-after.png)    | logged |
+| H-2    | `/dynamic/` DKS                    | after Apply: `dynamic-keys-dks-configured--*`                                                                                                                                                 | "Configured Dynamic Keys" lists the keyboard's DKS keys below the editor ("Unknown", "Bindings: 4", "Bottom Out: 3.0mm", delete button), as the Svelte markup was built to. The baseline never showed it: the list threw while mounting (`$KeyboardDisplayValues` on a plain object: "t.subscribe is not a function"), so its page ended below the keycode picker.                                                                                                                        | bug                                                               | [before](parity/h-2-before.png)    | [after](parity/h-2-after.png)    | logged |
+| H-3    | `/dynamic/` tap-hold and null-bind | tap-hold timing: `dynamic-keys-tap-hold-timing--*`; null-bind bottom-out slider: `dynamic-keys-null-bind-bottom-out--*`; rapid-trigger sensitivity: `dynamic-keys-null-bind-rapid-trigger--*` | Slider thumbs sit at their values: hold delay 200 ms, tap timeout 150 ms, bottom-out 4.0 mm, sensitivity 0.50 mm. The baseline's slider set its value before its range and step, so the browser first fitted the value into the default 0–100 range in steps of 1: the thumbs showed 100 ms, 100 ms, 3.6 mm and 1.01 mm while the labels read the values.                                                                                                                                 | bug: attribute order of the Svelte `ThemedSlider` (shared slider) | [before](parity/h-3-before.png)    | [after](parity/h-3-after.png)    | logged |
+| H-4    | `/dynamic/` dashboard → editor     | Edit on a configured toggle row: `dynamic-keys-dashboard-edit--*`                                                                                                                             | Edit opens the row's editor with its key selected on its layer (a null bind with both of its keys): "Key 17", "Key Index: 17", the key highlighted. The baseline selected an undefined key for tap-hold, toggle and null-bind rows (it parsed their key id `17` as `layer,key`): "Key undefined", an empty key index, no key highlighted, a null bind with one unknown key; only DKS rows opened with their key.                                                                          | bug                                                               | [before](parity/h-4-before.png)    | [after](parity/h-4-after.png)    | logged |
+
+Also on these screens, logged by worker E with the shell's captures: PL-023 (the keyboard's
+labels on `/dynamic/`) and PL-024 (the layer selector on `/dynamic/`). Both are hidden in these
+captures.
+
+## Needs a change outside this feature
+
+The remaining differences on these screens come from shared code, which this branch must not
+edit. Both changes were checked by applying them locally (not committed) and capturing again: the
+text-run differences were gone.
+
+- **`src/components/ui/NoKeySelected.tsx` ("Tip" text runs).** The Svelte component renders
+  `<strong>Tip:</strong>` and the tip text after it as one text node each; JSX makes
+  `"Tip"` + `":"` and `" "` + the tip. Chrome positions the runs a fraction of a pixel apart, which
+  moves glyphs of the tip line (up to 380 px in the tap-hold, toggle and DKS editors without a key,
+  English; 1 px in Chinese). Fix: ``<strong>{`${t('advancedkey.tip')}:`}</strong>`` followed by
+  ``{` ${t(tipKey)}`}``.
+- **`translateRich` in `src/lib/i18n` ("How it works" text runs).** It returns the template text
+  and each string argument as separate children, so the toggle panel's "This key will toggle
+  **Caps Lock** when pressed. Each trigger…" has three text nodes after the `<strong>` where the
+  Svelte `{@html}` had one (at 2560×1440 up to 435 px, at 1440×900 zh 1 px). Fix: join adjacent
+  string parts into one string before creating the fragment.
+
+## Expected until the other Wave 2 branches are merged
+
+- **Toolbar and keyboard (shell; profile dropdown: worker F).** Hidden in every capture, see
+  above; `shell-dynamic` compares them.
+- **Performance controls.** The null-bind and DKS performance tabs use ports of the Performance
+  page's `ActuationPointControl`, `DeadzoneControl`, `RapidTriggerToggle` and
+  `SensitivityControl` in `src/features/dynamic-keys/components/performance/` (worker G owns the
+  Performance page). Once G is merged they can share one port.
+
+## Known capture noise
+
+The first three stay below 250 px per capture, come and go between variants or runs, and lie
+where both apps have the same DOM, layout and computed styles.
+
+- **Sidebar (shell region).** 1–2 px in the Theme Colors and Dark Mode icons, a 2 px column at
+  the Save button's right edge, or a few dithered pixels of its shadow (light theme, 35 px).
+- **Rounded corners.** One to four pixels per corner of the keycode picker's buttons, the header
+  buttons, a picked action's button or the null-bind indicator circles swap between two
+  anti-aliasing patterns, mostly next to content that differs (the DKS bindings of PL-020/PL-021),
+  like the keycap corners in the shell notes.
+- **Toggled switch thumbs (2560×1440).** The thumb of the switch the scenario just turned on
+  (bottom-out, rapid trigger) is anti-aliased differently (up to 240 px) at the same position.
+- **Finished fade-ins (2560×1440), settled by the scenarios.** The configured lists' fade-in
+  animations end with a `forwards` fill, which keeps the element on a composited layer; Chrome
+  rasterized those layers at a different sub-pixel offset in each app (the "Configured … Keys"
+  sections, up to 7 000 px), although both apps had the same layer tree (checked through the
+  DevTools protocol), element rectangles and computed styles. The scenarios cancel finished
+  fade-in animations before the capture; the elements look the same without the fill (fully
+  faded in), and the captures then match.
+
+## Implementation notes
+
+- Svelte joins an element's text and expressions into one text node; JSX makes one per part, and
+  Chrome lays the runs out a fraction of a pixel differently. Interpolated copy in the editors
+  (e.g. "Key Index: 16", "175ms", "2 keys", "Configured Dynamic Keys (5)") is built as one string.
+- The dashboard table keeps the Svelte table's order: its configuration object listed the
+  tap-hold, toggle and null-bind entries (keyed by key id) in ascending key order, then the DKS
+  entries (keyed by `layer,key`) in the order they were added; its sort by key name kept that order,
+  every name being "Unknown". The rows are sorted by key id and layer, the DKS keys last in slot
+  order.
+- Key names are the ones the Svelte editors showed: its lookups indexed the raw KLE JSON by key id
+  and always fell back to "Unknown" (dashboard, DKS, null bind) or "Key N" (tap-hold, toggle).
+- The DKS editor's "Position" shows the selected layer (`layer − 1`, "0, 18" on layer 1); the
+  Svelte editor always showed layer 0, which is the same on layer 1 (PL-024 brought the layer
+  selector to this page).
