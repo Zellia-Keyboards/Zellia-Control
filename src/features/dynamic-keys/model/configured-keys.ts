@@ -85,18 +85,29 @@ export interface ConfiguredKey<K extends SingleKeyKind> {
 }
 
 /**
- * The dynamic keys of one single-key kind that a key runs, in slot order. Dynamic keys without a
- * key (their key was remapped) do nothing and are left out.
+ * The Svelte order of tap-hold, toggle and null-bind keys: it kept their configurations in an
+ * object keyed by key id, and integer keys enumerate in ascending order. (A key configured on two
+ * layers was one entry there; here each layer has its own, in layer order.)
+ */
+function byKey(a: { readonly target: KeyLocation }, b: { readonly target: KeyLocation }): number {
+  return a.target.id - b.target.id || a.target.layer - b.target.layer;
+}
+
+/**
+ * The dynamic keys of one single-key kind that a key runs, in the Svelte lists' order: tap-hold
+ * and toggle keys by key ({@link byKey}), DKS keys in slot order (see {@link tableOrder}).
+ * Dynamic keys without a key (their key was remapped) do nothing and are left out.
  */
 export function configuredKeys<K extends SingleKeyKind>(
   dynamicKeys: readonly DynamicKeySlot[],
   kind: K
 ): ConfiguredKey<K>[] {
-  return dynamicKeys.flatMap((dynamicKey, slot) => {
+  const list = dynamicKeys.flatMap((dynamicKey, slot) => {
     if (!isSingleKeyOfKind(dynamicKey, kind)) return [];
     const target = targetOf(dynamicKey);
     return target ? [{ slot, target, dynamicKey }] : [];
   });
+  return kind === 'stroke' ? list : list.sort(byKey);
 }
 
 export interface ConfiguredMutex {
@@ -125,17 +136,17 @@ export interface DashboardRow {
 
 /**
  * The Svelte table's order. It listed an object of configurations in key order: tap-hold, toggle
- * and null-bind entries were keyed by key id (integer keys, ascending), DKS entries by
- * `layer,key` (string keys, after them, in the order they were added: here slot order, as a new
- * dynamic key takes the slot after the last one in use). Its sort by key name kept that order,
- * every name being "Unknown".
+ * and null-bind entries were keyed by key id ({@link byKey}), DKS entries by `layer,key` (string
+ * keys, after them, in the order they were first added). Its sort by key name kept that order,
+ * every name being "Unknown". DKS rows are in slot order here: a new dynamic key takes the slot
+ * after the last one in use, so the two orders agree until a delete moves the last dynamic key
+ * down into the freed slot (deviation H-7).
  */
 function tableOrder(a: DashboardRow, b: DashboardRow): number {
   const aStroke = a.dynamicKey.kind === 'stroke';
   const bStroke = b.dynamicKey.kind === 'stroke';
   if (aStroke !== bStroke) return aStroke ? 1 : -1;
-  if (aStroke) return a.slot - b.slot;
-  return a.target.id - b.target.id || a.target.layer - b.target.layer;
+  return aStroke ? a.slot - b.slot : byKey(a, b);
 }
 
 /**
