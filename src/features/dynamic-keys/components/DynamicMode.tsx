@@ -16,6 +16,7 @@ import {
 } from '../../device';
 import { useSelectedKeys, useSelectedLayer } from '../../keyboard';
 import { useT, type TranslationKey } from '../../../lib/i18n';
+import { removeDynamicKeyAt } from '../commands';
 import { useLoadedDraft } from '../hooks/use-loaded-draft';
 import { useTimeouts } from '../hooks/use-timeouts';
 import {
@@ -234,8 +235,7 @@ export function DynamicMode({ onBack }: DynamicModeProps) {
 
   function dksResetConfiguration(): void {
     if (!target) return;
-    const found = dynamicKeyOfKindAt(deviceStore.getState().config, target, 'stroke');
-    if (found) deviceSession.removeDynamicKey(found.slot);
+    removeDynamicKeyAt(target, 'stroke');
     adopt(draftOf(DKS_RESET_PRESET), dksSource(deviceStore.getState().config, target).deps);
   }
 
@@ -253,9 +253,7 @@ export function DynamicMode({ onBack }: DynamicModeProps) {
   }
 
   function dksDeleteKey(entry: ConfiguredKey<'stroke'>): void {
-    // The slot may have moved meanwhile: look the key's DKS up again.
-    const found = dynamicKeyOfKindAt(deviceStore.getState().config, entry.target, 'stroke');
-    if (found) deviceSession.removeDynamicKey(found.slot);
+    removeDynamicKeyAt(entry.target, 'stroke');
   }
 
   const selectedBinding =

@@ -6,8 +6,9 @@ import { act, render } from '@testing-library/react';
 import userEvent, { type UserEvent } from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router';
 import { onTestFinished } from 'vitest';
-import type { KeyLocation } from '../../device';
+import { deviceSession, deviceStore, type KeyLocation } from '../../device';
 import { INITIAL_KEY_SELECTION, keySelection, keySelectionStore } from '../../keyboard';
+import { kc } from '../../keycodes';
 import { connectVirtualKeyboard, type ConnectedKeyboard } from '../../../testing/app-keyboard';
 import type { VirtualKeyboardOptions } from '../../../testing/virtual-keyboard';
 import { DynamicKeysPage } from '../DynamicKeysPage';
@@ -57,3 +58,17 @@ export function selectLayer(layer: number): void {
 }
 
 export const at = (layer: number, id: number): KeyLocation => ({ layer, id });
+
+/**
+ * Uses up every free dynamic-key slot with toggle keys (binding A) on layer 4 (index 3), keys 0, 1,
+ * …, as if they had been set elsewhere: the next apply is rejected for want of a slot (D6).
+ */
+export function fillDynamicKeySlots(): void {
+  act(() => {
+    const slots = deviceStore.getState().config?.dynamicKeys ?? [];
+    const free = slots.filter(slot => slot.kind === 'none').length;
+    for (let id = 0; id < free; id++) {
+      deviceSession.applyDynamicKey({ kind: 'toggle', target: at(3, id), binding: kc.key(0x04) });
+    }
+  });
+}

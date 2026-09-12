@@ -13,16 +13,16 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { deviceSession, deviceStore, useDeviceConfig } from '../device';
+import { useDeviceConfig } from '../device';
 import { keySelection } from '../keyboard';
 import { useT, type TranslationKey } from '../../lib/i18n';
+import { removeDynamicKeyAt } from './commands';
 import { DynamicMode } from './components/DynamicMode';
 import { NullBindMode } from './components/NullBindMode';
 import { TapHoldMode } from './components/TapHoldMode';
 import { ToggleMode } from './components/ToggleMode';
 import {
   dashboardRows,
-  dynamicKeyAt,
   locationKey,
   type ConfiguredDynamicKey,
   type DashboardRow,
@@ -30,7 +30,7 @@ import {
 import { mutexBottomOutMm } from './model/editor-drafts';
 import { UNKNOWN_KEY_NAME } from './model/key-names';
 import type { NullBindFields } from './model/ui-fields';
-import { uiFields, useUiFields } from './store/ui-fields';
+import { useUiFields } from './store/ui-fields';
 
 type Mode = 'tap-hold' | 'toggle' | 'dynamic' | 'null-bind';
 
@@ -173,11 +173,7 @@ function Dashboard({ onCreate, onEdit }: DashboardProps) {
     .toSorted((a, b) => a.keyName.localeCompare(b.keyName));
 
   function deleteConfiguredKey(row: DashboardRow): void {
-    // Slots move when others are freed: look the key's dynamic key up again.
-    const found = dynamicKeyAt(deviceStore.getState().config, row.target);
-    if (!found) return;
-    deviceSession.removeDynamicKey(found.slot);
-    uiFields.forgetDynamicKey(found.dynamicKey);
+    removeDynamicKeyAt(row.target);
   }
 
   return (

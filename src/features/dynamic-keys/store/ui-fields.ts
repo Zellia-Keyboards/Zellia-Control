@@ -5,8 +5,12 @@
  */
 import { useStore } from 'zustand';
 import { createStore } from 'zustand/vanilla';
-import type { KeyLocation } from '../../device';
-import { locationKey, type ConfiguredDynamicKey } from '../model/configured-keys';
+import type { DeviceConfig, KeyLocation } from '../../device';
+import {
+  dynamicKeyOfKindAt,
+  locationKey,
+  type ConfiguredDynamicKey,
+} from '../model/configured-keys';
 import type { NullBindFields, TapHoldFields, ToggleFields } from '../model/ui-fields';
 
 export interface UiFieldsState {
@@ -37,6 +41,27 @@ function without<T>(
   return Object.fromEntries(Object.entries(records).filter(([key]) => !keys.has(key)));
 }
 
+interface Memory {
+  readonly kind: UiFieldsKind;
+  readonly location: KeyLocation;
+}
+
+/** Where a dynamic key's fields are stored: their record and key (a mutex's first key). */
+function memoryOf(dynamicKey: ConfiguredDynamicKey): Memory | null {
+  switch (dynamicKey.kind) {
+    case 'stroke':
+      return null;
+    case 'modTap':
+      return dynamicKey.target && { kind: 'tapHold', location: dynamicKey.target };
+    case 'toggle':
+      return dynamicKey.target && { kind: 'toggle', location: dynamicKey.target };
+    case 'mutex': {
+      const [first] = dynamicKey.targets;
+      return first && { kind: 'nullBind', location: first };
+    }
+  }
+}
+
 export const uiFields = {
   setTapHold(location: KeyLocation, fields: TapHoldFields): void {
     uiFieldsStore.setState(state => ({ tapHold: withRecord(state.tapHold, location, fields) }));
@@ -60,23 +85,24 @@ export const uiFields = {
       }
     });
   },
-  forgetKind(kind: UiFieldsKind): void {
-    uiFieldsStore.setState({ [kind]: {} });
-  },
   /** Drops the fields of a deleted dynamic key (a mutex's are under its first key). */
   forgetDynamicKey(dynamicKey: ConfiguredDynamicKey): void {
-    switch (dynamicKey.kind) {
-      case 'stroke':
-        return;
-      case 'modTap':
-        if (dynamicKey.target) uiFields.forget('tapHold', [dynamicKey.target]);
-        return;
-      case 'toggle':
-        if (dynamicKey.target) uiFields.forget('toggle', [dynamicKey.target]);
-        return;
-      case 'mutex': {
-        const [first] = dynamicKey.targets;
-        if (first) uiFields.forget('nullBind', [first]);
+    const memory = memoryOf(dynamicKey);
+    if (memory) uiFields.forget(memory.kind, [memory.location]);
+  },
+  /**
+   * After a command that removes dynamic keys (delete, reset all): drops the fields of the dynamic
+   * keys `before` had that no longer run on their key in `after`. A rejected command (e.g. while
+   * the keyboard reloads) leaves the snapshot as it was, and without a snapshot (disconnected)
+   * nothing is known: then the fields stay with their dynamic keys.
+   */
+  forgetRemoved(before: DeviceConfig | null, after: DeviceConfig | null): void {
+    if (!before || !after || before === after) return;
+    for (const dynamicKey of before.dynamicKeys) {
+      if (dynamicKey.kind === 'none') continue;
+      const memory = memoryOf(dynamicKey);
+      if (memory && !dynamicKeyOfKindAt(after, memory.location, dynamicKey.kind)) {
+        uiFields.forget(memory.kind, [memory.location]);
       }
     }
   },
@@ -88,19 +114,4 @@ export const uiFields = {
 
 export function useUiFields<T>(selector: (state: UiFieldsState) => T): T {
   return useStore(uiFieldsStore, selector);
-}
-
-export function useTapHoldFields(location: KeyLocation | null): TapHoldFields | undefined {
-  const key = location && locationKey(location);
-  return useUiFields(state => (key === null ? undefined : state.tapHold[key]));
-}
-
-export function useToggleFields(location: KeyLocation | null): ToggleFields | undefined {
-  const key = location && locationKey(location);
-  return useUiFields(state => (key === null ? undefined : state.toggle[key]));
-}
-
-export function useNullBindFields(location: KeyLocation | null): NullBindFields | undefined {
-  const key = location && locationKey(location);
-  return useUiFields(state => (key === null ? undefined : state.nullBind[key]));
 }

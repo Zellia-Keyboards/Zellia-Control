@@ -1,17 +1,49 @@
+import { RGBBaseMode } from 'emi-keyboard-controller';
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
-import type { KeyLocation } from '../../device';
-import {
-  uiFields,
-  uiFieldsStore,
-  useNullBindFields,
-  useTapHoldFields,
-  useToggleFields,
-  useUiFields,
-} from './ui-fields';
+import type { DeviceConfig, DynamicKeySlot, KeyLocation, Keycode } from '../../device';
+import { kc } from '../../keycodes';
+import { uiFields, uiFieldsStore, useUiFields } from './ui-fields';
 
 const at = (layer: number, id: number): KeyLocation => ({ layer, id });
 const NULL_BIND = { bottomOutMm: 3, actuationMm: 1.5, rtDown: 0.1, rtUp: 0, continuous: false };
+const NONE: DynamicKeySlot = { kind: 'none' };
+const MOD_TAP: DynamicKeySlot = { kind: 'modTap', tap: 4, hold: 5, durationMs: 150, target: at(0, 1) };
+const TOGGLE: DynamicKeySlot = { kind: 'toggle', binding: 6, target: at(0, 2) };
+const MUTEX: DynamicKeySlot = { kind: 'mutex', bindings: [7, 8], mode: 1, targets: [at(0, 3), at(0, 4)] };
+
+/** A snapshot whose layer 0 is `keys` and whose dynamic keys are `dynamicKeys`. */
+function config(keys: readonly Keycode[], dynamicKeys: readonly DynamicKeySlot[]): DeviceConfig {
+  return {
+    advancedKeys: [],
+    keymap: [[...keys]],
+    rgbBase: {
+      mode: RGBBaseMode.RgbBaseModeOff,
+      color: { red: 0, green: 0, blue: 0 },
+      secondaryColor: { red: 0, green: 0, blue: 0 },
+      speed: 0,
+      direction: 0,
+      density: 0,
+      brightness: 0,
+    },
+    rgbKeys: [],
+    dynamicKeys,
+    profileIndex: 0,
+    profileCount: 4,
+  };
+}
+
+const dk = (slot: number) => kc.dynamicKey(slot);
+/** Mod-tap on key 1, toggle on key 2, mutex on keys 3 and 4. */
+const BEFORE = config([0x08, dk(0), dk(1), dk(2), dk(2)], [MOD_TAP, TOGGLE, MUTEX, NONE]);
+/** BEFORE without the mod-tap: its key has its tap back, the mutex moved down into slot 0. */
+const WITHOUT_MOD_TAP = config([0x08, 4, dk(1), dk(0), dk(0)], [MUTEX, TOGGLE, NONE, NONE]);
+
+function rememberAll(): void {
+  uiFields.setTapHold(at(0, 1), { holdDelayMs: 300 });
+  uiFields.setToggle(at(0, 2), { trigger: 'release', state: true });
+  uiFields.setNullBind(at(0, 3), NULL_BIND);
+}
 
 afterEach(() => {
   uiFields.reset();
@@ -39,16 +71,6 @@ describe('dynamic-key UI fields (session memory, D5)', () => {
     expect(uiFieldsStore.getState().tapHold).toEqual({ '0:1': { holdDelayMs: 500 } });
   });
 
-  it('forgets every record of one kind', () => {
-    uiFields.setToggle(at(0, 1), { trigger: 'press', state: true });
-    uiFields.setToggle(at(2, 3), { trigger: 'release', state: false });
-    uiFields.setTapHold(at(0, 1), { holdDelayMs: 300 });
-    uiFields.forgetKind('toggle');
-
-    expect(uiFieldsStore.getState().toggle).toEqual({});
-    expect(uiFieldsStore.getState().tapHold).toEqual({ '0:1': { holdDelayMs: 300 } });
-  });
-
   it('forgets the fields of a deleted dynamic key', () => {
     uiFields.setTapHold(at(0, 1), { holdDelayMs: 300 });
     uiFields.setToggle(at(0, 1), { trigger: 'release', state: true });
@@ -67,26 +89,39 @@ describe('dynamic-key UI fields (session memory, D5)', () => {
     expect(uiFieldsStore.getState().nullBind).toEqual({});
   });
 
-  it('serves the hooks and follows updates', () => {
-    const tapHold = renderHook(() => useTapHoldFields(at(0, 5)));
-    const toggle = renderHook(() => useToggleFields(at(0, 5)));
-    const nullBind = renderHook(() => useNullBindFields(at(0, 5)));
+  it('forgets the fields of what a command removed, also when slots moved', () => {
+    rememberAll();
+    uiFields.forgetRemoved(BEFORE, WITHOUT_MOD_TAP);
+    expect(uiFieldsStore.getState()).toEqual({
+      tapHold: {},
+      toggle: { '0:2': { trigger: 'release', state: true } },
+      nullBind: { '0:3': NULL_BIND },
+    });
+
+    const empty = config([0x08, 4, 6, 7, 8], [NONE, NONE, NONE, NONE]);
+    uiFields.forgetRemoved(WITHOUT_MOD_TAP, empty);
+    expect(uiFieldsStore.getState()).toEqual({ tapHold: {}, toggle: {}, nullBind: {} });
+  });
+
+  it('keeps the fields when the command was rejected or the keyboard is gone', () => {
+    rememberAll();
+    const remembered = uiFieldsStore.getState();
+    // A rejected command leaves the snapshot as it was.
+    uiFields.forgetRemoved(BEFORE, BEFORE);
+    uiFields.forgetRemoved(BEFORE, null);
+    uiFields.forgetRemoved(null, WITHOUT_MOD_TAP);
+    expect(uiFieldsStore.getState()).toEqual(remembered);
+  });
+
+  it('serves the store to components and follows updates', () => {
     const all = renderHook(() => useUiFields(state => state.tapHold));
-    expect(tapHold.result.current).toBeUndefined();
+    expect(all.result.current).toEqual({});
 
     act(() => {
       uiFields.setTapHold(at(0, 5), { holdDelayMs: 250 });
       uiFields.setNullBind(at(0, 5), NULL_BIND);
     });
 
-    expect(tapHold.result.current).toEqual({ holdDelayMs: 250 });
-    expect(toggle.result.current).toBeUndefined();
-    expect(nullBind.result.current).toEqual(NULL_BIND);
     expect(all.result.current).toEqual({ '0:5': { holdDelayMs: 250 } });
-  });
-
-  it('reads nothing without a key', () => {
-    uiFields.setTapHold(at(0, 0), { holdDelayMs: 250 });
-    expect(renderHook(() => useTapHoldFields(null)).result.current).toBeUndefined();
   });
 });

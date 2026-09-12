@@ -14,6 +14,7 @@ import {
 } from '../../device';
 import { useSelectedKeys, useSelectedLayer } from '../../keyboard';
 import { useT } from '../../../lib/i18n';
+import { removeDynamicKeyAt } from '../commands';
 import { useLoadedDraft } from '../hooks/use-loaded-draft';
 import { useTimeouts } from '../hooks/use-timeouts';
 import {
@@ -137,12 +138,7 @@ export function NullBindMode({ onBack }: NullBindModeProps) {
     setDeletingPairs(pairs => withKey(pairs, pairId));
     schedule(
       () => {
-        // The slot may have moved meanwhile: look the pair's mutex up again.
-        const found = dynamicKeyOfKindAt(deviceStore.getState().config, pair.targets[0], 'mutex');
-        if (found) {
-          deviceSession.removeDynamicKey(found.slot);
-          uiFields.forgetDynamicKey(found.dynamicKey);
-        }
+        removeDynamicKeyAt(pair.targets[0], 'mutex');
         setDeletingPairs(pairs => withoutKey(pairs, pairId));
       },
       DELETE_ANIMATION_MS,
