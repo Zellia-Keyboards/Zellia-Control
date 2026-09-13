@@ -83,6 +83,13 @@ const TYPE_LABELS: Readonly<Record<ConfiguredDynamicKey['kind'], string>> = {
   mutex: 'Null Bind',
 };
 
+/**
+ * Every key name of the Svelte table fell back to "Unknown" (see `key-names.ts`), so its sort by
+ * name kept the rows in the order `dashboardRows` reproduces; the key cell shows the name and a
+ * badge of its first two letters.
+ */
+const KEY_BADGE = UNKNOWN_KEY_NAME.slice(0, 2).toUpperCase();
+
 export function DynamicKeysPage() {
   const [selectedMode, setSelectedMode] = useState<Mode | null>(null);
 
@@ -168,9 +175,7 @@ function Dashboard({ onCreate, onEdit }: DashboardProps) {
   const t = useT();
   const config = useDeviceConfig();
   const nullBind = useUiFields(state => state.nullBind);
-  const configuredKeys = dashboardRows(config?.dynamicKeys ?? [])
-    .map(row => ({ ...row, keyName: UNKNOWN_KEY_NAME }))
-    .toSorted((a, b) => a.keyName.localeCompare(b.keyName));
+  const configuredKeys = dashboardRows(config?.dynamicKeys ?? []);
 
   function deleteConfiguredKey(row: DashboardRow): void {
     removeDynamicKeyAt(row.target);
@@ -270,10 +275,10 @@ function Dashboard({ onCreate, onEdit }: DashboardProps) {
                           <td className="py-3 px-4">
                             <div className="flex items-center gap-2">
                               <div className="w-8 h-8 rounded bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-xs font-medium text-gray-600 dark:text-gray-400">
-                                {key.keyName.slice(0, 2).toUpperCase()}
+                                {KEY_BADGE}
                               </div>
                               <span className="font-medium text-gray-900 dark:text-white">
-                                {key.keyName}
+                                {UNKNOWN_KEY_NAME}
                               </span>
                             </div>
                           </td>
