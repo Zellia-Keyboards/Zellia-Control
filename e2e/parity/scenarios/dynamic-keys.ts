@@ -183,15 +183,55 @@ function bottomOutSwitch(page: Page): Locator {
 }
 
 /**
- * Configures the null-bind pair Z + X with the second behavior (absolute priority, key 1), with
- * the alternative bottom-out behavior when `bottomOut` is set.
+ * Configures a null-bind pair (Z + X unless `keys` says otherwise) with the second behavior
+ * (absolute priority, key 1), with the alternative bottom-out behavior when `bottomOut` is set.
  */
-async function applyNullBind(page: Page, { bottomOut = false } = {}): Promise<void> {
-  await clickKeycap(page, KEYCAP.z);
-  await clickKeycap(page, KEYCAP.x);
+async function applyNullBind(
+  page: Page,
+  {
+    bottomOut = false,
+    keys = [KEYCAP.z, KEYCAP.x],
+  }: { readonly bottomOut?: boolean; readonly keys?: readonly number[] } = {}
+): Promise<void> {
+  for (const key of keys) await clickKeycap(page, key);
   await page.locator('.mt-3.grid.gap-1 > button').nth(1).click();
   if (bottomOut) await bottomOutSwitch(page).click();
   await apply(page);
+}
+
+/**
+ * Moves `slider` one step with an arrow key, as a keyboard user would: the input and change
+ * events of a drag. (The page's only sliders have no accessible names in the baseline.)
+ */
+async function stepSlider(
+  page: Page,
+  slider: Locator,
+  key: 'ArrowLeft' | 'ArrowRight'
+): Promise<void> {
+  await slider.focus();
+  await page.keyboard.press(key);
+}
+
+/** Tap-hold timing: hold delay and tap timeout one step up each (the page's only sliders). */
+async function stepTimingSliders(page: Page): Promise<void> {
+  await stepSlider(page, page.getByRole('slider').nth(0), 'ArrowRight');
+  await stepSlider(page, page.getByRole('slider').nth(1), 'ArrowRight');
+}
+
+/**
+ * From the dashboard: a DKS on the key at keycap position `keycap` with `bindings` picked for its
+ * first bindings, then back to the dashboard.
+ */
+async function applyDks(page: Page, keycap: number, bindings: readonly string[]): Promise<void> {
+  await openMode(page, 'dks');
+  await clickKeycap(page, keycap);
+  for (const [index, name] of bindings.entries()) {
+    await dksBinding(page, index).click();
+    await pickAction(picker(page), name);
+  }
+  await apply(page);
+  await back(page).click();
+  await modeCards(page).first().waitFor();
 }
 
 /** The toggle editor's trigger buttons: On Press, On Release. */
@@ -261,6 +301,15 @@ const scenarios: readonly ParityScenario[] = [
     await back(page).waitFor();
     await showPage(page);
   }),
+  connected('dashboard-dks-order', async page => {
+    // DKS keys on W (1 binding), Q (2) and Tab (none), then W's row deleted (H-7): React lists
+    // them in slot order, and the delete moved Tab's DKS down into W's slot.
+    await applyDks(page, KEYCAP.w, ['A']);
+    await applyDks(page, KEYCAP.q, ['A', 'B']);
+    await applyDks(page, KEYCAP.tab, []);
+    await page.getByTitle('Delete configuration').first().click();
+    await showPage(page);
+  }),
 
   // Tap-hold
   connected('tap-hold', async page => {
@@ -298,6 +347,20 @@ const scenarios: readonly ParityScenario[] = [
     // The timing sliders below the pickers.
     await showPage(page, 'end');
   }),
+  connected('tap-hold-timing-moved', async page => {
+    // Both timing sliders one step up (H-5): the labels follow them.
+    await openMode(page, 'tap-hold');
+    await clickKeycap(page, KEYCAP.tab);
+    await stepTimingSliders(page);
+    await showPage(page, 'end');
+  }),
+  connected('tap-hold-timing-moved-panels', async page => {
+    // The same, seen in the preview and the "how it works" panel (H-5).
+    await openMode(page, 'tap-hold');
+    await clickKeycap(page, KEYCAP.tab);
+    await stepTimingSliders(page);
+    await showPage(page, 'start');
+  }),
   connected('tap-hold-pickers', async page => {
     await openMode(page, 'tap-hold');
     await clickKeycap(page, KEYCAP.tab);
@@ -311,6 +374,16 @@ const scenarios: readonly ParityScenario[] = [
   }),
   connected('tap-hold-configured', async page => {
     await openMode(page, 'tap-hold');
+    await clickKeycap(page, KEYCAP.tab);
+    await apply(page);
+    await showPage(page, page.getByText(/Configured Tap-Hold Keys|已配置的轻按保持按键/));
+  }),
+  connected('tap-hold-configured-order', async page => {
+    // Q applied before Tab: the list is in key order, Tab (16) before Q (17).
+    await openMode(page, 'tap-hold');
+    await clickKeycap(page, KEYCAP.q);
+    await apply(page);
+    await clickKeycap(page, KEYCAP.q);
     await clickKeycap(page, KEYCAP.tab);
     await apply(page);
     await showPage(page, page.getByText(/Configured Tap-Hold Keys|已配置的轻按保持按键/));
@@ -369,6 +442,15 @@ const scenarios: readonly ParityScenario[] = [
     await bottomOutSwitch(page).click();
     await showPage(page);
   }),
+  connected('null-bind-bottom-out-moved', async page => {
+    // The bottom-out slider (the left column's only slider) one step down (H-5).
+    await openMode(page, 'null-bind');
+    await clickKeycap(page, KEYCAP.z);
+    await clickKeycap(page, KEYCAP.x);
+    await bottomOutSwitch(page).click();
+    await stepSlider(page, page.locator('.w-72').getByRole('slider'), 'ArrowLeft');
+    await showPage(page);
+  }),
   connected('null-bind-rapid-trigger', async page => {
     await openMode(page, 'null-bind');
     await clickKeycap(page, KEYCAP.z);
@@ -386,6 +468,15 @@ const scenarios: readonly ParityScenario[] = [
   connected('null-bind-configured', async page => {
     await openMode(page, 'null-bind');
     await applyNullBind(page, { bottomOut: true });
+    await showPage(page);
+  }),
+  connected('null-bind-two-pairs', async page => {
+    // Z + X, then Q + W (H-6): one card per pair.
+    await openMode(page, 'null-bind');
+    await applyNullBind(page);
+    await back(page).click();
+    await openMode(page, 'null-bind');
+    await applyNullBind(page, { keys: [KEYCAP.q, KEYCAP.w] });
     await showPage(page);
   }),
 
