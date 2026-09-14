@@ -1,13 +1,17 @@
 import { DynamicKeyMutexMode, Keycode as EmiKeycode } from 'emi-keyboard-controller';
 import { act, fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
-import { deviceSession } from '../../device';
-import { mutexMode } from '../../device/model/mutex-mode';
+import { deviceSession, deviceStore } from '../../device';
 import { keySelectionStore } from '../../keyboard';
 import { kc } from '../../keycodes';
 import { dynamicKeyKeycode } from '../../../testing/virtual-keyboard';
-import { uiFieldsStore } from '../store/ui-fields';
-import { renderDynamicKeysPage, selectKeys, selectLayer } from '../testing/render-page';
+import {
+  at,
+  fillDynamicKeySlots,
+  renderDynamicKeysPage,
+  selectKeys,
+  selectLayer,
+} from '../testing/render-page';
 
 const A = kc.key(EmiKeycode.A);
 const D = kc.key(EmiKeycode.D);
@@ -17,6 +21,14 @@ const G = kc.key(EmiKeycode.G);
 const SEEDED_PAIR = [31, 33] as const;
 /** Seeded toggle (slot 2) on F (34); key 35 is G. */
 const TOGGLE_KEY = 34;
+
+/**
+ * libamp's mutex mode byte: the priority in the low nibble; any high bit (the configurator writes
+ * 0xF0) also reports both keys while both are bottomed out.
+ */
+function mutexMode(priority: DynamicKeyMutexMode, bothOnBottomOut = false): number {
+  return priority | (bothOnBottomOut ? 0xf0 : 0);
+}
 
 async function openNullBind(options: Parameters<typeof renderDynamicKeysPage>[0] = {}) {
   const page = await renderDynamicKeysPage(options);
@@ -156,7 +168,6 @@ describe('Null-bind editor', () => {
     expect(slider).toHaveAttribute('min', '1.6');
     // Dragging fires input events; the release fires change, which commits.
     fireEvent.input(slider, { target: { value: '3.2' } });
-    expect(uiFieldsStore.getState().nullBind).toEqual({});
     fireEvent.change(slider);
     expect(screen.getByText('3.2mm')).toBeInTheDocument();
     await user.click(applyButton());
@@ -164,7 +175,6 @@ describe('Null-bind editor', () => {
     await expect
       .poll(() => keyboard.vk.state.active.dynamicKeys[0])
       .toMatchObject({ mode: mutexMode(DynamicKeyMutexMode.DKMutexLastPriority, true) });
-    expect(uiFieldsStore.getState().nullBind['0:20']).toMatchObject({ bottomOutMm: 3.2 });
     const [card] = pairCards();
     if (!card) throw new Error('no card');
     expect(within(card).getByText('3.2mm')).toBeInTheDocument();
@@ -205,7 +215,7 @@ describe('Null-bind editor', () => {
     selectKeys(...SEEDED_PAIR);
     await user.click(screen.getByRole('switch', { name: 'Rapid Trigger Toggle' }));
 
-    expect(uiFieldsStore.getState().nullBind['0:31']).toMatchObject({ rtDown: 0.1 });
+    // The pair's card reads the remembered fields.
     const [card] = pairCards();
     if (!card) throw new Error('no card');
     expect(within(card).getByText('0.10mm')).toBeInTheDocument();
@@ -226,10 +236,76 @@ describe('Null-bind editor', () => {
     const { user } = await openNullBind({ seedDynamicKeys: false });
     selectKeys(1, 2);
     await user.click(screen.getByRole('switch', { name: 'Rapid Trigger Toggle' }));
-    expect(uiFieldsStore.getState().nullBind).toEqual({});
     await user.click(screen.getByRole('button', { name: 'Key Tester' }));
     const tester = screen.getByRole('heading', { name: 'Key Tester' }).parentElement;
     expect(tester).toHaveTextContent('Rapid Trigger: Disabled');
+
+    // Applying the pair does not take the tab's rapid trigger along.
+    await user.click(applyButton());
+    const [card] = pairCards();
+    if (!card) throw new Error('no card');
+    expect(within(card).getAllByText('Off')).toHaveLength(2);
+    expect(within(card).queryByText('RT Sensitivity')).toBeNull();
+  });
+
+  it('re-applies a pair’s mutex into its own slot and keeps its remembered fields (D6)', async () => {
+    const { keyboard, user } = await openNullBind();
+    selectKeys(...SEEDED_PAIR);
+    await user.click(screen.getByRole('switch', { name: 'Rapid Trigger Toggle' }));
+    await user.click(behavior('Neutral'));
+    await user.click(applyButton());
+
+    await expect
+      .poll(() => keyboard.vk.state.active.dynamicKeys[3])
+      .toEqual({
+        type: 'mutex',
+        bindings: [A, D],
+        keyIds: [...SEEDED_PAIR],
+        mode: mutexMode(DynamicKeyMutexMode.DKMutexNeutral),
+      });
+    expect(keyboard.vk.state.active.dynamicKeys.filter(key => key.type !== 'none')).toHaveLength(4);
+    expect(keyboard.vk.state.active.keymap[0]?.[SEEDED_PAIR[0]]).toBe(dynamicKeyKeycode(3));
+    const [card] = pairCards();
+    if (!card) throw new Error('no card');
+    expect(within(card).getByText('Neutral')).toBeInTheDocument();
+    expect(within(card).getByText('0.10mm')).toBeInTheDocument();
+  });
+
+  it('keeps the pair and remembers nothing when the keyboard has no free slot', async () => {
+    const { keyboard, user } = await openNullBind({ seedDynamicKeys: false });
+    fillDynamicKeySlots();
+    const own = [...(keyboard.vk.state.active.keymap[0] ?? [])];
+    selectKeys(20, 22);
+    await user.click(screen.getByRole('switch', { name: 'Alternative Bottom Out Behavior' }));
+    const slider = screen.getByRole('slider', { name: 'Bottom Out Point' });
+    fireEvent.input(slider, { target: { value: '3.2' } });
+    fireEvent.change(slider);
+    await user.click(applyButton());
+
+    expect(deviceStore.getState().lastError).toEqual({
+      operation: 'applyDynamicKey',
+      message: 'No free dynamic key slot',
+    });
+    // The pair stays in the editor to try again (the Svelte apply always cleared it).
+    expect(screen.getByText('Configure Null Bind Behavior')).toBeInTheDocument();
+    expect(applyButton()).toBeEnabled();
+    expect(screen.queryByRole('heading', { name: 'Configured Null Bind Keys' })).toBeNull();
+    expect(keyboard.vk.state.active.keymap[0]?.slice(20, 23)).toEqual(own.slice(20, 23));
+
+    // Nothing was remembered: a mutex the pair gets from elsewhere shows the default point.
+    act(() => {
+      deviceSession.removeDynamicKey(0);
+      deviceSession.applyDynamicKey({
+        kind: 'mutex',
+        targets: [at(0, 20), at(0, 22)],
+        bindings: [own[20] ?? 0, own[22] ?? 0],
+        mode: mutexMode(DynamicKeyMutexMode.DKMutexLastPriority, true),
+      });
+    });
+    const [card] = pairCards();
+    if (!card) throw new Error('no card');
+    expect(within(card).getByText('4.0mm')).toBeInTheDocument();
+    expect(screen.getByRole('slider', { name: 'Bottom Out Point' })).toHaveValue('4');
   });
 
   it('deletes a pair after its fade-out and gives both keys their bindings back', async () => {

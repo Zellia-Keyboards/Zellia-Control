@@ -1,10 +1,10 @@
 import { Keycode as EmiKeycode } from 'emi-keyboard-controller';
-import { screen, waitFor, within } from '@testing-library/react';
+import { act, fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
+import { deviceSession, deviceStore } from '../../device';
 import { kc } from '../../keycodes';
 import { dynamicKeyKeycode } from '../../../testing/virtual-keyboard';
-import { uiFieldsStore } from '../store/ui-fields';
-import { renderDynamicKeysPage, selectKeys } from '../testing/render-page';
+import { at, fillDynamicKeySlots, renderDynamicKeysPage, selectKeys } from '../testing/render-page';
 
 const A = kc.key(EmiKeycode.A);
 const F = kc.key(EmiKeycode.F);
@@ -149,7 +149,7 @@ describe('Toggle editor', () => {
     expect(screen.queryByRole('heading', { name: 'Configured Toggle Keys' })).toBeNull();
   });
 
-  it('resets every toggle key of the keyboard', async () => {
+  it('resets every toggle key of the keyboard and forgets their trigger and state', async () => {
     const { keyboard, user } = await openToggle();
     selectKeys(3);
     await user.click(screen.getByRole('switch', { name: 'Set toggle state to active' }));
@@ -163,6 +163,132 @@ describe('Toggle editor', () => {
     });
     expect(keyboard.vk.state.active.keymap[0]?.[3]).toBe(CAPS_LOCK);
     expect(keyboard.vk.state.active.keymap[0]?.[SEEDED_TOGGLE_KEY]).toBe(F);
-    expect(uiFieldsStore.getState().toggle).toEqual({});
+
+    // A toggle the key gets later from elsewhere starts inactive.
+    act(() => {
+      deviceSession.applyDynamicKey({ kind: 'toggle', target: at(0, 3), binding: CAPS_LOCK });
+    });
+    expect(within(configuredList()).getByText('Key 3')).toBeInTheDocument();
+    expect(screen.getByRole('switch', { name: 'Set toggle state to active' })).toHaveAttribute(
+      'aria-checked',
+      'false'
+    );
+  });
+
+  it('lists the configured keys by key id, as the Svelte list did', async () => {
+    const { user } = await openToggle({ seedDynamicKeys: false });
+    selectKeys(30);
+    await user.click(screen.getByRole('button', { name: 'Apply Configuration' }));
+    selectKeys(17);
+    await user.click(screen.getByRole('button', { name: 'Apply Configuration' }));
+
+    const names = within(configuredList()).getAllByText(/^Key \d+$/);
+    expect(names.map(name => name.textContent)).toEqual(['Key 17', 'Key 30']);
+  });
+
+  it('re-applies a key’s toggle into its own slot (D6)', async () => {
+    const { keyboard, user } = await openToggle();
+    const usedSlots = () =>
+      keyboard.vk.state.active.dynamicKeys.filter(key => key.type !== 'none').length;
+    expect(usedSlots()).toBe(4);
+    selectKeys(SEEDED_TOGGLE_KEY);
+    await user.click(within(actionPicker()).getByRole('button', { name: 'A' }));
+    await user.click(screen.getByRole('button', { name: 'Apply Configuration' }));
+
+    await expect
+      .poll(() => keyboard.vk.state.active.dynamicKeys[2])
+      .toEqual({ type: 'toggle', binding: A, keyId: SEEDED_TOGGLE_KEY });
+    expect(usedSlots()).toBe(4);
+    expect(keyboard.vk.state.active.keymap[0]?.[SEEDED_TOGGLE_KEY]).toBe(dynamicKeyKeycode(2));
+    expect(within(configuredList()).getByText('1 key')).toBeInTheDocument();
+  });
+
+  it('keeps the editor as it is when the keyboard has no free slot', async () => {
+    const { keyboard, user } = await openToggle({ seedDynamicKeys: false });
+    fillDynamicKeySlots();
+    const own = keyboard.vk.state.active.keymap[0]?.[40];
+    selectKeys(40);
+    await user.click(within(actionPicker()).getByRole('button', { name: 'C' }));
+    await user.click(screen.getByRole('switch', { name: 'Set toggle state to active' }));
+    await user.click(screen.getByRole('button', { name: 'Apply Configuration' }));
+
+    expect(deviceStore.getState().lastError).toEqual({
+      operation: 'applyDynamicKey',
+      message: 'No free dynamic key slot',
+    });
+    expect(within(actionPicker()).getByRole('button', { name: 'C' })).toHaveAttribute(
+      'aria-pressed',
+      'true'
+    );
+    expect(screen.getByRole('switch', { name: 'Set toggle state to inactive' })).toHaveAttribute(
+      'aria-checked',
+      'true'
+    );
+    expect(keyboard.vk.state.active.keymap[0]?.[40]).toBe(own);
+    expect(within(configuredList()).queryByText('Key 40')).toBeNull();
+  });
+
+  it('keeps a key’s trigger and state when its toggle moves to another slot', async () => {
+    const { keyboard, user } = await openToggle();
+    selectKeys(8);
+    await user.click(screen.getByRole('button', { name: /On Release/ }));
+    await user.click(screen.getByRole('switch', { name: 'Set toggle state to active' }));
+    await user.click(screen.getByRole('button', { name: 'Apply Configuration' }));
+    await expect
+      .poll(() => keyboard.vk.state.active.dynamicKeys[4])
+      .toMatchObject({ type: 'toggle', keyId: 8 });
+
+    // Freeing slot 0 (the seeded DKS) moves the new toggle down into it.
+    act(() => {
+      deviceSession.removeDynamicKey(0);
+    });
+    await expect
+      .poll(() => keyboard.vk.state.active.dynamicKeys[0])
+      .toMatchObject({ type: 'toggle', keyId: 8 });
+
+    selectKeys(5);
+    selectKeys(8);
+    expect(screen.getByRole('button', { name: /On Release/ })).toHaveAttribute(
+      'aria-pressed',
+      'true'
+    );
+    expect(screen.getByRole('switch', { name: 'Set toggle state to inactive' })).toHaveAttribute(
+      'aria-checked',
+      'true'
+    );
+    expect(within(configuredList()).getByText('On Release')).toBeInTheDocument();
+    expect(within(configuredList()).getByText('Enabled')).toBeInTheDocument();
+  });
+
+  it('keeps the toggle keys and their fields when the keyboard rejects Reset All', async () => {
+    const { keyboard, user } = await openToggle();
+    selectKeys(SEEDED_TOGGLE_KEY);
+    await user.click(screen.getByRole('button', { name: /On Release/ }));
+    await user.click(screen.getByRole('button', { name: 'Apply Configuration' }));
+    await user.click(screen.getByRole('button', { name: 'Reset All Toggle Keys' }));
+
+    // A profile switch makes the keyboard reload, and it rejects edits until it has. Leaving the
+    // editor runs the pending reset at once, while the keyboard reloads.
+    let switching = Promise.resolve();
+    act(() => {
+      switching = deviceSession.switchProfile(0);
+      fireEvent.click(screen.getByRole('button', { name: 'Back' }));
+    });
+    expect(deviceStore.getState().lastError).toEqual({
+      operation: 'removeDynamicKeysOfKind',
+      message: 'The keyboard is reloading its configuration',
+    });
+    await act(() => switching);
+
+    expect(keyboard.vk.state.active.dynamicKeys[2]).toMatchObject({
+      type: 'toggle',
+      keyId: SEEDED_TOGGLE_KEY,
+    });
+    await user.click(screen.getByRole('button', { name: /^Toggle/ }));
+    selectKeys(SEEDED_TOGGLE_KEY);
+    expect(screen.getByRole('button', { name: /On Release/ })).toHaveAttribute(
+      'aria-pressed',
+      'true'
+    );
   });
 });
