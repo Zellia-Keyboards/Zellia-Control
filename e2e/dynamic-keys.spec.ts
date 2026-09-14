@@ -324,7 +324,7 @@ test.describe('dynamic keys', () => {
 
       // A tap at the first stage, stretched to a press held until the key is released fully.
       const row = binding1.locator('xpath=..');
-      await row.getByRole('button', { name: 'Binding 1: add tap at phase 1' }).click();
+      await row.getByRole('button', { name: 'Add tap at phase 1 to binding 1' }).click();
       await expect(row.getByRole('button', { name: 'TAP action at phase 1' })).toBeVisible();
       const grip = row.getByRole('button', { name: 'Drag to resize interval' });
       const box = await grip.boundingBox();
