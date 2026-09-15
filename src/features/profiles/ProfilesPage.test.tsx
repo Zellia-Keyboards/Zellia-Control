@@ -2,6 +2,7 @@ import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router';
 import { afterEach, beforeEach, describe, expect, it, onTestFinished, vi } from 'vitest';
+import { installFakeAnimations } from '../../lib/transitions/testing';
 import { connectVirtualKeyboard } from '../../testing/app-keyboard';
 import { selectProfile } from '../../testing/virtual-keyboard';
 import { deviceStore } from '../device';
@@ -306,6 +307,35 @@ describe('ProfilesPage', () => {
       expect(profile(5)).toBeNull();
       expect(cardNames()).toEqual(['Profile 1', 'Profile 2', 'Profile 3', 'Profile 4']);
       expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+    });
+
+    it('slides the menu out with its last frame, like the Svelte block', () => {
+      vi.useFakeTimers();
+      const animations = installFakeAnimations();
+      onTestFinished(() => {
+        animations.uninstall();
+      });
+      addProfiles(1);
+      renderPage();
+      fireEvent.click(within(card('Profile 5')).getByRole('button', { name: 'Menu' }));
+      act(() => {
+        vi.advanceTimersByTime(200);
+      });
+      const menu = screen.getByRole('menu');
+
+      fireEvent.mouseDown(deleteItem());
+      act(() => {
+        vi.advanceTimersByTime(1504);
+      });
+
+      expect(profile(5)).toBeNull();
+      expect(menu).toBeInTheDocument();
+      expect(menu.inert).toBe(true);
+      expect(menu).toHaveTextContent('Deleting... 99%');
+      act(() => {
+        vi.advanceTimersByTime(200);
+      });
+      expect(menu).not.toBeInTheDocument();
     });
 
     it('keeps the profile when released early', async () => {
