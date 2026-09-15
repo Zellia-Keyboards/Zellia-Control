@@ -1,0 +1,35 @@
+:global(.nullbind-performance) {
+  width: 100%;
+}
+
+/* Actuation point - slides up and out when RT enabled */
+.actuation-point-container {
+  opacity: 1;
+  transform: translateY(0);
+  width: auto;
+  max-width: 800px;
+  min-width: 400px;
+}
+
+.actuation-point-container.slide-out {
+  opacity: 0;
+  transform: translateY(-20px);
+  width: 0;
+  max-width: 0;
+  min-width: 0;
+  pointer-events: none;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+/* RT deadzone container - slides up from bottom when RT enabled */
+.rt-deadzone-container {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.rt-deadzone-container.show {
+  opacity: 1;
+  pointer-events: auto;
+}

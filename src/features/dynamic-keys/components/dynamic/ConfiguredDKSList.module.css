@@ -1,0 +1,48 @@
+/* Smooth hover and animation transitions */
+.group {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transform-origin: center;
+}
+
+/* Enhanced hover effects */
+.group:hover {
+  box-shadow:
+    0 10px 25px -3px rgba(0, 0, 0, 0.1),
+    0 4px 6px -2px rgba(0, 0, 0, 0.05),
+    0 0 0 1px color-mix(in srgb, var(--theme-color-primary) 25%, transparent);
+}
+
+:global(.dark) .group:hover {
+  box-shadow:
+    0 10px 25px -3px rgba(0, 0, 0, 0.25),
+    0 4px 6px -2px rgba(0, 0, 0, 0.1),
+    0 0 0 1px color-mix(in srgb, var(--theme-color-primary) 40%, transparent);
+}
+
+/* Ensure smooth animation when keys are being deleted */
+.group:global(.opacity-0) {
+  transition:
+    opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Fade-in animation for newly added keys */
+@keyframes fade-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.95) translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.4s ease-out;
+}
+
+/* Smooth bin button transitions */
+.group button {
+  transition: background-color 0.2s ease-out;
+}
