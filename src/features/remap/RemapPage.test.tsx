@@ -282,7 +282,7 @@ describe('RemapPage', () => {
   });
 
   describe('no selection', () => {
-    it('asks to select a key first for 3 s and assigns nothing', () => {
+    it('asks to select a key first, for 3 s', () => {
       vi.useFakeTimers();
       const animations = installFakeAnimations();
       onTestFinished(() => {
@@ -297,12 +297,13 @@ describe('RemapPage', () => {
         'glassmorphism-card bg-gray-50 dark:bg-gray-900 p-4 rounded-lg shadow-lg border border-gray-200 dark:border-gray-600 text-black dark:text-white'
       );
       const toast = message.parentElement;
+      if (!toast) throw new Error('Missing toast');
       expect(toast).toHaveClass('fixed top-4 left-1/2 transform -translate-x-1/2 z-50');
       act(() => {
         vi.advanceTimersByTime(0);
       });
       // Fades in over 300 ms.
-      expect(toast && animations.of(toast).map(animation => animation.duration)).toEqual([0, 300]);
+      expect(animations.of(toast).map(animation => animation.duration)).toEqual([0, 300]);
 
       act(() => {
         vi.advanceTimersByTime(2999);
@@ -314,11 +315,23 @@ describe('RemapPage', () => {
       act(() => {
         vi.advanceTimersByTime(0);
       });
-      expect(toast && animations.active(toast).map(animation => animation.duration)).toEqual([300]);
+      expect(animations.active(toast).map(animation => animation.duration)).toEqual([300]);
       act(() => {
         vi.advanceTimersByTime(300);
       });
       expect(screen.queryByText(TOAST)).not.toBeInTheDocument();
+    });
+
+    it('sends nothing to the keyboard and loads no brush', async () => {
+      const keyboard = await connect();
+      renderPage();
+
+      fireEvent.click(paletteKey('Q'));
+      expect(screen.getByText(TOAST)).toBeInTheDocument();
+      select(1);
+      await settle();
+
+      expect(keymapPackets(keyboard)).toEqual([]);
     });
 
     it('hides the toast 3 s after the first click, like the Svelte page', () => {
