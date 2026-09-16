@@ -12,6 +12,8 @@ import {
 import { followKeyboardProfile, profileActions, profileStore } from './profile-store';
 
 const NOW = '2026-09-30T12:00:00.000Z';
+/** Keyboard reloads start after the controller's 200 ms debounce. */
+const RELOAD_TIMEOUT = { timeout: 3000 };
 
 function persisted(): unknown {
   return JSON.parse(localStorage.getItem(PROFILES_STORAGE_KEY) ?? 'null');
@@ -35,7 +37,7 @@ async function loaded(): Promise<void> {
       connection: { status: 'ready' },
       reloading: false,
     });
-  });
+  }, RELOAD_TIMEOUT);
 }
 
 async function connect() {
@@ -153,7 +155,7 @@ describe('keyboard profiles (D7)', () => {
         reloading: false,
         config: { profileIndex: 2 },
       });
-    });
+    }, RELOAD_TIMEOUT);
     expect(keyboard.vk.state.profileIndex).toBe(2);
     expect(activeProfileId()).toBe(3);
   });
@@ -189,7 +191,7 @@ describe('keyboard profiles (D7)', () => {
 
     await vi.waitFor(() => {
       expect(activeProfileId()).toBe(4);
-    });
+    }, RELOAD_TIMEOUT);
   });
 
   it('returns from a local profile to the keyboard profile whenever the keyboard reloads', async () => {
@@ -201,7 +203,7 @@ describe('keyboard profiles (D7)', () => {
 
     await vi.waitFor(() => {
       expect(activeProfileId()).toBe(1);
-    });
+    }, RELOAD_TIMEOUT);
   });
 
   it('takes the keyboard profile when a keyboard connects', async () => {

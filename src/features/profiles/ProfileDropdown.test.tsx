@@ -11,6 +11,8 @@ import { ProfileDropdown } from './ProfileDropdown';
 import { profileActions, profileStore } from './store/profile-store';
 
 const NOW = '2026-09-30T12:00:00.000Z';
+/** Keyboard reloads start after the controller's 200 ms debounce. */
+const RELOAD_TIMEOUT = { timeout: 3000 };
 
 function renderDropdown() {
   return render(
@@ -54,7 +56,7 @@ async function connect() {
       connection: { status: 'ready' },
       reloading: false,
     });
-  });
+  }, RELOAD_TIMEOUT);
   return keyboard;
 }
 
@@ -160,7 +162,7 @@ describe('ProfileDropdown', () => {
     expect(toggle()).toHaveTextContent('ProfilesProfile 2');
     await vi.waitFor(() => {
       expect(keyboard.vk.state.profileIndex).toBe(1);
-    });
+    }, RELOAD_TIMEOUT);
   });
 
   it('activates local profiles without switching the keyboard', async () => {
@@ -188,7 +190,7 @@ describe('ProfileDropdown', () => {
 
     await vi.waitFor(() => {
       expect(toggle()).toHaveTextContent('ProfilesProfile 4');
-    });
+    }, RELOAD_TIMEOUT);
   });
 
   it('translates its labels', async () => {
