@@ -88,7 +88,7 @@ type DeviceStoreApi = Pick<StoreApi<DeviceState>, 'getState' | 'subscribe'>;
  * D7: after every completed keyboard load — the first one after connecting, profile switches,
  * reloads the keyboard starts itself — the active profile is the keyboard's (`profileIndex + 1`),
  * also when a local profile (5–16) was active. A load has completed when the device store stops
- * reloading with a configuration.
+ * reloading with a configuration; a keyboard that has already loaded is followed at once.
  */
 export function followKeyboardProfile(profiles: ProfileStore, device: DeviceStoreApi): () => void {
   const follow = (config: DeviceConfig) => {
@@ -105,6 +105,7 @@ export function followKeyboardProfile(profiles: ProfileStore, device: DeviceStor
   });
 }
 
+// For the app's lifetime, from the first import of the profiles feature on.
 followKeyboardProfile(profileStore, deviceStore);
 
 export function useProfileState(): ProfileState {
