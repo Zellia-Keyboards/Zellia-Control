@@ -1,5 +1,6 @@
-import { useEffect, type ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import { Transition, fade } from '../../lib/transitions';
+import { useModalDismiss } from './use-modal-dismiss';
 
 export type ModalMaxWidth = 'sm' | 'md' | 'lg' | 'xl';
 
@@ -39,26 +40,7 @@ export function Modal({
   labelledBy,
   describedBy,
 }: ModalProps) {
-  useEffect(() => {
-    if (!open) return;
-    const handleKeydown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') onClose();
-    };
-    window.addEventListener('keydown', handleKeydown);
-    return () => {
-      window.removeEventListener('keydown', handleKeydown);
-    };
-  }, [open, onClose]);
-
-  useEffect(() => {
-    if (!open) return;
-    const previouslyFocused = document.activeElement;
-    return () => {
-      if (previouslyFocused instanceof HTMLElement && previouslyFocused.isConnected) {
-        previouslyFocused.focus({ preventScroll: true });
-      }
-    };
-  }, [open]);
+  useModalDismiss(open, onClose);
 
   return (
     <Transition show={open} transition={[fade, { duration: 150 }]}>

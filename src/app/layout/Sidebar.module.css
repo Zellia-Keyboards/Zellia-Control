@@ -1,0 +1,7 @@
+/*
+ * Port of the <style> block of Sidebar.svelte. The element also carries the global `sidebar`
+ * class that app.css styles.
+ */
+.sidebar {
+  user-select: none;
+}

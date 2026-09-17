@@ -5,3 +5,4 @@ export { Modal, type ModalMaxWidth, type ModalProps } from './Modal';
 export { NoKeySelected, type NoKeySelectedProps } from './NoKeySelected';
 export { ThemedSlider, type ThemedSliderProps } from './ThemedSlider';
 export { Toggle, type ToggleProps } from './Toggle';
+export { useModalDismiss } from './use-modal-dismiss';

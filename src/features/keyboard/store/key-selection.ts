@@ -62,7 +62,9 @@ export const keySelection = {
     keySelectionStore.setState({ allowSelection });
   },
   setTotalKeys(totalKeys: number): void {
-    keySelectionStore.setState({ totalKeys });
+    if (keySelectionStore.getState().totalKeys !== totalKeys) {
+      keySelectionStore.setState({ totalKeys });
+    }
   },
   /** `layer` is 1-based, as shown in the layer selector. */
   setLayer(layer: number): void {
