@@ -1,4 +1,11 @@
-import { useEffect, useRef, useState, type ChangeEvent, type MouseEvent } from 'react';
+import {
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type ChangeEvent,
+  type MouseEvent,
+} from 'react';
 import { ConfirmationModal, ErrorModal } from '../../components/ui';
 import { Transition, slide } from '../../lib/transitions';
 import { AddProfileCard } from './components/AddProfileCard';
@@ -10,10 +17,12 @@ import { profileActions, profileStore, useProfileState } from './store/profile-s
 interface OpenMenu {
   readonly profileId: number;
   readonly position: ProfileMenuPosition;
+  /** Opened from the keyboard (a click without a pointer): its first item takes the focus. */
+  readonly fromKeyboard: boolean;
 }
 
 /** Props of the closed menu, which is never rendered (hidden, or frozen while sliding out). */
-const CLOSED_MENU: OpenMenu = { profileId: 0, position: { top: 0, right: 0 } };
+const CLOSED_MENU: OpenMenu = { profileId: 0, position: { top: 0, right: 0 }, fromKeyboard: false };
 
 function downloadJson(json: string, filename: string): void {
   const blob = new Blob([json], { type: 'application/json' });
@@ -49,6 +58,12 @@ export function ProfilesPage() {
   const [errorMessage, setErrorMessage] = useState('');
 
   const fileInput = useRef<HTMLInputElement>(null);
+  const grid = useRef<HTMLDivElement>(null);
+  const menuElement = useRef<HTMLDivElement>(null);
+  /** The menu button of the open menu, where the focus returns when the menu closes. */
+  const menuButton = useRef<HTMLButtonElement | null>(null);
+  /** Grid cell that takes the focus after the commit (its card was deleted from its menu). */
+  const cellToFocus = useRef<number | null>(null);
 
   // Any click that reaches the window closes the menu (the menu and its buttons stop theirs).
   useEffect(() => {
@@ -61,6 +76,25 @@ export function ProfilesPage() {
     };
   }, []);
 
+  // A menu opened from the keyboard focuses its first item.
+  useLayoutEffect(() => {
+    if (!openMenu?.fromKeyboard) return;
+    menuElement.current
+      ?.querySelector<HTMLElement>('[role="menuitem"]')
+      ?.focus({ preventScroll: true });
+  }, [openMenu]);
+
+  // After a card was deleted from its menu, the cell that took its place takes the focus.
+  useLayoutEffect(() => {
+    const index = cellToFocus.current;
+    if (index === null) return;
+    cellToFocus.current = null;
+    const cell = grid.current?.children.item(index);
+    if (cell instanceof HTMLElement) cell.focus();
+  });
+
+  const focusIsInMenu = () => menuElement.current?.contains(document.activeElement) ?? false;
+
   const nameOf = (profileId: number | null) =>
     profiles.find(profile => profile !== null && profile.id === profileId)?.name;
 
@@ -69,7 +103,12 @@ export function ProfilesPage() {
     setShowErrorModal(true);
   };
 
+  /**
+   * Closes the menu. Focus inside it returns to its menu button first, so a dialog opened by the
+   * chosen item returns the focus there as well.
+   */
   const closeMenu = () => {
+    if (focusIsInMenu()) menuButton.current?.focus();
     setOpenMenu(null);
   };
 
@@ -78,10 +117,12 @@ export function ProfilesPage() {
     if (openMenu?.profileId === profileId) {
       setOpenMenu(null);
     } else {
+      menuButton.current = event.currentTarget;
       const rect = event.currentTarget.getBoundingClientRect();
       setOpenMenu({
         profileId,
         position: { top: rect.bottom + 4, right: window.innerWidth - rect.right },
+        fromKeyboard: event.detail === 0,
       });
     }
   };
@@ -183,8 +224,14 @@ export function ProfilesPage() {
       showError('Cannot delete default profiles (1-4)');
       return;
     }
+    // The menu button goes with the card: the focus moves to the cell that takes the card's place
+    // (the next card, or Add Profile).
+    if (focusIsInMenu() || document.activeElement === menuButton.current) {
+      cellToFocus.current =
+        DEFAULT_PROFILE_COUNT + additionalProfiles.findIndex(profile => profile.id === profileId);
+    }
     profileActions.delete(profileId);
-    closeMenu();
+    setOpenMenu(null);
   };
 
   const menu = openMenu ?? CLOSED_MENU;
@@ -234,7 +281,7 @@ export function ProfilesPage() {
         </div>
 
         {/* Profile Grid */}
-        <div className="grid grid-cols-2 gap-4">
+        <div ref={grid} className="grid grid-cols-2 gap-4">
           {/* Default Profiles (1-4) - Always shown */}
           {defaultProfiles.map((profile, index) => (
             <ProfileCard
@@ -277,6 +324,7 @@ export function ProfilesPage() {
       {/* Profile Menu */}
       <Transition show={openMenu !== null} transition={[slide, { duration: 150, axis: 'y' }]}>
         <ProfileMenu
+          ref={menuElement}
           position={menu.position}
           isActive={menu.profileId === activeProfileId}
           canDelete={menu.profileId > DEFAULT_PROFILE_COUNT}
@@ -292,6 +340,7 @@ export function ProfilesPage() {
           onDelete={() => {
             deleteProfile(menu.profileId);
           }}
+          onClose={closeMenu}
         />
       </Transition>
 

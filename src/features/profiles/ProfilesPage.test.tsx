@@ -203,6 +203,139 @@ describe('ProfilesPage', () => {
     });
   });
 
+  describe('menu from the keyboard', () => {
+    function menuButton(name: string): HTMLElement {
+      return within(card(name)).getByRole('button', { name: 'Menu' });
+    }
+
+    function menuItems(): HTMLElement[] {
+      return within(screen.getByRole('menu')).getAllByRole('menuitem');
+    }
+
+    /** Holds Enter on the focused Delete item until the profile is deleted. */
+    function holdDeleteWithKeyboard() {
+      vi.useFakeTimers();
+      fireEvent.keyDown(screen.getByRole('menuitem', { name: /Delete/ }), { key: 'Enter' });
+      act(() => {
+        vi.advanceTimersByTime(1600);
+      });
+      vi.useRealTimers();
+    }
+
+    it('leaves the focus on the menu button when opened with the mouse', async () => {
+      const user = userEvent.setup();
+      renderPage();
+
+      await user.click(menuButton('Profile 2'));
+
+      expect(screen.getByRole('menu')).toBeInTheDocument();
+      expect(menuButton('Profile 2')).toHaveFocus();
+    });
+
+    it('focuses the first item and moves with the arrow keys, Home and End', async () => {
+      const user = userEvent.setup();
+      addProfiles(1);
+      renderPage();
+
+      menuButton('Profile 5').focus();
+      await user.keyboard('{Enter}');
+      const items = menuItems();
+      expect(items.map(item => item.textContent)).toEqual([
+        'Export',
+        'Duplicate',
+        'Restore Default',
+        'Hold to Delete (1.5s)',
+      ]);
+      expect(items[0]).toHaveFocus();
+      // The arrow keys reach the items, Tab does not.
+      expect(items.map(item => item.tabIndex)).toEqual([-1, -1, -1, -1]);
+
+      await user.keyboard('{ArrowDown}');
+      expect(items[1]).toHaveFocus();
+      await user.keyboard('{End}');
+      expect(items[3]).toHaveFocus();
+      await user.keyboard('{ArrowDown}');
+      expect(items[0]).toHaveFocus();
+      await user.keyboard('{ArrowUp}');
+      expect(items[3]).toHaveFocus();
+      await user.keyboard('{Home}');
+      expect(items[0]).toHaveFocus();
+    });
+
+    it('also focuses the first item when opened with Space', async () => {
+      const user = userEvent.setup();
+      renderPage();
+
+      menuButton('Profile 2').focus();
+      await user.keyboard(' ');
+
+      expect(menuItems()[0]).toHaveFocus();
+    });
+
+    it('closes with Escape and returns the focus to its menu button', async () => {
+      const user = userEvent.setup();
+      renderPage();
+
+      menuButton('Profile 2').focus();
+      await user.keyboard('{Enter}{ArrowDown}{Escape}');
+
+      expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+      expect(menuButton('Profile 2')).toHaveFocus();
+      expect(menuButton('Profile 2')).toHaveAttribute('aria-expanded', 'false');
+    });
+
+    it('closes with Tab, which moves on from its menu button', async () => {
+      const user = userEvent.setup();
+      renderPage();
+
+      menuButton('Profile 2').focus();
+      await user.keyboard('{Enter}');
+      await user.tab();
+      expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+      expect(card('Profile 3')).toHaveFocus();
+
+      menuButton('Profile 3').focus();
+      await user.keyboard('{Enter}');
+      await user.tab({ shift: true });
+      expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+      expect(card('Profile 3')).toHaveFocus();
+    });
+
+    it('returns the focus to its menu button after an item, also through its dialog', async () => {
+      const user = userEvent.setup();
+      renderPage();
+
+      menuButton('Profile 2').focus();
+      await user.keyboard('{Enter}{ArrowDown}{ArrowDown}{Enter}');
+      expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+      expect(screen.getByRole('dialog', { name: 'Restore to Default' })).toBeInTheDocument();
+      expect(menuButton('Profile 2')).toHaveFocus();
+
+      await user.keyboard('{Escape}');
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+      expect(menuButton('Profile 2')).toHaveFocus();
+    });
+
+    it('moves the focus to the card that takes a deleted card’s place', async () => {
+      const user = userEvent.setup();
+      addProfiles(2);
+      renderPage();
+
+      menuButton('Profile 5').focus();
+      await user.keyboard('{Enter}{End}');
+      holdDeleteWithKeyboard();
+      expect(profile(5)).toBeNull();
+      expect(card('Profile 6')).toHaveFocus();
+
+      // The last card's place goes to Add Profile.
+      menuButton('Profile 6').focus();
+      await user.keyboard('{Enter}{End}');
+      holdDeleteWithKeyboard();
+      expect(profile(6)).toBeNull();
+      expect(screen.getByRole('button', { name: 'Add Profile' })).toHaveFocus();
+    });
+  });
+
   describe('duplicate', () => {
     it('copies the profile into the next free slot after confirmation', async () => {
       const user = userEvent.setup();
