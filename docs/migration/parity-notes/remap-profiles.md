@@ -32,7 +32,7 @@ differences are keycaps of the shell's keyboard and the sidebar's Save button.
 | `remap-extension-assigned`                                                                                                                   | PL-008, PL-017 (key 2), PL-018 (keys 3–4), PL-002, PL-016, PL-022; `Recovery` (key 1) is identical    |
 | `profiles-dropdown`                                                                                                                          | PL-002; the lower part of the dropdown's glass panel blurs the keycaps of PL-016 and PL-022 behind it |
 | `profiles-dropdown-lighting`, `profiles-dropdown-local`                                                                                      | PL-002 (`-local`: keycap-corner noise)                                                                |
-| `profiles-default`, `profiles-activated`, `profiles-menu`, `profiles-menu-active`, `profiles-duplicate`, `profiles-restore`, `profiles-full` | PL-002 (`-default`, `-menu-active`: one raster-noise pixel)                                           |
+| `profiles-default`, `profiles-activated`, `profiles-menu`, `profiles-menu-active`, `profiles-duplicate`, `profiles-restore`, `profiles-full` | PL-002 (`-default`, `-menu-active`: one anti-aliased icon pixel)                                      |
 | `profiles-imported`                                                                                                                          | F-2, PL-002                                                                                           |
 | `profiles-import-invalid`                                                                                                                    | F-1, PL-002                                                                                           |
 | `profiles-keyboard-switch`                                                                                                                   | PL-013, PL-002                                                                                        |
@@ -77,8 +77,9 @@ and PL-022 (key 64 is blank, every Remap capture).
 - **Keycap corners.** As described in the shell notes: while the Save label (PL-002) differs,
   Chrome rasterizes the rounded corners of a few keycaps differently (2 px per corner);
   `profiles-dropdown-local` and `shell-remap-hover` show five and four such corners.
-- **Raster glitch.** `profiles-default` and `profiles-menu-active` have one differing pixel in the
-  sidebar's Theme Colors icon.
+- **Icon anti-aliasing.** In `profiles-default` and `profiles-menu-active` one pixel of the
+  sidebar's Theme Colors icon is one colour level off (47 against 48, in opposite directions in
+  the two captures); an earlier run of the same scenarios gave the same pixel counts.
 
 ## Not visible (no log row)
 
