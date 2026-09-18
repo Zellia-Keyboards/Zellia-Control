@@ -2,15 +2,15 @@
 
 <div align="center">
 <p>
-    Zellia Control is a powerful, cross-platform Progressive Web App designed for configuring Zellia Hall Effect keyboards. 
-    Built with SvelteKit and TypeScript, it works directly in your browser with offline support, offering a seamless and intuitive user experience for customizing every aspect of your keyboard.
+    Zellia Control is a Progressive Web App for configuring Zellia Hall Effect keyboards.
+    Built with React and TypeScript, it talks to the keyboard straight from the browser over WebHID, works offline once loaded, and can be installed like a desktop app.
   </p>
 
   <!-- Badges -->
   <p>
     <img src="https://img.shields.io/badge/PWA-Offline-blueviolet?style=for-the-badge&logo=pwa" alt="PWA">
-    <img src="https://img.shields.io/badge/SvelteKit-v5.x-orange?style=for-the-badge&logo=svelte" alt="SvelteKit">
-    <img src="https://img.shields.io/badge/TypeScript-v5.x-blue?style=for-the-badge&logo=typescript" alt="TypeScript">
+    <img src="https://img.shields.io/badge/React-19-61dafb?style=for-the-badge&logo=react" alt="React">
+    <img src="https://img.shields.io/badge/TypeScript-6-blue?style=for-the-badge&logo=typescript" alt="TypeScript">
     <br>
     <img src="https://img.shields.io/github/license/Zellia-Keyboards/Zellia-Control?style=for-the-badge" alt="License">
     <img src="https://img.shields.io/github/stars/Zellia-Keyboards/Zellia-Control?style=for-the-badge&logo=github" alt="GitHub Stars">
@@ -29,227 +29,146 @@
 - [✨ Key Features](#key-features)
 - [🛠️ Tech Stack](#tech-stack)
 - [🚀 Getting Started](#getting-started)
-  - [Prerequisites](#prerequisites)
-  - [Installation](#installation)
 - [💻 Usage](#usage)
 - [⚙️ Development](#development)
-  - [Available Scripts](#available-scripts)
-  - [Project Structure](#project-structure)
 - [📦 Building for Production](#building-for-production)
 - [🤝 Contributing](#contributing)
 - [📜 License](#license)
 - [🙏 Acknowledgments](#acknowledgments)
-- [📞 Contact](#contact)
 
 ---
 
 ## ✨ Key Features
 
-Zellia Control offers a rich set of features to unlock the full potential of your Hall Effect keyboard:
+- **⚡ Performance:** per-key actuation and release points, rapid trigger with its own press and
+  release distances, dead zones, and the switch's travel range.
+- **⌨️ Remapping:** assign keys, media, mouse, layer, profile and keyboard operations on every
+  layer of the visual keyboard, with a "brush" that applies the last keycode to newly selected
+  keys.
+- **🎛️ Dynamic keys:** Tap-Hold, Toggle, Dynamic Keystroke (several actions along one key's
+  travel) and Null Bind (two keys that resolve each other).
+- **💡 Lighting:** base effects with colours, speed, direction and density, plus per-key modes
+  and colours.
+- **🗂️ Profiles:** switch the keyboard's on-board profiles, keep more locally, import and
+  export them.
+- **🔧 Tools:** live key-travel chart and key tester (Debug), restart, bootloader and factory
+  reset (Settings), and firmware updates over WebUSB DFU (Update), which also recover a keyboard
+  that waits in its bootloader.
+- **🎨 Interface:** dark and light mode, theme colours, English and Chinese.
 
-- **⚡ Performance Tuning:**
-  - **Adjustable Actuation Points:** Fine-tune key actuation from 0.1mm to 4.0mm.
-  - **Rapid Trigger:** Dynamic actuation and deactuation for ultra-responsive gameplay.
-  - **Continuous Rapid Trigger:** Enhanced rapid trigger mode for maximum speed.
-  - **Real-time Pressure Monitoring:** Visualize key press depth and pressure.
-- **⌨️ Advanced Key Remapping:**
-  - **Intuitive Interface:** Easily remap any key on the visual keyboard.
-  - **Multiple Key Categories:** Basic, Function, Media, Mouse, System, and Special HE keys.
-  - **4 Configurable Layers:** Create distinct profiles for different applications or games.
-- **💡 RGB Lighting Control:**
-  - **Multiple Effects:** Choose from a variety of dynamic lighting patterns.
-  - **Color Customization:** Per-key or zone-based color settings.
-  - **Brightness & Speed Control:** Adjust lighting intensity and effect speed.
-- **🔧 Hardware & System Tools:**
-  - **Hardware Calibration:** Calibrate switches for optimal performance.
-  - **Debug Mode:** Access real-time key tracking and diagnostic tools.
-  - **Profile Management:** Import and export keyboard configurations.
-  - **Settings Page:** Configure application preferences and device settings.
-- **🌐 Cross-Platform:**
-  - Native support for Windows, macOS, and Linux.
-- **🎨 Modern UI/UX:**
-  - **Dark/Light Mode:** Automatic theme switching based on system preference.
-  - **Customizable Theme Colors:** Personalize the app's appearance.
-  - **Responsive Design:** Adapts to various screen sizes.
+Supported keyboards: Zellia Starlight, Zellia 60 HE, Zellia 80 HE, Oholeo and Trinity Pad, with
+firmware built on the current [libamp](https://github.com/zhangqili/libamp) (version 0.1).
 
 ---
 
 ## 🛠️ Tech Stack
 
-Zellia Control is built with a modern and robust technology stack:
-
-- **[SvelteKit](https://kit.svelte.dev/):** Frontend framework for building fast and efficient web applications.
-- **[TypeScript](https://www.typescriptlang.org/):** Superset of JavaScript adding static typing for improved code quality and maintainability.
-- **[Vite](https://vitejs.dev/):** Next-generation frontend tooling for fast development and optimized builds.
-- **[vite-plugin-pwa](https://vite-pwa-org.netlify.app/):** Plugin for progressive web app support enabling offline functionality and install capability.
-- **[Workbox](https://developers.google.com/web/tools/workbox):** Library for offline caching and service worker management.
-- **[Tailwind CSS](https://tailwindcss.com/):** Utility-first CSS framework for rapid UI development.
+- **[React 19](https://react.dev/)** and **[TypeScript 6](https://www.typescriptlang.org/)** (strict).
+- **[Vite 8](https://vite.dev/)** for development and builds, **[vite-plugin-pwa](https://vite-pwa-org.netlify.app/)** / Workbox for offline support.
+- **[React Router 8](https://reactrouter.com/)** for routes, **[Zustand 5](https://zustand.docs.pmnd.rs/)** for shared state.
+- **[Tailwind CSS 4](https://tailwindcss.com/)** and CSS Modules.
+- **[emi-keyboard-controller](https://github.com/zhangqili/EMIKeyboardConfigurator)** (vendored in `src-controller/`) for the keyboard protocol.
+- **[Vitest](https://vitest.dev/)**, Testing Library and **[Playwright](https://playwright.dev/)**, with a simulated libamp keyboard for tests.
 
 ---
 
 ## 🚀 Getting Started
 
-Follow these steps to get Zellia Control up and running on your local machine.
-
 ### Prerequisites
 
-Ensure you have the following installed:
-
-- [Node.js](https://nodejs.org/) (v18.x or higher recommended)
-- [Yarn](https://yarnpkg.com/) (v1.x) or npm (v8.x or higher)
+- [Node.js](https://nodejs.org/) 24 (with npm 11).
+- Google Chrome or Microsoft Edge: WebHID and WebUSB are not available in Firefox or Safari.
 
 ### Installation
 
-1. **Clone the repository:**
+```bash
+git clone https://github.com/Zellia-Keyboards/Zellia-Control.git
+cd Zellia-Control
+npm ci
+npm run dev
+```
 
-   ```bash
-   git clone https://github.com/Zellia-Keyboards/Zellia-Control.git
-   cd Zellia-Control
-   ```
-
-2. **Install frontend dependencies:**
-
-   ```bash
-   yarn install
-   # or
-   # npm install
-   ```
-
-3. **Run in development mode:**
-
-   This command will start the development server with hot-reloading.
-
-   ```bash
-   yarn dev
-   # or
-   # npm run dev
-   ```
-
-   The application will be available at `http://localhost:5173` (or another port if 5173 is in use).
+The app runs at `http://localhost:5173`.
 
 ---
 
 ## 💻 Usage
 
-Once the application is running:
-
-1. **Connect your Zellia Hall Effect Keyboard.** The application should automatically detect it.
-2. **Navigate through the sections** using the sidebar:
-   - **Performance:** Adjust actuation points, rapid trigger settings.
-   - **Remap:** Customize key assignments across different layers.
-   - **Lighting:** Control RGB effects and colors.
-   - **Calibration:** Perform hardware calibration for your switches.
-   - **Debug:** View real-time key data and logs.
-   - **Settings:** Manage application preferences and keyboard profiles.
-   - **About:** View application information and acknowledgments.
-3. **Changes are applied in real-time** to your connected keyboard where applicable.
-4. **Use the Profile Management** features in Settings to save and load your configurations.
+1. Plug in your keyboard, open the app and click **Get Started**, then pick the keyboard in the
+   browser's device list.
+2. Use the sidebar: **Performance**, **Remap**, **Lighting**, **Dynamic Keys**, **Debug**,
+   **Settings**, **Update** and **About**; **Profiles** sits at the top.
+3. Changes apply to the keyboard immediately; **Save** stores them on the keyboard so they
+   survive a restart.
 
 ---
 
 ## ⚙️ Development
 
-### Available Scripts
+| Command             | What it does                                     |
+| ------------------- | ------------------------------------------------ |
+| `npm run dev`       | Development server                               |
+| `npm run build`     | Production build into `build/`                   |
+| `npm run preview`   | Serves the production build like the static host |
+| `npm run typecheck` | TypeScript                                       |
+| `npm run lint`      | ESLint                                           |
+| `npm run format`    | Prettier                                         |
+| `npm test`          | Unit and integration tests (Vitest)              |
+| `npm run test:e2e`  | End-to-end tests (Playwright, Chrome)            |
+| `npm run validate`  | Type check, lint, format check, tests and build  |
 
-In the `package.json`, you'll find several scripts for development:
-
-- `yarn dev`: Starts the SvelteKit development server (frontend only).
-- `yarn build`: Builds the SvelteKit frontend for production.
-- `yarn preview`: Previews the production SvelteKit build locally.
-- `yarn check`: Runs Svelte type checking.
-- `yarn check:watch`: Runs Svelte type checking in watch mode.
-- `yarn tauri dev`: Starts the full application (frontend + Tauri backend) in development mode.
-- `yarn tauri build`: Builds the full application for production (creates installers/binaries).
-
-### Project Structure
+Project layout:
 
 ```text
-zellia-control/
-├── .github/                # GitHub Actions and issue templates
-├── build/                  # Output directory for SvelteKit static build
-├── public/                 # Renamed to static/ in your project
-│   └── static/             # Static assets (favicon, logos)
-├── src/                    # SvelteKit frontend source code
-│   ├── app.css             # Global CSS styles
-│   ├── app.html            # Main HTML shell
-│   ├── lib/                # Shared Svelte components, stores, and utilities
-│   │   ├── AdvancedKeyShared.ts
-│   │   ├── DarkModeStore.svelte.ts
-│   │   ├── KeyboardState.svelte.ts
-│   │   └── Zellia80HE.svelte   # Interactive keyboard component
-│   └── routes/             # SvelteKit page routes and layouts
-│       ├── +layout.svelte    # Main application layout
-│       ├── +page.svelte      # Home/Dashboard page
-│       ├── about/
-│       ├── advancedkey/
-│       ├── calibration/
-│       ├── debug/
-│       ├── lighting/
-│       ├── performance/
-│       ├── remap/
-│       └── settings/
-├── src-tauri/              # Tauri (Rust) backend source code
-│   ├── build.rs
-│   ├── Cargo.toml          # Rust dependencies and project metadata
-│   ├── capabilities/       # Tauri security capabilities
-│   ├── icons/              # Application icons for different platforms
-│   ├── src/                # Rust source files
-│   │   ├── lib.rs
-│   │   └── main.rs         # Main Rust application entry point
-│   └── DarkModeStore.svelte.ts  # Dark mode state management
-├── jsconfig.json           # JavaScript/TypeScript configuration
-├── package.json            # Node.js project metadata and dependencies
-├── postcss.config.js       # PostCSS configuration
-├── README.md               # This file
-├── svelte.config.js        # SvelteKit configuration
-├── tailwind.config.js      # Tailwind CSS configuration
-└── vite.config.js          # Vite and PWA configuration
+src/
+  app/            App shell: routes, sidebar, toolbar, connection screens
+  features/       device (keyboard session), keyboard, keycodes, remap, performance, lighting,
+                  dynamic-keys, debug, profiles, settings, firmware-update, about
+  components/ui/  Shared UI primitives
+  lib/            i18n, theme, transitions, storage, service worker registration
+  testing/        Test setup and the simulated libamp keyboard
+src-controller/   Vendored emi-keyboard-controller (not edited; see UPSTREAM.md)
+e2e/              Playwright tests and visual parity scenarios
+docs/             Developer guides, device layer, migration notes and design
 ```
+
+More in [docs/architecture.md](docs/architecture.md) (how the app is built and why),
+[docs/device.md](docs/device.md) (how it talks to the keyboard) and
+[docs/development.md](docs/development.md) (testing, visual parity, PWA, deployment).
 
 ---
 
 ## 📦 Building for Production
 
-To build the application for production as a Progressive Web App:
-
 ```bash
-yarn build
-
 npm run build
 ```
 
-Build artifacts will be located in the `build/` directory. The application can be deployed to any static hosting service (Netlify, Vercel, GitHub Pages, etc.) and will work offline thanks to the PWA service worker.
+The static site is written to `build/`, including a copy of `index.html` for every route, so it
+can be served by any static host without rewrite rules. The service worker makes it work
+offline and installable.
 
 ---
 
 ## 🤝 Contributing
 
-Contributions are what make the open-source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
-
-If you have a suggestion that would make this better, please fork the repo and create a pull request. You can also simply open an issue with the tag "enhancement".
-Don't forget to give the project a star! Thanks again!
-
-1. **Fork the Project**
-2. **Create your Feature Branch** (`git checkout -b feature/AmazingFeature`)
-3. **Commit your Changes** (`git commit -m 'Add some AmazingFeature'`)
-4. **Push to the Branch** (`git push origin feature/AmazingFeature`)
-5. **Open a Pull Request**
-
-Please ensure your code adheres to the existing style and that all tests pass.
+Contributions are welcome: open an issue, or fork the repository and send a pull request.
+Before opening one, make sure `npm run validate` and `npm run test:e2e` pass. The UI must stay
+identical to the reference design; see [docs/development.md](docs/development.md).
 
 ---
 
 ## 📜 License
 
-Distributed under the MIT License. See `LICENSE` file for more information.
-(Note: You'll need to create a `LICENSE` file in your repository, typically containing the MIT License text if that's your chosen license.)
+Distributed under the MIT License. See [`LICENSE`](LICENSE).
 
 ---
 
 ## 🙏 Acknowledgments
 
-- The [Tauri Team](https://tauri.app/) for creating an amazing framework.
-- The [Svelte Team](https://svelte.dev/) for Svelte and SvelteKit.
+- [libamp](https://github.com/zhangqili/libamp) and
+  [EMIKeyboardConfigurator](https://github.com/zhangqili/EMIKeyboardConfigurator), the firmware
+  library and the keyboard protocol this app is built on.
 - All contributors and users of this project.
 
 ---

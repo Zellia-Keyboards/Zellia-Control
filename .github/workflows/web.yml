@@ -13,7 +13,7 @@ on:
       - 'scripts/**'
       - '.github/workflows/web.yml'
       - 'package.json'
-      - 'yarn.lock'
+      - 'package-lock.json'
       - 'vite.config.ts'
       - 'playwright.config.ts'
       - 'postcss.config.js'
@@ -33,7 +33,7 @@ on:
       - 'scripts/**'
       - '.github/workflows/web.yml'
       - 'package.json'
-      - 'yarn.lock'
+      - 'package-lock.json'
       - 'vite.config.ts'
       - 'playwright.config.ts'
       - 'postcss.config.js'
@@ -59,37 +59,34 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-
-      # yarn 1.22.22 comes from the packageManager field of package.json.
-      - name: Enable Corepack
-        run: corepack enable
+          cache: npm
 
       - name: Install dependencies
-        run: corepack yarn install --frozen-lockfile
+        run: npm ci
 
       - name: Type check
-        run: corepack yarn typecheck
+        run: npm run typecheck
 
       - name: Lint
-        run: corepack yarn lint
+        run: npm run lint
 
       - name: Check formatting
-        run: corepack yarn format:check
+        run: npm run format:check
 
       - name: Unit and integration tests
-        run: corepack yarn test
+        run: npm test
 
       - name: Build website
-        run: corepack yarn build
+        run: npm run build
         env:
           NODE_ENV: production
 
       - name: Install Playwright browser
-        run: corepack yarn playwright install --with-deps chrome
+        run: npx playwright install --with-deps chrome
 
       # Runs against the build/ from the previous step (vite preview, like the static host).
       - name: End-to-end tests
-        run: corepack yarn test:e2e
+        run: npm run test:e2e
 
       - name: Upload Playwright report
         if: ${{ failure() }}

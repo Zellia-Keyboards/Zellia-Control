@@ -1,0 +1,133 @@
+# Architecture
+
+Zellia Control is a static React single-page app. It talks to the keyboard over WebHID (WebUSB
+for firmware updates) through the vendored `emi-keyboard-controller`. This page explains how the
+app is put together and why; the full design and decision log is in the
+[design spec](superpowers/specs/2026-09-30-react-rewrite-design.md). The UI is a 1:1 port of the
+SvelteKit app at commit `4f232a2`, which stays the visual and behavioral reference.
+
+## Layers
+
+```
+src/main.tsx            theme + language bootstrap, render, service worker registration
+src/app/                shell: router, layout (sidebar, toolbar, connection screens), update policy
+src/features/<name>/    one folder per feature: page, components, hooks, pure model/ code
+src/components/ui/      primitives shared by at least two features (Modal, Toggle, ThemedSlider, …)
+src/lib/                framework-level utilities: i18n, theme, transitions, storage, pwa
+src-controller/         vendored emi-keyboard-controller (never edited)
+```
+
+Dependencies point downwards: `app` → `features` → `components/ui` → `lib`. A feature uses
+another feature only through its `index.ts`, or for pure code through its `model/` entry
+(`features/keyboard/model`, `features/dynamic-keys/model`, `features/lighting/model`,
+`features/device/model/units`), which never imports React or the device session. The controller
+package is used directly only by `features/device` (the keyboard) and `features/firmware-update`
+(its WebDFU class); other code imports only its enums and types.
+
+| Feature           | Owns                                                                                  |
+| ----------------- | ------------------------------------------------------------------------------------- |
+| `device`          | The keyboard session, model registry, immutable snapshot store, debug stream          |
+| `keyboard`        | KLE layout parsing, layout options, key rendering, key selection and the active layer |
+| `keycodes`        | The single keycode catalog: encoding, decoding, display names, Remap palettes         |
+| `remap`           | Remap page (palette tabs, brush)                                                      |
+| `performance`     | Performance page (actuation, rapid trigger, dead zones, travel)                       |
+| `lighting`        | Lighting page (base and per-key RGB, rainbow preset)                                  |
+| `dynamic-keys`    | Dynamic Keys page (Tap-Hold, Toggle, DKS, Null Bind) and the DKS codec                |
+| `profiles`        | Profiles page, toolbar dropdown, the persisted profile store                          |
+| `debug`           | Key travel chart and key tester                                                       |
+| `settings`        | Restart, bootloader and factory reset                                                 |
+| `firmware-update` | The WebDFU flasher and its update session                                             |
+| `about`           | Static information page                                                               |
+
+## State
+
+The rule: **the keyboard is the source of truth; everything else lives in the smallest scope
+that works.**
+
+| State                                                        | Where                                                            | Why                                                                        |
+| ------------------------------------------------------------ | ---------------------------------------------------------------- | -------------------------------------------------------------------------- |
+| Keyboard configuration, connection, saving/reloading, errors | `features/device` store (Zustand, immutable snapshots)           | Arrives as device events from outside React; many routes read slices of it |
+| Selected keys, active layer, selection lock                  | `features/keyboard` key-selection store                          | Shared by the global keyboard (shell) and the pages                        |
+| Layout options (split keys, bottom row)                      | `features/keyboard` layout-options store, `zellia-layout-config` | Read by the keyboard and the toolbar dropdown; persisted                   |
+| Profiles                                                     | `features/profiles` store, `keyboard-profiles`                   | Shared by the page and the toolbar dropdown; persisted, validated on read  |
+| Language, dark mode, theme colour                            | `lib/i18n`, `lib/theme` (`language`, `darkMode`, `themeColor`)   | Global preferences; applied to `<html>` before the first render            |
+| Firmware update session                                      | `features/firmware-update` session store                         | Outlives the Update page; the shell and the update policy read it          |
+| Panels, sliders, tabs, editor drafts, modals                 | component state                                                  | Used by one component tree                                                 |
+
+Stores are vanilla Zustand stores with selector hooks, so a component re-renders only when its
+slice changes. Snapshots are replaced, never mutated. `localStorage` keys and formats are the
+Svelte app's, so existing users keep their settings; every read is validated and falls back to
+defaults. There is no server state: the app has no backend.
+
+The device layer is described in [device.md](device.md): components read the store and change
+the keyboard only through `deviceSession` commands, which update the controller, send the
+packets and patch the store.
+
+## Routing
+
+React Router in library mode (`createBrowserRouter`, `src/app/routes.tsx`). `AppShell` is the
+root route; every page is a lazy child route loaded from its feature's `index.ts`
+(`src/app/pages.ts`), so each page is its own chunk. URLs keep the Svelte app's trailing slash
+(`/remap/`): the shell redirects `/remap` to `/remap/`, and the build writes a
+`build/<route>/index.html` copy for every route so deep links work on a plain static host (see
+[development.md](development.md#deployment)). Unknown paths render the NotFound page.
+
+The shell decides what the main column shows: the connection screen on `/`, a loading overlay
+while connecting, the page when a keyboard is ready (connected `/` redirects to `/remap/`), and
+_No Keyboard Connected_ otherwise — except `/update/`, which works without a keyboard. The
+toolbar and the global keyboard appear only on Performance, Remap, Lighting and Dynamic Keys;
+pages never render the keyboard themselves.
+
+## Styling
+
+- **Tailwind CSS 4** through its PostCSS plugin, with the engine pinned to 4.1.10 (the version
+  the Svelte app was built with) so generated utilities match pixel for pixel. Class candidates
+  are only scanned in `src/`.
+- `src/styles/app.css` is the Svelte app's global stylesheet, ported verbatim (theme tokens,
+  `dark` variant, glassmorphism classes).
+- Svelte `<style>` blocks became **CSS Modules** with unchanged selectors. Class names referenced
+  from outside a component (`label-cell-N`, `keycap`, `performance-page-keys`, …) stay global.
+- Markup, class strings and inline styles (including `calc(… var(--ui-scale, 1))`) are copied 1:1.
+  Any visible difference from the Svelte app is recorded in the
+  [parity log](migration/parity-log.md).
+
+Pinned for parity: `lucide-react` 0.511.0 (same icons as `lucide-svelte`), `chart.js` 4.4.9,
+`chartjs-plugin-zoom` 2.2.0, `tinycolor2` 1.6.0. Upgrades need screenshot verification.
+
+## Animation
+
+`src/lib/transitions` ports Svelte's `slide`, `fade` and the Remap tabs' `slideMove`: like
+Svelte, a transition function computes `css(t)`, which is sampled into keyframes and played with
+the Web Animations API. `Transition` replaces `{#if}` blocks and `KeyedTransition` `{#key}`
+blocks; both animate their single child through a ref, without wrapper elements, so the DOM stays
+identical. No animation library is used: Svelte's easing and timing must match exactly.
+
+## Internationalization and theme
+
+`lib/i18n` holds the Svelte app's English and Chinese dictionaries; `zh` is typed against the
+English keys, so a missing translation fails the type check. `useT()` translates and re-renders
+on language changes. `lib/theme` applies the `dark`/`glassmorphism` classes and the primary colour
+to `<html>` exactly as the Svelte stores did. `main.tsx` calls both bootstraps before the first
+render, so there is no flash of the wrong theme or language.
+
+## Offline and updates
+
+The build includes a Workbox service worker (vite-plugin-pwa, `registerType: 'prompt'`) that
+precaches the app shell and every page chunk. A new deployment waits until the app is idle — no
+keyboard connected or connecting, no firmware update running (`src/app/update-policy.ts`) — and
+only then activates and reloads, so an update never interrupts a connected keyboard or a flash.
+Until then the running page keeps its own precached chunks. See
+[development.md](development.md#pwa).
+
+## Testing
+
+- **Unit** tests for pure modules (keycode codec, DKS codec, layout, labels, units, stores).
+- **Integration** tests render components with Testing Library against a **virtual libamp
+  keyboard** (`src/testing/virtual-keyboard`) driven by the real vendored controllers, never
+  mocks of our own modules.
+- **End-to-end** tests (Playwright, Chrome) run the production build with the same simulator
+  injected as `navigator.hid` / `navigator.usb`.
+- **Visual parity** captures every screen in the Svelte baseline and this app and compares them
+  pixel by pixel.
+
+Commands and details: [development.md](development.md#testing-layers).
