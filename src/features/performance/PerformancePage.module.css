@@ -1,0 +1,91 @@
+/* Animation for actuation point slide-out */
+.actuation-point-container {
+  transform: translateX(0);
+  opacity: 1;
+  flex: 1;
+  min-width: 260px;
+  overflow: hidden;
+  /* Separate transitions for better performance */
+  transition:
+    transform 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+    opacity 0.3s ease-out,
+    flex 0.35s ease-out,
+    min-width 0.35s ease-out,
+    margin 0.35s ease-out,
+    padding 0.35s ease-out;
+  will-change: transform, opacity, flex, min-width;
+}
+
+.actuation-point-container.slide-out {
+  transform: translateX(-20px);
+  opacity: 0;
+  flex: 0;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+}
+
+/* Divider animation */
+.divider-container {
+  transform: translateX(0);
+  opacity: 1;
+  overflow: hidden;
+  /* Optimized transition */
+  transition:
+    transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+    opacity 0.25s ease-out;
+  will-change: transform, opacity;
+}
+
+.divider-container.slide-out {
+  transform: translateX(-20px);
+  opacity: 0;
+  margin: 0;
+  padding: 0;
+}
+
+/* Smooth fade-in for Rapid Trigger content */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.rapid-trigger-content {
+  animation: fadeInUp 0.3s ease-out;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .actuation-point-container {
+    transition:
+      transform 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+      opacity 0.3s ease-out,
+      flex 0.35s ease-out,
+      min-width 0.35s ease-out,
+      margin 0.35s ease-out,
+      padding 0.35s ease-out;
+  }
+
+  .actuation-point-container.slide-out {
+    transform: translateY(-20px);
+    height: 0;
+    min-height: 0;
+  }
+
+  .divider-container {
+    transition:
+      transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+      opacity 0.25s ease-out;
+  }
+
+  .divider-container.slide-out {
+    transform: translateY(-20px);
+    height: 0;
+  }
+}
