@@ -235,10 +235,13 @@ test.describe('profiles', () => {
     const keyboard = await connect(page, virtualKeyboard);
     await expect(profileDropdown(page)).toContainText('Profile 1');
 
-    // A local profile (5–16) only becomes active in the app.
+    // The dropdown's link stays in the app, so the keyboard stays connected (F-3).
     await profileDropdown(page).click();
     await page.getByRole('link', { name: 'Manage All Profiles' }).click();
     await expect(page).toHaveURL(/\/profiles\/$/);
+    await expect(page.getByRole('heading', { name: 'Configure Profiles' })).toBeVisible();
+
+    // A local profile (5–16) only becomes active in the app.
     await page.getByRole('button', { name: 'Add Profile' }).click();
     await profileCard(page, 'Profile 5').click();
     await expect(profileCard(page, 'Profile 5')).toHaveAttribute('aria-pressed', 'true');

@@ -107,6 +107,9 @@ export function ProfileDropdown() {
           </div>
 
           <div className="border-t border-gray-200 dark:border-gray-700">
+            {/* Navigates inside the app, so the keyboard stays connected (F-3: the Svelte panel's
+                stopPropagation hid the click from SvelteKit's router, and its link reloaded the
+                page). */}
             <Link
               to="/profiles/"
               className="block px-4 py-3 text-sm font-semibold text-center text-primary-600 dark:text-primary-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
