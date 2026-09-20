@@ -46,15 +46,15 @@ export function ActuationPointControl({
         {actuationPoint < 0.3 && (
           <div className="mb-3 p-2 bg-yellow-50 border-yellow-300 text-yellow-700 dark:bg-yellow-900 dark:border-yellow-600 dark:text-yellow-200 border rounded-md text-sm flex items-center gap-2">
             <AlertTriangle size={14} />
-            {t('performance.sensitivityWarning')}
+            {` ${t('performance.sensitivityWarning')}`}
           </div>
         )}
 
         {/* Single bar with dual handles for actuation and deactivation */}
         <div>
           <div className="flex justify-between items-center text-sm dark:text-gray-400 text-gray-500 mb-2">
-            <div>Deactivation: {deactivationPoint.toFixed(3)}mm</div>
-            <div>Actuation: {actuationPoint.toFixed(3)}mm</div>
+            <div>{`Deactivation: ${deactivationPoint.toFixed(3)}mm`}</div>
+            <div>{`Actuation: ${actuationPoint.toFixed(3)}mm`}</div>
           </div>
 
           {/* Dual-handle slider with visual feedback */}
@@ -174,7 +174,7 @@ export function ActuationPointControl({
         </div>
         {/* Keys selected indicator */}
         <div className="mt-3 text-base text-gray-900 dark:text-white font-medium">
-          {keysSelected} {t('performance.keysSelected')}
+          {`${keysSelected} ${t('performance.keysSelected')}`}
         </div>
       </div>
     </div>

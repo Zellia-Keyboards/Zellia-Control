@@ -49,8 +49,8 @@ export function SensitivityControl({
           <>
             <div className="mb-4">
               <div className="flex justify-between text-sm dark:text-gray-400 text-gray-500 mb-1">
-                <div>↓ {t('performance.pressSensitivityLabel')}</div>
-                <div>{pressSensitivity.toFixed(2)} mm</div>
+                <div>{`↓ ${t('performance.pressSensitivityLabel')}`}</div>
+                <div>{`${pressSensitivity.toFixed(2)} mm`}</div>
               </div>
               <ThemedSlider
                 min={0.01}
@@ -69,8 +69,8 @@ export function SensitivityControl({
             </div>
             <div>
               <div className="flex justify-between text-sm dark:text-gray-400 text-gray-500 mb-1">
-                <div>↑ {t('performance.releaseSensitivityLabel')}</div>
-                <div>{releaseSensitivity.toFixed(2)} mm</div>
+                <div>{`↑ ${t('performance.releaseSensitivityLabel')}`}</div>
+                <div>{`${releaseSensitivity.toFixed(2)} mm`}</div>
               </div>
               <ThemedSlider
                 min={0.01}
@@ -91,8 +91,8 @@ export function SensitivityControl({
         ) : (
           <div>
             <div className="flex justify-between text-sm dark:text-gray-400 text-gray-500 mb-1">
-              <div>⇅ {t('performance.sensitivityLabel')}</div>
-              <div>{sensitivityValue.toFixed(2)} mm</div>
+              <div>{`⇅ ${t('performance.sensitivityLabel')}`}</div>
+              <div>{`${sensitivityValue.toFixed(2)} mm`}</div>
             </div>
             <ThemedSlider
               min={0.01}
