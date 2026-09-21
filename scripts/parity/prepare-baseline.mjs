@@ -4,7 +4,7 @@
 //                                            [--prepare-only]
 //
 // In the baseline checkout it replaces src-controller/ with this repository's synced upstream
-// controller, installs dependencies (yarn 1 via corepack, frozen lockfile), builds (SvelteKit
+// controller, installs its dependencies (the baseline's own yarn 1 lockfile, via corepack), builds (SvelteKit
 // adapter-static → build/) and serves build/ like the production static host. It never commits in
 // the baseline checkout. Install and build are skipped while the stamp in build/ matches.
 // prepare-baseline.d.mts types the exports for TypeScript (tests).
