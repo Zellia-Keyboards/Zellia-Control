@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
+import { cx } from '../../lib/class-names';
 import { useT } from '../../lib/i18n';
 import { keySelection, useSelectedKeys } from '../keyboard';
-import { cx } from './class-names';
 import { ActuationPointControl } from './components/ActuationPointControl';
 import { DeadzoneControl } from './components/DeadzoneControl';
 import { MaxTravelDistanceControl } from './components/MaxTravelDistanceControl';
