@@ -159,14 +159,30 @@ describe('PerformancePage', () => {
       expect(advancedKeyWrites()).toEqual([]);
     });
 
-    it('copies the first selected key to keys that are already selected when the page opens', async () => {
+    it('loads the first of the keys selected before the page opened and writes to none', async () => {
+      await seedKey(7, TUNED);
+      // Selected on another page: the selection outlives navigation.
+      act(() => {
+        keySelection.setSelected([7, 9]);
+      });
+      const untouched = deviceKey(9);
+      renderPage();
+      expect(screen.getByText('Actuation: 2.500mm')).toBeInTheDocument();
+      expect(screen.getByText('2 keys selected')).toBeInTheDocument();
+      await settle();
+      expect(advancedKeyWrites()).toEqual([]);
+      expect(deviceKey(9)).toEqual(untouched);
+    });
+
+    it('applies a change to the keys selected before the page opened as well', async () => {
       await seedKey(7, TUNED);
       act(() => {
         keySelection.setSelected([7, 9]);
       });
       renderPage();
-      expect(screen.getByText('Actuation: 2.500mm')).toBeInTheDocument();
-      await expect.poll(() => deviceKey(9).activation).toBe(deviceKey(7).activation);
+      fireEvent.change(slider('Actuation'), { target: { value: '3' } });
+      await expect.poll(() => deviceKey(9).activation).toBe(fractionToRaw(0.75));
+      // The whole brush: the first key's other values too.
       expect(deviceKey(9)).toMatchObject({
         mode: KeyMode.KeyAnalogRapidMode,
         deactivation: deviceKey(7).deactivation,
@@ -287,6 +303,30 @@ describe('PerformancePage', () => {
       await expect.poll(() => deviceKey(10).activation).toBe(fractionToRaw(0.75));
     });
 
+    it('paints the other keys of a first selection with the first key', async () => {
+      await seedKey(3, TUNED);
+      renderPage();
+      select(3, 4, 5);
+      expect(screen.getByText('Actuation: 2.500mm')).toBeInTheDocument();
+      await expect.poll(() => deviceKey(5).activation).toBe(deviceKey(3).activation);
+      expect(deviceKey(4)).toMatchObject({ mode: KeyMode.KeyAnalogRapidMode });
+    });
+
+    it('paints only the added keys, not keys selected before the page opened', async () => {
+      await seedKey(7, TUNED);
+      act(() => {
+        keySelection.setSelected([7, 9]);
+      });
+      const untouched = deviceKey(9);
+      renderPage();
+      act(() => {
+        keySelection.toggleKey(11);
+      });
+      await expect.poll(() => deviceKey(11).activation).toBe(deviceKey(7).activation);
+      expect(advancedKeyWrites()).toEqual([11]);
+      expect(deviceKey(9)).toEqual(untouched);
+    });
+
     it('stays loaded after deselecting all, instead of loading the next key', async () => {
       await seedKey(12, TUNED);
       renderPage();
@@ -334,13 +374,16 @@ describe('PerformancePage', () => {
       </StrictMode>
     );
     expect(screen.getByText('Actuation: 2.500mm')).toBeInTheDocument();
-    await expect.poll(() => deviceKey(9).activation).toBe(deviceKey(7).activation);
     fireEvent.change(slider('Actuation'), { target: { value: '3' } });
     act(() => {
       keySelection.toggleKey(11);
     });
+    expect(storeKey(9).activation).toBe(0.75);
     expect(storeKey(11).activation).toBe(0.75);
     expect(screen.getByText('3 keys selected')).toBeInTheDocument();
+    // One write per key: the effects' second run subscribes once.
+    await settle();
+    expect(advancedKeyWrites().sort((a, b) => a - b)).toEqual([7, 9, 11]);
   });
 
   describe('selection shortcuts and buttons', () => {
