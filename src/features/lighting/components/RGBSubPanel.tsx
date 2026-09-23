@@ -56,7 +56,8 @@ export function RGBSubPanel({
   const t = useT();
   const titleId = useId();
 
-  // Mode: initialized from the configuration, never synced back from it, so a click shows at once.
+  // Mode: initialized from the configuration, never synced back from it, so a click shows at once
+  // (the page mounts the panel again when the keyboard loads a configuration).
   const [selectedMode, setSelectedMode] = useState(config.mode);
 
   // Local state for deferred apply, re-read whenever the configuration changes (the Svelte

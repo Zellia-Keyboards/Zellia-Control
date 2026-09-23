@@ -271,27 +271,65 @@ describe('LightingPage', () => {
     });
   });
 
-  it('re-reads colours after the keyboard reloads, keeping the chosen modes', async () => {
-    const user = userEvent.setup();
-    renderPage();
-    await user.click(basePanel().getByRole('button', { name: 'Wave' }));
-    await user.click(keyPanel().getByRole('button', { name: 'Bubble' }));
+  describe('device loads (profile switches, resets)', () => {
+    /** Profile 1 of the virtual keyboard with the Rainbow base mode and key 0 in Cycle mode. */
+    function storeModesOnProfile1(): void {
+      const profile = keyboard.vk.state.profiles[1];
+      const key0 = profile?.rgbKeys[0];
+      if (!profile || !key0) throw new Error('profile 1 has no key 0');
+      profile.rgbBase = { ...profile.rgbBase, mode: RGBBaseMode.RgbBaseModeRainbow };
+      profile.rgbKeys[0] = { ...key0, mode: RGBMode.RgbModeCycle };
+    }
 
-    await act(async () => {
-      await deviceSession.switchProfile(1);
+    /** Picks modes in both panels without applying them, then switches to profile 1. */
+    async function pickModesAndSwitchToProfile1(user: ReturnType<typeof userEvent.setup>) {
+      await user.click(basePanel().getByRole('button', { name: 'Wave' }));
+      await user.click(keyPanel().getByRole('button', { name: 'Bubble' }));
+      await act(async () => {
+        await deviceSession.switchProfile(1);
+      });
+      expect(deviceStore.getState().config?.profileIndex).toBe(1);
+    }
+
+    it('shows the new configuration in both panels, modes included', async () => {
+      const user = userEvent.setup();
+      storeModesOnProfile1();
+      renderPage();
+      await pickModesAndSwitchToProfile1(user);
+
+      // Profile 1 of the virtual keyboard: orange base colour, rainbow shifted by 90°.
+      expect(colorInput(basePanel(), /^Color/)).toHaveValue('#ff6000');
+      expect(colorInput(keyPanel(), 'Color')).toHaveValue('#80ff00');
+      expect(basePanel().getByRole('button', { name: 'Rainbow' })).toHaveAttribute(
+        'aria-pressed',
+        'true'
+      );
+      expect(keyPanel().getByRole('button', { name: 'Cycle' })).toHaveAttribute(
+        'aria-pressed',
+        'true'
+      );
     });
 
-    // Profile 1 of the virtual keyboard: orange base colour, rainbow shifted by 90°.
-    expect(colorInput(basePanel(), /^Color/)).toHaveValue('#ff6000');
-    expect(colorInput(keyPanel(), 'Color')).toHaveValue('#80ff00');
-    expect(basePanel().getByRole('button', { name: 'Wave' })).toHaveAttribute(
-      'aria-pressed',
-      'true'
-    );
-    expect(keyPanel().getByRole('button', { name: 'Bubble' })).toHaveAttribute(
-      'aria-pressed',
-      'true'
-    );
+    it('applies the new configuration’s modes, not the ones picked before the load', async () => {
+      const user = userEvent.setup();
+      storeModesOnProfile1();
+      renderPage();
+      await pickModesAndSwitchToProfile1(user);
+
+      fireEvent.change(basePanel().getByRole('slider', { name: 'Brightness' }), {
+        target: { value: '100' },
+      });
+      await user.click(basePanel().getByRole('button', { name: 'Apply' }));
+      await expect.poll(() => keyboard.vk.state.active.rgbBase.brightness).toBe(100);
+      expect(keyboard.vk.state.active.rgbBase.mode).toBe(RGBBaseMode.RgbBaseModeRainbow);
+
+      fireEvent.change(keyPanel().getByRole('slider', { name: 'Speed' }), {
+        target: { value: '70' },
+      });
+      await user.click(keyPanel().getByRole('button', { name: 'Apply' }));
+      await expect.poll(() => deviceRgbKeys()[0]?.speed).toBe(70);
+      expect(deviceRgbKeys()[0]?.mode).toBe(RGBMode.RgbModeCycle);
+    });
   });
 
   it('works under StrictMode, which renders and runs its effects twice', async () => {
