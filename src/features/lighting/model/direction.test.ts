@@ -9,7 +9,7 @@ import {
 } from './direction';
 
 describe('directionFromPointer', () => {
-  it('measures clockwise from the left of the dial centre, in whole degrees', () => {
+  it('measures counter-clockwise from the left of the dial centre (screen axes), in whole degrees', () => {
     expect(directionFromPointer(-10, 0)).toBe(0);
     expect(directionFromPointer(0, 10)).toBe(90);
     expect(directionFromPointer(10, 0)).toBe(180);
