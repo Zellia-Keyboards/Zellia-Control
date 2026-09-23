@@ -361,6 +361,104 @@ describe('PerformancePage', () => {
     });
   });
 
+  describe('device loads (profile switches, resets)', () => {
+    /**
+     * Stores key `id` of profile 1 on the keyboard in rapid-trigger mode: 1.2 / 1.0 mm, press and
+     * release 0.2 / 0.4 mm, deadzones 0.3 mm from the top and down to 3.4 mm.
+     */
+    function storeOnProfile1(id: number): void {
+      const profile = keyboard.vk.state.profiles[1];
+      const key = profile?.advancedKeys[id];
+      if (!profile || !key) throw new Error(`profile 1 has no key ${id}`);
+      profile.advancedKeys[id] = {
+        ...key,
+        mode: KeyMode.KeyAnalogRapidMode,
+        activation: fractionToRaw(0.3),
+        deactivation: fractionToRaw(0.25),
+        triggerDistance: fractionToRaw(0.05),
+        releaseDistance: fractionToRaw(0.1),
+        upperDeadzone: fractionToRaw(0.075),
+        lowerDeadzone: fractionToRaw(0.15),
+      };
+    }
+
+    async function switchToProfile1(): Promise<void> {
+      await act(async () => {
+        await deviceSession.switchProfile(1);
+      });
+      expect(deviceStore.getState().config?.profileIndex).toBe(1);
+    }
+
+    it('loads the first selected key again from the new configuration, writing nothing', async () => {
+      storeOnProfile1(3);
+      renderPage();
+      select(3);
+      expect(screen.getByText('Actuation: 2.000mm')).toBeInTheDocument();
+      await switchToProfile1();
+
+      expect(screen.getByText('Actuation: 1.200mm')).toBeInTheDocument();
+      expect(screen.getByText('Deactivation: 1.000mm')).toBeInTheDocument();
+      expect(rapidTriggerSwitch()).toBeChecked();
+      expect(screen.getByText('Start: 0.300mm')).toBeInTheDocument();
+      expect(screen.getByText('Bottom: 3.400mm')).toBeInTheDocument();
+      expect(screen.getByText('0.20 mm')).toBeInTheDocument();
+      expect(screen.getByText('0.40 mm')).toBeInTheDocument();
+      await settle();
+      expect(advancedKeyWrites()).toEqual([]);
+    });
+
+    it('keeps every value of the reloaded key that a change does not touch', async () => {
+      storeOnProfile1(3);
+      renderPage();
+      select(3);
+      await switchToProfile1();
+      const reloaded = deviceKey(3);
+
+      fireEvent.change(slider('Start'), { target: { value: '0.6' } });
+      await expect.poll(() => deviceKey(3).upperDeadzone).toBe(fractionToRaw(0.15));
+      expect(deviceKey(3)).toEqual({ ...reloaded, upperDeadzone: fractionToRaw(0.15) });
+    });
+
+    it('paints keys added afterwards with the reloaded key, not the previous profile’s brush', async () => {
+      storeOnProfile1(3);
+      renderPage();
+      select(3);
+      fireEvent.change(slider('Actuation'), { target: { value: '3' } });
+      await switchToProfile1();
+
+      act(() => {
+        keySelection.toggleKey(9);
+      });
+      await expect.poll(() => deviceKey(9).activation).toBe(deviceKey(3).activation);
+      expect(deviceKey(9)).toMatchObject({
+        mode: KeyMode.KeyAnalogRapidMode,
+        activation: fractionToRaw(0.3),
+        deactivation: fractionToRaw(0.25),
+        upperDeadzone: fractionToRaw(0.075),
+      });
+    });
+
+    it('unloads the brush when no key is selected, so the next key loads its own values', async () => {
+      renderPage();
+      select(3);
+      fireEvent.change(slider('Actuation'), { target: { value: '3' } });
+      act(() => {
+        keySelection.deselectAll();
+      });
+      await switchToProfile1();
+      // As when the page opens: the Svelte defaults until a key is selected.
+      expect(screen.getByText('Actuation: 2.000mm')).toBeInTheDocument();
+      expect(screen.getByText('Deactivation: 1.500mm')).toBeInTheDocument();
+      await settle();
+      keyboard.vk.clearHistory();
+
+      select(12);
+      expect(screen.getByText('Deactivation: 1.960mm')).toBeInTheDocument();
+      await settle();
+      expect(advancedKeyWrites()).toEqual([]);
+    });
+  });
+
   it('works under StrictMode, which runs its effects twice', async () => {
     await seedKey(7, TUNED);
     act(() => {

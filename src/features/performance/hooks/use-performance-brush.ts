@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { deviceSession, deviceStore, type AdvancedKeyConfig } from '../../device';
+import { deviceSession, deviceStore, type AdvancedKeyConfig, type DeviceState } from '../../device';
 import { addedKeys, keySelectionStore } from '../../keyboard';
 import {
   INITIAL_BRUSH,
@@ -14,9 +14,12 @@ export type SettingsUpdate = (settings: PerformanceSettings) => PerformanceSetti
 
 interface BrushState {
   readonly brush: PerformanceBrush;
-  /** Whether a key has been loaded since the page opened. */
+  /** Whether a key has been loaded since the page opened (or the keyboard last loaded). */
   readonly loaded: boolean;
 }
+
+/** No key loaded yet: the Svelte defaults. */
+const UNLOADED: BrushState = Object.freeze({ brush: INITIAL_BRUSH, loaded: false });
 
 /** The first selected key the keyboard has (the selection is ascending, as in Svelte). */
 function firstSelectedKey(selected: readonly number[]): AdvancedKeyConfig | undefined {
@@ -32,6 +35,14 @@ function loadIfFirstSelection(state: BrushState, selected: readonly number[]): B
   if (state.loaded) return state;
   const key = firstSelectedKey(selected);
   return key ? { brush: brushFromKey(key), loaded: true } : state;
+}
+
+/**
+ * Whether the keyboard has just loaded a configuration (a profile switch, a reset): it replaces
+ * the configuration while the store is `reloading`, when the session rejects every edit.
+ */
+function isDeviceLoad(state: DeviceState, previous: DeviceState): boolean {
+  return state.reloading && state.config !== previous.config;
 }
 
 /** Writes the brush to those of `keyIds` the keyboard has (unchanged keys send nothing). */
@@ -51,21 +62,23 @@ function applyBrush(brush: PerformanceBrush, keyIds: readonly number[]): void {
  * - Keys selected before the page opened (the selection outlives navigation) keep their values
  *   until the first settings change: opening a page never writes.
  * - Only selection changes count: switching layers (or any other key-selection state) never
- *   writes, and device reloads do not change the brush.
+ *   writes.
+ * - A device load (a profile switch, a reset) starts over as when the page opens: the first
+ *   selected key of the new configuration is loaded and nothing is written; without a selection
+ *   the brush is no longer loaded. Nothing the previous configuration loaded is written to the
+ *   new one (D2).
  */
 export function usePerformanceBrush(): readonly [
   PerformanceSettings,
   (update: SettingsUpdate) => void,
 ] {
   const [state, setState] = useState<BrushState>(() =>
-    loadIfFirstSelection(
-      { brush: INITIAL_BRUSH, loaded: false },
-      keySelectionStore.getState().selected
-    )
+    loadIfFirstSelection(UNLOADED, keySelectionStore.getState().selected)
   );
   // The latest state for the store subscription and event handlers, which run outside render.
   const stateRef = useRef(state);
-  // The selection the brush has seen: keys selected before the page opened are not painted.
+  // The selection the brush has seen: keys selected before the page opened (or the keyboard
+  // loaded) are not painted.
   const seenSelectionRef = useRef(keySelectionStore.getState().selected);
 
   const commit = useCallback((next: BrushState) => {
@@ -93,11 +106,23 @@ export function usePerformanceBrush(): readonly [
       if (next !== stateRef.current) commit(next);
       applyBrush(next.brush, added);
     };
+    const onDeviceLoad = () => {
+      const { selected } = keySelectionStore.getState();
+      seenSelectionRef.current = selected;
+      commit(loadIfFirstSelection(UNLOADED, selected));
+    };
     // Selections made between the first render and this subscription count as additions.
     onSelection(keySelectionStore.getState().selected);
-    return keySelectionStore.subscribe((selection, previous) => {
+    const unsubscribeSelection = keySelectionStore.subscribe((selection, previous) => {
       if (selection.selected !== previous.selected) onSelection(selection.selected);
     });
+    const unsubscribeDevice = deviceStore.subscribe((device, previous) => {
+      if (isDeviceLoad(device, previous)) onDeviceLoad();
+    });
+    return () => {
+      unsubscribeSelection();
+      unsubscribeDevice();
+    };
   }, [commit]);
 
   return [state.brush.settings, updateSettings] as const;
