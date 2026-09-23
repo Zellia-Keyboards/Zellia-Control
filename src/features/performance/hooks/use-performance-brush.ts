@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { deviceSession, deviceStore, type AdvancedKeyConfig } from '../../device';
-import { keySelectionStore } from '../../keyboard';
+import { addedKeys, keySelectionStore } from '../../keyboard';
 import {
   INITIAL_BRUSH,
   brushConfig,
@@ -39,12 +39,6 @@ function applyBrush(brush: PerformanceBrush, keyIds: readonly number[]): void {
   const keyCount = deviceStore.getState().config?.advancedKeys.length ?? 0;
   const known = keyIds.filter(id => id < keyCount);
   if (known.length > 0) deviceSession.setAdvancedKeys(known, brushConfig(brush));
-}
-
-/** The ids of `selected` that `previous` does not have. */
-function addedKeys(selected: readonly number[], previous: readonly number[]): number[] {
-  const before = new Set(previous);
-  return selected.filter(id => !before.has(id));
 }
 
 /**
@@ -92,7 +86,7 @@ export function usePerformanceBrush(): readonly [
 
   useEffect(() => {
     const onSelection = (selected: readonly number[]) => {
-      const added = addedKeys(selected, seenSelectionRef.current);
+      const added = addedKeys(seenSelectionRef.current, selected);
       seenSelectionRef.current = selected;
       if (selected.length === 0) return;
       const next = loadIfFirstSelection(stateRef.current, selected);
