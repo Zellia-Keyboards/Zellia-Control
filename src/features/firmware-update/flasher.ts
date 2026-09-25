@@ -3,26 +3,29 @@
  * upstream WebDFU implementation:
  *
  * 1. A `.bin` image of 1 KiB–1 MiB is chosen.
- * 2. The keyboard is asked to reboot into its bootloader (`enterBootloader()`); the page keeps
- *    looking for an already authorized bootloader (`detectBootloader(true)`).
- * 3. Once the keyboard has left (or the user says it is in DFU mode), the bootloader is looked
- *    up again and, from a user click only, picked in the browser's USB chooser
- *    (`detectBootloader(false)` needs transient user activation); then it is opened.
+ * 2. The keyboard is asked to reboot into its bootloader (`enterBootloader()`), or the user
+ *    enters DFU mode by hand and says so ("Device is in DFU Mode").
+ * 3. Once the keyboard has left, the bootloader that appeared is flashed without asking when it
+ *    is already authorized (`detectBootloader(true)`); otherwise, and always from a click, the
+ *    browser's USB chooser is opened (`detectBootloader(false)` needs transient user
+ *    activation). Bootloaders that were already there before the request are never flashed
+ *    without a click: they may belong to another board.
  * 4.–7. `WebDfuDevice.download()` erases ("Update Program"), needs no second connection
  *    ("Connect Flash" completes at once), writes with progress ("Flash Firmware"), then
  *    manifests and resets the bootloader, which boots the new firmware ("Finish").
  *
- * While a session runs, `setFirmwareUpdateActive(true)` keeps the Update page mounted through
- * the keyboard's HID disconnect. The session ends when the flasher is detached (the page is
- * left: a running download is aborted), or when it is reset while the keyboard is connected. A
- * reset while the keyboard is away keeps it: the keyboard may still wait in its bootloader, and
- * the page is the only way to flash it.
+ * The session (`setFirmwareUpdateActive`) keeps the Update page reachable while the keyboard
+ * has no HID interface (D3). It starts with the first valid image (or when Settings sends the
+ * keyboard to its bootloader) and lasts while the keyboard may be waiting in its bootloader:
+ * leaving the page aborts a running download but keeps the session, so the user can come back
+ * and try again. It ends when the page is left or reset while the keyboard is connected, or when
+ * the page is left after a successful update.
  */
 import { WebDfuDevice, type DfuProgress, type USBDevice } from 'emi-keyboard-controller';
 import { deviceSession, deviceStore } from '../device';
-import { isFirmwareFileName, readFirmwareImage, FIRMWARE_FILE_ERRORS } from './model/firmware-file';
+import { FIRMWARE_FILE_ERRORS, isFirmwareFileName, readFirmwareImage } from './model/firmware-file';
 import type { FlasherState, FlashStepId } from './model/flash-steps';
-import { setFirmwareUpdateActive } from './session';
+import { firmwareUpdateSession, setFirmwareUpdateActive } from './session';
 
 export const FLASHER_ERRORS = {
   noDevice: 'No device in DFU mode found. Please enter recovery mode first.',
@@ -45,14 +48,14 @@ export interface FirmwareFlasher {
   /** "Try Again" / "Flash Another Device": back to step 1. */
   reset(): void;
   /**
-   * Starts following the keyboard connection. The returned function stops everything: a running
-   * download is aborted, the session ends and the flasher returns to step 1.
+   * Starts following the keyboard connection and takes over a session left by an earlier
+   * attempt. The returned function aborts a running download and returns to step 1.
    */
   attach(): () => void;
 }
 
 export interface FirmwareFlasherOptions {
-  /** How often an already authorized bootloader is looked for while waiting (default 500). */
+  /** How often a newly appeared, authorized bootloader is looked for (default 500). */
   readonly pollIntervalMs?: number;
 }
 
@@ -77,9 +80,13 @@ class Flasher implements FirmwareFlasher {
   #generation = 0;
   #attached = false;
   #sessionActive = false;
+  /** The keyboard may be waiting in its bootloader: the session must outlive the page. */
+  #inBootloader = false;
   #image: Uint8Array | null = null;
   /** The keyboard was asked to enter its bootloader in this attempt. */
   #bootloaderRequested = false;
+  /** Authorized bootloaders present before the request: never flashed without a click. */
+  #preexisting: ReadonlySet<USBDevice> = new Set();
   /** The device search, or the open-and-flash, in progress; at most one at a time. */
   #task: Promise<void> | null = null;
   #pollTimer: ReturnType<typeof setTimeout> | null = null;
@@ -105,6 +112,11 @@ class Flasher implements FirmwareFlasher {
   attach(): () => void {
     this.#unsubscribeStore?.();
     this.#attached = true;
+    // A session left by an earlier attempt (or by Settings) continues while the keyboard is away.
+    this.#sessionActive = firmwareUpdateSession.getState().active;
+    this.#inBootloader = this.#sessionActive && !keyboardReady();
+    if (this.#sessionActive && keyboardReady()) this.#setSessionActive(false);
+
     this.#unsubscribeStore = deviceStore.subscribe(state => {
       // The keyboard left after the bootloader request: it is rebooting into DFU mode.
       if (
@@ -114,6 +126,7 @@ class Flasher implements FirmwareFlasher {
       ) {
         this.#setState({ phase: 'connect' });
         void this.#detectSilently();
+        this.#schedulePoll();
       }
     });
     return () => {
@@ -121,7 +134,7 @@ class Flasher implements FirmwareFlasher {
       this.#unsubscribeStore?.();
       this.#unsubscribeStore = null;
       this.#stop();
-      this.#setSessionActive(false);
+      if (keyboardReady() || !this.#inBootloader) this.#setSessionActive(false);
       this.#setState({ phase: 'choose' });
     };
   }
@@ -146,15 +159,24 @@ class Flasher implements FirmwareFlasher {
     );
     this.#image = result.image;
     this.#setSessionActive(true);
-    if (keyboardReady()) {
-      this.#bootloaderRequested = true;
-      deviceSession.enterBootloader();
+    if (!keyboardReady()) return;
+
+    let preexisting: USBDevice[] = [];
+    try {
+      preexisting = await deviceSession.detectBootloader(true);
+    } catch (error) {
+      console.warn('[firmware-update] bootloader lookup failed', error);
     }
-    this.#schedulePoll();
+    if (generation !== this.#generation || !keyboardReady()) return;
+    this.#preexisting = new Set(preexisting);
+    this.#bootloaderRequested = true;
+    this.#inBootloader = true;
+    deviceSession.enterBootloader();
   }
 
   async confirmDfuMode(): Promise<void> {
     if (this.#state.phase !== 'reboot' || !this.#image) return;
+    this.#inBootloader = true;
     this.#setState({ phase: 'connect' });
     await this.#pickDevice();
   }
@@ -166,7 +188,10 @@ class Flasher implements FirmwareFlasher {
 
   reset(): void {
     this.#stop();
-    if (keyboardReady()) this.#setSessionActive(false);
+    if (keyboardReady()) {
+      this.#inBootloader = false;
+      this.#setSessionActive(false);
+    }
     this.#setState({ phase: 'choose' });
   }
 
@@ -198,11 +223,16 @@ class Flasher implements FirmwareFlasher {
     this.#task = null;
     this.#image = null;
     this.#bootloaderRequested = false;
+    this.#preexisting = new Set();
   }
 
   #waitingForDevice(): boolean {
-    const { phase } = this.#state;
-    return this.#attached && this.#image !== null && (phase === 'reboot' || phase === 'connect');
+    return this.#attached && this.#image !== null && this.#state.phase === 'connect';
+  }
+
+  /** Bootloaders that may be flashed without asking: authorized, and not there before. */
+  #candidates(devices: readonly USBDevice[]): USBDevice[] {
+    return devices.filter(device => !this.#preexisting.has(device));
   }
 
   #schedulePoll(): void {
@@ -225,7 +255,7 @@ class Flasher implements FirmwareFlasher {
     return task;
   }
 
-  /** Looks for an already authorized bootloader (no picker) and flashes it when found. */
+  /** Flashes the one authorized bootloader that appeared after the request, if there is one. */
   async #detectSilently(): Promise<void> {
     if (this.#task || !this.#waitingForDevice()) return;
     await this.#runTask(async generation => {
@@ -237,29 +267,32 @@ class Flasher implements FirmwareFlasher {
         return;
       }
       if (generation !== this.#generation || !this.#waitingForDevice()) return;
-      const [device] = devices;
-      if (device) await this.#flash(device, generation);
+      const [device, ...others] = this.#candidates(devices);
+      if (device && others.length === 0) await this.#flash(device, generation);
     });
   }
 
-  /** From a click: the authorized bootloader, else the browser's USB chooser. */
+  /** From a click: the one new authorized bootloader, else the browser's USB chooser. */
   async #pickDevice(): Promise<void> {
     // A silent lookup is quick; the click's user activation outlives it.
-    if (this.#task) await this.#task;
-    if (this.#state.phase !== 'connect' || !this.#waitingForDevice()) return;
+    while (this.#task) await this.#task;
+    if (!this.#waitingForDevice()) return;
     await this.#runTask(async generation => {
-      let devices: USBDevice[];
+      let device: USBDevice | undefined;
       try {
-        devices = await deviceSession.detectBootloader(true);
-        if (devices.length === 0) devices = await deviceSession.detectBootloader(false);
+        const [candidate, ...others] = this.#candidates(await deviceSession.detectBootloader(true));
+        device =
+          candidate && others.length === 0
+            ? candidate
+            : (await deviceSession.detectBootloader(false))[0];
       } catch (error) {
         console.error('DFU connection error:', error);
-        if (generation === this.#generation)
+        if (generation === this.#generation) {
           this.#fail('connect_recovery', connectErrorMessage(error));
+        }
         return;
       }
       if (generation !== this.#generation) return;
-      const [device] = devices;
       if (!device) {
         this.#fail('connect_recovery', FLASHER_ERRORS.noDevice);
         return;
@@ -297,7 +330,11 @@ class Flasher implements FirmwareFlasher {
           if (current()) this.#onProgress(progress);
         },
       });
-      if (current()) this.#setState({ phase: 'done' });
+      if (current()) {
+        // The bootloader reset into the new firmware: nothing waits for an update any more.
+        this.#inBootloader = false;
+        this.#setState({ phase: 'done' });
+      }
     } catch (error) {
       if (!current()) return;
       console.error('Download error:', error);
