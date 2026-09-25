@@ -35,7 +35,7 @@ type ChartConstructor = typeof Chart;
 
 let chartLibrary: Promise<ChartConstructor> | null = null;
 
-/** `chart.js/auto` with the zoom plugin registered (once per page). */
+/** `chart.js/auto` with the zoom plugin registered (once per page; retried after a failure). */
 function loadChartLibrary(): Promise<ChartConstructor> {
   chartLibrary ??= (async () => {
     const { default: ChartJs } = await import('chart.js/auto');
@@ -46,7 +46,10 @@ function loadChartLibrary(): Promise<ChartConstructor> {
       console.warn('Zoom plugin not available:', error);
     }
     return ChartJs;
-  })();
+  })().catch((error: unknown) => {
+    chartLibrary = null;
+    throw error;
+  });
   return chartLibrary;
 }
 
