@@ -31,21 +31,27 @@ const BOTTOM_ZOOM_MIN_MM = 3.9;
 const THEME_COLOR_DELAY_MS = 50;
 
 type TravelChartInstance = Chart<'line', TravelPoint[]>;
-type ChartConstructor = typeof Chart;
 
-let chartLibrary: Promise<ChartConstructor> | null = null;
+interface ChartLibrary {
+  readonly ChartJs: typeof Chart;
+  /** The zoom plugin registered (it adds `resetZoom()`); the chart works without it. */
+  readonly zoom: boolean;
+}
+
+let chartLibrary: Promise<ChartLibrary> | null = null;
 
 /** `chart.js/auto` with the zoom plugin registered (once per page; retried after a failure). */
-function loadChartLibrary(): Promise<ChartConstructor> {
+function loadChartLibrary(): Promise<ChartLibrary> {
   chartLibrary ??= (async () => {
     const { default: ChartJs } = await import('chart.js/auto');
     try {
       const { default: zoomPlugin } = await import('chartjs-plugin-zoom');
       ChartJs.register(zoomPlugin);
+      return { ChartJs, zoom: true };
     } catch (error) {
       console.warn('Zoom plugin not available:', error);
+      return { ChartJs, zoom: false };
     }
-    return ChartJs;
   })().catch((error: unknown) => {
     chartLibrary = null;
     throw error;
@@ -135,6 +141,7 @@ export class TravelChart {
   /** Settles once the chart exists, or once it is known that it never will. */
   readonly ready: Promise<void>;
   #chart: TravelChartInstance | null = null;
+  #zoom = false;
   #points: TravelPoint[] = [];
   #frame: number | null = null;
   #destroyed = false;
@@ -161,9 +168,9 @@ export class TravelChart {
   }
 
   async #create(canvas: HTMLCanvasElement, labels: TravelChartLabels): Promise<void> {
-    let ChartJs: ChartConstructor;
+    let library: ChartLibrary;
     try {
-      ChartJs = await loadChartLibrary();
+      library = await loadChartLibrary();
     } catch (error) {
       console.error('[debug] could not load the chart', error);
       return;
@@ -171,7 +178,8 @@ export class TravelChart {
     if (this.#destroyed) return;
     const context = canvas.getContext('2d');
     if (!context) return;
-    this.#chart = new ChartJs(context, chartConfig(this.#points, labels, themeColors()));
+    this.#zoom = library.zoom;
+    this.#chart = new library.ChartJs(context, chartConfig(this.#points, labels, themeColors()));
     if (this.#points.length > 0) this.#follow();
   }
 
@@ -200,14 +208,14 @@ export class TravelChart {
     const chart = this.#chart;
     if (!chart) return;
     this.#dataset(chart).data = this.#points;
-    chart.resetZoom();
+    if (this.#zoom) chart.resetZoom();
     chart.update();
   }
 
   resetZoom(): void {
     const chart = this.#chart;
     if (!chart) return;
-    chart.resetZoom();
+    if (this.#zoom) chart.resetZoom();
     const y = this.#scale(chart, 'y');
     y.min = 0;
     y.max = TRAVEL_MM;
