@@ -3,6 +3,7 @@ import { useId, useState } from 'react';
 import { KeyTest } from './components/KeyTest';
 import { KeyTracking } from './components/KeyTracking';
 import styles from './DebugPage.module.css';
+import { cx } from '../../lib/class-names';
 
 type DebugTab = 'tracking' | 'keytest';
 
@@ -10,10 +11,6 @@ const TABS: readonly { id: DebugTab; label: string; icon: LucideIcon }[] = [
   { id: 'tracking', label: 'Key Tracking', icon: Activity },
   { id: 'keytest', label: 'Key Test', icon: TestTube },
 ];
-
-function cx(...classNames: readonly (string | undefined)[]): string {
-  return classNames.filter(name => name !== undefined && name !== '').join(' ');
-}
 
 /** Debug tools: Key Tracking and Key Test (port of `routes/debug/+page.svelte`). */
 export function DebugPage() {
