@@ -1,7 +1,4 @@
 import { useLanguage } from '../../../lib/i18n';
-import { openExternal } from '../open-external';
-
-const SPONSOR_URL = 'https://github.com/sponsors/your-username';
 
 const HEART_PATH =
   'M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z';
@@ -91,8 +88,10 @@ function WeChatPayLogo() {
 }
 
 /**
- * Donations (port of `about/DonationSection.svelte`): payment codes for Chinese, a sponsor
- * button otherwise. The copy is hard-coded English in both languages, as in Svelte.
+ * Donations (port of `about/DonationSection.svelte`): payment codes for Chinese. The English
+ * "Support Development" sponsor button is left out: it linked to the placeholder
+ * `https://github.com/sponsors/your-username` (spec §1.9, PL-027). The copy is hard-coded
+ * English in both languages, as in Svelte.
  */
 export function DonationSection() {
   const { language } = useLanguage();
@@ -115,7 +114,7 @@ export function DonationSection() {
             developing and maintaining this software for Hall Effect keyboard enthusiasts worldwide.
           </p>
 
-          {language === 'zh' ? (
+          {language === 'zh' && (
             /* Chinese: Payment Methods Only */
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               {/* Alipay */}
@@ -141,22 +140,6 @@ export function DonationSection() {
                   <div className="text-xs text-gray-500">QR Code</div>
                 </div>
               </div>
-            </div>
-          ) : (
-            /* International: Support buttons */
-            <div className="flex flex-col sm:flex-row gap-3">
-              <button
-                type="button"
-                className="bg-pink-600 hover:bg-pink-700 dark:bg-pink-700 dark:hover:bg-pink-800 flex items-center justify-center gap-2 px-6 py-3 rounded-lg font-medium transition-all duration-200 text-white shadow-sm hover:shadow-md"
-                onClick={() => {
-                  openExternal(SPONSOR_URL);
-                }}
-              >
-                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                  <path d={HEART_PATH} />
-                </svg>
-                <span>Support Development</span>
-              </button>
             </div>
           )}
 
