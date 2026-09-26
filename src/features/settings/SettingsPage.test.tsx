@@ -1,11 +1,12 @@
 import { act, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { KeyboardKeycode } from 'emi-keyboard-controller';
-import { MemoryRouter } from 'react-router';
+import { MemoryRouter, Route, Routes } from 'react-router';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { kc } from '../keycodes';
 import { setLanguage } from '../../lib/i18n';
 import { connectVirtualKeyboard, type ConnectedKeyboard } from '../../testing/app-keyboard';
+import { firmwareUpdateSession, setFirmwareUpdateActive, UpdatePage } from '../firmware-update';
 import { SettingsPage } from './index';
 
 const REBOOT = kc.keyboardOperation(KeyboardKeycode.KeyboardReboot);
@@ -29,7 +30,10 @@ async function settle(): Promise<void> {
 function renderPage() {
   return render(
     <MemoryRouter initialEntries={['/settings/']}>
-      <SettingsPage />
+      <Routes>
+        <Route path="/settings/" element={<SettingsPage />} />
+        <Route path="/update/" element={<UpdatePage />} />
+      </Routes>
     </MemoryRouter>
   );
 }
@@ -47,6 +51,7 @@ beforeEach(async () => {
 
 afterEach(() => {
   keyboard.dispose();
+  setFirmwareUpdateActive(false);
   setLanguage('en');
   localStorage.clear();
 });
@@ -108,9 +113,11 @@ describe('SettingsPage', () => {
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     expect(operations()).toEqual([]);
     expect(keyboard.vk.connected).toBe(true);
+    expect(firmwareUpdateSession.getState().active).toBe(false);
+    expect(screen.getByRole('heading', { level: 1, name: 'Settings' })).toBeInTheDocument();
   });
 
-  it('enters the bootloader once confirmed', async () => {
+  it('enters the bootloader once confirmed and opens the Update page (spec §1.8)', async () => {
     const user = userEvent.setup();
     renderPage();
 
@@ -119,12 +126,19 @@ describe('SettingsPage', () => {
     await user.click(within(dialog).getByRole('button', { name: 'Enter Bootloader' }));
 
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    // The update session starts with the request, before the keyboard disconnects.
+    expect(firmwareUpdateSession.getState().active).toBe(true);
+    expect(
+      screen.getByRole('heading', { level: 1, name: 'Zellia Firmware Updater' })
+    ).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Select Firmware File' })).toBeInTheDocument();
     await vi.waitFor(() => {
       expect(operations()).toEqual([BOOTLOADER]);
     });
     await vi.waitFor(() => {
       expect(keyboard.vk.dfu?.connected).toBe(true);
     });
+    expect(firmwareUpdateSession.getState().active).toBe(true);
   });
 
   it('asks before a factory reset and sends nothing when cancelled with Escape', async () => {
