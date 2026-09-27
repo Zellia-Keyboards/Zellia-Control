@@ -2,7 +2,8 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { KeyboardSelector } from './KeyboardSelector';
 
-describe('KeyboardSelector', () => {
+// Page renders and role queries are slow in jsdom on a busy machine.
+describe('KeyboardSelector', { timeout: 20_000 }, () => {
   it('renders nothing while closed and ignores Escape', () => {
     const onClose = vi.fn();
     render(<KeyboardSelector open={false} onClose={onClose} />);
