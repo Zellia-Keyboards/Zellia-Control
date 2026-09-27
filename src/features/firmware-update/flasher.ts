@@ -22,8 +22,8 @@
  * page (D3): leaving the page neither aborts a flash nor forgets its progress. The session flag
  * (`setFirmwareUpdateActive`) tells the shell and the app update policy that an update is under
  * way: from the accepted image (or the Settings request) until the update succeeds, fails or is
- * reset — and, for a Settings request still waiting for its image, until a keyboard is connected
- * again.
+ * reset — and, while nothing has been written yet, until a keyboard is connected again: the user
+ * is going to use it, and the update starts over at step 1.
  */
 import { WebDfuDevice, type DfuProgress, type USBDevice } from 'emi-keyboard-controller';
 import { deviceSession, deviceStore } from '../device';
@@ -249,11 +249,14 @@ class Flasher implements FirmwareFlasher {
       }
       return;
     }
-    // A keyboard is connected again: an update still waiting for its image (Settings) is over.
-    if (this.#sessionActive && this.#image === null) {
-      this.#request = null;
-      this.#setSessionActive(false);
-    }
+    // A keyboard is connected again, to be used: an update that has not started writing is over
+    // — it waited for its image (Settings), the keyboard's reboot or the bootloader — and starts
+    // over at step 1; nothing is asked of the keyboard again. A running erase or download goes on.
+    const { phase } = this.#state;
+    if (!this.#sessionActive || phase === 'erase' || phase === 'flash') return;
+    this.#stop();
+    this.#setSessionActive(false);
+    this.#setState({ phase: 'choose' });
   }
 
   /** Looks up the bootloaders, then asks the connected keyboard to reboot into its own. */
