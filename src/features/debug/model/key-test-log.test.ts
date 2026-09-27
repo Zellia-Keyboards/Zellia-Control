@@ -69,7 +69,7 @@ describe('recording', () => {
 });
 
 describe('controls', () => {
-  it('starting clears the events and timing but keeps held keys', () => {
+  it('starting clears the events, the timing and the held keys', () => {
     let log = recordKeyDown(listening(), 'KeyA', 0);
     log = stopListening(log);
     log = startListening(log);
@@ -80,8 +80,19 @@ describe('controls', () => {
       startTime: null,
       lastEventTime: null,
     });
-    // KeyA is still held: its repeat is skipped.
-    expect(recordKeyDown(log, 'KeyA', 10)).toBe(log);
+    expect(log.pressed.size).toBe(0);
+  });
+
+  it('logs the next press of a key released while stopped (Svelte never logged it again)', () => {
+    let log = recordKeyDown(listening(), 'KeyA', 0);
+    log = stopListening(log);
+    // KeyA is released while stopped: no event, so the log cannot know.
+    log = recordKeyUp(log, 'KeyA', 20);
+    log = startListening(log);
+
+    log = recordKeyDown(log, 'KeyA', 40);
+
+    expect(log.events).toEqual([{ time: '0.000s', type: 'Press', key: 'KeyA', delta: 0 }]);
   });
 
   it('stopping keeps the log', () => {

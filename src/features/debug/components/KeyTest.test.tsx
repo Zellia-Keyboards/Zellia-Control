@@ -98,6 +98,20 @@ describe('KeyTest', { timeout: 20_000 }, () => {
     expect(screen.getByText('Press any key to start recording...')).toBeInTheDocument();
   });
 
+  it('logs a key again after it was released while stopped', async () => {
+    const user = userEvent.setup();
+    render(<KeyTest />);
+    await user.click(screen.getByRole('button', { name: 'Start Listening' }));
+    key('keydown', 'KeyF');
+    await user.click(screen.getByRole('button', { name: 'Stop Listening' }));
+    key('keyup', 'KeyF');
+    await user.click(screen.getByRole('button', { name: 'Start Listening' }));
+
+    key('keydown', 'KeyF');
+
+    expect(rows().map(row => `${row[1] ?? ''} ${row[2] ?? ''}`)).toEqual(['Press KeyF']);
+  });
+
   it('swaps Start and Stop for new buttons, which do not take over the focus (as in Svelte)', async () => {
     const user = userEvent.setup();
     render(<KeyTest />);

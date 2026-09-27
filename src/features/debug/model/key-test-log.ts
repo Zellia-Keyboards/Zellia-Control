@@ -75,9 +75,20 @@ export function recordKeyUp(log: KeyTestLog, key: string, now: number): KeyTestL
   return record(log, 'Release', key, now, pressed);
 }
 
-/** Clears the events and timing; keys still held stay held. */
+/**
+ * Clears the events, the timing and the held keys. Releases are not seen while stopped, so a key
+ * held before is forgotten: otherwise its next press would be taken for an auto-repeat and never
+ * logged (a Svelte bug, which kept the set across Stop and Start).
+ */
 export function startListening(log: KeyTestLog): KeyTestLog {
-  return { ...log, listening: true, events: [], startTime: null, lastEventTime: null };
+  return {
+    ...log,
+    listening: true,
+    events: [],
+    startTime: null,
+    lastEventTime: null,
+    pressed: new Set(),
+  };
 }
 
 export function stopListening(log: KeyTestLog): KeyTestLog {
