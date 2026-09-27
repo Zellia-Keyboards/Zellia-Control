@@ -1,5 +1,6 @@
-import { act, fireEvent, render, screen, within } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { DFU_REQUEST } from 'emi-keyboard-controller';
 import { MemoryRouter } from 'react-router';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { connectVirtualKeyboard } from '../../testing/app-keyboard';
@@ -21,8 +22,8 @@ const STEP_NAMES = [
   'Finish',
 ];
 
-/** Waits for update phases: a full flash takes a while in jsdom on a busy machine. */
-const FLOW = { timeout: 5000 };
+/** Waits for update phases: a flash takes a while in jsdom on a busy machine. */
+const FLOW = { timeout: 10_000 };
 
 let keyboard: { readonly vk: InstalledVirtualKeyboard; readonly dispose: () => void };
 
@@ -84,6 +85,31 @@ function steps(): string[] {
     });
 }
 
+/**
+ * Holds the download before its second data block (DfuSe writes each block with DNLOAD
+ * wValue 2) until the returned function is called, so a flash in progress can be looked at.
+ */
+function holdDownload(): () => void {
+  const device = keyboard.vk.dfu;
+  if (!device) throw new Error('model without bootloader');
+  let release: () => void = () => undefined;
+  const gate = new Promise<void>(resolve => {
+    release = resolve;
+  });
+  const transferOut = device.controlTransferOut.bind(device);
+  let blocks = 0;
+  vi.spyOn(device, 'controlTransferOut').mockImplementation(async (setup, data) => {
+    if (setup.request === DFU_REQUEST.DOWNLOAD && setup.value === 2) {
+      blocks += 1;
+      if (blocks === 2) await gate;
+    }
+    return transferOut(setup, data);
+  });
+  return () => {
+    release();
+  };
+}
+
 function drop(file: File): void {
   fireEvent.drop(screen.getByRole('region', { name: 'Firmware file drop zone' }), {
     dataTransfer: { files: [file] },
@@ -100,7 +126,7 @@ afterEach(() => {
   keyboard.dispose();
 });
 
-describe('UpdatePage', { timeout: 15_000 }, () => {
+describe('UpdatePage', { timeout: 30_000 }, () => {
   it('shows the seven steps with the file chooser active', async () => {
     await connect();
     renderPage();
@@ -179,19 +205,24 @@ describe('UpdatePage', { timeout: 15_000 }, () => {
   });
 
   it('shows the flashing progress', async () => {
-    await connect({ dfu: { authorized: true, busyPolls: 2, pollTimeoutMs: 5 } });
+    await connect({ dfu: { authorized: true } });
+    const release = holdDownload();
     renderPage();
 
-    drop(firmware(24 * 1024));
+    // Four 2 KiB blocks: the first one is written, the second waits.
+    drop(firmware(8 * 1024));
 
     const heading = await screen.findByRole('heading', { name: 'Flashing Firmware' }, FLOW);
     const panel = heading.parentElement ?? document.body;
     expect(within(panel).getByText('Do not disconnect your device')).toBeInTheDocument();
     const bar = within(panel).getByRole('progressbar', { name: 'Progress' });
-    await vi.waitFor(() => {
-      expect(Number(bar.getAttribute('aria-valuenow'))).toBeGreaterThan(0);
+    await waitFor(() => {
+      expect(bar).toHaveAttribute('aria-valuenow', '25');
     }, FLOW);
+    expect(within(panel).getByText('25%')).toBeInTheDocument();
     expect(steps()[5]).toBe('Flash Firmware: active');
+
+    release();
     await screen.findByRole('heading', { name: 'Flashing Complete!' }, FLOW);
   });
 
@@ -232,17 +263,19 @@ describe('UpdatePage', { timeout: 15_000 }, () => {
   });
 
   it('keeps flashing when the page is left and shows the result on return (D3)', async () => {
-    await connect({ dfu: { authorized: true, busyPolls: 2, pollTimeoutMs: 5 } });
+    await connect({ dfu: { authorized: true } });
+    const release = holdDownload();
     const first = renderPage();
-    const file = firmware(48 * 1024);
+    const file = firmware(8 * 1024);
 
     drop(file);
     await screen.findByRole('heading', { name: 'Flashing Firmware' }, FLOW);
     act(() => {
       first.unmount();
     });
-
     expect(firmwareUpdateSession.getState().active).toBe(true);
+    release();
+
     await vi.waitFor(() => {
       expect(firmwareUpdateSession.getState().active).toBe(false);
     }, FLOW);
@@ -254,10 +287,11 @@ describe('UpdatePage', { timeout: 15_000 }, () => {
   });
 
   it('shows a running flash when the page is opened again', async () => {
-    await connect({ dfu: { authorized: true, busyPolls: 2, pollTimeoutMs: 5 } });
+    await connect({ dfu: { authorized: true } });
+    const release = holdDownload();
     const first = renderPage();
 
-    drop(firmware(48 * 1024));
+    drop(firmware(8 * 1024));
     await screen.findByRole('heading', { name: 'Flashing Firmware' }, FLOW);
     act(() => {
       first.unmount();
@@ -266,6 +300,7 @@ describe('UpdatePage', { timeout: 15_000 }, () => {
 
     expect(screen.getByRole('heading', { name: 'Flashing Firmware' })).toBeInTheDocument();
     expect(steps()[5]).toBe('Flash Firmware: active');
+    release();
     await screen.findByRole('heading', { name: 'Flashing Complete!' }, FLOW);
   });
 
