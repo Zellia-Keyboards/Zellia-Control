@@ -18,8 +18,19 @@ export function isFirmwareFileName(name: string): boolean {
   return name.endsWith('.bin');
 }
 
-/** Reads the image; 1 KiB to 1 MiB are accepted. */
+function sizeError(bytes: number): string | null {
+  if (bytes > MAX_FIRMWARE_BYTES) return FIRMWARE_FILE_ERRORS.tooLarge;
+  if (bytes < MIN_FIRMWARE_BYTES) return FIRMWARE_FILE_ERRORS.tooSmall;
+  return null;
+}
+
+/**
+ * Reads the image; 1 KiB to 1 MiB are accepted. A file of the wrong size is refused before it is
+ * read; what was read is checked again, as the file may have changed since it was chosen.
+ */
 export async function readFirmwareImage(file: Blob): Promise<FirmwareImageResult> {
+  const declared = sizeError(file.size);
+  if (declared) return { ok: false, message: declared };
   let buffer: ArrayBuffer;
   try {
     buffer = await file.arrayBuffer();
@@ -27,11 +38,7 @@ export async function readFirmwareImage(file: Blob): Promise<FirmwareImageResult
     console.error('File read error:', error);
     return { ok: false, message: FIRMWARE_FILE_ERRORS.unreadable };
   }
-  if (buffer.byteLength > MAX_FIRMWARE_BYTES) {
-    return { ok: false, message: FIRMWARE_FILE_ERRORS.tooLarge };
-  }
-  if (buffer.byteLength < MIN_FIRMWARE_BYTES) {
-    return { ok: false, message: FIRMWARE_FILE_ERRORS.tooSmall };
-  }
+  const read = sizeError(buffer.byteLength);
+  if (read) return { ok: false, message: read };
   return { ok: true, image: new Uint8Array(buffer) };
 }
