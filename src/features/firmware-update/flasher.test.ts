@@ -272,12 +272,19 @@ describe('firmware flasher', { timeout: 30_000 }, () => {
 
   it('never flashes on its own when the bootloaders could not be listed before the request', async () => {
     await setup({ dfu: { authorized: true } });
-    vi.spyOn(console, 'warn').mockImplementation(() => undefined);
-    vi.spyOn(deviceSession, 'detectBootloader').mockRejectedValueOnce(new Error('USB busy'));
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    // The lookup before the request is the first one; the USB bus fails it.
+    vi.spyOn(vk().usb, 'getDevices').mockRejectedValueOnce(
+      new DOMException('USB busy', 'NetworkError')
+    );
     const requestDevice = vi.spyOn(vk().usb, 'requestDevice');
 
     await flasher.chooseFile(firmware(2048));
     await phase('connect');
+    expect(warn).toHaveBeenCalledWith(
+      '[firmware-update] bootloader lookup failed',
+      expect.any(DOMException)
+    );
     await delay(60);
     expect(dfu().image).toHaveLength(0);
 
