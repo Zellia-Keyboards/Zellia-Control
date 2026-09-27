@@ -289,7 +289,9 @@ describe('firmware flasher', { timeout: 30_000 }, () => {
   it('starts a single flash when the button is clicked twice during a lookup', async () => {
     await setup();
     const getDevices = vk().usb.getDevices.bind(vk().usb);
+    let onLookup: (() => void) | null = null;
     vi.spyOn(vk().usb, 'getDevices').mockImplementation(async () => {
+      onLookup?.();
       await delay(20);
       return getDevices();
     });
@@ -297,6 +299,11 @@ describe('firmware flasher', { timeout: 30_000 }, () => {
 
     await flasher.chooseFile(firmware(2048));
     await phase('connect');
+    // Both clicks wait for the silent lookup that is looking for the new bootloader.
+    await new Promise<void>(resolve => {
+      onLookup = resolve;
+    });
+    onLookup = null;
     await Promise.all([flasher.connectDevice(), flasher.connectDevice()]);
 
     await phase('done');

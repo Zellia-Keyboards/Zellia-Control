@@ -61,6 +61,11 @@ function renderPage() {
   );
 }
 
+/** The session flag as rendered by {@link SessionFlag}. */
+function sessionFlag(): string {
+  return screen.getByRole('status', { name: 'update session' }).textContent;
+}
+
 function fileInput(): HTMLInputElement {
   const input = document.getElementById('firmware-file-input');
   if (!(input instanceof HTMLInputElement)) throw new Error('no file input');
@@ -142,7 +147,7 @@ describe('UpdatePage', { timeout: 30_000 }, () => {
     expect(screen.getByRole('heading', { name: 'Select Firmware File' })).toBeInTheDocument();
     expect(fileInput()).toHaveAttribute('accept', '.bin');
     expect(screen.getByText('Drop firmware here')).toBeInTheDocument();
-    expect(screen.getByRole('status', { name: 'update session' })).toHaveTextContent('inactive');
+    expect(sessionFlag()).toBe('inactive');
   });
 
   it('highlights the drop zone while a file is dragged over it', async () => {
@@ -172,7 +177,8 @@ describe('UpdatePage', { timeout: 30_000 }, () => {
       'Finish: active',
     ]);
     expect(keyboard.vk.dfu?.image).toEqual(new Uint8Array(await file.arrayBuffer()));
-    expect(screen.getByRole('status', { name: 'update session' })).toHaveTextContent('active');
+    // The update is over; the finish panel stays until the user moves on.
+    expect(sessionFlag()).toBe('inactive');
 
     await user.click(screen.getByRole('button', { name: 'Flash Another Device' }));
     expect(screen.getByRole('heading', { name: 'Select Firmware File' })).toBeInTheDocument();
@@ -195,7 +201,7 @@ describe('UpdatePage', { timeout: 30_000 }, () => {
       'Reboot to Recovery: completed',
       'Connect Recovery: active',
     ]);
-    expect(screen.getByRole('status', { name: 'update session' })).toHaveTextContent('active');
+    expect(sessionFlag()).toBe('active');
 
     await user.click(screen.getByRole('button', { name: 'Connect USB Device' }));
 
