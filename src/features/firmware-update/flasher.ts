@@ -6,11 +6,13 @@
  * 2. A connected keyboard is asked to reboot into its bootloader (`enterBootloader()`); the user
  *    can also enter DFU mode by hand and say so ("Device is in DFU Mode"). Without a keyboard —
  *    it already waits in its bootloader, or none was connected (§1.7) — the step is skipped.
- * 3. Once the keyboard has left, the one authorized bootloader that appeared after the app's
- *    request is flashed without asking (`detectBootloader(true)`): a bootloader that was already
- *    attached may belong to another board. Anything else waits for "Connect USB Device", which
- *    takes that one new authorized bootloader, else opens the browser's USB chooser
- *    (`detectBootloader(false)` needs the click's transient user activation).
+ * 3. Once the keyboard has left, the bootloader is flashed without asking only if it is the one
+ *    authorized bootloader that appeared after the app's request (`detectBootloader(true)`,
+ *    compared with a lookup taken before the request): a bootloader that was already attached
+ *    may belong to another board. Anything else waits for "Connect USB Device", which takes that
+ *    one new bootloader, else opens the browser's USB chooser where the user picks the device
+ *    (`detectBootloader(false)` needs the click's transient user activation) — always so
+ *    without a request, e.g. when no keyboard was connected.
  * 4.–7. `WebDfuDevice.download()` erases ("Update Program"), needs no second connection
  *    ("Connect Flash" completes at once), writes with progress ("Flash Firmware"), then
  *    manifests and resets the bootloader, which boots the new firmware ("Finish").
@@ -278,14 +280,17 @@ class Flasher implements FirmwareFlasher {
   }
 
   /**
-   * Authorized bootloaders that may be flashed without the chooser: after a request, only those
-   * that appeared since (none when the earlier lookup failed); otherwise all of them.
+   * The one bootloader of `devices` (authorized ones) that may be flashed without the chooser:
+   * the only one that appeared after the app asked the keyboard to reboot into its bootloader.
+   * None without such a request, or when the bootloaders could not be listed before it: an
+   * attached bootloader may belong to another board.
    */
-  #candidates(devices: readonly USBDevice[]): USBDevice[] {
+  #newBootloader(devices: readonly USBDevice[]): USBDevice | null {
     const request = this.#request;
-    if (!request) return [...devices];
+    if (!request?.sent || !request.preexisting) return null;
     const { preexisting } = request;
-    return preexisting ? devices.filter(device => !preexisting.has(device)) : [];
+    const [device, ...others] = devices.filter(candidate => !preexisting.has(candidate));
+    return device && others.length === 0 ? device : null;
   }
 
   /** Flashes a bootloader without a click only if it appeared after the app's request. */
@@ -327,12 +332,15 @@ class Flasher implements FirmwareFlasher {
         return;
       }
       if (generation !== this.#generation || !this.#waitingForDevice()) return;
-      const [device, ...others] = this.#candidates(devices);
-      if (device && others.length === 0) await this.#flash(device, generation);
+      const device = this.#newBootloader(devices);
+      if (device) await this.#flash(device, generation);
     });
   }
 
-  /** From a click: the one authorized candidate, else the browser's USB chooser. */
+  /**
+   * From a click: the one bootloader that appeared after the app's request, else the browser's
+   * USB chooser, where the user picks the device to flash.
+   */
   async #pickDevice(): Promise<void> {
     // A silent lookup is quick; the click's user activation outlives it.
     while (this.#task) await this.#task;
@@ -340,11 +348,10 @@ class Flasher implements FirmwareFlasher {
     await this.#runTask(async generation => {
       let device: USBDevice | undefined;
       try {
-        const [candidate, ...others] = this.#candidates(await deviceSession.detectBootloader(true));
-        device =
-          candidate && others.length === 0
-            ? candidate
-            : (await deviceSession.detectBootloader(false))[0];
+        const appeared = this.#request?.sent
+          ? this.#newBootloader(await deviceSession.detectBootloader(true))
+          : null;
+        device = appeared ?? (await deviceSession.detectBootloader(false))[0];
       } catch (error) {
         console.error('DFU connection error:', error);
         if (generation === this.#generation) {
