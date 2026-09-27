@@ -179,6 +179,24 @@ describe('KeyTracking', { timeout: 20_000 }, () => {
     });
   });
 
+  it('swaps Stop and Start for new buttons, which do not take over the focus (as in Svelte)', async () => {
+    const user = userEvent.setup();
+    render(<KeyTracking />);
+    await chart();
+    select(3);
+    const stop = screen.getByRole('button', { name: 'Stop' });
+
+    await user.click(stop);
+    const start = screen.getByRole('button', { name: 'Start' });
+    expect(start).not.toBe(stop);
+    expect(start).not.toHaveFocus();
+
+    await user.click(start);
+    const stopAgain = screen.getByRole('button', { name: 'Stop' });
+    expect(stopAgain).not.toBe(start);
+    expect(stopAgain).not.toHaveFocus();
+  });
+
   it('clears the chart and the selection, which stops tracking', async () => {
     const user = userEvent.setup();
     render(<KeyTracking />);

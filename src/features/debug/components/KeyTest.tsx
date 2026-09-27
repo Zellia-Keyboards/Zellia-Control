@@ -79,8 +79,11 @@ export function KeyTest() {
             Controls
           </h4>
           <div className="flex flex-col gap-3">
+            {/* Keyed: a new element each time, like Svelte's {#if}/{:else}, so the focus of the
+                clicked button is not carried over to the other one. */}
             {!log.listening ? (
               <button
+                key="start"
                 type="button"
                 className="w-full px-6 py-3 rounded-lg text-sm font-semibold transition-all duration-200 bg-green-500 hover:bg-green-600 text-white shadow-lg shadow-green-500/30 hover:shadow-xl active:scale-95"
                 onClick={start}
@@ -89,6 +92,7 @@ export function KeyTest() {
               </button>
             ) : (
               <button
+                key="stop"
                 type="button"
                 className="w-full px-6 py-3 rounded-lg text-sm font-semibold transition-all duration-200 bg-red-500 hover:bg-red-600 text-white shadow-lg shadow-red-500/30 hover:shadow-xl active:scale-95"
                 onClick={stop}
