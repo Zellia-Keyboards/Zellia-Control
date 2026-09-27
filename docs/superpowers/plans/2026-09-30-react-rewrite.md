@@ -25,7 +25,7 @@ sections named in your task).
   `src/features/device/controller.ts`.
 - `src/features/device/model/types.ts` is the lead-owned shared contract. Do not edit it; if you
   need a change, report it.
-- Do not add, remove or upgrade dependencies (no `package.json`/`yarn.lock` edits) unless your
+- Do not add, remove or upgrade dependencies (no `package.json`/`package-lock.json` edits) unless your
   task says so. Everything needed is installed.
 - Pinned for parity: tailwindcss/@tailwindcss/postcss 4.1.10, lucide-react 0.511.0, chart.js 4.4.9,
   chartjs-plugin-zoom 2.2.0, tinycolor2 1.6.0.
@@ -36,8 +36,9 @@ sections named in your task).
   `themeColor`, `keyboard-profiles`, `zellia-layout-config`.
 - Tests verify behavior. Device behavior is tested through the virtual keyboard
   (`src/testing/virtual-keyboard`), never by mocking our own modules.
-- Gates before you finish (run in your worktree, all must pass): `corepack yarn typecheck`,
-  `corepack yarn lint`, `corepack yarn format:check`, `corepack yarn test`, `corepack yarn build`.
+- Gates before you finish (run in your worktree, all must pass): `npm run typecheck`,
+  `npm run lint`, `npm run format:check`, `npm test`, `npm run build` (or `npm run validate`).
+  The project uses npm since 2026-10-01 (`package-lock.json`); script arguments go after `--`.
 - Commits: small, meaningful, conventional (`feat:`, `test:`, `refactor:`, `chore:`), on your
   branch only. **Never add Co-Authored-By or any AI attribution.** Never rewrite history of other
   branches, never touch other worktrees, never push.
@@ -346,7 +347,7 @@ Base: `react-rewrite` after integration 1. Everything below adds to the Global C
 `e2e/parity/scenarios/<key>.ts`, `docs/migration/parity-notes/<key>.md` and screenshots
 `docs/migration/parity/pl-*` / `<key>-*`. Read-only for everyone: `src-controller/`,
 `src/features/device/**`, `src/lib/**`, `src/components/ui/**`, `src/testing/**`, `scripts/**`,
-`e2e/fixtures.ts`, `e2e/parity/scenario.ts`, config files, `package.json`, `yarn.lock`,
+`e2e/fixtures.ts`, `e2e/parity/scenario.ts`, config files, `package.json`, `package-lock.json`,
 `docs/migration/parity-log.md`, the spec and this plan. If you need a change there (a device
 command, a translation key, a shared primitive), do not work around it with a copy: implement
 against the documented contract where you can and list the change under `notesForIntegrator`.
@@ -388,8 +389,9 @@ keeps the Svelte behavior, even when odd.
   `virtualKeyboard` fixture (options via `test.use({ virtualKeyboardOptions: {...} })`), open
   `/`, click "Get Started", wait for `/remap/`, then drive the feature through the UI and assert
   on the page and on the device (`(await virtualKeyboard.handle()).evaluate(vk => vk.state…)`).
-- Always run Playwright with your own port: `E2E_PORT=<your port> corepack yarn test:e2e` (and
-  `E2E_PORT=<port> corepack yarn parity …`). Ports: E 4311, F 4312, G 4313, H 4314, I 4315.
+- Always run Playwright with your own port and at most 2 browsers: `E2E_PORT=<your port> npm run
+  test:e2e -- --workers=2` (and `E2E_PORT=<port> npm run parity -- --workers=2 …`). Ports: E 4311,
+  F 4312, G 4313, H 4314, I 4315.
 
 **Visual parity.** Add `e2e/parity/scenarios/<key>.ts` (default export `ParityScenario[]`, see
 `e2e/parity/scenario.ts`) covering each screen and meaningful state of your feature (default,
@@ -397,7 +399,7 @@ selection, open dropdowns/modals, each tab/mode, empty/error states). A connecte
 `path: '/'`, `virtualKeyboard: { seedDynamicKeys: false }` (the baseline cannot load seeded
 dynamic keys) and a `setup` that clicks "Get Started" (`/Get Started|开始使用/`), waits for the
 keyboard and navigates like a user. `setup` runs unchanged against both apps, in en and zh: use
-roles/structure or both languages' copy. Run `E2E_PORT=<port> corepack yarn parity --grep <prefix>`
+roles/structure or both languages' copy. Run `E2E_PORT=<port> npm run parity -- --workers=2 --grep <prefix>`
 and open `e2e/.artifacts/parity/index.html`. Every difference inside your screens is either fixed
 or an intended deviation. Differences in regions owned by a worker who is not merged yet (another
 feature's stub, e.g. the toolbar's profile dropdown before F lands) are expected: say so in your
