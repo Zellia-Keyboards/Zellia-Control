@@ -1,7 +1,10 @@
 import { useEffect } from 'react';
-import { keySelection } from '../../keyboard';
+import { keySelection } from '../store/key-selection';
 
-/** Ctrl/⌘+A toggles select-all and Ctrl/⌘+Escape deselects, while the page is open. */
+/**
+ * Ctrl/⌘+A toggles select-all and Ctrl/⌘+Escape deselects while the calling page is mounted
+ * (Performance and Lighting; Remap has its own Ctrl+A / Escape rules, as in Svelte).
+ */
 export function useSelectionShortcuts(): void {
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {

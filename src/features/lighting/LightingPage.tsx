@@ -8,11 +8,10 @@ import {
   type RgbBaseConfig,
   type RgbKeyConfig,
 } from '../device';
-import { keySelection, keySelectionStore, useLayoutKeys } from '../keyboard';
+import { keySelection, keySelectionStore, useLayoutKeys, useSelectionShortcuts } from '../keyboard';
 import { RGBPanel } from './components/RGBPanel';
 import { RGBSubPanel, type KeyConfigEntry } from './components/RGBSubPanel';
 import { useDeviceLoads } from './hooks/use-device-loads';
-import { useSelectionShortcuts } from './hooks/use-selection-shortcuts';
 
 /** emi-keyboard-controller `RGBConfig` defaults, for a keyboard without per-key lighting. */
 const DEFAULT_KEY_CONFIG: RgbKeyConfig = {
