@@ -1,4 +1,5 @@
 export { UpdatePage } from './UpdatePage';
+export { enterBootloaderForUpdate } from './flasher';
 export {
   firmwareUpdateSession,
   setFirmwareUpdateActive,

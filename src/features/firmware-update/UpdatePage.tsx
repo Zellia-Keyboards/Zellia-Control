@@ -1,4 +1,6 @@
-/** Placeholder until worker I ports this page (Wave 2). */
+import { WebUsbFirmwareFlasher } from './components/WebUsbFirmwareFlasher';
+
+/** Firmware update (port of `routes/update/+page.svelte`). */
 export function UpdatePage() {
-  return null;
+  return <WebUsbFirmwareFlasher />;
 }
