@@ -183,7 +183,7 @@ export function WebUsbFirmwareFlasher() {
                 </p>
               </div>
 
-              {/* I-6: the file input is visually hidden but reachable with Tab (Svelte hid it
+              {/* PL-046: the file input is visually hidden but reachable with Tab (Svelte hid it
                   with display: none); the drop zone shows its keyboard focus like a hover. */}
               <div
                 className={`w-64 h-36 border-2 border-dashed bg-black border-gray-600 rounded-lg flex flex-col items-center justify-center transition-all duration-300 mx-auto hover:border-primary-500 has-focus-visible:border-primary-500 ${fileDropActive ? 'border-primary-500 scale-105 bg-primary-900/40' : ''}`}
@@ -266,7 +266,7 @@ export function WebUsbFirmwareFlasher() {
 
           {/* Connect Recovery Step. Svelte shared this panel with Connect Flash ("Reconnect for
               firmware flashing"), which never becomes active here: WebDFU writes over the first
-              connection (I-5). */}
+              connection (PL-045). */}
           {isActive('connect_recovery') && (
             <div className="text-center space-y-3">
               <div className="w-10 h-10 mx-auto">

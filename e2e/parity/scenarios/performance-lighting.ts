@@ -172,7 +172,7 @@ const scenarios: readonly ParityScenario[] = [
     },
   },
   {
-    // PL-005, G-1: the React page loads the first selected key and counts the selection.
+    // PL-005, PL-031: the React page loads the first selected key and counts the selection.
     name: 'performance-keys-selected',
     path: '/',
     virtualKeyboard: KEYBOARD,
@@ -269,7 +269,7 @@ const scenarios: readonly ParityScenario[] = [
   },
 
   {
-    // G-3: a lone "." counts as an empty input (4 mm); the baseline set the travel to NaN.
+    // PL-033: a lone "." counts as an empty input (4 mm); the baseline set the travel to NaN.
     name: 'performance-travel-dot',
     path: '/',
     virtualKeyboard: KEYBOARD,
@@ -283,7 +283,7 @@ const scenarios: readonly ParityScenario[] = [
 
   // Lighting
   {
-    // PL-006 (speed), G-2 (the key panel opens on key 0's mode).
+    // PL-006 (speed), PL-032 (the key panel opens on key 0's mode).
     name: 'lighting-default',
     path: '/',
     virtualKeyboard: KEYBOARD,

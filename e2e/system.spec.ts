@@ -353,7 +353,7 @@ test.describe('firmware update', () => {
 
     await chooseFirmware(page);
 
-    // The app asks the keyboard to reboot into its bootloader (I-2) and stays on the page.
+    // The app asks the keyboard to reboot into its bootloader (PL-042) and stays on the page.
     await expect.poll(() => operations(keyboard)).toEqual([BOOTLOADER]);
     await expect(activeStep(page)).toHaveText('Connect Recovery');
     await expect(page.getByText('Connect your device in DFU mode')).toBeVisible();
