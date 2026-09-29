@@ -1,21 +1,19 @@
-/**
- * Port of `components/performance/SensitivityControl.svelte` for the null-bind performance tab
- * (props as in Svelte, values in mm). The Performance page owns its own port.
- */
-import { ThemedSlider, Toggle } from '../../../../components/ui';
-import { useT } from '../../../../lib/i18n';
+import { ThemedSlider } from './ThemedSlider';
+import { Toggle } from './Toggle';
+import { useT } from '../../lib/i18n';
 
 export interface SensitivityControlProps {
-  readonly separateSensitivity: boolean;
-  readonly sensitivityValue: number;
-  readonly pressSensitivity: number;
-  readonly releaseSensitivity: number;
-  readonly onToggleSeparate: (value: boolean) => void;
-  readonly onSensitivityChange: (value: number) => void;
-  readonly onPressChange: (value: number) => void;
-  readonly onReleaseChange: (value: number) => void;
+  separateSensitivity: boolean;
+  sensitivityValue: number;
+  pressSensitivity: number;
+  releaseSensitivity: number;
+  onToggleSeparate: (value: boolean) => void;
+  onSensitivityChange: (value: number) => void;
+  onPressChange: (value: number) => void;
+  onReleaseChange: (value: number) => void;
 }
 
+/** Rapid trigger sensitivity sliders, joint or per direction (port of SensitivityControl.svelte). */
 export function SensitivityControl({
   separateSensitivity,
   sensitivityValue,
@@ -56,7 +54,6 @@ export function SensitivityControl({
                 <div>{`${pressSensitivity.toFixed(2)} mm`}</div>
               </div>
               <ThemedSlider
-                aria-label={t('performance.pressSensitivityLabel')}
                 min={0.01}
                 max={2}
                 step={0.01}
@@ -64,6 +61,7 @@ export function SensitivityControl({
                 onChange={event => {
                   onPressChange(Number(event.currentTarget.value));
                 }}
+                aria-label={t('performance.pressSensitivityLabel')}
               />
               <div className="flex justify-between text-sm dark:text-gray-400 text-gray-500 mt-1">
                 <div>{t('performance.high')}</div>
@@ -76,7 +74,6 @@ export function SensitivityControl({
                 <div>{`${releaseSensitivity.toFixed(2)} mm`}</div>
               </div>
               <ThemedSlider
-                aria-label={t('performance.releaseSensitivityLabel')}
                 min={0.01}
                 max={2}
                 step={0.01}
@@ -84,6 +81,7 @@ export function SensitivityControl({
                 onChange={event => {
                   onReleaseChange(Number(event.currentTarget.value));
                 }}
+                aria-label={t('performance.releaseSensitivityLabel')}
               />
               <div className="flex justify-between text-sm dark:text-gray-400 text-gray-500 mt-1">
                 <div>{t('performance.high')}</div>
@@ -98,7 +96,6 @@ export function SensitivityControl({
               <div>{`${sensitivityValue.toFixed(2)} mm`}</div>
             </div>
             <ThemedSlider
-              aria-label={t('performance.sensitivityLabel')}
               min={0.01}
               max={2}
               step={0.01}
@@ -106,6 +103,7 @@ export function SensitivityControl({
               onChange={event => {
                 onSensitivityChange(Number(event.currentTarget.value));
               }}
+              aria-label={t('performance.sensitivityLabel')}
             />
             <div className="flex justify-between text-sm dark:text-gray-400 text-gray-500 mt-1">
               <div>{t('performance.high')}</div>

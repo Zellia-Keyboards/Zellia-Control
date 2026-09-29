@@ -5,12 +5,12 @@
  * selected key in normal mode ("DKS forces normal mode"), through `setAdvancedKeys`. The Svelte
  * tab rewrote the selected keys as soon as it opened.
  */
+import { ActuationPointControl } from '../../../../components/ui';
 import { Info } from 'lucide-react';
 import { KeyMode } from 'emi-keyboard-controller';
 import { deviceSession, deviceStore, useDeviceConfig } from '../../../device';
 import { fractionToMm, mmToFraction } from '../../../device/model/units';
 import { useT } from '../../../../lib/i18n';
-import { ActuationPointControl } from '../performance/ActuationPointControl';
 
 const MAX_TRAVEL_DISTANCE_MM = 4.0;
 /** Shown while no key's values are known (the Svelte initial state). */

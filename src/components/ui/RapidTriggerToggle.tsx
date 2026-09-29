@@ -1,15 +1,12 @@
-/**
- * Port of `components/performance/RapidTriggerToggle.svelte` for the null-bind performance tab.
- * The Performance page owns its own port.
- */
-import { Toggle } from '../../../../components/ui';
-import { useT } from '../../../../lib/i18n';
+import { Toggle } from './Toggle';
+import { useT } from '../../lib/i18n';
 
 export interface RapidTriggerToggleProps {
-  readonly rapidTriggerEnabled: boolean;
-  readonly onToggle: (value: boolean) => void;
+  rapidTriggerEnabled: boolean;
+  onToggle: (value: boolean) => void;
 }
 
+/** Rapid trigger heading, switch and description (port of RapidTriggerToggle.svelte). */
 export function RapidTriggerToggle({ rapidTriggerEnabled, onToggle }: RapidTriggerToggleProps) {
   const t = useT();
   return (

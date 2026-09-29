@@ -4,6 +4,12 @@
  * remembered fields; for other pairs they are local. The Svelte write-back ran as an effect that
  * re-triggered itself through the configuration store; here each change writes once.
  */
+import {
+  ActuationPointControl,
+  DeadzoneControl,
+  RapidTriggerToggle,
+  SensitivityControl,
+} from '../../../../components/ui';
 import { deviceStore, useDeviceConfig, type DeviceConfig, type KeyLocation } from '../../../device';
 import { useLoadedDraft } from '../../hooks/use-loaded-draft';
 import { dynamicKeyOfKindAt, dynamicKeySignature, locationKey } from '../../model/configured-keys';
@@ -15,10 +21,6 @@ import {
   type NullBindPerformance,
 } from '../../model/editor-drafts';
 import { uiFields, uiFieldsStore, useUiFields, type UiFieldsState } from '../../store/ui-fields';
-import { ActuationPointControl } from '../performance/ActuationPointControl';
-import { DeadzoneControl } from '../performance/DeadzoneControl';
-import { RapidTriggerToggle } from '../performance/RapidTriggerToggle';
-import { SensitivityControl } from '../performance/SensitivityControl';
 import styles from './NullBindPerformanceTab.module.css';
 
 const MAX_TRAVEL_DISTANCE_MM = 4.0;
