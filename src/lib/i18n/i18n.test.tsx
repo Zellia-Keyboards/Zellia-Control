@@ -265,6 +265,24 @@ describe('rich placeholders', () => {
     expect(container.textContent).toBe(translate('advancedkey.quickTap', 'en', '150'));
   });
 
+  it('renders each run of text as one text node, like Svelte', async () => {
+    // Chrome shapes every text node on its own, so split runs shift glyphs by sub-pixels.
+    const { translateRich } = await loadI18n();
+    const { container } = render(
+      <p>
+        {translateRich('advancedkey.toggleDescription', 'zh', <strong>Caps Lock</strong>, '按下时')}
+      </p>
+    );
+    const nodes = [...(container.firstElementChild?.childNodes ?? [])];
+    expect(nodes.map(node => node.nodeName)).toEqual(['#text', 'STRONG', '#text']);
+    expect(nodes[0]?.textContent).toBe('此按键将在按下时切换');
+
+    const { container: numbers } = render(
+      <p>{translateRich('advancedkey.quickTap', 'en', 150)}</p>
+    );
+    expect(numbers.firstElementChild?.childNodes).toHaveLength(1);
+  });
+
   it('useTRich follows the current language', async () => {
     const { useTRich, setLanguage } = await loadI18n();
     function Description() {
