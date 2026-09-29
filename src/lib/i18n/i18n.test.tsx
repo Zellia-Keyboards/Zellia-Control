@@ -35,8 +35,23 @@ describe('dictionaries', () => {
     expect(Object.keys(zh).sort()).toEqual(Object.keys(en).sort());
   });
 
-  it('keep the ported key set: 263 keys used by the Svelte app plus the six missing ones', () => {
-    expect(Object.keys(en)).toHaveLength(269);
+  it('keep the ported key set: 263 keys used by the Svelte app, the six missing ones and the confirmation copy', () => {
+    expect(Object.keys(en)).toHaveLength(272);
+  });
+
+  it('add the copy of the Settings confirmations (PL-012), which the Svelte app did not have', () => {
+    expect(en).toMatchObject({
+      'common.cancel': 'Cancel',
+      'settings.bootloaderConfirm':
+        'Are you sure you want to enter bootloader mode? The keyboard will disconnect and wait for a firmware update.',
+      'settings.factoryResetConfirm':
+        'Are you sure you want to reset all settings to factory defaults? This action cannot be undone.',
+    });
+    expect(zh).toMatchObject({
+      'common.cancel': '取消',
+      'settings.bootloaderConfirm': '确定要进入引导程序模式吗？键盘将断开连接并等待固件更新。',
+      'settings.factoryResetConfirm': '确定要将所有设置恢复为出厂默认值吗？此操作无法撤销。',
+    });
   });
 
   it('contain only non-empty strings', () => {

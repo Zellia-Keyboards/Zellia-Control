@@ -29,6 +29,7 @@ export const zh: Record<TranslationKey, string> = {
   'common.actions': '操作',
   'common.key': '按键',
   'common.unknown': '未知',
+  'common.cancel': '取消',
 
   // UI Elements - additional
   'ui.noProfilesAvailable': '无可用动态按键',
@@ -72,6 +73,8 @@ export const zh: Record<TranslationKey, string> = {
   'settings.bootloaderDesc': '进入引导程序模式进行固件更新',
   'settings.factoryReset': '恢复出厂设置',
   'settings.factoryResetDesc': '将所有设置重置为出厂默认值',
+  'settings.bootloaderConfirm': '确定要进入引导程序模式吗？键盘将断开连接并等待固件更新。',
+  'settings.factoryResetConfirm': '确定要将所有设置恢复为出厂默认值吗？此操作无法撤销。',
   // About Page
   'about.title': '关于 Zellia 控制',
   'about.subtitle': '霍尔效应键盘配置器',

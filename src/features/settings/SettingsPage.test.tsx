@@ -206,6 +206,10 @@ describe('SettingsPage', { timeout: 20_000 }, () => {
 
     expect(screen.getByRole('heading', { level: 1, name: '设置' })).toBeInTheDocument();
     await user.click(card('恢复出厂设置'));
-    expect(screen.getByRole('dialog', { name: '恢复出厂设置' })).toBeInTheDocument();
+    const dialog = screen.getByRole('dialog', { name: '恢复出厂设置' });
+    expect(dialog).toHaveAccessibleDescription(
+      '确定要将所有设置恢复为出厂默认值吗？此操作无法撤销。'
+    );
+    expect(within(dialog).getByRole('button', { name: '取消' })).toBeInTheDocument();
   });
 });

@@ -12,6 +12,8 @@ export interface ConfirmationModalProps {
    */
   message: ReactNode;
   confirmText: string;
+  /** Defaults to the Svelte dialog's English "Cancel". */
+  cancelText?: string;
   confirmColor?: ConfirmColor;
   onConfirm: () => void;
   onCancel: () => void;
@@ -30,6 +32,7 @@ export function ConfirmationModal({
   title,
   message,
   confirmText,
+  cancelText = 'Cancel',
   confirmColor = 'blue',
   onConfirm,
   onCancel,
@@ -51,7 +54,7 @@ export function ConfirmationModal({
           className="flex-1 px-4 py-2.5 rounded-lg border font-medium transition-colors glassmorphism-button border-gray-600 text-gray-300"
           onClick={onCancel}
         >
-          Cancel
+          {cancelText}
         </button>
         <button
           type="button"
