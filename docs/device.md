@@ -43,9 +43,9 @@ UI components ──hooks──▶ device store (immutable DeviceState)
 | `createDeviceSession(options)`                                     | A separate session (tests, tools); takes its own `hid`, store, models, timeouts.          |
 | types                                                              | `DeviceConfig`, `DynamicKeySlot`, `KeyLocation`, `ConnectionState`, … (`model/types.ts`). |
 
-Pure helpers that other features may import directly: `features/device/model/units`
-(fraction ↔ mm) and `model/mutex-mode.ts` / `model/dynamic-key-binding.ts` through the types they
-export.
+The pure modules in `features/device/model/` may be imported directly by other features' pure
+code: `types` (the shared domain types), `units` (fraction ↔ mm) and `mutex-mode` (null-bind
+mode bytes). They never import React or the session.
 
 ### Values
 
