@@ -11,6 +11,8 @@ import { ProfilesPage } from './ProfilesPage';
 import { profileActions, profileStore } from './store/profile-store';
 
 const NOW = '2026-09-30T12:00:00.000Z';
+/** Keyboard reloads start after the controller's 200 ms debounce. */
+const RELOAD_TIMEOUT = { timeout: 3000 };
 
 function renderPage() {
   return render(
@@ -60,7 +62,7 @@ async function connect() {
       connection: { status: 'ready' },
       reloading: false,
     });
-  });
+  }, RELOAD_TIMEOUT);
   return keyboard;
 }
 
@@ -447,7 +449,7 @@ describe('ProfilesPage', () => {
 
       await vi.waitFor(() => {
         expect(cardNames().at(-1)).toBe('From a friend');
-      });
+      }, RELOAD_TIMEOUT);
       expect(profile(5)).toMatchObject({ id: 5, name: 'From a friend', isDefault: false });
       expect(fileInput().value).toBe('');
     });
@@ -514,7 +516,7 @@ describe('ProfilesPage', () => {
       expect(within(card('Profile 3')).getByText('Active')).toBeInTheDocument();
       await vi.waitFor(() => {
         expect(keyboard.vk.state.profileIndex).toBe(2);
-      });
+      }, RELOAD_TIMEOUT);
     });
 
     it('marks additional profiles active without switching the keyboard', async () => {
@@ -550,7 +552,7 @@ describe('ProfilesPage', () => {
       expect(activeCard()).toBe(card('Profile 4'));
       await vi.waitFor(() => {
         expect(keyboard.vk.state.profileIndex).toBe(3);
-      });
+      }, RELOAD_TIMEOUT);
     });
 
     it('shows the profile the keyboard switched to', async () => {
@@ -562,7 +564,7 @@ describe('ProfilesPage', () => {
 
       await vi.waitFor(() => {
         expect(activeCard()).toBe(card('Profile 4'));
-      });
+      }, RELOAD_TIMEOUT);
     });
   });
 });
