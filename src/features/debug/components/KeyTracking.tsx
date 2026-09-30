@@ -5,7 +5,7 @@ import { keySelection, useSelectedKeys } from '../../keyboard';
 import { getLanguage, translate, useT } from '../../../lib/i18n';
 import { TravelChart } from '../chart/travel-chart';
 import { KeyboardSelector } from './KeyboardSelector';
-import './KeyTracking.module.css';
+import './KeyTracking.css';
 
 /** What Start/Stop last decided for one selection; a new selection starts tracking again. */
 interface RunControl {

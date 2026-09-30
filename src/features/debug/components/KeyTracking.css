@@ -1,0 +1,15 @@
+/*
+ * Port of the <style> block of components/debug/KeyTracking.svelte: the chart's theme colours,
+ * read by the chart from <html>. Global by nature, so a plain stylesheet: a CSS module imported
+ * only for its side effects is left out of the production build.
+ */
+
+:root {
+  --chart-text-color: #9ca3af; /* gray-400 */
+  --chart-grid-color: #797979; /* gray-700 */
+}
+
+.dark {
+  --chart-text-color: #9ca3af; /* gray-400 */
+  --chart-grid-color: #bfbfbf; /* gray-700 */
+}
