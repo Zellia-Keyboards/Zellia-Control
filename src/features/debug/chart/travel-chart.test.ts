@@ -187,6 +187,29 @@ describe('TravelChart', () => {
     expect(Chart.getChart(other)).toBeUndefined();
   });
 
+  it('keeps working when the zoom plugin cannot be loaded', async () => {
+    vi.resetModules();
+    vi.doMock('chartjs-plugin-zoom', () => {
+      throw new Error('offline');
+    });
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    try {
+      const fresh = await import('./travel-chart');
+      const chart = new fresh.TravelChart(canvas, LABELS);
+      await chart.ready;
+      chart.append({ x: 1, y: 1 });
+      expect(() => {
+        chart.zoomToBottom();
+        chart.resetZoom();
+        chart.clear();
+      }).not.toThrow();
+      expect(warn).toHaveBeenCalledWith('Zoom plugin not available:', expect.any(Error));
+      chart.destroy();
+    } finally {
+      vi.doUnmock('chartjs-plugin-zoom');
+    }
+  });
+
   it('does nothing without a 2D context', async () => {
     uninstall();
     const getContext = vi
