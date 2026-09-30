@@ -69,12 +69,14 @@ export function ProfileMenu({
     let progress = 0;
     const timer = setInterval(() => {
       progress += (UPDATE_INTERVAL / HOLD_DURATION) * 100;
-      setHoldProgress(progress);
-      if (progress >= 100) {
-        setIsHolding(false);
-        setHoldProgress(0);
-        latestOnDelete.current();
+      if (progress < 100) {
+        setHoldProgress(progress);
+        return;
       }
+      // The page closes the menu, which keeps its last frame while it slides out: the Svelte
+      // menu reset its state too, but a closing Svelte block no longer updates.
+      clearInterval(timer);
+      latestOnDelete.current();
     }, UPDATE_INTERVAL);
     return () => {
       clearInterval(timer);
