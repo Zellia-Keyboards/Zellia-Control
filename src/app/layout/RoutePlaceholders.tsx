@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { isRouteErrorResponse, useRouteError } from 'react-router';
 import { ErrorPage } from './NotFound';
 
@@ -11,17 +12,36 @@ export function PageLoading() {
   return null;
 }
 
-/** Errors while rendering or loading a route: SvelteKit's error page for unexpected errors. */
-export function RouteError() {
+/**
+ * The status and message SvelteKit's error page shows for a route error. Unexpected errors are
+ * logged, as SvelteKit's default `handleError` hook did.
+ */
+function useErrorPage(): { status: number; message: string } {
   const error = useRouteError();
-  if (!isRouteErrorResponse(error)) console.error('[app] route error', error);
+  const expected = isRouteErrorResponse(error);
+  useEffect(() => {
+    if (!expected) console.error('[app] route error', error);
+  }, [error, expected]);
+  return expected
+    ? { status: error.status, message: error.statusText }
+    : { status: 500, message: 'Internal Error' };
+}
+
+/**
+ * A page that failed to load or render: SvelteKit's error page in the page slot, below the
+ * sidebar, like its error pages inside the root layout.
+ */
+export function PageError() {
+  const { status, message } = useErrorPage();
+  return <ErrorPage status={status} message={message} />;
+}
+
+/** An error of the shell itself: SvelteKit's error page on its own. */
+export function RouteError() {
+  const { status, message } = useErrorPage();
   return (
     <div className="min-h-screen">
-      {isRouteErrorResponse(error) ? (
-        <ErrorPage status={error.status} message={error.statusText} />
-      ) : (
-        <ErrorPage status={500} message="Internal Error" />
-      )}
+      <ErrorPage status={status} message={message} />
     </div>
   );
 }

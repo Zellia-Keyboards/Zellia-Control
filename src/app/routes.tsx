@@ -1,7 +1,7 @@
 import type { RouteObject } from 'react-router';
 import { AppShell } from './layout/AppShell';
 import { NotFound } from './layout/NotFound';
-import { HomePage, PageLoading, RouteError } from './layout/RoutePlaceholders';
+import { HomePage, PageError, PageLoading, RouteError } from './layout/RoutePlaceholders';
 import { APP_PAGES, PAGE_PATHS, type PageLoaders } from './pages';
 
 /**
@@ -20,6 +20,7 @@ export function createAppRoutes(pages: PageLoaders = APP_PAGES): RouteObject[] {
           path,
           caseSensitive: true,
           HydrateFallback: PageLoading,
+          ErrorBoundary: PageError,
           lazy: async () => ({ Component: await pages[path]() }),
         })),
         { path: '*', Component: NotFound },
