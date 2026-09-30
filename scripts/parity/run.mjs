@@ -1,5 +1,5 @@
 // Visual parity pipeline (`corepack yarn parity`):
-//   1. prepare the Svelte baseline (prepare-baseline.mjs) and serve it on :4180,
+//   1. prepare the Svelte baseline (prepare-baseline.mjs) and serve it on a free port,
 //   2. capture every scenario in both apps (Playwright project `parity`; it builds and previews
 //      this app itself),
 //   3. compare the captures (compare.mjs) into e2e/.artifacts/parity/index.html.
@@ -15,14 +15,13 @@ import { createRequire } from 'node:module';
 import path from 'node:path';
 import { PARITY_DIR, UsageError, compareCaptures, printSummary } from './compare.mjs';
 import {
-  BASELINE_PORT,
   prepareBaseline,
   resolveBaselineDir,
   serveBaseline,
+  serverUrl,
 } from './prepare-baseline.mjs';
 
 const require = createRequire(import.meta.url);
-const baselineURL = `http://localhost:${BASELINE_PORT}/`;
 
 function parseArguments(argv) {
   const options = { force: false, baselineDir: undefined, playwright: [] };
@@ -37,15 +36,7 @@ function parseArguments(argv) {
   return options;
 }
 
-async function isServing(url) {
-  try {
-    return (await fetch(url)).ok;
-  } catch {
-    return false;
-  }
-}
-
-function runPlaywright(args) {
+function runPlaywright(args, baselineURL) {
   const cli = require.resolve('@playwright/test/cli');
   console.log(`[parity] playwright test --project=parity ${args.join(' ')}`);
   return new Promise((resolve, reject) => {
@@ -64,13 +55,14 @@ async function main() {
     baselineDir: resolveBaselineDir(options.baselineDir),
     force: options.force,
   });
-  // A baseline already served (e.g. `corepack yarn parity:baseline`) serves the same build/.
-  const server = (await isServing(baselineURL)) ? null : await serveBaseline({ buildDir });
+  // A server of its own on a free port, never one found on :4180: that could be another run's
+  // (which stops it when it ends) or not the baseline at all.
+  const server = await serveBaseline({ buildDir, port: 0 });
   try {
     // The parity-setup project empties it as well, but only when some capture matches the
     // arguments; this way a run that captures nothing ends in "No captures", not in the last report.
     rmSync(path.join(PARITY_DIR, 'captures'), { recursive: true, force: true });
-    const playwrightExit = await runPlaywright(options.playwright);
+    const playwrightExit = await runPlaywright(options.playwright, serverUrl(server));
     const summary = compareCaptures({ dir: PARITY_DIR });
     printSummary(summary, PARITY_DIR);
     if (playwrightExit !== 0) {
@@ -79,7 +71,7 @@ async function main() {
     }
     return summary.totals.identical === summary.totals.captures ? 0 : 1;
   } finally {
-    await server?.close();
+    await server.close();
   }
 }
 
