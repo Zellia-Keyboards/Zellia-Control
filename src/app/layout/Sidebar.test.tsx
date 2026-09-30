@@ -2,6 +2,7 @@ import { act, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, onTestFinished } from 'vitest';
 import { deviceSession, deviceStore } from '../../features/device';
+import { setFirmwareUpdateActive } from '../../features/firmware-update';
 import { setLanguage } from '../../lib/i18n';
 import { connectVirtualKeyboard } from '../../testing/app-keyboard';
 import { currentPath, renderApp, resetShellState } from '../testing/render-app';
@@ -66,6 +67,38 @@ describe('Sidebar', () => {
     await user.click(await screen.findByRole('button', { name: 'Disconnect' }));
 
     expect(deviceStore.getState().connection.status).toBe('disconnected');
+    await waitFor(() => {
+      expect(currentPath(router)).toBe('/');
+    });
+    expect(screen.getByRole('button', { name: 'Get Started' })).toBeInTheDocument();
+  });
+
+  it('adds a single history entry when disconnecting', async () => {
+    await connect();
+    const user = userEvent.setup();
+    const { router } = renderApp('/performance/');
+
+    await user.click(await screen.findByRole('button', { name: 'Disconnect' }));
+    await waitFor(() => {
+      expect(currentPath(router)).toBe('/');
+    });
+
+    await act(async () => {
+      await router.navigate(-1);
+    });
+    expect(currentPath(router)).toBe('/performance/');
+  });
+
+  it('disconnects to the connection screen during a firmware update too', async () => {
+    await connect();
+    const user = userEvent.setup();
+    const { router } = renderApp('/update/');
+    act(() => {
+      setFirmwareUpdateActive(true);
+    });
+
+    await user.click(await screen.findByRole('button', { name: 'Disconnect' }));
+
     await waitFor(() => {
       expect(currentPath(router)).toBe('/');
     });

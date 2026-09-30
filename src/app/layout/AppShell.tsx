@@ -1,6 +1,6 @@
-import { useEffect, useLayoutEffect, useRef } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef } from 'react';
 import { Navigate, Outlet, useLocation, useNavigate, type To } from 'react-router';
-import { deviceStore, useIsReady } from '../../features/device';
+import { deviceSession, deviceStore, useIsReady } from '../../features/device';
 import { firmwareUpdateSession } from '../../features/firmware-update';
 import { sessionEnded } from '../connection';
 import { shouldShowConfiguratorLayout } from '../navigation';
@@ -11,25 +11,44 @@ import { Sidebar } from './Sidebar';
 import './AppShell.css';
 
 /**
- * Returns to the connection screen when the keyboard session ends: unplugged, disconnected or
- * failed (D3) — except while a firmware update runs, whose page survives the keyboard's reboot.
+ * Returns to the connection screen when the keyboard session ends — unplugged or failed (D3) —
+ * except while a firmware update runs, whose page survives the keyboard's reboot. Returns the
+ * sidebar's Disconnect action, which goes there in any case (Svelte: `disconnect(); goto('/')`).
  */
-function useReturnToConnectionScreen(pathname: string): void {
+function useConnectionScreenReturn(pathname: string): () => void {
   const navigate = useNavigate();
   const currentPath = useRef(pathname);
   useLayoutEffect(() => {
     currentPath.current = pathname;
   });
+  const disconnecting = useRef(false);
+
+  const toConnectionScreen = useCallback(() => {
+    // On `/` this replaces a navigation still loading its page, e.g. the redirect to Remap.
+    void navigate('/', { replace: currentPath.current === '/' });
+  }, [navigate]);
 
   useEffect(
     () =>
       deviceStore.subscribe((state, previous) => {
-        if (!sessionEnded(previous.connection.status, state.connection.status)) return;
-        if (firmwareUpdateSession.getState().active || currentPath.current === '/') return;
-        void navigate('/');
+        if (disconnecting.current || firmwareUpdateSession.getState().active) return;
+        if (sessionEnded(previous.connection.status, state.connection.status)) {
+          toConnectionScreen();
+        }
       }),
-    [navigate]
+    [toConnectionScreen]
   );
+
+  return useCallback(() => {
+    // The session ends synchronously; this navigation is the only one.
+    disconnecting.current = true;
+    try {
+      deviceSession.disconnect();
+    } finally {
+      disconnecting.current = false;
+    }
+    toConnectionScreen();
+  }, [toConnectionScreen]);
 }
 
 /**
@@ -41,7 +60,7 @@ export function AppShell() {
   const location = useLocation();
   const { pathname } = location;
   const ready = useIsReady();
-  useReturnToConnectionScreen(pathname);
+  const disconnect = useConnectionScreenReturn(pathname);
 
   let redirect: To | null = null;
   if (lacksTrailingSlash(pathname)) {
@@ -60,7 +79,7 @@ export function AppShell() {
 
           {/* Main Application (hidden on small screens) */}
           <div className="hidden xl:flex h-screen bg-gray-50 dark:bg-black overflow-hidden">
-            <Sidebar />
+            <Sidebar onDisconnect={disconnect} />
 
             <div
               className="flex-1 flex flex-col overflow-y-scroll overflow-x-hidden isolate glassmorphism-main"
