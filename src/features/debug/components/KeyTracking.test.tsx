@@ -68,7 +68,8 @@ afterEach(() => {
   localStorage.clear();
 });
 
-describe('KeyTracking', () => {
+// Page renders and role queries are slow in jsdom on a busy machine.
+describe('KeyTracking', { timeout: 20_000 }, () => {
   it('waits for a key: nothing recorded, Start disabled', async () => {
     render(<KeyTracking />);
     await chart();

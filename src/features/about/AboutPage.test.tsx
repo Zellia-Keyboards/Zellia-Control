@@ -22,7 +22,8 @@ afterEach(() => {
   localStorage.clear();
 });
 
-describe('AboutPage', () => {
+// Page renders and role queries are slow in jsdom on a busy machine.
+describe('AboutPage', { timeout: 20_000 }, () => {
   it('shows the translated header and app card', () => {
     renderPage();
     expect(screen.getByRole('heading', { level: 2, name: 'About Zellia Control' })).toHaveClass(

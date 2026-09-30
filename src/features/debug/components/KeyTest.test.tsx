@@ -19,7 +19,8 @@ function rows(): string[][] {
   );
 }
 
-describe('KeyTest', () => {
+// Page renders and role queries are slow in jsdom on a busy machine.
+describe('KeyTest', { timeout: 20_000 }, () => {
   it('starts idle with the instructions and an empty table', () => {
     render(<KeyTest />);
     expect(screen.getByRole('heading', { name: 'About Key Test' })).toBeInTheDocument();

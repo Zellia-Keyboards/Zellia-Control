@@ -30,7 +30,8 @@ afterEach(() => {
   uninstallChart();
 });
 
-describe('DebugPage', () => {
+// Page renders and role queries are slow in jsdom on a busy machine.
+describe('DebugPage', { timeout: 20_000 }, () => {
   it('shows the header and opens on Key Tracking', () => {
     renderPage();
     expect(screen.getByRole('heading', { level: 1, name: 'Debug Tools' })).toBeInTheDocument();

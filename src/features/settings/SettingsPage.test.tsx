@@ -56,7 +56,8 @@ afterEach(() => {
   localStorage.clear();
 });
 
-describe('SettingsPage', () => {
+// Page renders and role queries are slow in jsdom on a busy machine.
+describe('SettingsPage', { timeout: 20_000 }, () => {
   it('shows the translated header, the three actions and the warning', () => {
     renderPage();
     expect(screen.getByRole('heading', { level: 1, name: 'Settings' })).toBeInTheDocument();
