@@ -104,14 +104,11 @@ describe('routes', () => {
     expect(await screen.findByTestId('page')).toHaveTextContent('remap page');
   });
 
-  it('keeps the Update page mounted without a keyboard while a firmware update runs', async () => {
+  it('keeps the Update page when the keyboard goes away (D3)', async () => {
     const keyboard = await connect();
     const { router } = renderApp('/update/');
     const page = await screen.findByTestId('page');
 
-    act(() => {
-      setFirmwareUpdateActive(true);
-    });
     act(() => {
       keyboard.vk.disconnect();
     });
@@ -121,20 +118,31 @@ describe('routes', () => {
     });
     expect(screen.getByTestId('page')).toBe(page);
     expect(currentPath(router)).toBe('/update/');
-
-    act(() => {
-      setFirmwareUpdateActive(false);
-    });
-
-    expect(screen.queryByTestId('page')).not.toBeInTheDocument();
-    expect(screen.getByText('No Keyboard Connected')).toBeInTheDocument();
+    expect(screen.queryByText('No Keyboard Connected')).not.toBeInTheDocument();
   });
 
-  it('shows the Update page while a firmware update runs, even when opened without a keyboard', async () => {
-    setFirmwareUpdateActive(true);
-    renderApp('/update/');
+  it('shows the Update page without a keyboard (PL-025)', async () => {
+    const { container } = renderApp('/update/');
 
     expect(await screen.findByTestId('page')).toHaveTextContent('update page');
+    expect(screen.queryByText('No Keyboard Connected')).not.toBeInTheDocument();
+    expect(container.querySelector('.keycap')).toBeNull();
+  });
+
+  it('stays on a page while a firmware update reboots the keyboard', async () => {
+    const keyboard = await connect();
+    const { router } = renderApp('/about/');
+    await screen.findByTestId('page');
+
+    act(() => {
+      setFirmwareUpdateActive(true);
+    });
+    act(() => {
+      keyboard.vk.disconnect();
+    });
+
+    expect(await screen.findByText('No Keyboard Connected')).toBeInTheDocument();
+    expect(currentPath(router)).toBe('/about/');
   });
 
   it('shows the error page inside the shell when a page fails to load', async () => {

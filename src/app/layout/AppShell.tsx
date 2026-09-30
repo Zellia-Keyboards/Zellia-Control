@@ -3,7 +3,7 @@ import { Navigate, Outlet, useLocation, useNavigate, type To } from 'react-route
 import { deviceSession, deviceStore, useIsReady } from '../../features/device';
 import { firmwareUpdateSession } from '../../features/firmware-update';
 import { sessionEnded } from '../connection';
-import { shouldShowConfiguratorLayout } from '../navigation';
+import { isActivePage, shouldShowConfiguratorLayout } from '../navigation';
 import { lacksTrailingSlash } from '../pages';
 import { MainContentArea } from './MainContentArea';
 import { SmallScreenWarning } from './SmallScreenWarning';
@@ -12,8 +12,9 @@ import './AppShell.css';
 
 /**
  * Returns to the connection screen when the keyboard session ends — unplugged or failed (D3) —
- * except while a firmware update runs, whose page survives the keyboard's reboot. Returns the
- * sidebar's Disconnect action, which goes there in any case (Svelte: `disconnect(); goto('/')`).
+ * except on the Update page, which needs no keyboard, and while a firmware update reboots the
+ * keyboard. Returns the sidebar's Disconnect action, which goes there in any case (Svelte:
+ * `disconnect(); goto('/')`).
  */
 function useConnectionScreenReturn(pathname: string): () => void {
   const navigate = useNavigate();
@@ -32,6 +33,7 @@ function useConnectionScreenReturn(pathname: string): () => void {
     () =>
       deviceStore.subscribe((state, previous) => {
         if (disconnecting.current || firmwareUpdateSession.getState().active) return;
+        if (isActivePage(currentPath.current, '/update')) return;
         if (sessionEnded(previous.connection.status, state.connection.status)) {
           toConnectionScreen();
         }
