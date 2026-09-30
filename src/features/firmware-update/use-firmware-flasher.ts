@@ -1,16 +1,20 @@
-import { useCallback, useEffect, useState, useSyncExternalStore } from 'react';
-import { createFirmwareFlasher, type FirmwareFlasher } from './flasher';
+import { useSyncExternalStore } from 'react';
+import { firmwareFlasher, type FirmwareFlasher } from './flasher';
 import type { FlasherState } from './model/flash-steps';
 
-/** A firmware flasher for the lifetime of the component: leaving the page aborts the update. */
+function subscribe(listener: () => void): () => void {
+  return firmwareFlasher().subscribe(listener);
+}
+
+function getState(): FlasherState {
+  return firmwareFlasher().getState();
+}
+
+/** The app's firmware update and its state; it outlives the page (D3). */
 export function useFirmwareFlasher(): {
   readonly state: FlasherState;
   readonly flasher: FirmwareFlasher;
 } {
-  const [flasher] = useState(createFirmwareFlasher);
-  useEffect(() => flasher.attach(), [flasher]);
-  const subscribe = useCallback((listener: () => void) => flasher.subscribe(listener), [flasher]);
-  const getState = useCallback(() => flasher.getState(), [flasher]);
   const state = useSyncExternalStore(subscribe, getState);
-  return { state, flasher };
+  return { state, flasher: firmwareFlasher() };
 }

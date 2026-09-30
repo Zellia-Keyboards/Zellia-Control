@@ -2,14 +2,14 @@ import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { connectVirtualKeyboard, type ConnectedKeyboard } from '../../testing/app-keyboard';
-import type { VirtualKeyboardOptions } from '../../testing/virtual-keyboard';
+import { connectVirtualKeyboard } from '../../testing/app-keyboard';
 import {
-  firmwareUpdateSession,
-  setFirmwareUpdateActive,
-  UpdatePage,
-  useFirmwareUpdateSession,
-} from './index';
+  installVirtualHid,
+  type InstalledVirtualKeyboard,
+  type VirtualKeyboardOptions,
+} from '../../testing/virtual-keyboard';
+import { firmwareFlasher } from './flasher';
+import { firmwareUpdateSession, UpdatePage, useFirmwareUpdateSession } from './index';
 
 const STEP_NAMES = [
   'Choose Binary',
@@ -21,7 +21,10 @@ const STEP_NAMES = [
   'Finish',
 ];
 
-let keyboard: ConnectedKeyboard;
+/** Waits for update phases: a full flash takes a while in jsdom on a busy machine. */
+const FLOW = { timeout: 5000 };
+
+let keyboard: { readonly vk: InstalledVirtualKeyboard; readonly dispose: () => void };
 
 function firmware(size: number, name = 'zellia.bin'): File {
   return new File([Uint8Array.from({ length: size }, (_, index) => index & 0xff)], name);
@@ -29,6 +32,18 @@ function firmware(size: number, name = 'zellia.bin'): File {
 
 async function connect(options: VirtualKeyboardOptions = {}): Promise<void> {
   keyboard = await connectVirtualKeyboard({ seedDynamicKeys: false, ...options });
+}
+
+/** No keyboard connected to the app; its bootloader waits on the USB bus (§1.7). */
+function inBootloader(options: VirtualKeyboardOptions = {}): void {
+  const vk = installVirtualHid(navigator, { seedDynamicKeys: false, ...options });
+  keyboard = {
+    vk,
+    dispose: () => {
+      vk.uninstall();
+    },
+  };
+  vk.enterBootloader();
 }
 
 function SessionFlag() {
@@ -80,11 +95,12 @@ beforeEach(() => {
 });
 
 afterEach(() => {
+  // The update outlives the page (D3): end it between tests.
+  firmwareFlasher().reset();
   keyboard.dispose();
-  setFirmwareUpdateActive(false);
 });
 
-describe('UpdatePage', () => {
+describe('UpdatePage', { timeout: 15_000 }, () => {
   it('shows the seven steps with the file chooser active', async () => {
     await connect();
     renderPage();
@@ -122,7 +138,9 @@ describe('UpdatePage', () => {
 
     await user.upload(fileInput(), file);
 
-    expect(await screen.findByRole('heading', { name: 'Flashing Complete!' })).toBeInTheDocument();
+    expect(
+      await screen.findByRole('heading', { name: 'Flashing Complete!' }, FLOW)
+    ).toBeInTheDocument();
     expect(steps()).toEqual([
       ...STEP_NAMES.slice(0, 6).map(name => `${name}: completed`),
       'Finish: active',
@@ -142,7 +160,9 @@ describe('UpdatePage', () => {
     await user.upload(fileInput(), firmware(4096));
 
     // The keyboard rebooted into its bootloader, which is not authorized yet.
-    expect(await screen.findByRole('heading', { name: 'Connect USB Device' })).toBeInTheDocument();
+    expect(
+      await screen.findByRole('heading', { name: 'Connect USB Device' }, FLOW)
+    ).toBeInTheDocument();
     expect(screen.getByText('Connect your device in DFU mode')).toBeInTheDocument();
     expect(steps().slice(0, 3)).toEqual([
       'Choose Binary: completed',
@@ -153,7 +173,9 @@ describe('UpdatePage', () => {
 
     await user.click(screen.getByRole('button', { name: 'Connect USB Device' }));
 
-    expect(await screen.findByRole('heading', { name: 'Flashing Complete!' })).toBeInTheDocument();
+    expect(
+      await screen.findByRole('heading', { name: 'Flashing Complete!' }, FLOW)
+    ).toBeInTheDocument();
   });
 
   it('shows the flashing progress', async () => {
@@ -162,15 +184,15 @@ describe('UpdatePage', () => {
 
     drop(firmware(24 * 1024));
 
-    const heading = await screen.findByRole('heading', { name: 'Flashing Firmware' });
+    const heading = await screen.findByRole('heading', { name: 'Flashing Firmware' }, FLOW);
     const panel = heading.parentElement ?? document.body;
     expect(within(panel).getByText('Do not disconnect your device')).toBeInTheDocument();
     const bar = within(panel).getByRole('progressbar', { name: 'Progress' });
     await vi.waitFor(() => {
       expect(Number(bar.getAttribute('aria-valuenow'))).toBeGreaterThan(0);
-    });
+    }, FLOW);
     expect(steps()[5]).toBe('Flash Firmware: active');
-    await screen.findByRole('heading', { name: 'Flashing Complete!' }, { timeout: 3000 });
+    await screen.findByRole('heading', { name: 'Flashing Complete!' }, FLOW);
   });
 
   it('keeps the DFU panel next to the error for a wrong file, like Svelte', async () => {
@@ -201,31 +223,72 @@ describe('UpdatePage', () => {
     renderPage();
 
     await user.upload(fileInput(), firmware(4096));
-    await user.click(await screen.findByRole('button', { name: 'Connect USB Device' }));
+    await user.click(await screen.findByRole('button', { name: 'Connect USB Device' }, FLOW));
 
-    expect(await screen.findByRole('alert')).toHaveTextContent(
+    expect(await screen.findByRole('alert', {}, FLOW)).toHaveTextContent(
       'No device in DFU mode found. Please enter recovery mode first.'
     );
     expect(steps()[2]).toBe('Connect Recovery: error');
   });
 
-  it('aborts the update when the page is left, keeping the session to try again', async () => {
+  it('keeps flashing when the page is left and shows the result on return (D3)', async () => {
     await connect({ dfu: { authorized: true, busyPolls: 2, pollTimeoutMs: 5 } });
-    const { unmount } = renderPage();
-    const size = 48 * 1024;
+    const first = renderPage();
+    const file = firmware(48 * 1024);
 
-    drop(firmware(size));
-    await screen.findByRole('heading', { name: 'Flashing Firmware' });
-    expect(firmwareUpdateSession.getState().active).toBe(true);
-
+    drop(file);
+    await screen.findByRole('heading', { name: 'Flashing Firmware' }, FLOW);
     act(() => {
-      unmount();
+      first.unmount();
     });
 
-    await new Promise(resolve => setTimeout(resolve, 100));
-    expect(keyboard.vk.dfu?.image.length).toBeLessThan(size);
-    // The keyboard waits in its bootloader: the shell keeps the Update page reachable.
-    expect(keyboard.vk.dfu?.connected).toBe(true);
     expect(firmwareUpdateSession.getState().active).toBe(true);
+    await vi.waitFor(() => {
+      expect(firmwareUpdateSession.getState().active).toBe(false);
+    }, FLOW);
+    expect(keyboard.vk.dfu?.image).toEqual(new Uint8Array(await file.arrayBuffer()));
+
+    renderPage();
+    expect(screen.getByRole('heading', { name: 'Flashing Complete!' })).toBeInTheDocument();
+    expect(steps()[6]).toBe('Finish: active');
+  });
+
+  it('shows a running flash when the page is opened again', async () => {
+    await connect({ dfu: { authorized: true, busyPolls: 2, pollTimeoutMs: 5 } });
+    const first = renderPage();
+
+    drop(firmware(48 * 1024));
+    await screen.findByRole('heading', { name: 'Flashing Firmware' }, FLOW);
+    act(() => {
+      first.unmount();
+    });
+    renderPage();
+
+    expect(screen.getByRole('heading', { name: 'Flashing Firmware' })).toBeInTheDocument();
+    expect(steps()[5]).toBe('Flash Firmware: active');
+    await screen.findByRole('heading', { name: 'Flashing Complete!' }, FLOW);
+  });
+
+  it('flashes a keyboard waiting in its bootloader without a keyboard connected (§1.7)', async () => {
+    inBootloader();
+    const user = userEvent.setup();
+    renderPage();
+
+    await user.upload(fileInput(), firmware(4096));
+
+    expect(
+      await screen.findByRole('heading', { name: 'Connect USB Device' }, FLOW)
+    ).toBeInTheDocument();
+    expect(steps().slice(0, 3)).toEqual([
+      'Choose Binary: completed',
+      'Reboot to Recovery: completed',
+      'Connect Recovery: active',
+    ]);
+    await user.click(screen.getByRole('button', { name: 'Connect USB Device' }));
+
+    expect(
+      await screen.findByRole('heading', { name: 'Flashing Complete!' }, FLOW)
+    ).toBeInTheDocument();
+    expect(keyboard.vk.dfu?.image).toHaveLength(4096);
   });
 });
