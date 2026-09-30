@@ -246,6 +246,13 @@ interface KeyedEntry {
   readonly leaving: boolean;
 }
 
+interface KeyedState {
+  readonly key: string | number;
+  readonly nextId: number;
+  /** Leaving children first, the current child last (DOM order, as in `{#key}`). */
+  readonly entries: readonly KeyedEntry[];
+}
+
 /**
  * `{#key transitionKey}<child in:… out:…>{/key}` — leaving children stay in the DOM before
  * the entering one until their outro ends. The first child does not animate.
@@ -261,10 +268,10 @@ export function KeyedTransition<
   in: intro,
   out: outro,
 }: KeyedTransitionProps<P, PI, PO>): ReactNode {
-  const [state, setState] = useState(() => ({
+  const [state, setState] = useState<KeyedState>(() => ({
     key: transitionKey,
     nextId: 1,
-    entries: [{ id: 0, leaving: false }] as readonly KeyedEntry[],
+    entries: [{ id: 0, leaving: false }],
   }));
   let current = state;
   if (!Object.is(transitionKey, state.key)) {
