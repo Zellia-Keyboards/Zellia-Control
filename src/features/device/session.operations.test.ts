@@ -3,9 +3,11 @@
  * the debug loop (D16), against the virtual keyboard.
  */
 import { Keycode, RGBMode } from 'emi-keyboard-controller';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, onTestFinished, vi } from 'vitest';
 import {
   KeyEvent,
+  VirtualDfuDevice,
+  VirtualUsb,
   createFactoryProfile,
   decodeDeviceReport,
   dynamicKeyKeycode,
@@ -475,13 +477,40 @@ describe('keyboard operations', () => {
     await expect(h.session.detectBootloader(true)).resolves.toEqual([h.vk.dfu]);
   });
 
-  it('finds no bootloader for a model without a DFU filter or without any model', async () => {
-    const store = createDeviceStore();
-    const session = createDeviceSession({ hid: () => undefined, store });
-    await expect(session.detectBootloader(false)).resolves.toEqual([]);
-
+  it('finds no bootloader for a model without a DFU filter', async () => {
     const h = await connected({ keyboard: { model: 'zellia-80' } });
     await expect(h.session.detectBootloader(false)).resolves.toEqual([]);
+  });
+
+  it('without a keyboard since load, finds the bootloader of any supported model (§1.7)', async () => {
+    const usb = new VirtualUsb();
+    const at32 = new VirtualDfuDevice({ vendorId: 0x2e3c, productId: 0xdf11, productName: 'AT32' });
+    const stm32 = new VirtualDfuDevice({
+      vendorId: 0x0483,
+      productId: 0xdf11,
+      productName: 'STM32',
+    });
+    const other = new VirtualDfuDevice({
+      vendorId: 0x1209,
+      productId: 0xdf11,
+      productName: 'Other',
+    });
+    usb.attach(at32, { authorized: true });
+    usb.attach(other, { authorized: true });
+    for (const device of [at32, other, stm32]) usb.plugIn(device);
+    Object.defineProperty(navigator, 'usb', { configurable: true, value: usb });
+    onTestFinished(() => {
+      Reflect.deleteProperty(navigator, 'usb');
+    });
+    const session = createDeviceSession({ hid: () => undefined, store: createDeviceStore() });
+
+    // Silent: only authorized devices of a supported bootloader.
+    await expect(session.detectBootloader(true)).resolves.toEqual([at32]);
+    // The chooser lists every supported bootloader.
+    usb.unplug(at32);
+    await expect(session.detectBootloader(false)).resolves.toEqual([stm32]);
+    usb.picker = 'cancel';
+    await expect(session.detectBootloader(false)).resolves.toEqual([]);
   });
 });
 
