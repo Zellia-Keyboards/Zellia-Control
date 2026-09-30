@@ -37,8 +37,9 @@ describe('dictionaries', () => {
 
   it('keep the ported key set plus the React additions', () => {
     // 263 keys used by the Svelte app, the six it referenced but never defined, the Settings
-    // confirmations (PL-012) and the Save button's unsaved-changes label (PL-050).
-    expect(Object.keys(en)).toHaveLength(273);
+    // confirmations (PL-012), the Save button's unsaved-changes label (PL-050) and the Lighting
+    // copy (PL-047 to PL-049).
+    expect(Object.keys(en)).toHaveLength(294);
   });
 
   it('add the unsaved-changes label of the Save button (PL-050)', () => {
@@ -58,6 +59,20 @@ describe('dictionaries', () => {
       'common.cancel': '取消',
       'settings.bootloaderConfirm': '确定要进入引导程序模式吗？键盘将断开连接并等待固件更新。',
       'settings.factoryResetConfirm': '确定要将所有设置恢复为出厂默认值吗？此操作无法撤销。',
+    });
+  });
+
+  it('add the Lighting copy: mode explanations, Mixed, targets and the save hint', () => {
+    expect(en).toMatchObject({
+      rgb_mode_jelly_desc:
+        'Pressing lights up the keys around it in their own colors; the deeper the press, the farther it reaches.',
+      'lighting.saveHint': 'Lighting changes reach the keyboard when you press Save.',
+      'lighting.keyCount': '{0} keys',
+    });
+    expect(zh).toMatchObject({
+      rgb_mode_jelly_desc: '按下时，周围的按键以各自的颜色亮起；按得越深，范围越大。',
+      'lighting.saveHint': '按下「保存」后，灯光更改才会发送到键盘。',
+      'lighting.keyCount': '{0} 个按键',
     });
   });
 

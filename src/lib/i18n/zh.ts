@@ -139,6 +139,35 @@ export const zh: Record<TranslationKey, string> = {
   rgb_mode_fading_diamond_ripple: '渐变菱形涟漪',
   rgb_mode_jelly: '果冻',
   rgb_mode_bubble: '气泡',
+
+  // Lighting: mode explanations and the key panel (lighting redesign, PL-047 to PL-049)
+  rgb_base_mode_off_desc: '关闭所有灯光，包括按键灯效。',
+  rgb_base_mode_blank_desc: '没有基础灯光：只有按键灯效会点亮按键。',
+  rgb_base_mode_rainbow_desc:
+    '从「颜色」的色相开始、在键盘上滚动的彩虹。速度决定快慢，方向决定走向，密度决定颜色的疏密。',
+  rgb_base_mode_wave_desc:
+    '「颜色」与「次要颜色」交融的波浪在键盘上移动。速度决定快慢，方向决定走向，密度决定波浪的疏密。',
+  rgb_mode_fixed_desc: '始终显示「颜色」，取代基础灯光。',
+  rgb_mode_static_desc: '始终在基础灯光之上叠加「颜色」。',
+  rgb_mode_cycle_desc: '从「颜色」开始循环显示所有色相。速度决定循环快慢。',
+  rgb_mode_linear_desc: '按下时以「颜色」点亮：按得越深越亮。',
+  rgb_mode_trigger_desc: '按下时以「颜色」闪亮，随后逐渐熄灭。速度决定熄灭快慢。',
+  rgb_mode_string_desc: '每次按下都会沿按键所在的行发出一道「颜色」光线。速度决定传播快慢。',
+  rgb_mode_fading_string_desc:
+    '每次按下都会沿按键所在的行发出一道「颜色」光线，并留下逐渐消失的拖尾。',
+  rgb_mode_diamond_ripple_desc:
+    '每次按下都会发出一圈菱形的「颜色」涟漪扩散到整个键盘。速度决定扩散快慢。',
+  rgb_mode_fading_diamond_ripple_desc:
+    '每次按下都会发出一圈菱形的「颜色」涟漪扩散到整个键盘，并留下逐渐消失的拖尾。',
+  rgb_mode_jelly_desc: '按下时，周围的按键以各自的颜色亮起；按得越深，范围越大。',
+  rgb_mode_bubble_desc:
+    '每次按下都会在按键周围泛起一圈小的圆形「颜色」涟漪，并留下逐渐消失的拖尾。',
+  'lighting.saveHint': '按下「保存」后，灯光更改才会发送到键盘。',
+  'lighting.mixed': '混合',
+  'lighting.mixedModes': '这些按键使用不同的模式。选择一个即可应用到全部按键。',
+  'lighting.allKeys': '全部按键',
+  'lighting.oneKey': '1 个按键',
+  'lighting.keyCount': '{0} 个按键',
   'lighting.direction': '方向',
 
   // Lighting UI
