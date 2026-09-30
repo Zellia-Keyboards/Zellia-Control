@@ -1,4 +1,5 @@
-import { useEffect, useId, type MouseEvent } from 'react';
+import { useId, type MouseEvent } from 'react';
+import { useModalDismiss } from '../../../components/ui';
 import { KeyboardRender, keySelection, useLayoutKeys } from '../../keyboard';
 import styles from './KeyboardSelector.module.css';
 
@@ -17,26 +18,7 @@ export function KeyboardSelector({ open, onClose }: KeyboardSelectorProps) {
   const keys = layout?.all ?? [];
   const titleId = useId();
 
-  useEffect(() => {
-    if (!open) return;
-    const handleKeydown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') onClose();
-    };
-    window.addEventListener('keydown', handleKeydown);
-    return () => {
-      window.removeEventListener('keydown', handleKeydown);
-    };
-  }, [open, onClose]);
-
-  useEffect(() => {
-    if (!open) return;
-    const previouslyFocused = document.activeElement;
-    return () => {
-      if (previouslyFocused instanceof HTMLElement && previouslyFocused.isConnected) {
-        previouslyFocused.focus({ preventScroll: true });
-      }
-    };
-  }, [open]);
+  useModalDismiss(open, onClose);
 
   if (!open) return null;
 

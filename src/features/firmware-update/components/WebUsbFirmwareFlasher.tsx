@@ -20,6 +20,7 @@ import {
 } from '../model/flash-steps';
 import { useFirmwareFlasher } from '../use-firmware-flasher';
 import styles from './WebUsbFirmwareFlasher.module.css';
+import { cx } from '../../../lib/class-names';
 
 const STEP_ICONS: Readonly<Record<FlashStepId, LucideIcon>> = {
   choose_binary: Upload,
@@ -37,10 +38,6 @@ const STEP_CIRCLE_CLASSES: Readonly<Record<FlashStepStatus, string>> = {
   error: 'bg-red-500 border-red-500',
   pending: 'bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-600',
 };
-
-function cx(...classNames: readonly (string | undefined)[]): string {
-  return classNames.filter(name => name !== undefined && name !== '').join(' ');
-}
 
 function StepCircleIcon({
   id,

@@ -4,6 +4,7 @@ import { ConfirmationModal } from '../../components/ui';
 import { deviceSession } from '../device';
 import { useT, type TranslationKey } from '../../lib/i18n';
 import styles from './SettingsPage.module.css';
+import { cx } from '../../lib/class-names';
 
 type ActionColor = 'blue' | 'violet' | 'red';
 
@@ -70,10 +71,6 @@ const CONFIRMATIONS: Readonly<Record<ConfirmedAction, Confirmation>> = {
     },
   },
 };
-
-function cx(...classNames: readonly (string | undefined)[]): string {
-  return classNames.filter(name => name !== undefined && name !== '').join(' ');
-}
 
 /** Device settings (port of `routes/settings/+page.svelte`, plus the PL-012 confirmations). */
 export function SettingsPage() {
