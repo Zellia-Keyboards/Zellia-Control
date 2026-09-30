@@ -1,0 +1,22 @@
+{
+  // Type-checks the vendored emi-keyboard-controller with options close to its own tsconfig and
+  // emits declarations for the app. App code never re-checks vendored source under app flags.
+  "compilerOptions": {
+    "composite": true,
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "outDir": "./node_modules/.tmp/controller",
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.controller.tsbuildinfo",
+    "rootDir": "./src-controller/src",
+    "target": "ES2020",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "strict": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true,
+    "types": ["w3c-web-hid", "vite/client"]
+  },
+  "include": ["src-controller/src/**/*.ts"]
+}
