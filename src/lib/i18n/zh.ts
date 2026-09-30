@@ -1,0 +1,335 @@
+/**
+ * Chinese dictionary, ported verbatim (key order and text) from the Svelte app. Typed as a
+ * complete record so a missing or unknown key is a compile error; the Svelte-only `demo.*`
+ * entries were dropped with the other unused keys.
+ */
+import type { TranslationKey } from './en';
+
+export const zh: Record<TranslationKey, string> = {
+  // Navigation
+  'nav.performance': '性能',
+  'nav.remap': '按键映射',
+  'nav.lighting': '灯光',
+  'nav.advancedkey': '动态按键',
+  'nav.debug': '调试',
+  'nav.settings': '设置',
+  'nav.about': '关于',
+  'nav.update': '更新',
+
+  // UI Elements
+  'ui.save': '保存',
+  'ui.disconnect': '断开连接',
+  'ui.profiles': '配置文件',
+  'ui.themeColors': '主题颜色',
+  'ui.lightMode': '浅色模式',
+  'ui.darkMode': '深色模式',
+  'ui.language': '语言',
+  // Common
+  'common.delete': '删除',
+  'common.actions': '操作',
+  'common.key': '按键',
+  'common.unknown': '未知',
+
+  // UI Elements - additional
+  'ui.noProfilesAvailable': '无可用动态按键',
+  'ui.featuresRequiringLargerDisplay': '需要更大显示的功能：',
+  'ui.keyboardLayoutVisualization': '键盘布局可视化',
+  'ui.advancedKeyConfigPanels': '高级按键配置面板',
+
+  // Performance Page
+  'performance.title': '性能',
+  'performance.selectAllKeys': '选择所有按键',
+  'performance.discardSelection': '取消选择',
+  'performance.actuationPoint': '触发点',
+  'performance.actuationPointDesc': '设置按键的触发点。',
+  'performance.sensitivityWarning': '按键可能过于敏感，可能导致不稳定，请小心',
+  'performance.rapidTriggerDesc': '启用快速触发以获得更快的按键响应。',
+  'performance.enableRapidTrigger': '启用快速触发',
+  'performance.rapidTriggerSensitivity': '快速触发灵敏度',
+  'performance.adjustSensitivity': '调整快速触发的灵敏度。',
+  'performance.pressSensitivityLabel': '按下灵敏度',
+  'performance.releaseSensitivityLabel': '释放灵敏度',
+  'performance.sensitivityLabel': '灵敏度',
+  'performance.keysSelected': '个按键已选择',
+  'performance.high': '高',
+  'performance.low': '低',
+  'performance.keyTravelDeadzones': '按键行程死区',
+  'performance.keyTravelDeadzonesDesc': '调整快速触发激活的起始和底部死区限制。',
+
+  // Debug Page
+  'debug.keyPressReporting': '报告按键是否被按下',
+  'debug.keyPressReportingDesc':
+    '允许键盘报告按键是否被认为被按下。被按下的按键在上方的视觉显示中指示。',
+  'debug.timeLabel': '时间 (毫秒)',
+  'debug.distanceLabel': '距离 (毫米)',
+  'debug.keyDistance': '按键距离',
+  // Settings Page
+  'settings.title': '设置',
+  'settings.subtitle': '配置设备设置并管理您的键盘',
+  'settings.restart': '重启设备',
+  'settings.restartDesc': '重启键盘以应用更改',
+  'settings.bootloader': '进入引导程序',
+  'settings.bootloaderDesc': '进入引导程序模式进行固件更新',
+  'settings.factoryReset': '恢复出厂设置',
+  'settings.factoryResetDesc': '将所有设置重置为出厂默认值',
+  // About Page
+  'about.title': '关于 Zellia 控制',
+  'about.subtitle': '霍尔效应键盘配置器',
+  'about.appName': 'Zellia 控制',
+  'about.appDescription':
+    '一个强大的桌面应用程序，用于配置带有霍尔效应开关的 Zellia 键盘。采用现代网络技术构建，具有跨平台兼容性和直观的用户体验。',
+  'about.version': '版本 1.0.0',
+  'about.builtWith': '使用 SvelteKit 和 PWA 构建',
+  'about.performance': '性能',
+  'about.adjustableActuation': '可调节触发点 (0-4毫米)',
+  'about.rapidTrigger': '快速触发技术',
+  'about.realtimeMonitoring': '实时压力监控',
+  'about.advancedKeys': '高级按键',
+  'about.tapHold': '轻按保持功能',
+  'about.toggleModes': '切换模式',
+  'about.dynamicKeystroke': '动态按键控制',
+  'about.nullBind': '空绑定与SOCD清理',
+  'about.customization': '自定义',
+  'about.rgbLighting': 'RGB灯光效果',
+  'about.keyRemapping': '按键重映射',
+  'about.multipleThemes': '多种主题颜色',
+  'about.darkLightMode': '深色/浅色模式支持',
+  'about.technical': '技术',
+  'about.crossPlatform': '跨平台支持',
+  'about.hardwareCalibration': '硬件校准',
+  'about.debugTools': '调试工具',
+  'about.profileImportExport': '配置文件导入/导出',
+
+  // Lighting Page
+  'lighting.title': '灯光',
+  'lighting.brightness': '亮度',
+  'lighting.color': '颜色',
+  'lighting.speed': '速度',
+  'lighting.apply': '应用',
+  'lighting.mode': '模式',
+  'lighting.secondaryColor': '次要颜色',
+  'lighting.density': '密度',
+  'lighting.baseConfigTitle': '基础配置',
+  'lighting.subConfigTitle': '按键配置',
+  'lighting.rainbowPreset': '彩虹预设',
+  'lighting.rainbowDirection': '彩虹方向',
+  'lighting.rainbowDensity': '彩虹密度',
+  'lighting.animation': '动画',
+  'lighting.level': '级别',
+
+  // RGB Base Modes
+  rgb_base_mode_off: '关闭',
+  rgb_base_mode_blank: '空白',
+  rgb_base_mode_rainbow: '彩虹',
+  rgb_base_mode_wave: '波浪',
+
+  // RGB Modes
+  rgb_mode_fixed: '固定',
+  rgb_mode_static: '静态',
+  rgb_mode_cycle: '循环',
+  rgb_mode_linear: '线性',
+  rgb_mode_trigger: '触发',
+  rgb_mode_string: '字符串',
+  rgb_mode_fading_string: '渐变字符串',
+  rgb_mode_diamond_ripple: '菱形涟漪',
+  rgb_mode_fading_diamond_ripple: '渐变菱形涟漪',
+  rgb_mode_jelly: '果冻',
+  rgb_mode_bubble: '气泡',
+  'lighting.direction': '方向',
+
+  // Lighting UI
+  'lighting.applySettings': '应用设置',
+
+  // Advanced Key Page
+  'advancedkey.title': '动态按键',
+  'advancedkey.subtitle': '配置动态键盘行为以提高生产力',
+  'advancedkey.gettingStarted': '入门指南',
+  'advancedkey.step1Title': '选择模式',
+  'advancedkey.step1Desc': '选择要配置的动态按键行为',
+  'advancedkey.step2Title': '选择按键',
+  'advancedkey.step2Desc': '在键盘布局中点击按键来配置它们',
+  'advancedkey.step3Title': '应用设置',
+  'advancedkey.step3Desc': '将配置保存到键盘',
+  'advancedkey.infoDesc':
+    '动态按键配置允许您自定义单个按键的行为，超越标准打字。每种模式都提供独特的功能来增强您的键盘体验。',
+
+  // Advanced Key Modes
+  'advancedkey.tapHold': '轻按保持',
+  'advancedkey.tapHoldDesc': '轻按与保持的不同操作',
+  'advancedkey.tapHoldFeature1': '快速轻按操作',
+  'advancedkey.tapHoldFeature2': '可配置延迟的保持操作',
+  'advancedkey.tapHoldFeature3': '完美适用于修饰键',
+  'advancedkey.tapHoldFeature4': '可自定义时间',
+  'advancedkey.tapHoldTip': '轻按保持按键非常适合既可作为修饰键又可在快速轻按时作为常规按键的功能',
+  'advancedkey.quickTap': '快速轻按（少于 {0} 毫秒）',
+  'advancedkey.holdOver': '按住（超过 {0} 毫秒）',
+
+  'advancedkey.toggle': '切换',
+  'advancedkey.toggleDesc': '在两个状态之间切换',
+  'advancedkey.toggleFeature1': '按下或释放时切换',
+  'advancedkey.toggleFeature2': '完美适用于大写锁定行为',
+  'advancedkey.toggleFeature3': '状态持久化',
+  'advancedkey.toggleFeature4': '视觉反馈',
+  'advancedkey.toggleDescription': '此按键将在{1}切换{0}。每次触发都会在激活和非激活状态之间切换。',
+  'advancedkey.whenPressed': '按下时',
+  'advancedkey.whenReleased': '释放时',
+
+  'advancedkey.dynamic': '动态按键',
+  'advancedkey.dynamicDesc': '交互式按键配置',
+  'advancedkey.dynamicFeature1': '4相按键控制',
+  'advancedkey.dynamicFeature2': '模拟输入响应',
+  'advancedkey.dynamicFeature3': '多按键绑定',
+  'advancedkey.dynamicFeature4': '高级自定义',
+
+  'advancedkey.nullBind': '空绑定',
+  'advancedkey.nullBindDesc': '快速触发与SOCD清理',
+  'advancedkey.nullBindFeature1': '快速触发技术',
+  'advancedkey.nullBindFeature2': 'SOCD（同时相对基本方向）',
+  'advancedkey.nullBindFeature3': '完美适用于游戏',
+  'advancedkey.nullBindFeature4': '超响应输入',
+
+  // Tap-Hold Page
+  'advancedkey.tapHoldTitle': '轻按保持配置',
+  'advancedkey.tapHoldSubtitle': '为快速轻按与长按保持配置不同的操作',
+  'advancedkey.tapAction': '轻按操作',
+  'advancedkey.holdAction': '保持操作',
+  'advancedkey.holdDelay': '保持延迟',
+  'advancedkey.milliseconds': '毫秒',
+  'advancedkey.configuredTapHold': '已配置的轻按保持按键',
+  'advancedkey.actionCategories': '操作类别',
+  'advancedkey.backToAdvanced': '返回',
+  'advancedkey.applyConfiguration': '应用配置',
+  'advancedkey.resetConfiguration': '重置配置',
+
+  // Null Bind Page
+  'advancedkey.nullBindTitle': '空绑定配置',
+  'advancedkey.nullBindSubtitle': '为游戏配置快速触发与SOCD清理',
+  'advancedkey.distance': '距离',
+
+  // Null Bind Page - Additional translations
+  'advancedkey.selectTwoKeys': '选择两个按键',
+  'advancedkey.firstKey': '第一个按键',
+  'advancedkey.secondKey': '第二个按键',
+  'advancedkey.clickKeyToSelect': '点击按键选择',
+  'advancedkey.clickOpposingKey': '点击相对按键',
+  'advancedkey.remove': '移除',
+  'advancedkey.selectedKeys': '选中的按键',
+  'advancedkey.configureNullBindBehavior': '配置空绑定行为',
+  'advancedkey.selectHowToResolveKeyEvents': '选择如何解决同时按下两个按键时的按键事件。',
+  'advancedkey.lastInputBehavior': '最后输入',
+  'advancedkey.lastInputBehaviorDesc': '最近按下的按键优先于之前保持的按键',
+  'advancedkey.absolutePriority1Behavior': '按键1绝对优先',
+  'advancedkey.absolutePriority1BehaviorDesc': '第一个选择的按键总是绝对优先于第二个按键',
+  'advancedkey.absolutePriority2Behavior': '按键2绝对优先',
+  'advancedkey.absolutePriority2BehaviorDesc': '第二个选择的按键总是绝对优先于第一个按键',
+  'advancedkey.neutralBehavior': '中性',
+  'advancedkey.neutralBehaviorDesc': '同时按下时两个相对输入都被取消',
+  'advancedkey.distanceBehavior': '距离 (Rappy Snappy)',
+  'advancedkey.distanceBehaviorDesc': '基于按键行程距离的优先级 - 按得更深的按键获胜',
+  'advancedkey.alternativeBottomOutBehavior': '替代到底行为',
+  'advancedkey.alternativeBottomOutBehaviorDesc': '当两个按键都到底时，为两个按键都注册按键事件。',
+  'advancedkey.bottomOutPointDesc': '设置按键到底的距离。',
+  'advancedkey.keyTesterTitle': '按键测试器',
+  'advancedkey.keyTesterDesc': '按下配置的按键来测试空绑定行为',
+  'advancedkey.key1': '按键1',
+  'advancedkey.key2': '按键2',
+  'advancedkey.priorityKey': '优先按键',
+  'advancedkey.currentBehavior': '当前行为：',
+  'advancedkey.bottomOut': '到底：',
+  'advancedkey.configuredNullBindKeys': '已配置的空绑定按键',
+  'advancedkey.pair': '对',
+  'advancedkey.pairs': '对',
+  'advancedkey.behavior': '行为：',
+  'advancedkey.on': '开',
+  'advancedkey.off': '关',
+
+  // Toggle Page
+  'advancedkey.toggleTitle': '切换配置',
+  'advancedkey.toggleSubtitle': '配置按键在两个状态之间切换',
+  'advancedkey.toggleAction': '切换操作',
+  'advancedkey.toggleMode': '切换模式',
+  'advancedkey.toggleState': '切换状态',
+  'advancedkey.onPress': '按下时',
+  'advancedkey.onRelease': '释放时',
+  'advancedkey.enabled': '启用',
+  'advancedkey.disabled': '禁用',
+  'advancedkey.toggleTip': '切换按键非常适合大写锁定、数字锁定或创建自定义修饰状态',
+  'advancedkey.configuredToggle': '已配置的切换按键',
+  'advancedkey.toggleModeDesc': '切换应何时激活',
+  'advancedkey.toggleStateDesc': '切换的当前状态',
+  'advancedkey.howItWorks': '工作原理',
+  'advancedkey.actions': '操作',
+  'advancedkey.resetAllToggle': '重置所有切换按键',
+
+  // Dynamic Page
+  'advancedkey.dynamicTitle': '动态按键配置',
+  'advancedkey.dynamicSubtitle': '配置4相按键控制与模拟输入响应',
+  'advancedkey.bindings': '绑定',
+  'advancedkey.performance': '性能',
+  'advancedkey.keyTester': '按键测试器',
+  'advancedkey.bottomOutPoint': '到底点',
+  'advancedkey.rapidTrigger': '快速触发',
+  'advancedkey.hold': '保持',
+  'advancedkey.tap': '轻按',
+
+  // Dynamic Keystroke Components
+  'advancedkey.dynamicKeystroke': '动态按键',
+  'advancedkey.performanceSettings': '性能设置',
+  'advancedkey.testDynamicDesc': '测试您的动态按键配置',
+  'advancedkey.testKeyBehavior': '按下按键测试动态按键行为',
+  'advancedkey.keyPressedPastActuation': '按键按下超过触发点',
+  'advancedkey.keyReleasedPastActuation': '按键释放超过触发点',
+  'advancedkey.keyPressedPastBottomOut': '按键按下超过底部撞击点',
+  'advancedkey.keyReleasedPastBottomOut': '按键释放超过底部撞击点',
+  'advancedkey.rapidTriggerDisabled': '快速触发已禁用',
+  'advancedkey.rapidTriggerDisabledDesc': '当按键绑定到DKS时，快速触发会自动禁用。',
+  'advancedkey.configureDKSBindings': '配置DKS绑定',
+  'advancedkey.dksBindingInstructions':
+    '为每个绑定分配按键代码。点击节点创建间隔，拖动手柄调整大小，点击条形图删除。',
+
+  // Common Advanced Key Elements
+  'advancedkey.mode': '模式',
+  'advancedkey.configuration': '配置',
+  'advancedkey.keycodeSelectionTitle': '按键代码选择',
+
+  // Advanced Key Common Elements
+  'advancedkey.selectedKey': '选中的按键',
+  'advancedkey.position': '位置',
+  'advancedkey.noKeySelected': '未选择按键',
+  'advancedkey.selectKeyToConfig': '从键盘布局中选择一个按键来配置其行为',
+  'advancedkey.tip': '提示',
+  'advancedkey.keysCount': '个按键',
+  'advancedkey.keysCountPlural': '个按键',
+  'advancedkey.resetAllTapHold': '重置所有轻按保持按键',
+  'advancedkey.tapHoldDescription': '非常适合既可作为修饰键又可在快速轻按时作为常规按键的功能。',
+  'advancedkey.tipDynamic': '动态按键允许4相控制与模拟输入响应进行高级自定义',
+  'advancedkey.done': '完成',
+  'advancedkey.deleteKey': '删除按键',
+  'advancedkey.deletePair': '删除配对',
+  'advancedkey.trigger': '触发',
+  'advancedkey.state': '状态',
+
+  // Advanced binding related
+  'advancedkey.selectKeycodeForBinding': '为绑定 {0} 选择按键代码',
+  'advancedkey.clickOnBinding': '点击绑定按钮选择按键代码',
+  'advancedkey.bindingsLabel': '绑定',
+  'advancedkey.bottomOutLabel': '触底',
+  'units.mm': 'mm',
+
+  // new addition
+  'advancedkey.selectTwoKeysInstructions': '点击键盘布局中的两个相对按键以配置空绑定行为。',
+  'advancedkey.configuredDynamicKeys': '已配置的动态按键',
+
+  // Welcome page
+  'welcome.getStarted': '开始使用',
+  'welcome.connecting': '连接中...',
+  'welcome.loadingConfigurator': '正在加载配置界面...',
+
+  // Connection warnings
+  'ui.usbHubWarning': '使用 USB Hub 连接设备可能会导致连接不稳定。',
+
+  // Profiles Page
+  'profiles.slot': '插槽',
+  'profiles.manageAll': '管理所有配置文件',
+  'profiles.noProfile': '无配置文件',
+};
