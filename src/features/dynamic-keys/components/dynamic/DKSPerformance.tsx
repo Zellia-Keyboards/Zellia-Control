@@ -17,6 +17,14 @@ const MAX_TRAVEL_DISTANCE_MM = 4.0;
 const DEFAULT_ACTUATION_MM = 2.0;
 const DEFAULT_DEACTIVATION_MM = 1.5;
 
+/**
+ * Device values in millimetres to the 0.001 mm the labels show: the 16-bit fractions would
+ * otherwise put quantization noise (1.95999…) into the number inputs.
+ */
+function deviceMm(fraction: number): number {
+  return Math.round(fractionToMm(fraction) * 1000) / 1000;
+}
+
 export interface DKSPerformanceProps {
   readonly selectedKeys: readonly number[];
 }
@@ -26,8 +34,8 @@ export function DKSPerformance({ selectedKeys }: DKSPerformanceProps) {
   const config = useDeviceConfig();
   const [first] = selectedKeys;
   const key = first === undefined ? undefined : config?.advancedKeys[first];
-  const actuationPoint = key ? fractionToMm(key.activation) : DEFAULT_ACTUATION_MM;
-  const deactivationPoint = key ? fractionToMm(key.deactivation) : DEFAULT_DEACTIVATION_MM;
+  const actuationPoint = key ? deviceMm(key.activation) : DEFAULT_ACTUATION_MM;
+  const deactivationPoint = key ? deviceMm(key.deactivation) : DEFAULT_DEACTIVATION_MM;
 
   function apply(activationMm: number, deactivationMm: number): void {
     const current =

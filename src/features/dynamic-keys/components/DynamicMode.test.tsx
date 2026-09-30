@@ -246,6 +246,9 @@ describe('DKS editor', () => {
     await user.click(screen.getByRole('button', { name: 'Performance' }));
     expect(screen.getByText('Actuation: 2.000mm')).toBeInTheDocument();
     expect(screen.getByText('Deactivation: 1.960mm')).toBeInTheDocument();
+    // The inputs show the device values without the 16-bit quantization noise (1.95999…mm).
+    expect(screen.getByLabelText('Actuation point (mm)')).toHaveValue(2);
+    expect(screen.getByLabelText('Deactivation point (mm)')).toHaveValue(1.96);
     expect(screen.getByText('2 keys selected')).toBeInTheDocument();
     const before = keyboard.vk.state.active.advancedKeys[12];
 
