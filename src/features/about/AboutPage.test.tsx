@@ -89,19 +89,13 @@ describe('AboutPage', () => {
     );
   });
 
-  it('offers a sponsor button in English', async () => {
-    const open = vi.spyOn(window, 'open').mockImplementation(() => null);
-    const user = userEvent.setup();
+  it('shows no sponsor button in English (its link was a placeholder, spec §1.9)', () => {
     renderPage();
 
+    expect(screen.getByRole('heading', { name: 'Support Development' })).toBeInTheDocument();
     expect(screen.queryByRole('img', { name: 'Alipay QR Code' })).not.toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: 'Support Development' }));
-
-    expect(open).toHaveBeenCalledWith(
-      'https://github.com/sponsors/your-username',
-      '_blank',
-      'noopener,noreferrer'
-    );
+    expect(screen.queryByRole('button', { name: 'Support Development' })).not.toBeInTheDocument();
+    expect(screen.getByText('New features and improvements')).toBeInTheDocument();
   });
 
   it('shows the Alipay and WeChat Pay codes in Chinese', () => {
