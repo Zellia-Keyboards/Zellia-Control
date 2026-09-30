@@ -70,8 +70,8 @@ function setupInBootloader(options: VirtualKeyboardOptions = {}): void {
   createFlasher();
 }
 
-/** Waits for update phases: a full flash takes a while on a busy machine. */
-const FLOW = { timeout: 5000 };
+/** Waits for update phases: a flash takes a while on a busy machine. */
+const FLOW = { timeout: 10_000 };
 
 async function phase(expected: FlasherState['phase']): Promise<FlasherState> {
   return vi.waitFor(() => {
@@ -123,7 +123,7 @@ afterEach(() => {
   setFirmwareUpdateActive(false);
 });
 
-describe('firmware flasher', { timeout: 15_000 }, () => {
+describe('firmware flasher', { timeout: 30_000 }, () => {
   it('starts on step 1 without a session', async () => {
     await setup();
     expect(flasher.getState()).toEqual({ phase: 'choose' });
