@@ -49,6 +49,24 @@ describe('dynamic-key UI fields (session memory, D5)', () => {
     expect(uiFieldsStore.getState().tapHold).toEqual({ '0:1': { holdDelayMs: 300 } });
   });
 
+  it('forgets the fields of a deleted dynamic key', () => {
+    uiFields.setTapHold(at(0, 1), { holdDelayMs: 300 });
+    uiFields.setToggle(at(0, 1), { trigger: 'release', state: true });
+    uiFields.setNullBind(at(0, 2), NULL_BIND);
+
+    uiFields.forgetDynamicKey({ kind: 'modTap', tap: 4, hold: 5, durationMs: 1, target: at(0, 1) });
+    expect(uiFieldsStore.getState().tapHold).toEqual({});
+    expect(uiFieldsStore.getState().toggle['0:1']).toBeDefined();
+
+    uiFields.forgetDynamicKey({
+      kind: 'mutex',
+      bindings: [4, 5],
+      mode: 1,
+      targets: [at(0, 2), at(0, 3)],
+    });
+    expect(uiFieldsStore.getState().nullBind).toEqual({});
+  });
+
   it('serves the hooks and follows updates', () => {
     const tapHold = renderHook(() => useTapHoldFields(at(0, 5)));
     const toggle = renderHook(() => useToggleFields(at(0, 5)));

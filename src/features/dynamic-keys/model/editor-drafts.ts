@@ -146,16 +146,13 @@ export function strokeDraft(target: KeyLocation, editor: DksEditorState): Dynami
 // ---------------------------------------------------------------------------------------------
 // Null bind
 
+/** What the null-bind editor edits before Apply (the rest is the pair's remembered fields). */
 export interface NullBindDraft {
   readonly behavior: NullBindBehavior;
   /** 0 while "Alternative Bottom Out Behavior" is off, else the committed bottom-out point. */
   readonly bottomOutMm: number;
   /** The bottom-out slider's position (committed into `bottomOutMm` on release). */
   readonly uiBottomOutMm: number;
-  readonly actuationMm: number;
-  readonly rtDown: number;
-  readonly rtUp: number;
-  readonly continuous: boolean;
 }
 
 /** The distance bottom-out switches on at (Svelte `SWITCH_DISTANCE`). */
@@ -165,6 +162,11 @@ export const NULL_BIND_DRAFT: NullBindDraft = {
   behavior: 0,
   bottomOutMm: 0,
   uiBottomOutMm: NULL_BIND_SWITCH_DISTANCE_MM,
+};
+
+/** The remembered fields of a pair nothing is remembered for (the Svelte editor's defaults). */
+export const NULL_BIND_FIELD_DEFAULTS: NullBindFields = {
+  bottomOutMm: 0,
   actuationMm: 1.5,
   rtDown: 0,
   rtUp: 0,
@@ -172,8 +174,20 @@ export const NULL_BIND_DRAFT: NullBindDraft = {
 };
 
 /**
- * A pair whose first key runs a mutex loads it: behavior and bottom-out switch from the device's
- * mode byte (D13), the rest from session memory.
+ * A mutex's bottom-out point: 0 unless its mode byte reports both keys when bottomed out, else the
+ * remembered point (4.0 mm when none is remembered).
+ */
+export function mutexBottomOutMm(
+  mutex: DynamicKeyOf<'mutex'>,
+  fields: NullBindFields | undefined
+): number {
+  if (!mutexReportsBothOnBottomOut(mutex.mode)) return 0;
+  return fields?.bottomOutMm || NULL_BIND_SWITCH_DISTANCE_MM;
+}
+
+/**
+ * A pair whose first key runs a mutex loads its behavior and bottom-out switch from the device's
+ * mode byte (D13), with the remembered bottom-out point; other pairs keep the editor's values.
  */
 export function loadNullBindDraft(
   mutex: DynamicKeyOf<'mutex'> | null,
@@ -181,17 +195,11 @@ export function loadNullBindDraft(
   previous: NullBindDraft
 ): NullBindDraft {
   if (!mutex) return previous;
-  const bottomOutMm = mutexReportsBothOnBottomOut(mutex.mode)
-    ? fields?.bottomOutMm || NULL_BIND_SWITCH_DISTANCE_MM
-    : 0;
+  const bottomOutMm = mutexBottomOutMm(mutex, fields);
   return {
     behavior: mutexModeToBehavior(mutex.mode),
     bottomOutMm,
     uiBottomOutMm: bottomOutMm > 0 ? bottomOutMm : previous.uiBottomOutMm,
-    actuationMm: fields?.actuationMm ?? NULL_BIND_DRAFT.actuationMm,
-    rtDown: fields?.rtDown ?? NULL_BIND_DRAFT.rtDown,
-    rtUp: fields?.rtUp ?? NULL_BIND_DRAFT.rtUp,
-    continuous: fields?.continuous ?? NULL_BIND_DRAFT.continuous,
   };
 }
 
@@ -220,15 +228,17 @@ export function mutexDraft(
   };
 }
 
-/** The UI-only fields a null-bind apply remembers for the pair (Svelte config object). */
-export function nullBindFields(draft: NullBindDraft): NullBindFields {
-  return {
-    bottomOutMm: draft.bottomOutMm,
-    actuationMm: draft.actuationMm,
-    rtDown: draft.rtDown,
-    rtUp: draft.rtUp,
-    continuous: draft.continuous,
-  };
+/**
+ * The fields an Apply remembers for the pair: the bottom-out point, and the pair's current values
+ * of the rest. Like the Svelte configuration object it replaces, it drops the performance tab's
+ * deactivation and deadzones.
+ */
+export function nullBindFieldsOnApply(
+  draft: NullBindDraft,
+  current: NullBindFields | undefined
+): NullBindFields {
+  const { actuationMm, rtDown, rtUp, continuous } = current ?? NULL_BIND_FIELD_DEFAULTS;
+  return { bottomOutMm: draft.bottomOutMm, actuationMm, rtDown, rtUp, continuous };
 }
 
 /** State of the null-bind performance tab (Svelte `NullBindPerformanceTab`). */

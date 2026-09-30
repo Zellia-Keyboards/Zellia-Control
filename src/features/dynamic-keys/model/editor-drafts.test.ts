@@ -9,6 +9,7 @@ import { DksAction } from './dks-bitmap';
 import { encodeKeyControl } from './dks-codec';
 import {
   NULL_BIND_DRAFT,
+  NULL_BIND_FIELD_DEFAULTS,
   NULL_BIND_PERFORMANCE_DEFAULTS,
   TAP_HOLD_DRAFT,
   TOGGLE_DRAFT,
@@ -18,7 +19,9 @@ import {
   loadTapHoldDraft,
   loadToggleDraft,
   modTapDraft,
+  mutexBottomOutMm,
   mutexDraft,
+  nullBindFieldsOnApply,
   strokeDraft,
   toggleDraft,
   withBottomOut,
@@ -177,12 +180,12 @@ describe('null-bind draft', () => {
     mode,
     targets: [at(0, 1), at(0, 3)],
   });
+  const FIELDS = { bottomOutMm: 3.2, actuationMm: 2, rtDown: 0.3, rtUp: 0.2, continuous: true };
 
-  it('starts with last input, bottom-out off, 1.5 mm actuation and no rapid trigger', () => {
-    expect(NULL_BIND_DRAFT).toEqual({
-      behavior: 0,
+  it('starts with last input and bottom-out off', () => {
+    expect(NULL_BIND_DRAFT).toEqual({ behavior: 0, bottomOutMm: 0, uiBottomOutMm: 4 });
+    expect(NULL_BIND_FIELD_DEFAULTS).toEqual({
       bottomOutMm: 0,
-      uiBottomOutMm: 4,
       actuationMm: 1.5,
       rtDown: 0,
       rtUp: 0,
@@ -197,31 +200,29 @@ describe('null-bind draft', () => {
       behavior: 3,
     });
     const key2 = mutex(mutexMode(DynamicKeyMutexMode.DKMutexKey2Priority, true));
-    expect(loadNullBindDraft(key2, undefined, NULL_BIND_DRAFT)).toMatchObject({
+    expect(loadNullBindDraft(key2, undefined, NULL_BIND_DRAFT)).toEqual({
       behavior: 2,
       bottomOutMm: 4,
       uiBottomOutMm: 4,
     });
   });
 
-  it('loads the UI-only fields from session memory', () => {
+  it('loads the remembered bottom-out point while the switch is on', () => {
     const flagged = mutex(mutexMode(DynamicKeyMutexMode.DKMutexDistancePriority, true));
-    const fields = { bottomOutMm: 3.2, actuationMm: 2, rtDown: 0.3, rtUp: 0.2, continuous: true };
-    expect(loadNullBindDraft(flagged, fields, NULL_BIND_DRAFT)).toEqual({
+    expect(loadNullBindDraft(flagged, FIELDS, NULL_BIND_DRAFT)).toEqual({
       behavior: 4,
       bottomOutMm: 3.2,
       uiBottomOutMm: 3.2,
-      actuationMm: 2,
-      rtDown: 0.3,
-      rtUp: 0.2,
-      continuous: true,
     });
+    expect(mutexBottomOutMm(flagged, FIELDS)).toBe(3.2);
     // The switch follows the device: a remembered distance does not turn it on.
     const plain = mutex(DynamicKeyMutexMode.DKMutexLastPriority);
-    expect(loadNullBindDraft(plain, fields, NULL_BIND_DRAFT)).toMatchObject({
+    expect(loadNullBindDraft(plain, FIELDS, { ...NULL_BIND_DRAFT, uiBottomOutMm: 3 })).toEqual({
+      behavior: 0,
       bottomOutMm: 0,
-      uiBottomOutMm: 4,
+      uiBottomOutMm: 3,
     });
+    expect(mutexBottomOutMm(plain, FIELDS)).toBe(0);
   });
 
   it('keeps the editor values for keys without a mutex', () => {
@@ -231,8 +232,9 @@ describe('null-bind draft', () => {
 
   it('turns bottom-out on at 4.0 mm and off again', () => {
     const on = withBottomOut(NULL_BIND_DRAFT, true);
-    expect(on).toMatchObject({ bottomOutMm: 4, uiBottomOutMm: 4 });
-    expect(withBottomOut({ ...on, uiBottomOutMm: 3 }, false)).toMatchObject({
+    expect(on).toEqual({ behavior: 0, bottomOutMm: 4, uiBottomOutMm: 4 });
+    expect(withBottomOut({ ...on, uiBottomOutMm: 3 }, false)).toEqual({
+      behavior: 0,
       bottomOutMm: 0,
       uiBottomOutMm: 3,
     });
@@ -249,6 +251,17 @@ describe('null-bind draft', () => {
     expect(
       mutexDraft(targets, [A, B], { ...NULL_BIND_DRAFT, behavior: 0, bottomOutMm: 3 })
     ).toMatchObject({ mode: mutexMode(DynamicKeyMutexMode.DKMutexLastPriority, true) });
+  });
+
+  it('remembers the bottom-out point and the pair’s current values on Apply', () => {
+    const draft = { behavior: 2 as const, bottomOutMm: 3.5, uiBottomOutMm: 3.5 };
+    expect(nullBindFieldsOnApply(draft, undefined)).toEqual({
+      ...NULL_BIND_FIELD_DEFAULTS,
+      bottomOutMm: 3.5,
+    });
+    expect(
+      nullBindFieldsOnApply(draft, { ...FIELDS, deactivationMm: 1, upperDeadzoneMm: 0.2 })
+    ).toEqual({ ...FIELDS, bottomOutMm: 3.5 });
   });
 });
 

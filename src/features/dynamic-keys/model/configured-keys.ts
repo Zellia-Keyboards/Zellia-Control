@@ -152,6 +152,47 @@ export function dashboardRows(dynamicKeys: readonly DynamicKeySlot[]): Dashboard
   });
 }
 
+/**
+ * A dynamic key's content as a string, equal for equal content: editors reload their draft when
+ * it changes (a device reload creates new but often equal objects).
+ */
+export function dynamicKeySignature(dynamicKey: ConfiguredDynamicKey | null): string {
+  if (!dynamicKey) return '';
+  const location = (target: KeyLocation | null) => (target ? locationKey(target) : '-');
+  switch (dynamicKey.kind) {
+    case 'stroke': {
+      const { pressBegin, pressFully, releaseBegin, releaseFully } = dynamicKey.distances;
+      return [
+        'stroke',
+        ...dynamicKey.bindings,
+        ...dynamicKey.keyControl,
+        pressBegin,
+        pressFully,
+        releaseBegin,
+        releaseFully,
+        location(dynamicKey.target),
+      ].join(',');
+    }
+    case 'modTap':
+      return [
+        'modTap',
+        dynamicKey.tap,
+        dynamicKey.hold,
+        dynamicKey.durationMs,
+        location(dynamicKey.target),
+      ].join(',');
+    case 'toggle':
+      return ['toggle', dynamicKey.binding, location(dynamicKey.target)].join(',');
+    case 'mutex':
+      return [
+        'mutex',
+        ...dynamicKey.bindings,
+        dynamicKey.mode,
+        ...dynamicKey.targets.map(location),
+      ].join(',');
+  }
+}
+
 /** The keycode `dynamicKey` gives back to `location` when it is removed (mutex: per key). */
 function bindingFor(dynamicKey: ConfiguredDynamicKey, location: KeyLocation): Keycode {
   switch (dynamicKey.kind) {
