@@ -11,8 +11,9 @@ export interface ParityScenario {
   /** Path to open, relative to the app root, e.g. `/` or `/remap/`. */
   readonly path: string;
   /**
-   * Brings the page into the captured state after navigation. Runs unchanged against both apps,
-   * so it must rely on what they share: visible copy, roles and structure.
+   * Brings the page into the captured state after navigation. Runs unchanged against both apps
+   * and in every variant (including zh), so it must rely on what they share: roles, structure,
+   * or copy matched in both languages.
    */
   readonly setup?: (page: Page) => Promise<void>;
   /** Inject the virtual keyboard (navigator.hid) before the page loads. */

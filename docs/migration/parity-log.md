@@ -1,0 +1,55 @@
+# Visual parity log
+
+The React app must look, read and animate exactly like the intended Svelte UI
+(baseline commit `4f232a2`). Every visible difference between the two is either
+fixed or recorded here, with before/after screenshots from the parity harness
+(see [Visual parity](../development.md#visual-parity)).
+
+## How to record a deviation
+
+1. Run `corepack yarn parity` (or `--grep <scenario>`) and open
+   `e2e/.artifacts/parity/index.html`.
+2. For a difference that is intended, copy its captures into
+   `docs/migration/parity/` as `<id>-before.png` (from `captures/baseline/`) and
+   `<id>-after.png` (from `captures/react/`), where `<id>` is the log id in
+   lower case, e.g. `pl-007-before.png`.
+3. Add or update a row below: the capture id(s) it covers, what differs and why
+   (spec decision or bug), and the screenshots. Anything not listed here is a
+   bug in the React app.
+
+Status values: **planned** (decided, screen not ported yet), **logged**
+(ported, screenshots attached), **reverted** (parity restored).
+
+## Template
+
+| ID     | Screen / route | State and captures                         | Deviation                     | Reason                  | Before                             | After                            | Status |
+| ------ | -------------- | ------------------------------------------ | ----------------------------- | ----------------------- | ---------------------------------- | -------------------------------- | ------ |
+| PL-NNN | `/route/`      | state; `scenario--theme-lang-WxH` captures | what is visibly different now | spec ref, bug or ticket | [before](parity/pl-nnn-before.png) | [after](parity/pl-nnn-after.png) | logged |
+
+## Deviations
+
+Decided in the design spec
+([§1, §3, §8](../superpowers/specs/2026-09-30-react-rewrite-design.md)). The
+Svelte app shows these screens wrong because of bugs; the React app shows what
+they were built to show. Screenshots are added when the screen is ported.
+
+| ID     | Screen / route                         | State and captures                         | Deviation                                                                                                                                                      | Reason                                     | Before  | After   | Status  |
+| ------ | -------------------------------------- | ------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------ | ------- | ------- | ------- |
+| PL-001 | all routes                             | any                                        | Raw i18n keys (e.g. `ui.save`, `advancedkey.deleteKey`, `advancedkey.trigger`) render as text instead of their translation.                                    | §1.1, D17: six missing keys added (en, zh) | pending | pending | planned |
+| PL-002 | sidebar                                | connected                                  | The Save button reads "Save" / "保存" (was the raw key `ui.save`) and actually saves.                                                                          | §8 Shell, D9, D17                          | pending | pending | planned |
+| PL-003 | `/` → `/remap/`                        | connecting                                 | "Loading configurator…" stays until the keyboard's first configuration arrives (no flash of controller defaults); no reply within 3 s shows the error message. | D2                                         | pending | pending | planned |
+| PL-004 | `/`                                    | device unplugged while connected           | Returns to the connection screen (was ignored).                                                                                                                | D3                                         | pending | pending | planned |
+| PL-005 | `/performance/`                        | connected, keys selected                   | Keycaps show each key's values (were blank); selecting a key shows its stored actuation instead of overwriting it with 2.0 mm.                                 | §2, D12                                    | pending | pending | planned |
+| PL-006 | `/lighting/`                           | connected, base panel                      | Speed shows the device value as `{n}%` (1–100; was ×1000, e.g. "20000%").                                                                                      | D11                                        | pending | pending | planned |
+| PL-007 | `/lighting/`                           | rainbow preset applied                     | Per-key rainbow colours follow the real layout geometry (upstream formula).                                                                                    | D11                                        | pending | pending | planned |
+| PL-008 | `/remap/`                              | Profile tab                                | `↔ PF`, `↔ PF1`, `→ PF`, `← PF` stay visible but are inert; "NKRO Toggle" and `↔ PF1` no longer assign Reboot, so keycap labels show the intended action.      | D8                                         | pending | pending | planned |
+| PL-009 | `/dynamic/`                            | dashboard and each mode's configured table | Configured keys and counts come from the keyboard's dynamic keys (were an in-memory list); delete/reset remove them from the device.                           | §8 Dynamic keys, D5                        | pending | pending | planned |
+| PL-010 | `/dynamic/` tap-hold                   | new tap-hold key                           | Default hold action is Left Ctrl (was the invalid code `0xE0`).                                                                                                | D15                                        | pending | pending | planned |
+| PL-011 | `/debug/`                              | Key Tracking with a key selected           | The travel chart plots live samples (never plotted).                                                                                                           | D16                                        | pending | pending | planned |
+| PL-012 | `/settings/`                           | Bootloader or Factory Reset clicked        | A confirmation modal (styled like the profiles `ConfirmationModal`) appears first; Restart stays single-click.                                                 | §1.3, §8 Settings                          | pending | pending | planned |
+| PL-013 | toolbar profile dropdown, `/profiles/` | connected, after a device profile switch   | The active profile follows the keyboard's profile index (1–4); activating 1–4 switches the keyboard's profile.                                                 | D7                                         | pending | pending | planned |
+
+## Known capture noise
+
+Differences that come from the capture itself rather than from the apps
+(for example anti-aliasing that pixelmatch does not classify). None so far.
