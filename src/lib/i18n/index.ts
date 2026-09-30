@@ -6,6 +6,7 @@
  * components stay hard-coded (parity), only dictionary keys are translated.
  */
 import { Fragment, createElement, useCallback, useSyncExternalStore, type ReactNode } from 'react';
+import { createSignal } from '../signal';
 import { readString, writeString } from '../storage';
 import { en, type TranslationKey } from './en';
 import { zh } from './zh';
@@ -67,9 +68,7 @@ export function translateRich(
 
 // --- Language store -------------------------------------------------------------------------
 
-type Listener = () => void;
-
-const listeners = new Set<Listener>();
+const languageChanged = createSignal();
 let current: Language | undefined;
 
 function readPersistedLanguage(): Language {
@@ -91,9 +90,7 @@ export function setLanguage(language: Language): void {
   applyDocumentLanguage(language);
   if (language === getLanguage()) return;
   current = language;
-  listeners.forEach(listener => {
-    listener();
-  });
+  languageChanged.emit();
 }
 
 export function toggleLanguage(): void {
@@ -105,15 +102,8 @@ export function bootstrapLanguage(): void {
   applyDocumentLanguage(getLanguage());
 }
 
-function subscribe(listener: Listener): () => void {
-  listeners.add(listener);
-  return () => {
-    listeners.delete(listener);
-  };
-}
-
 function useCurrentLanguage(): Language {
-  return useSyncExternalStore(subscribe, getLanguage);
+  return useSyncExternalStore(languageChanged.subscribe, getLanguage);
 }
 
 export function useLanguage(): {
