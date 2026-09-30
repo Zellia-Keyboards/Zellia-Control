@@ -37,6 +37,15 @@ describe('key selection', () => {
     expect(selected()).toEqual([]);
   });
 
+  it('leaves the state alone when the key count does not change', () => {
+    keySelection.setTotalKeys(4);
+    const before = keySelectionStore.getState();
+
+    keySelection.setTotalKeys(4);
+
+    expect(keySelectionStore.getState()).toBe(before);
+  });
+
   it('stores the 1-based layer and the selection permission', () => {
     expect(keySelectionStore.getState().layer).toBe(1);
     keySelection.setLayer(3);
