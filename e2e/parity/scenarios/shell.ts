@@ -96,6 +96,8 @@ const scenarios: readonly ParityScenario[] = [
       await page.getByRole('button', { name: GET_STARTED }).click();
       await page.getByText('No compatible keyboards found').waitFor();
       await parkPointer(page);
+      // The connection screen is shown afresh: let its entrance animations end.
+      await page.waitForTimeout(1000);
     },
   },
   {
