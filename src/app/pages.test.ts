@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
+import staticHostingSource from '../../scripts/static-hosting.ts?raw';
 import { PAGE_PATHS, lacksTrailingSlash, preloadPage, type PageLoaders } from './pages';
 
 function spyLoaders(): PageLoaders {
@@ -15,6 +16,18 @@ function spyLoaders(): PageLoaders {
     profiles: loader(),
   };
 }
+
+/** `STATIC_ROUTES` of scripts/static-hosting.ts (a node module, read as text here). */
+function staticRoutes(): string[] {
+  const list = /export const STATIC_ROUTES = \[([^\]]*)\]/.exec(staticHostingSource)?.[1] ?? '';
+  return [...list.matchAll(/'([^']*)'/g)].map(([, route]) => route ?? '');
+}
+
+describe('PAGE_PATHS', () => {
+  it('lists the routes the static host copies index.html to', () => {
+    expect([...PAGE_PATHS].sort()).toEqual(staticRoutes().sort());
+  });
+});
 
 describe('lacksTrailingSlash', () => {
   it('is true for page URLs without the trailing slash only', () => {

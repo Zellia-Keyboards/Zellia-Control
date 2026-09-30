@@ -1,6 +1,7 @@
 /**
  * The app's pages, each served at `/<path>/` and lazy-loaded from its feature. The static host
- * needs an `index.html` copy per path: keep `STATIC_ROUTES` (scripts/static-hosting.ts) in sync.
+ * needs an `index.html` copy per path: `STATIC_ROUTES` (scripts/static-hosting.ts) must list the
+ * same paths (pages.test.ts checks it).
  */
 import type { ComponentType } from 'react';
 
