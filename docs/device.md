@@ -38,7 +38,7 @@ UI components ──hooks──▶ device store (immutable DeviceState)
 | `deviceSession`                                                    | The app's session, bound lazily to `navigator.hid` on `connect()`.                        |
 | `useConnection()`, `useIsReady()`, `useModel()`, `useDeviceName()` | Connection state slices.                                                                  |
 | `useDeviceConfig()`                                                | The loaded `DeviceConfig` (`null` before the first load).                                 |
-| `useDeviceStore(selector)`, `deviceStore`                          | Any other slice (`saving`, `reloading`, `lastError`, `feature`, `firmware`).              |
+| `useDeviceStore(selector)`, `deviceStore`                          | Any other slice (`saving`, `unsaved`, `reloading`, `lastError`, `feature`, `firmware`).   |
 | `subscribeDebugSamples(listener)`                                  | Samples of the key being debugged (see _Debug stream_).                                   |
 | `createDeviceSession(options)`                                     | A separate session (tests, tools); takes its own `hid`, store, models, timeouts.          |
 | types                                                              | `DeviceConfig`, `DynamicKeySlot`, `KeyLocation`, `ConnectionState`, … (`model/types.ts`). |
@@ -87,18 +87,23 @@ the store. None throws: a rejected or failed command sets `lastError` (`{ operat
 and logs it. Edits are rejected while disconnected or while the keyboard reloads its
 configuration.
 
-| Command                                                    | Effect                                                                                                                                               |
-| ---------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `setKeycodes(layer, keyIds, keycode)`                      | Keymap entries; sent in contiguous runs of ≤ 27 codes. Overwriting a dynamic key's key releases that dynamic key (D4).                               |
-| `setAdvancedKeys(keyIds, config)`                          | Advanced-key settings per key (calibration mode and sensor bounds are kept).                                                                         |
-| `setRgbBase(config)` / `setRgbKeys(entries)`               | Lighting base config / per-key configs.                                                                                                              |
-| `applyDynamicKey(draft)`                                   | Writes a dynamic key to its key's slot or the first free one and binds its keys (D6); returns the slot, or `null` when rejected (e.g. no free slot). |
-| `removeDynamicKey(slot)` / `removeDynamicKeysOfKind(kind)` | Frees slots and restores each key to the dynamic key's own binding (D5).                                                                             |
-| `save()`                                                   | `controller.save()` then `flash()` (D9); concurrent calls share one save; waits for a reload in progress.                                            |
-| `switchProfile(index)`                                     | 0-based; resolves when the keyboard has reloaded that profile.                                                                                       |
-| `systemReset()`, `enterBootloader()`, `factoryReset()`     | Keyboard operations; a factory reset waits for the keyboard to reload its defaults.                                                                  |
-| `startDebug(keyId)` / `stopDebug()`                        | Debug streaming of one key (D16).                                                                                                                    |
-| `detectBootloader(silent)`                                 | The DFU bootloader (see _Firmware update_).                                                                                                          |
+Lighting edits are the exception: `setRgbBase` and `setRgbKeys` are staged and send nothing, and
+`save()` writes them with the rest of the configuration (as upstream's toolbar Apply does). Every
+edit that changes the configuration sets `unsaved`; a load clears it, and so does a successful
+save that included the last edit.
+
+| Command                                                    | Effect                                                                                                                                                             |
+| ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `setKeycodes(layer, keyIds, keycode)`                      | Keymap entries; sent in contiguous runs of ≤ 27 codes. Overwriting a dynamic key's key releases that dynamic key (D4).                                             |
+| `setAdvancedKeys(keyIds, config)`                          | Advanced-key settings per key (calibration mode and sensor bounds are kept).                                                                                       |
+| `setRgbBase(config)` / `setRgbKeys(entries)`               | Lighting base config / per-key configs; staged until `save()`.                                                                                                     |
+| `applyDynamicKey(draft)`                                   | Writes a dynamic key to its key's slot or the first free one and binds its keys (D6); returns the slot, or `null` when rejected (e.g. no free slot).               |
+| `removeDynamicKey(slot)` / `removeDynamicKeysOfKind(kind)` | Frees slots and restores each key to the dynamic key's own binding (D5).                                                                                           |
+| `save()`                                                   | `controller.save()` then `flash()` (D9); concurrent calls share one save; waits for a reload in progress; clears `unsaved` unless an edit came in during the save. |
+| `switchProfile(index)`                                     | 0-based; resolves when the keyboard has reloaded that profile.                                                                                                     |
+| `systemReset()`, `enterBootloader()`, `factoryReset()`     | Keyboard operations; a factory reset waits for the keyboard to reload its defaults.                                                                                |
+| `startDebug(keyId)` / `stopDebug()`                        | Debug streaming of one key (D16).                                                                                                                                  |
+| `detectBootloader(silent)`                                 | The DFU bootloader (see _Firmware update_).                                                                                                                        |
 
 **Slot numbers are not stable.** libamp stops scanning dynamic keys at the first empty slot, so
 the session keeps the used slots contiguous from 0: freeing a slot moves the highest dynamic key

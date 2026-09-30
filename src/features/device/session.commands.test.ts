@@ -311,21 +311,24 @@ describe('lighting', () => {
     brightness: 200,
   };
 
-  it('sends the base configuration', async () => {
+  it('stages the base configuration until save()', async () => {
     const h = await connected();
+    const before = structuredClone(h.vk.state.active.rgbBase);
     h.session.setRgbBase(BASE);
     expect(configOf(h).rgbBase).toEqual(BASE);
-    await settle();
-    expect(sets(h)).toEqual([expect.objectContaining({ kind: 'rgbBase', config: BASE })]);
-    expect(h.vk.state.active.rgbBase).toEqual(BASE);
-
-    h.vk.clearHistory();
-    h.session.setRgbBase({ ...BASE });
+    expect(readDeviceConfig(h.controller()).rgbBase).toEqual(BASE);
+    expect(h.state().unsaved).toBe(true);
     await settle();
     expect(wire(h)).toEqual([]);
+    expect(h.vk.state.active.rgbBase).toEqual(before);
+
+    await h.session.save();
+    await settle();
+    expect(h.vk.state.active.rgbBase).toEqual(BASE);
+    expect(h.vk.state.profiles[0]?.rgbBase).toEqual(BASE);
   });
 
-  it('sends one packet per changed key; the last entry for a key wins', async () => {
+  it('stages per-key configurations until save(); the last entry for a key wins', async () => {
     const h = await connected();
     const trigger: RgbKeyConfig = {
       mode: RGBMode.RgbModeTrigger,
@@ -337,6 +340,7 @@ describe('lighting', () => {
       color: { red: 1, green: 1, blue: 1 },
       speed: 5,
     };
+    const before = structuredClone(h.vk.state.active.rgbKeys);
     const unchanged = configOf(h).rgbKeys[12];
     h.session.setRgbKeys([
       { keyId: 4, config: trigger },
@@ -346,13 +350,25 @@ describe('lighting', () => {
     ]);
     expect(configOf(h).rgbKeys[4]).toEqual(jelly);
     expect(configOf(h).rgbKeys[8]).toEqual(trigger);
+    expect(readDeviceConfig(h.controller()).rgbKeys).toEqual(configOf(h).rgbKeys);
     await settle();
-    expect(sets(h)).toEqual([
-      expect.objectContaining({ kind: 'rgbConfig', entries: [{ index: 4, config: jelly }] }),
-      expect.objectContaining({ kind: 'rgbConfig', entries: [{ index: 8, config: trigger }] }),
-    ]);
+    expect(wire(h)).toEqual([]);
+    expect(h.vk.state.active.rgbKeys).toEqual(before);
+
+    await h.session.save();
+    await settle();
     expect(h.vk.state.active.rgbKeys[4]).toEqual(jelly);
     expect(h.vk.state.active.rgbKeys[8]).toEqual(trigger);
+    expect(h.vk.state.active.rgbKeys[12]).toEqual(before[12]);
+  });
+
+  it('changes nothing for an unchanged configuration', async () => {
+    const h = await connected();
+    const key = configOf(h).rgbKeys[3];
+    if (!key) throw new Error('No RGB key 3');
+    h.session.setRgbBase({ ...configOf(h).rgbBase });
+    h.session.setRgbKeys([{ keyId: 3, config: { ...key } }]);
+    expect(h.state().unsaved).toBe(false);
   });
 
   it('rejects invalid colours and unknown keys', async () => {
@@ -378,6 +394,7 @@ describe('lighting', () => {
     });
     await settle();
     expect(wire(h)).toEqual([]);
+    expect(h.state().unsaved).toBe(false);
   });
 });
 

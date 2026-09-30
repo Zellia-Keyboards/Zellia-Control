@@ -35,6 +35,7 @@ describe('device store', () => {
       firmware: null,
       reloading: false,
       saving: false,
+      unsaved: false,
       lastError: null,
     });
   });

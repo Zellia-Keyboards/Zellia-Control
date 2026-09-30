@@ -9,6 +9,9 @@
  * - Outside of reloads, the controller cache equals the store snapshot. Every load re-syncs the
  *   cache (with dynamic-key targets rebuilt from the keymap, D4), and every command rebuilds the
  *   parts it touches from the new snapshot, so a later `save()` writes exactly what the UI shows.
+ * - Lighting edits are staged: `setRgbBase` / `setRgbKeys` update the cache and the snapshot and
+ *   send nothing; `save()` writes them with everything else. Every other edit is sent at once.
+ *   `unsaved` is set by every edit and cleared by a load or by a save that included the last one.
  * - Edits are rejected (and recorded in `lastError`) while a reload runs: the controller is then
  *   refilling its cache, and decisions made on the old snapshot (dynamic-key slots) could clobber
  *   the new one. Profile switches and factory resets count as reloads from the request on.
@@ -134,13 +137,16 @@ export interface DeviceSession {
   disconnect(): void;
   /**
    * `controller.save()` then `controller.flash()` (D9), after any reload in progress; concurrent
-   * calls share one save. Never rejects: failures are recorded in `lastError`.
+   * calls share one save. Clears `unsaved` unless an edit came in after the save read the
+   * configuration. Never rejects: failures are recorded in `lastError`.
    */
   save(): Promise<void>;
   setKeycodes(layer: number, keyIds: readonly number[], keycode: Keycode): void;
   /** Keeps each key's calibration mode and sensor bounds: the firmware ignores host writes. */
   setAdvancedKeys(keyIds: readonly number[], config: AdvancedKeyConfig): void;
+  /** Staged until `save()`: updates the snapshot and the controller cache, sends nothing. */
   setRgbBase(config: RgbBaseConfig): void;
+  /** Staged until `save()`, like `setRgbBase`; the last entry for a key wins. */
   setRgbKeys(entries: readonly { keyId: number; config: RgbKeyConfig }[]): void;
   /**
    * Writes the draft to its key's slot or the first free one (D6); null when rejected. Slot
@@ -315,6 +321,8 @@ interface Connection {
   reloading: boolean;
   /** Completed loads, to tell which load answered a request. */
   loads: number;
+  /** Edits that changed the snapshot, to tell whether a save included the last one. */
+  edits: number;
   /** Re-evaluated after every connection event. */
   readonly waiters: Set<() => void>;
   readonly unsubscribers: (() => void)[];
@@ -473,6 +481,7 @@ class Session implements DeviceSession {
       opening: true,
       reloading: false,
       loads: 0,
+      edits: 0,
       waiters: new Set(),
       unsubscribers: [],
       settled,
@@ -586,7 +595,7 @@ class Session implements DeviceSession {
     connection.loads += 1;
     const ready =
       connection.phase.kind === 'ready' ? connection.phase : this.#enterReady(connection);
-    this.#patch({ connection: ready.state, config, ...snapshot });
+    this.#patch({ connection: ready.state, config, ...snapshot, unsaved: false });
     connection.settle();
     this.#notify(connection);
   }
@@ -650,6 +659,12 @@ class Session implements DeviceSession {
 
   #patch(partial: Partial<DeviceState>): void {
     this.#store.setState(deepFreeze({ ...this.#store.getState(), ...partial }), true);
+  }
+
+  /** Publishes an edited snapshot, which the keyboard does not store yet. */
+  #commitEdit(connection: Connection, next: DeviceConfig): void {
+    connection.edits += 1;
+    this.#patch({ config: next, unsaved: true });
   }
 
   #syncReloading(connection: Connection): void {
@@ -786,7 +801,7 @@ class Session implements DeviceSession {
             controller.send_advanced_key_packet(id, toControllerAdvancedKey(key))
       )
     );
-    this.#patch({ config: next });
+    this.#commitEdit(connection, next);
   }
 
   setRgbBase(config: RgbBaseConfig): void {
@@ -803,12 +818,9 @@ class Session implements DeviceSession {
     if (isEqual(rgbBase, current.rgbBase)) return;
 
     const next = deepFreeze({ ...current, rgbBase });
-    const { controller } = connection;
-    controller.set_rgb_base_config(toControllerRgbBase(next.rgbBase));
-    this.#send(connection, 'setRgbBase', [
-      () => controller.send_rgb_base_packet(toControllerRgbBase(next.rgbBase)),
-    ]);
-    this.#patch({ config: next });
+    // Staged: save() writes it, with the per-key lighting (7 keys per packet).
+    connection.controller.set_rgb_base_config(toControllerRgbBase(next.rgbBase));
+    this.#commitEdit(connection, next);
   }
 
   setRgbKeys(entries: readonly { keyId: number; config: RgbKeyConfig }[]): void {
@@ -835,18 +847,9 @@ class Session implements DeviceSession {
       ...current,
       rgbKeys: current.rgbKeys.map((config, keyId) => updates.get(keyId) ?? config),
     });
-    const { controller } = connection;
-    controller.set_rgb_configs(next.rgbKeys.map(toControllerRgbConfig));
-    this.#send(
-      connection,
-      'setRgbKeys',
-      [...updates].map(
-        ([keyId, config]) =>
-          () =>
-            controller.send_rgb_packet(keyId, toControllerRgbConfig(config))
-      )
-    );
-    this.#patch({ config: next });
+    // Staged: save() writes it.
+    connection.controller.set_rgb_configs(next.rgbKeys.map(toControllerRgbConfig));
+    this.#commitEdit(connection, next);
   }
 
   applyDynamicKey(draft: DynamicKeyDraft): number | null {
@@ -931,7 +934,7 @@ class Session implements DeviceSession {
       ),
       ...change.changedSlots.filter(released).toReversed().map(slotPacket),
     ]);
-    this.#patch({ config: next });
+    this.#commitEdit(connection, next);
   }
 
   save(): Promise<void> {
@@ -953,6 +956,8 @@ class Session implements DeviceSession {
       if (!this.#isCurrent(connection)) return;
       const { config } = this.#store.getState();
       if (!config) return;
+      // An edit after this point may miss the save: it keeps `unsaved`.
+      const edits = connection.edits;
       // save() rejects dynamic keys without keys; they are unreachable anyway, so free them.
       const released = releaseIncompleteDynamicKeys(config.keymap, config.dynamicKeys);
       const next = hasChanges(released)
@@ -964,6 +969,7 @@ class Session implements DeviceSession {
       await connection.controller.save();
       if (!this.#isCurrent(connection)) return;
       connection.controller.flash();
+      if (connection.edits === edits) this.#patch({ unsaved: false });
       // save() rewrote the keyboard config bits from the load; keep debugging if it is running.
       if (phase.debug) connection.controller.start_debug();
     } catch (error) {

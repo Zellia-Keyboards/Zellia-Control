@@ -30,7 +30,7 @@ Use npm (`npm ci` to install from `package-lock.json`, `npm run <script>`).
 - `src/testing/` — test setup, the virtual libamp keyboard used by unit, integration and e2e tests.
 - `e2e/` — Playwright specs.
 
-State: the device is the source of truth. `DeviceSession` commands update the controller cache, send packets and patch an immutable Zustand snapshot store; components select slices. Shared UI state (key selection/layer, layout options, profiles) uses small Zustand stores; everything else is component state.
+State: the device is the source of truth. `DeviceSession` commands update the controller cache, send packets (lighting edits are staged until `save()`) and patch an immutable Zustand snapshot store; components select slices. Shared UI state (key selection/layer, layout options, profiles) uses small Zustand stores; everything else is component state.
 
 ## Conventions
 

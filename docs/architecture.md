@@ -62,7 +62,7 @@ defaults. There is no server state: the app has no backend.
 
 The device layer is described in [device.md](device.md): components read the store and change
 the keyboard only through `deviceSession` commands, which update the controller, send the
-packets and patch the store.
+packets (lighting edits wait for `save()`) and patch the store.
 
 ## Routing
 
