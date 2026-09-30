@@ -142,7 +142,10 @@ corepack yarn parity --force-baseline   # rebuild the baseline first
 The pipeline prepares and serves the baseline, runs the Playwright project
 `parity` (which builds and previews this app) and compares. The steps also run
 alone: `parity:baseline` (prepare and serve), `parity:capture` (needs the
-baseline on :4180) and `parity:compare`.
+baseline on :4180) and `parity:compare`. Every capture run first empties
+`captures/` (project `parity-setup`, which `--grep` does not filter), so the
+report always covers exactly the latest capture run, e.g. only the scenarios a
+`--grep` selected.
 
 Every scenario is captured in both apps in light/dark × en/zh × 1440×900 and
 2560×1440 (the `--ui-scale` breakpoint). Captures are deterministic: the same

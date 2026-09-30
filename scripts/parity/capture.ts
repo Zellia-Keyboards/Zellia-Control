@@ -1,23 +1,21 @@
 // Visual parity capture (Playwright project `parity`): opens every scenario from
 // e2e/parity/scenarios in the Svelte baseline and in this app with the same browser, viewport,
 // preferences and fonts, and writes one screenshot per app plus a JSON record per capture to
-// e2e/.artifacts/parity/captures/. scripts/parity/compare.mjs turns them into the report.
+// e2e/.artifacts/parity/captures/ (emptied first by reset-captures.ts). scripts/parity/compare.mjs
+// turns them into the report.
 //
 // Run the whole pipeline with `corepack yarn parity`; filter with Playwright's `--grep`.
 
 import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { test, type Browser, type Page } from '@playwright/test';
 import type { ParityScenario } from '../../e2e/parity/scenario';
 import { buildVirtualKeyboard } from '../build-virtual-keyboard';
 import { routeFontCache } from './font-cache';
 import { PARITY_VARIANTS, captureId, seededStorage, type ParityVariant } from './matrix';
+import { CAPTURE_DIR, FONT_CACHE_DIR } from './paths';
 import { loadScenarios } from './scenarios';
 
-const repoRoot = fileURLToPath(new URL('../..', import.meta.url));
-const CAPTURE_DIR = path.join(repoRoot, 'e2e/.artifacts/parity/captures');
-const FONT_CACHE_DIR = path.join(repoRoot, 'e2e/.artifacts/font-cache');
 const BASELINE_URL = process.env.PARITY_BASELINE_URL ?? 'http://localhost:4180';
 
 type AppName = 'baseline' | 'react';
