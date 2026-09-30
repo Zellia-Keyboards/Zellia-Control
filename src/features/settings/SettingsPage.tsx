@@ -1,7 +1,9 @@
 import { AlertTriangle, Download, RotateCcw, Trash2, type LucideIcon } from 'lucide-react';
 import { useState, type KeyboardEvent } from 'react';
+import { useNavigate, type NavigateFunction } from 'react-router';
 import { ConfirmationModal } from '../../components/ui';
 import { deviceSession } from '../device';
+import { enterBootloaderForUpdate } from '../firmware-update';
 import { useT, type TranslationKey } from '../../lib/i18n';
 import styles from './SettingsPage.module.css';
 import { cx } from '../../lib/class-names';
@@ -48,7 +50,7 @@ interface Confirmation {
   /** Hard-coded English, like the other confirmation dialogs (profiles). */
   readonly message: string;
   readonly confirmColor: 'orange' | 'red';
-  readonly run: () => void;
+  readonly run: (navigate: NavigateFunction) => void;
 }
 
 const CONFIRMATIONS: Readonly<Record<ConfirmedAction, Confirmation>> = {
@@ -57,8 +59,10 @@ const CONFIRMATIONS: Readonly<Record<ConfirmedAction, Confirmation>> = {
     message:
       'Are you sure you want to enter bootloader mode? The keyboard will disconnect and wait for a firmware update.',
     confirmColor: 'orange',
-    run: () => {
-      deviceSession.enterBootloader();
+    // §1.8: the Update page opens with the update started, ready to flash the bootloader.
+    run: navigate => {
+      void enterBootloaderForUpdate();
+      void navigate('/update/');
     },
   },
   'factory-reset': {
@@ -72,9 +76,13 @@ const CONFIRMATIONS: Readonly<Record<ConfirmedAction, Confirmation>> = {
   },
 };
 
-/** Device settings (port of `routes/settings/+page.svelte`, plus the PL-012 confirmations). */
+/**
+ * Device settings (port of `routes/settings/+page.svelte`, plus the PL-012 confirmations; a
+ * confirmed Enter Bootloader opens the Update page, PL-026).
+ */
 export function SettingsPage() {
   const t = useT();
+  const navigate = useNavigate();
   const [confirming, setConfirming] = useState<ConfirmedAction | null>(null);
 
   const runOption = (option: SettingsOption) => {
@@ -174,7 +182,7 @@ export function SettingsPage() {
             confirmColor={confirmation.confirmColor}
             onConfirm={() => {
               setConfirming(null);
-              confirmation.run();
+              confirmation.run(navigate);
             }}
             onCancel={() => {
               setConfirming(null);
