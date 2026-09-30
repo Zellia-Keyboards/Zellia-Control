@@ -307,8 +307,9 @@ export class VirtualDfuDevice extends EventTarget implements USBDevice {
   }
 
   #ensureOpen(): void {
-    if (!this.opened)
+    if (!this.opened) {
       throw new DOMException('The device must be opened first.', 'InvalidStateError');
+    }
   }
 
   #interface(interfaceNumber: number): USBInterface {
@@ -502,9 +503,7 @@ class VirtualUsbConnectionEvent extends Event {
 function matches(device: USBDevice, filter: USBDeviceFilter): boolean {
   if (filter.vendorId !== undefined && filter.vendorId !== device.vendorId) return false;
   if (filter.productId !== undefined && filter.productId !== device.productId) return false;
-  if (filter.serialNumber !== undefined && filter.serialNumber !== device.serialNumber)
-    return false;
-  return true;
+  return filter.serialNumber === undefined || filter.serialNumber === device.serialNumber;
 }
 
 /** `navigator.usb` stand-in holding virtual DFU devices. */

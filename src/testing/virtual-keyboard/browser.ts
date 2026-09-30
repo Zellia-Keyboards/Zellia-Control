@@ -47,8 +47,9 @@ function parseVersion(value: unknown): Partial<WireVersion> | undefined {
 function parseDfu(value: unknown): VirtualDfuOptions | undefined {
   if (!isRecord(value)) return undefined;
   const dfu: VirtualDfuOptions = {};
-  if (typeof value.memoryMap === 'string' || value.memoryMap === null)
+  if (typeof value.memoryMap === 'string' || value.memoryMap === null) {
     dfu.memoryMap = value.memoryMap;
+  }
   if (isNonNegativeInteger(value.transferSize) && value.transferSize > 0) {
     dfu.transferSize = value.transferSize;
   }
@@ -77,8 +78,9 @@ export function parseBrowserOptions(value: unknown): VirtualKeyboardOptions {
   if (value.reconnectDelayMs === null || isNonNegative(value.reconnectDelayMs)) {
     options.reconnectDelayMs = value.reconnectDelayMs;
   }
-  if (isNonNegative(value.calibrationDelayMs))
+  if (isNonNegative(value.calibrationDelayMs)) {
     options.calibrationDelayMs = value.calibrationDelayMs;
+  }
   if (typeof value.authorized === 'boolean') options.authorized = value.authorized;
   if (value.picker === 'first' || value.picker === 'cancel') options.picker = value.picker;
   const dfu = parseDfu(value.dfu);
