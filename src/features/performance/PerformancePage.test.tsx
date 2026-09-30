@@ -6,6 +6,7 @@
 import { act, fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { CalibrationMode, KeyMode } from 'emi-keyboard-controller';
+import { StrictMode } from 'react';
 import { MemoryRouter } from 'react-router';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { connectVirtualKeyboard, type ConnectedKeyboard } from '../../testing/app-keyboard';
@@ -318,6 +319,28 @@ describe('PerformancePage', () => {
       await settle();
       expect(advancedKeyWrites()).toEqual([]);
     });
+  });
+
+  it('works under StrictMode, which runs its effects twice', async () => {
+    await seedKey(7, TUNED);
+    act(() => {
+      keySelection.setSelected([7, 9]);
+    });
+    render(
+      <StrictMode>
+        <MemoryRouter>
+          <PerformancePage />
+        </MemoryRouter>
+      </StrictMode>
+    );
+    expect(screen.getByText('Actuation: 2.500mm')).toBeInTheDocument();
+    await expect.poll(() => deviceKey(9).activation).toBe(deviceKey(7).activation);
+    fireEvent.change(slider('Actuation'), { target: { value: '3' } });
+    act(() => {
+      keySelection.toggleKey(11);
+    });
+    expect(storeKey(11).activation).toBe(0.75);
+    expect(screen.getByText('3 keys selected')).toBeInTheDocument();
   });
 
   describe('selection shortcuts and buttons', () => {

@@ -13,6 +13,7 @@ import {
 } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { RGBBaseMode, RGBMode } from 'emi-keyboard-controller';
+import { StrictMode } from 'react';
 import { MemoryRouter } from 'react-router';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { connectVirtualKeyboard, type ConnectedKeyboard } from '../../testing/app-keyboard';
@@ -291,6 +292,25 @@ describe('LightingPage', () => {
       'aria-pressed',
       'true'
     );
+  });
+
+  it('works under StrictMode, which renders and runs its effects twice', async () => {
+    const user = userEvent.setup();
+    render(
+      <StrictMode>
+        <MemoryRouter>
+          <LightingPage />
+        </MemoryRouter>
+      </StrictMode>
+    );
+    act(() => {
+      keySelection.setSelected([8]);
+    });
+    const key = keyPanel();
+    fireEvent.input(colorInput(key, 'Color'), { target: { value: '#00ffff' } });
+    await user.click(key.getByRole('button', { name: 'Apply' }));
+    await expect.poll(() => deviceRgbKeys()[8]?.color).toEqual(rgb(0, 255, 255));
+    expect(colorInput(key, 'Color')).toHaveValue('#ff0000');
   });
 
   it('allows key selection and toggles it with Ctrl/⌘+A and Ctrl/⌘+Escape', async () => {
