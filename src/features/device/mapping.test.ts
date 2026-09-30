@@ -204,6 +204,15 @@ describe('dynamic keys', () => {
     }
   });
 
+  it("reads a mutex's priority from the low nibble and keeps libamp's flag bits", () => {
+    const flagged = Object.assign(new DynamicKeyMutex(), { bindings: [0x04, 0x07], mode: 0xf1 });
+    const slot = toDynamicKeySlot(flagged);
+    expect(slot).toMatchObject({ kind: 'mutex', mode: 0xf1 });
+    expect(toControllerDynamicKey(slot)).toMatchObject({ mode: 0xf1 });
+    const unknown = Object.assign(new DynamicKeyMutex(), { bindings: [0x04, 0x07], mode: 0xf7 });
+    expect(toDynamicKeySlot(unknown)).toMatchObject({ mode: 0xf0 });
+  });
+
   it('never shifts a mutex target into the other position', () => {
     const mutex = (targets: readonly [KeyLocationOrNull, KeyLocationOrNull]) =>
       toControllerDynamicKey({

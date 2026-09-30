@@ -14,6 +14,7 @@ import {
   type DynamicKeyChange,
   type DynamicKeyDraft,
 } from './dynamic-key-binding';
+import { mutexMode } from './mutex-mode';
 import type { DynamicKeySlot, KeyLocation, Keymap } from './types';
 import { isEqual } from './validation';
 
@@ -264,6 +265,32 @@ describe('bindDynamicKey', () => {
       bindings: [2, 1],
       mode: DynamicKeyMutexMode.DKMutexLastPriority,
     });
+  });
+
+  it('keeps the mutex bottom-out flag, also when swapping key priority', () => {
+    const { keymap, slots } = bound();
+    const result = bindDynamicKey(keymap, slots, {
+      kind: 'mutex',
+      targets: [at(0, 9), at(0, 8)],
+      bindings: [1, 2],
+      mode: mutexMode(DynamicKeyMutexMode.DKMutexKey1Priority, true),
+    });
+    expect(result?.slots[4]).toMatchObject({ bindings: [2, 1], mode: 0xf3 });
+  });
+
+  it('rejects mutex modes with an unknown priority or outside a byte', () => {
+    const { keymap, slots } = bound();
+    const draft: DynamicKeyDraft = {
+      kind: 'mutex',
+      targets: [at(0, 8), at(0, 9)],
+      bindings: [1, 2],
+      mode: DynamicKeyMutexMode.DKMutexNeutral,
+    };
+    for (const mode of [0xf5, 0x100]) {
+      expect(() => bindDynamicKey(keymap, slots, Object.assign({}, draft, { mode }))).toThrow(
+        RangeError
+      );
+    }
   });
 
   it('clears stray references to a slot it takes over', () => {

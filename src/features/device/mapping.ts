@@ -12,7 +12,6 @@ import {
   DynamicKey,
   DynamicKeyModTap,
   DynamicKeyMutex,
-  DynamicKeyMutexMode,
   DynamicKeyStroke4x4,
   DynamicKeyToggleKey,
   DynamicKeyType,
@@ -32,6 +31,7 @@ import {
 } from 'emi-keyboard-controller';
 import type { DeviceController } from './controller';
 import { rebuildTargets } from './model/dynamic-key-binding';
+import { toMutexMode } from './model/mutex-mode';
 import { assertFraction, assertUint, clampFraction } from './model/validation';
 import type { ModelDefinition } from './models';
 import type {
@@ -64,7 +64,6 @@ const KEY_MODES = enumValues(KeyMode);
 const CALIBRATION_MODES = enumValues(CalibrationMode);
 const RGB_BASE_MODES = enumValues(RGBBaseMode);
 const RGB_MODES = enumValues(RGBMode);
-const MUTEX_MODES = enumValues(DynamicKeyMutexMode);
 const SCRIPT_LEVELS = enumValues(ScriptLevel);
 
 function asEnum<E extends number>(members: readonly E[], value: number, fallback: E): E {
@@ -188,7 +187,8 @@ export function toDynamicKeySlot(key: IDynamicKey): DynamicKeySlot {
     return {
       kind: 'mutex',
       bindings: [keycode(key.bindings[0] ?? 0), keycode(key.bindings[1] ?? 0)],
-      mode: asEnum(MUTEX_MODES, key.mode, DynamicKeyMutexMode.DKMutexDistancePriority),
+      // libamp's whole mode byte: the priority plus its bottom-out flag bits.
+      mode: toMutexMode(integer(key.mode, BYTE)),
       targets: [null, null],
     };
   }
