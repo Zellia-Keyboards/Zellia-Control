@@ -88,6 +88,7 @@ export const COMMAND_ERRORS = {
   reloading: 'The keyboard is reloading its configuration',
   noFreeSlot: 'No free dynamic key slot',
   noSuchKey: (keyId: number): string => `Key ${keyId} does not exist`,
+  noSuchSlot: (slot: number): string => `Dynamic key slot ${slot} does not exist`,
   noSuchProfile: (index: number): string => `Profile ${index} does not exist`,
 } as const;
 
@@ -143,7 +144,10 @@ export interface DeviceSession {
    * first empty slot), so freeing a slot moves the highest dynamic key down into it.
    */
   applyDynamicKey(draft: DynamicKeyDraft): number | null;
-  /** Frees the slot and restores each of its keys to the dynamic key's own binding (D5). */
+  /**
+   * Frees the slot and restores each of its keys to the dynamic key's own binding (D5). Slots that
+   * do not exist are rejected into `lastError`; an empty slot is a no-op.
+   */
   removeDynamicKey(slot: number): void;
   removeDynamicKeysOfKind(kind: Exclude<DynamicKeyKind, 'none'>): void;
   /** 0-based. Resolves once the keyboard has reloaded that profile (or failed to). */
@@ -800,6 +804,13 @@ class Session implements DeviceSession {
     const target = this.#editable('removeDynamicKey');
     if (!target) return;
     const { keymap, dynamicKeys } = target.config;
+    try {
+      assertIndex(slot, dynamicKeys.length, COMMAND_ERRORS.noSuchSlot);
+    } catch (error) {
+      this.#recordError('removeDynamicKey', error);
+      return;
+    }
+    // An existing but empty slot has nothing to remove: no packets, no error.
     const change = unbindDynamicKeys(keymap, dynamicKeys, [slot]);
     this.#applyDynamicKeyChange(target.connection, target.config, 'removeDynamicKey', change);
   }

@@ -560,6 +560,22 @@ describe('dynamic keys', () => {
     expect(h.state().lastError).toBeNull();
   });
 
+  it('rejects dynamic-key slots that do not exist', async () => {
+    const h = await connected();
+    const before = h.state().config;
+    for (const slot of [32, 99, -1, 1.5]) {
+      h.session.removeDynamicKey(slot);
+      expect(h.state().lastError).toEqual({
+        operation: 'removeDynamicKey',
+        message: COMMAND_ERRORS.noSuchSlot(slot),
+      });
+    }
+    expect(COMMAND_ERRORS.noSuchSlot(32)).toBe('Dynamic key slot 32 does not exist');
+    await settle();
+    expect(h.state().config).toBe(before);
+    expect(wire(h)).toEqual([]);
+  });
+
   it('removes every dynamic key of a kind', async () => {
     const h = await connected();
     h.session.applyDynamicKey({
