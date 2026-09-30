@@ -1,0 +1,9 @@
+/*
+ * The `:global(html)` rule of routes/+layout.svelte (a plain stylesheet: Vite drops CSS modules
+ * whose exports are unused). `#f9fafb` is what its `theme(--color-gray-50)` compiled to in the
+ * Svelte build; `--theme-color-primary` loses against app.css's `:root` rule, as it did there.
+ */
+html {
+  background-color: #f9fafb;
+  --theme-color-primary: #6366f1; /* Default Indigo, will be overridden */
+}
