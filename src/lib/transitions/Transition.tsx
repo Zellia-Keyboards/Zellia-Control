@@ -190,18 +190,28 @@ function PresenceItem({
   return <Frozen element={element} nodeRef={setNode} frozen={!present} />;
 }
 
-export interface TransitionProps<P extends object, PI extends object, PO extends object> {
+/** Either `transition:` or `in:`/`out:`, never both (Svelte rejects the mix at compile time). */
+export type TransitionDirectives<P extends object, PI extends object, PO extends object> =
+  | {
+      /** Bidirectional transition (`transition:`); reverses smoothly when interrupted. */
+      transition: TransitionSpec<P>;
+      in?: never;
+      out?: never;
+    }
+  | {
+      transition?: never;
+      /** Intro only (`in:`). */
+      in?: TransitionSpec<PI>;
+      /** Outro only (`out:`). */
+      out?: TransitionSpec<PO>;
+    };
+
+export type TransitionProps<P extends object, PI extends object, PO extends object> = {
   show: boolean;
   children: TransitionChild;
-  /** Bidirectional transition (`transition:`); reverses smoothly when interrupted. */
-  transition?: TransitionSpec<P>;
-  /** Intro only (`in:`); ignored when `transition` is set. */
-  in?: TransitionSpec<PI>;
-  /** Outro only (`out:`); ignored when `transition` is set. */
-  out?: TransitionSpec<PO>;
   /** Also play the intro when mounted already shown (Svelte `|global`). */
   appear?: boolean;
-}
+} & TransitionDirectives<P, PI, PO>;
 
 /** `{#if show}<child transition:…>{/if}` */
 export function Transition<
@@ -247,14 +257,11 @@ export function Transition<
   );
 }
 
-export interface KeyedTransitionProps<P extends object, PI extends object, PO extends object> {
+export type KeyedTransitionProps<P extends object, PI extends object, PO extends object> = {
   /** A new key replaces the child: the old one plays its outro while the new one enters. */
   transitionKey: string | number;
   children: TransitionChild;
-  transition?: TransitionSpec<P>;
-  in?: TransitionSpec<PI>;
-  out?: TransitionSpec<PO>;
-}
+} & TransitionDirectives<P, PI, PO>;
 
 interface KeyedEntry {
   readonly id: number;
