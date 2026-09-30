@@ -70,7 +70,7 @@ describe('Sidebar', () => {
     await waitFor(() => {
       expect(currentPath(router)).toBe('/');
     });
-    expect(screen.getByRole('button', { name: 'Get Started' })).toBeInTheDocument();
+    expect(await screen.findByRole('button', { name: 'Get Started' })).toBeInTheDocument();
   });
 
   it('adds a single history entry when disconnecting', async () => {
@@ -102,7 +102,7 @@ describe('Sidebar', () => {
     await waitFor(() => {
       expect(currentPath(router)).toBe('/');
     });
-    expect(screen.getByRole('button', { name: 'Get Started' })).toBeInTheDocument();
+    expect(await screen.findByRole('button', { name: 'Get Started' })).toBeInTheDocument();
   });
 
   it('links every page and marks the current one', async () => {
@@ -127,9 +127,12 @@ describe('Sidebar', () => {
     await user.click(nav.getByRole('link', { name: 'Dynamic Keys' }));
 
     await waitFor(() => {
-      expect(currentPath(router)).toBe('/dynamic/');
+      expect(nav.getByRole('link', { name: 'Dynamic Keys' })).toHaveAttribute(
+        'data-active',
+        'true'
+      );
     });
-    expect(nav.getByRole('link', { name: 'Dynamic Keys' })).toHaveAttribute('data-active', 'true');
+    expect(currentPath(router)).toBe('/dynamic/');
     expect(nav.getByRole('link', { name: 'Remap' })).not.toHaveAttribute('aria-current');
   });
 

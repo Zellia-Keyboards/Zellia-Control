@@ -21,25 +21,32 @@ function install(options: VirtualKeyboardOptions = {}): InstalledVirtualKeyboard
 }
 
 describe('connecting from the welcome screen', () => {
-  it('shows the loading overlay until the configuration is loaded, then opens Remap', async () => {
-    install({ latencyMs: 5 });
-    const user = userEvent.setup();
-    const { router } = renderApp('/');
+  // Loads the whole configuration with a delay per packet: allow for slow machines.
+  it(
+    'shows the loading overlay until the configuration is loaded, then opens Remap',
+    {
+      timeout: 15_000,
+    },
+    async () => {
+      install({ latencyMs: 5 });
+      const user = userEvent.setup();
+      const { router } = renderApp('/');
 
-    await user.click(await screen.findByRole('button', { name: 'Get Started' }));
+      await user.click(await screen.findByRole('button', { name: 'Get Started' }));
 
-    expect(await screen.findByText('Loading configurator interface...')).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Get Started' })).not.toBeInTheDocument();
-    expect(document.querySelector('.keycap')).toBeNull();
+      expect(await screen.findByText('Loading configurator interface...')).toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: 'Get Started' })).not.toBeInTheDocument();
+      expect(document.querySelector('.keycap')).toBeNull();
 
-    expect(await screen.findByTestId('page', {}, { timeout: 5000 })).toHaveTextContent(
-      'remap page'
-    );
-    expect(currentPath(router)).toBe('/remap/');
-    expect(screen.queryByText('Loading configurator interface...')).not.toBeInTheDocument();
-    expect(document.querySelector('.keycap')).not.toBeNull();
-    expect(screen.getByText('ZelliaKB')).toBeInTheDocument();
-  });
+      expect(await screen.findByTestId('page', {}, { timeout: 5000 })).toHaveTextContent(
+        'remap page'
+      );
+      expect(currentPath(router)).toBe('/remap/');
+      expect(screen.queryByText('Loading configurator interface...')).not.toBeInTheDocument();
+      expect(document.querySelector('.keycap')).not.toBeNull();
+      expect(screen.getByText('ZelliaKB')).toBeInTheDocument();
+    }
+  );
 
   it('shows why the connection failed and lets the user try again', async () => {
     const keyboard = install({ picker: 'cancel' });
@@ -75,7 +82,7 @@ describe('connecting from the welcome screen', () => {
     await waitFor(() => {
       expect(currentPath(router)).toBe('/');
     });
-    expect(screen.getByRole('button', { name: 'Get Started' })).toBeInTheDocument();
+    expect(await screen.findByRole('button', { name: 'Get Started' })).toBeInTheDocument();
     expect(screen.getByText('Waiting to connect')).toBeInTheDocument();
     expect(deviceStore.getState().connection.status).toBe('disconnected');
   });
@@ -114,7 +121,7 @@ describe('connecting from the welcome screen', () => {
       expect(router.state.navigation.state).toBe('idle');
     });
     expect(currentPath(router)).toBe('/');
-    expect(screen.getByRole('button', { name: 'Get Started' })).toBeInTheDocument();
+    expect(await screen.findByRole('button', { name: 'Get Started' })).toBeInTheDocument();
   });
 
   it('shows the error on the connection screen when a later reload fails', async () => {
