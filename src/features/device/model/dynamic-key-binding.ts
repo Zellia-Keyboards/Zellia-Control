@@ -14,9 +14,15 @@
  *   When a change leaves a gap, the highest slots in use move down into it (their keys follow),
  *   so slot numbers are not stable across changes.
  */
-import type { DynamicKeyMutexMode } from 'emi-keyboard-controller';
 import { assertMutexMode, swapMutexKeyPriority } from './mutex-mode';
-import type { DynamicKeySlot, KeyLocation, Keycode, Keymap, StrokeDistances } from './types';
+import type {
+  DynamicKeySlot,
+  KeyLocation,
+  Keycode,
+  Keymap,
+  MutexModeByte,
+  StrokeDistances,
+} from './types';
 import { assertFraction, assertUint, isEqual } from './validation';
 
 export const DYNAMIC_KEY_KEYCODE = 0xa7;
@@ -46,7 +52,7 @@ export type DynamicKeyDraft =
       readonly targets: readonly [KeyLocation, KeyLocation];
       readonly bindings: readonly [Keycode, Keycode];
       /** libamp's mode byte: priority plus bottom-out flag (see `mutex-mode.ts`). */
-      readonly mode: DynamicKeyMutexMode;
+      readonly mode: MutexModeByte;
     };
 
 export interface KeymapEntry {

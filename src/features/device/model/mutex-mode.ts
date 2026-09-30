@@ -11,6 +11,7 @@
  * `mutexReportsBothOnBottomOut()`, and build it with `mutexMode()`.
  */
 import { DynamicKeyMutexMode } from 'emi-keyboard-controller';
+import type { MutexModeByte } from './types';
 import { assertUint } from './validation';
 
 const PRIORITY_BITS = 0x0f;
@@ -27,12 +28,8 @@ const PRIORITIES: readonly DynamicKeyMutexMode[] = [
   DynamicKeyMutexMode.DKMutexNeutral,
 ];
 
-function withFlags(priority: DynamicKeyMutexMode, flags: number): DynamicKeyMutexMode {
-  const byte = priority | (flags & FLAG_BITS);
-  // The enum names only the priorities, but libamp keeps its flag bits in the same byte (the
-  // controller's `DynamicKeyMutex.mode` holds it the same way), so a flagged byte is no member.
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-assignment
-  return byte;
+function withFlags(priority: DynamicKeyMutexMode, flags: number): MutexModeByte {
+  return priority | (flags & FLAG_BITS);
 }
 
 /** The member of `members` equal to `value` (compared as numbers). */
@@ -51,20 +48,17 @@ export function mutexReportsBothOnBottomOut(mode: number): boolean {
 }
 
 /** The mode byte for `priority`, with or without the bottom-out flag. */
-export function mutexMode(
-  priority: DynamicKeyMutexMode,
-  bothOnBottomOut: boolean
-): DynamicKeyMutexMode {
+export function mutexMode(priority: DynamicKeyMutexMode, bothOnBottomOut: boolean): MutexModeByte {
   return withFlags(mutexPriority(priority), bothOnBottomOut ? MUTEX_BOTH_ON_BOTTOM_OUT : 0);
 }
 
 /** A mode byte read from the device: its priority (unknown ones as distance), flag bits as they are. */
-export function toMutexMode(byte: number): DynamicKeyMutexMode {
+export function toMutexMode(byte: number): MutexModeByte {
   return withFlags(mutexPriority(byte), byte);
 }
 
 /** Swaps key-1 and key-2 priority (for a mutex whose keys are stored the other way round). */
-export function swapMutexKeyPriority(mode: DynamicKeyMutexMode): DynamicKeyMutexMode {
+export function swapMutexKeyPriority(mode: MutexModeByte): MutexModeByte {
   const priority = mutexPriority(mode);
   const swapped =
     priority === DynamicKeyMutexMode.DKMutexKey1Priority
