@@ -10,6 +10,12 @@ function appRouter(): ReturnType<typeof createBrowserRouter> {
   return router;
 }
 
+// A hot update of this module creates a new router: the old one stops following the history.
+import.meta.hot?.dispose(() => {
+  router?.dispose();
+  router = undefined;
+});
+
 export function App() {
   return <RouterProvider router={appRouter()} />;
 }
