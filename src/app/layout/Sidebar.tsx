@@ -1,6 +1,7 @@
 import { LogOut, Save } from 'lucide-react';
+import { useId } from 'react';
 import { Link, useLocation } from 'react-router';
-import { deviceSession, useDeviceName, useIsReady } from '../../features/device';
+import { deviceSession, useDeviceName, useDeviceStore, useIsReady } from '../../features/device';
 import { useLanguage, useT } from '../../lib/i18n';
 import { Transition, slide, type SlideParams } from '../../lib/transitions';
 import { NAVIGATE, isActivePage } from '../navigation';
@@ -30,6 +31,9 @@ export function Sidebar({ onDisconnect }: SidebarProps) {
   const ready = useIsReady();
   const deviceName = useDeviceName();
   const { pathname } = useLocation();
+  // Edits the keyboard does not store yet (lighting edits are not even on it before Save).
+  const unsaved = useDeviceStore(state => state.unsaved);
+  const unsavedId = useId();
 
   return (
     <div
@@ -113,17 +117,28 @@ export function Sidebar({ onDisconnect }: SidebarProps) {
           <div>
             <button
               type="button"
-              className="w-full px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 text-white shadow-lg hover:shadow-xl glassmorphism-button flex items-center justify-center gap-2 active:scale-95 hover:animate-none"
+              className="relative w-full px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 text-white shadow-lg hover:shadow-xl glassmorphism-button flex items-center justify-center gap-2 active:scale-95 hover:animate-none"
               onClick={() => {
                 void deviceSession.save();
               }}
               title="Save configuration"
+              aria-describedby={unsaved ? unsavedId : undefined}
             >
               <div className="flex items-center justify-center gap-1">
                 <Save className="w-3 h-3" />
                 <i>{t('ui.save')}</i>
               </div>
+              {/* PL-050: unsaved changes */}
+              {unsaved && (
+                <span
+                  aria-hidden="true"
+                  className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-amber-400"
+                />
+              )}
             </button>
+            <span id={unsavedId} hidden>
+              {t('ui.unsavedChanges')}
+            </span>
           </div>
         </Transition>
 

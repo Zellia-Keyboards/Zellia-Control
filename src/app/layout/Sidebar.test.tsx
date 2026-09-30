@@ -160,4 +160,26 @@ describe('Sidebar', () => {
     expect(screen.getByRole('button', { name: '断开连接' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: '按键映射' })).toHaveAttribute('data-active', 'true');
   });
+
+  it('shows unsaved changes on Save until they are saved (PL-050)', async () => {
+    await connectShellKeyboard();
+    const user = userEvent.setup();
+    renderApp('/remap/');
+    const save = await screen.findByRole('button', { name: 'Save' });
+    const dot = () => save.querySelector('span[aria-hidden="true"]');
+    expect(save).toHaveAccessibleDescription('Save configuration');
+    expect(dot()).toBeNull();
+
+    act(() => {
+      deviceSession.setKeycodes(0, [1], 0x04);
+    });
+    expect(save).toHaveAccessibleDescription('Unsaved changes');
+    expect(dot()).toHaveClass('bg-amber-400');
+
+    await user.click(save);
+    await waitFor(() => {
+      expect(save).toHaveAccessibleDescription('Save configuration');
+    });
+    expect(dot()).toBeNull();
+  });
 });
