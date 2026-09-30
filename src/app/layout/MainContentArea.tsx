@@ -22,16 +22,14 @@ export function MainContentArea() {
   const firmwareUpdateActive = useFirmwareUpdateSession().active;
 
   const ready = status === 'ready';
-  const isLoadingConfigurator = isConnecting(status);
-  const showConfigurator = ready && !isLoadingConfigurator && !hidesToolbarAndKeyboard(pathname);
+  const showConfigurator = ready && !hidesToolbarAndKeyboard(pathname);
   // A firmware update keeps its page through the keyboard's reboot into the bootloader.
   const keepUpdatePage = firmwareUpdateActive && isActivePage(pathname, '/update');
 
   let content: ReactNode;
-  if (keepUpdatePage) content = <Outlet />;
-  else if (isLoadingConfigurator) content = <LoadingOverlay />;
-  else if (!ready && pathname === '/') content = <ConnectionScreen />;
-  else if (ready) content = <Outlet />;
+  if (ready || keepUpdatePage) content = <Outlet />;
+  else if (isConnecting(status)) content = <LoadingOverlay />;
+  else if (pathname === '/') content = <ConnectionScreen />;
   else content = <NotConnectedFallback />;
 
   return (
