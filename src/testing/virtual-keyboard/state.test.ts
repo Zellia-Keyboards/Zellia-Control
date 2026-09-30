@@ -83,8 +83,28 @@ describe('createVirtualKeyboardState', () => {
     expect(state.config).toEqual([false, false, false, false, true, false]);
   });
 
+  it('orders the Starlight keymap by layout key id, as the firmware does', () => {
+    const defaults = new ZelliaStarlightController().get_keymap();
+    const { keymap } = createFactoryProfile(VIRTUAL_MODELS['zellia-starlight']);
+
+    // The controller transfers exactly as many entries as its default keymap has.
+    expect(keymap.map(layer => layer.length)).toEqual(defaults.map(layer => layer.length));
+    // Split backspace (14, 15) sits between Backspace (13) and Tab (16).
+    expect(keymap[0]?.slice(12, 18)).toEqual([
+      Keycode.Equal,
+      Keycode.Backspace,
+      Keycode.Backspace,
+      Keycode.Delete,
+      Keycode.Tab,
+      Keycode.Q,
+    ]);
+    expect(keymap[0]?.slice(30, 32)).toEqual([Keycode.CapsLock, Keycode.A]);
+    expect(keymap[0]?.[63]).toBe(Keycode.LeftArrow);
+    expect(keymap[1]?.slice(16, 18)).toEqual([Keycode.KeyTransparent, Keycode.KeyTransparent]);
+  });
+
   it('binds one dynamic key of each kind in the keymap', () => {
-    const defaults = new ZelliaStarlightController().get_keymap()[0] ?? [];
+    const defaults = createFactoryProfile(VIRTUAL_MODELS['zellia-starlight']).keymap[0] ?? [];
     const { active } = createVirtualKeyboardState();
     const original = (id: number) => defaults[id] ?? -1;
 
@@ -249,7 +269,7 @@ describe('expectedControllerCache', () => {
       lower_bound: 140,
     });
     expect(cache.keymap).toEqual(active.keymap);
-    const defaults = new ZelliaStarlightController().get_keymap()[0] ?? [];
+    const defaults = createFactoryProfile(VIRTUAL_MODELS['zellia-starlight']).keymap[0] ?? [];
     expect(cache.dynamicKeys[3]).toEqual({
       type: 4,
       bindings: [defaults[31], defaults[33]],
