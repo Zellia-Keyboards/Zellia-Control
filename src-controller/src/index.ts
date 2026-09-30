@@ -1,4 +1,6 @@
 export * from "./interface"
+export * from "./dfu/webusb-types"
+export * from "./dfu/web-dfu"
 export * from "./controllers/trinity_pad_controller/controller"
 export * from "./controllers/oholeo_keyboard_controller/controller"
 export * from "./controllers/oholeo_keyboard_v2_controller/controller"
@@ -10,3 +12,4 @@ export * from "./controllers/destrez_asural_left_controller/controller";
 export * from "./controllers/destrez_asural_right_controller/controller";
 export * from "./controllers/open28s_controller/controller";
 export * from "./controllers/at32_keyboard_controller/controller";
+export * from "./controllers/vino_leverless_keyboard_controller/controller";

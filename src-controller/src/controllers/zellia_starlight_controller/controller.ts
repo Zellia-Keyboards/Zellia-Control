@@ -1,5 +1,7 @@
 import { LibampKeyboardController } from '../libamp_keyboard_controller/controller';
-import { IAdvancedKey, IKeyboardController, IRGBConfig, KeyMode, CalibrationMode, RGBMode, Keycode, KeyModifier, AdvancedKey, KeyboardKeycode, LayerControlKeycode, KeyboardController, DynamicKey, DynamicKeyType, DynamicKeyStroke4x4, DynamicKeyModTap, DynamicKeyToggleKey, DynamicKeyMutex, IDynamicKey, IDynamicKeyStroke4x4, IDynamicKeyModTap, IDynamicKeyToggleKey, IDynamicKeyMutex, RGBBaseConfig, detectHIDDevice } from '../../interface';
+import { IAdvancedKey, IKeyboardController, IRGBConfig, KeyMode, CalibrationMode, RGBMode, Keycode, KeyModifier, AdvancedKey, KeyboardKeycode, LayerControlKeycode, KeyboardController, DynamicKey, DynamicKeyType, DynamicKeyStroke4x4, DynamicKeyModTap, DynamicKeyToggleKey, DynamicKeyMutex, IDynamicKey, IDynamicKeyStroke4x4, IDynamicKeyModTap, IDynamicKeyToggleKey, IDynamicKeyMutex, RGBBaseConfig, detectHIDDevice, BootloaderFeature } from '../../interface';
+import { detectUSBDevice } from '../../dfu/web-dfu';
+import type { USBDevice } from '../../dfu/webusb-types';
 
 const layout = `[["0","1","2","3","4","5","6","7","8","9","10","11","12",{"w":2},"13\\n\\n\\n0,0",{"x":-2},"14\\n\\n\\n0,1","15\\n\\n\\n0,1"],[{"w":1.5},"16","17","18","19","20","21","22","23","24","25","26","27","28",{"w":1.5},"29"],[{"w":1.75},"30","31","32","33","34","35","36","37","38","39","40","41",{"w":2.25},"42"],[{"w":2.25},"43","44","45","46","47","48","49","50","51","52","53",{"w":2.75},"54\\n\\n\\n1,0",{"x":-2.75,"w":1.75},"55\\n\\n\\n1,1","56\\n\\n\\n1,1"],[{"w":1.25},"57\\n\\n\\n2,0",{"x":-1.25,"w":1.25},"57\\n\\n\\n2,1",{"x":-1.25,"w":1.5},"57\\n\\n\\n2,2",{"x":-1.5,"w":1.5},"57\\n\\n\\n2,3",{"x":-0.25,"w":1.25},"58\\n\\n\\n2,0",{"x":-1.25,"w":1.25},"58\\n\\n\\n2,1",{"x":-1},"58\\n\\n\\n2,2",{"x":-1},"58\\n\\n\\n2,3",{"w":1.25},"59\\n\\n\\n2,0",{"x":-1.25,"w":1.25},"59\\n\\n\\n2,1",{"x":-1.25,"w":1.5},"59\\n\\n\\n2,2",{"x":-1.5,"w":1.5},"59\\n\\n\\n2,3",{"x":-0.25,"w":6.25},"60\\n\\n\\n2,0",{"x":-6.25,"w":2.25},"65\\n\\n\\n2,1",{"x":-2,"w":7},"67\\n\\n\\n2,2",{"x":-7,"w":3},"68\\n\\n\\n2,3",{"x":-1,"w":1.25},"60\\n\\n\\n2,1",{"x":-0.25},"67\\n\\n\\n2,3",{"x":-0.75,"w":2.75},"66\\n\\n\\n2,1",{"x":-2,"w":3},"69\\n\\n\\n2,3",{"x":-1,"w":1.25},"61\\n\\n\\n2,0",{"x":-1.25,"w":1.25},"61\\n\\n\\n2,1",{"x":-0.25,"w":1.5},"62\\n\\n\\n2,2",{"x":-1.5,"w":1.5},"62\\n\\n\\n2,3",{"x":-1.25,"w":1.25},"62\\n\\n\\n2,0",{"x":-1.25,"w":1.25},"62\\n\\n\\n2,1",{"w":1.25},"63\\n\\n\\n2,0",{"x":-1.25,"w":1.25},"63\\n\\n\\n2,1",{"x":-1.25},"63\\n\\n\\n2,2",{"x":-1},"63\\n\\n\\n2,3",{"w":1.5},"64\\n\\n\\n2,2",{"x":-1.5,"w":1.5},"64\\n\\n\\n2,3",{"x":-1.25,"w":1.25},"64\\n\\n\\n2,0",{"x":-1.25,"w":1.25},"64\\n\\n\\n2,1"]]`;
 
@@ -12,14 +14,25 @@ export class ZelliaStarlightController extends LibampKeyboardController {
         this.device = undefined;
         this.reset_to_default();
         this.feature.rgb_flag = true;
+        this.feature.polling_rate = 8000;
+        this.feature.bootloader = new BootloaderFeature(true);
+        this.feature.bootloader.download = true;
+        this.feature.bootloader.upload = true;
+        this.feature.bootloader.fetch_from_web = false;
     }
 
     async detect(silent: boolean = false): Promise<HIDDevice[]> {
-        return detectHIDDevice({
+        const devices = await detectHIDDevice({
             vendorId: 0xFEED,
             productId: 22319,
             usagePage: 0xFF60
-            }, silent, "Zellia");
+            }, silent, "ZelliaKB");
+        return devices.filter(device =>
+            !device.productName.includes("Zellia 60") && !device.productName.includes("Zellia 80"));
+    }
+
+    async detect_bootloader(silent: boolean = false): Promise<USBDevice[]> {
+        return detectUSBDevice({ vendorId: 0x2E3C, productId: 0xDF11 }, silent);
     }
 
     get_layout_json(): string {

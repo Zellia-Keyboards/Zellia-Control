@@ -1,10 +1,8 @@
 export interface DecodedFrame {
-  channel: number;
-  flags: number;
-  seq: number;
   code: number;
+  id: number;
   type: number;
-  payload: Uint8Array;
+  body: Uint8Array;
 }
 
 type InputReportListener = (event: HIDInputReportEvent) => void;
@@ -93,67 +91,49 @@ export function installMockNavigator(hid = new MockHidManager()): MockHidManager
   return hid;
 }
 
+// 新协议（Amp v4）：Raw HID Report 直接承载 packet。
+// GET/SET/Large 包：code(0) id(1) type(2) body(3...)
+// Event 包：code(0) flag(1) body(2...)
+// Log 包：code(0) reserved(1) length(2-3) body(4...)
+// Debug 包：code(0) length(1) tick(2-5) body(6...)
 export function decodeFrame(report: Uint8Array): DecodedFrame {
+  const code = report[0];
+  const bodyStart = code === 0x00 ? 2 : code === 0x03 ? 4 : 3;
   return {
-    channel: report[1] >> 4,
-    flags: report[1] & 0x0f,
-    seq: report[2],
-    code: report[3],
-    type: report[4],
-    payload: report.slice(6, 6 + report[5]),
+    code,
+    id: report[1],
+    type: report[2],
+    body: report.slice(bodyStart),
   };
 }
 
 export function makeFrame({
-  channel = 0,
-  flags = 0,
-  seq = 0,
   code,
+  id = 0,
   type = 0,
-  payload = new Uint8Array(),
+  body = new Uint8Array(),
 }: Partial<DecodedFrame> & Pick<DecodedFrame, 'code'>): Uint8Array {
-  if (payload.length > 58) {
-    throw new Error('AmpFrame payload exceeds 58 bytes');
+  const report = new Uint8Array(64);
+  report[0] = code;
+  report[1] = id;
+  if (code === 0x00) {
+    report.set(body, 2);
+  } else if (code === 0x03) {
+    new DataView(report.buffer).setUint16(2, body.length, true);
+    report.set(body, 4);
+  } else {
+    report[2] = type;
+    report.set(body, 3);
   }
-  const frame = new Uint8Array(64);
-  frame[0] = 0x41;
-  frame[1] = (channel << 4) | flags;
-  frame[2] = seq;
-  frame[3] = code;
-  frame[4] = type;
-  frame[5] = payload.length;
-  frame.set(payload, 6);
-  return frame;
+  return report;
 }
 
+// 固件会把事务包原样回显（含 id），因此响应直接回填请求的 code/id/type。
 export function responseFor(
   request: DecodedFrame,
-  payload = request.payload,
-  options: { error?: boolean; channel?: number } = {},
+  body = request.body,
 ): Uint8Array {
-  return makeFrame({
-    channel: options.channel ?? request.channel,
-    flags: 0x02 | (options.error ? 0x04 : 0),
-    seq: request.seq,
-    code: request.code,
-    type: request.type,
-    payload,
-  });
-}
-
-export function legacyPacketFromFrame(frame: DecodedFrame): Uint8Array {
-  const packet = new Uint8Array(64);
-  packet[0] = frame.code;
-  if (frame.code === 0x00) {
-    packet.set(frame.payload, 1);
-  } else if (frame.code === 0x03) {
-    new DataView(packet.buffer).setUint16(2, frame.payload.length, true);
-    packet.set(frame.payload, 4);
-  } else {
-    packet[1] = frame.type;
-    packet.set(frame.payload, 2);
-  }
-  return packet;
+  return makeFrame({ code: request.code, id: request.id, type: request.type, body });
 }
 
 export function flushPromises(): Promise<void> {

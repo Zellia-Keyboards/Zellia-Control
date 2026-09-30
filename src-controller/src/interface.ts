@@ -1,4 +1,7 @@
 
+import { detectUSBDevice, type DfuUsbFilter } from './dfu/web-dfu';
+import type { USBDevice } from './dfu/webusb-types';
+
 export type DeviceInfo = {
   vendorId: number;
   productId: number;
@@ -838,16 +841,32 @@ export enum ScriptLevel {
     JIT = 0x02,
 }
 
+export class BootloaderFeature {
+    enable : boolean = false;
+    download : boolean = false;
+    upload : boolean = false;
+    fetch_from_web :boolean = false;
+
+    constructor(enable : boolean)
+    {
+        this.enable = enable;
+    }
+}
+
 export interface IFeature {
     advanced_key_flag : boolean;
     rgb_flag : boolean;
     script_level : ScriptLevel;
+    polling_rate : number;
+    bootloader : BootloaderFeature;
 }
 
 export class Feature implements IFeature {
     script_level: ScriptLevel = ScriptLevel.Disable;
     advanced_key_flag: boolean = false;
     rgb_flag: boolean = false;
+    polling_rate: number = 1000;
+    bootloader: BootloaderFeature = new BootloaderFeature(false);
 }
 
 
@@ -912,6 +931,7 @@ export class RGBBaseConfig implements IRGBBaseConfig {
 
 export interface IKeyboardController{
     detect(silent: boolean): Promise<HIDDevice[]>;
+    detect_bootloader(silent: boolean): Promise<USBDevice[]>;
     write(buf: Uint8Array) : number;
     read(buf: Uint8Array) : number ;
     read_timeout( buf: Uint8Array, timeout: number) : number;
@@ -991,6 +1011,14 @@ export abstract class KeyboardController implements IKeyboardController, EventTa
     }
     calibrate(): void {
         
+    }
+    protected get_bootloader_filter(): DfuUsbFilter | undefined {
+        return undefined;
+    }
+    async detect_bootloader(silent: boolean = false): Promise<USBDevice[]> {
+        const filter = this.get_bootloader_filter();
+        if (!filter) return [];
+        return detectUSBDevice(filter, silent);
     }
     enter_bootloader(): void {
         

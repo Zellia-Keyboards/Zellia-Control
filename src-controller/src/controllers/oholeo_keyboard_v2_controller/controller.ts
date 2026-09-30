@@ -1,5 +1,7 @@
 import { LibampKeyboardController } from '../libamp_keyboard_controller/controller';
-import { IAdvancedKey, IKeyboardController, IRGBConfig, KeyMode, CalibrationMode, RGBMode, Keycode, KeyModifier, AdvancedKey, KeyboardKeycode, LayerControlKeycode, KeyboardController, DynamicKey, DynamicKeyType, DynamicKeyStroke4x4, DynamicKeyModTap, DynamicKeyToggleKey, DynamicKeyMutex, IDynamicKey, IDynamicKeyStroke4x4, IDynamicKeyModTap, IDynamicKeyToggleKey, IDynamicKeyMutex, RGBBaseConfig,ConsumerKeycode, ScriptLevel, MacroAction, detectHIDDevice, ScriptKeycode } from '../../interface';
+import { IAdvancedKey, IKeyboardController, IRGBConfig, KeyMode, CalibrationMode, RGBMode, Keycode, KeyModifier, AdvancedKey, KeyboardKeycode, LayerControlKeycode, KeyboardController, DynamicKey, DynamicKeyType, DynamicKeyStroke4x4, DynamicKeyModTap, DynamicKeyToggleKey, DynamicKeyMutex, IDynamicKey, IDynamicKeyStroke4x4, IDynamicKeyModTap, IDynamicKeyToggleKey, IDynamicKeyMutex, RGBBaseConfig,ConsumerKeycode, ScriptLevel, MacroAction, detectHIDDevice, ScriptKeycode, BootloaderFeature } from '../../interface';
+import { detectUSBDevice } from '../../dfu/web-dfu';
+import type { USBDevice } from '../../dfu/webusb-types';
 
 import layout from './keyboard_layout.json?raw';
 import markdown from './README.md?raw';
@@ -15,6 +17,12 @@ export class OholeoKeyboardV2Controller extends LibampKeyboardController {
 
         this.feature.rgb_flag = true;
         this.feature.script_level = ScriptLevel.JIT;
+        this.feature.polling_rate = 8000;
+        this.feature.bootloader = new BootloaderFeature(true);
+        this.feature.bootloader.enable = true;
+        this.feature.bootloader.download = true;
+        this.feature.bootloader.upload = true;
+        this.feature.bootloader.fetch_from_web = false;
     }
 
     async detect(silent: boolean = false): Promise<HIDDevice[]> {
@@ -23,6 +31,13 @@ export class OholeoKeyboardV2Controller extends LibampKeyboardController {
             productId: 0x0721,
             usagePage: 0xFF60
             }, silent);
+    }
+
+    async detect_bootloader(silent: boolean = false): Promise<USBDevice[]> {
+        return detectUSBDevice({
+            vendorId: 0x0d00,
+            productId: 0x0720,
+        }, silent);
     }
 
     get_layout_json(): string {
