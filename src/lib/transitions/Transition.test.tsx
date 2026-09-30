@@ -1,5 +1,5 @@
 import { act, cleanup, render, screen } from '@testing-library/react';
-import { createRef, type ReactElement, type Ref } from 'react';
+import { StrictMode, createRef, type ReactElement, type Ref } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { linear } from './easing';
 import { fade, slide, slideMove } from './functions';
@@ -250,6 +250,36 @@ describe('Transition', () => {
     expect(screen.queryByTestId('panel')).not.toBeInTheDocument();
   });
 
+  it('behaves the same under StrictMode double effects', () => {
+    const { unmount } = render(
+      <StrictMode>
+        <Transition show transition={[opacity]}>
+          <Panel />
+        </Transition>
+      </StrictMode>
+    );
+    advance(1000);
+    expect(animations.all).toHaveLength(0);
+    unmount();
+
+    const strict = (show: boolean) => (
+      <StrictMode>
+        <Transition show={show} transition={[opacity]} appear>
+          <Panel />
+        </Transition>
+      </StrictMode>
+    );
+    const view = render(strict(true));
+    advance(0);
+    expect(animations.active(panel())).toHaveLength(1);
+    advance(300);
+    expect(animations.active()).toHaveLength(0);
+    view.rerender(strict(false));
+    advance(0);
+    advance(300);
+    expect(screen.queryByTestId('panel')).not.toBeInTheDocument();
+  });
+
   it("forwards the child's own ref", () => {
     const ref = createRef<HTMLDivElement>();
     render(
@@ -386,6 +416,26 @@ describe('KeyedTransition', () => {
     expect(tabs().map(tab => tab.textContent)).toEqual(['system', 'layer']);
     advance(100);
     expect(tabs().map(tab => tab.textContent)).toEqual(['layer']);
+  });
+
+  it('animates entering children under StrictMode double effects', () => {
+    const { rerender } = render(
+      <StrictMode>
+        <Tabs tab="basic" previous="basic" />
+      </StrictMode>
+    );
+    rerender(
+      <StrictMode>
+        <Tabs tab="system" previous="basic" />
+      </StrictMode>
+    );
+    advance(0);
+    const [basic, system] = tabs();
+    expect(basic && animations.active(basic)).toHaveLength(1);
+    expect(system && animations.active(system)).toHaveLength(1);
+    advance(350);
+    expect(tabs()).toEqual([system]);
+    expect(animations.active()).toHaveLength(0);
   });
 
   it('mounts a fresh child when returning to a key that is still leaving', () => {
