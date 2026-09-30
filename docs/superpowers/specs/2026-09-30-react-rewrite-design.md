@@ -78,10 +78,10 @@ See §1 items 1–6.
 | # | Decision | Rationale |
 |---|---|---|
 | D1 | Model registry: Zellia Starlight, Zellia 60, Zellia 80, Oholeo, Trinity Pad. Match a picked HID device to a model with each controller's own `detect(true)` rules; one picker with the union of HID filters. | Reuses upstream matching rules verbatim; fixes wrong-model connections. Zellia 60 added because upstream Starlight now excludes "Zellia 60" names. |
-| D2 | Connection shows the existing "Loading configurator…" overlay until the first `updateData`. `updateDataError`, or no `updateDataStart` within 3 s of opening the device (no reply / unsupported firmware version), ends in the error state with its message in the existing error slot. The full load itself has no timeout. | Removes the flash of controller-default data; unsupported firmware no longer hangs. |
+| D2 | Connection shows the existing "Loading configurator…" overlay until the first `updateData`. `updateDataError`, or no `updateDataStart` within 3 s of opening the device (no reply / unsupported firmware version), ends in the error state with its message in the existing error slot. The full load itself has no timeout. A failed reload after the first load also ends the connection in the error state ("Failed to load keyboard configuration: …"), so the UI never edits a stale snapshot. | Removes the flash of controller-default data; unsupported firmware no longer hangs. |
 | D3 | Physical disconnect (`deviceDisconnected`) returns to the connect screen. The Update page stays mounted while a firmware-update session is active. | Intended behavior; the flasher must survive the reboot into DFU. |
 | D4 | The keymap is the source of truth for dynamic-key placement: targets are rebuilt from `DynamicKey \| slot<<8` entries on every load (upstream `mapBackDynamicKey` semantics), before any `save()`. | Device reads don't return target ids; `save()` is fail-fast and rejects DKs without targets. |
-| D5 | "Configured keys" tables (dashboard, tap-hold, toggle, null-bind, DKS) are **derived from device dynamic keys**. Delete/Reset/Reset-all remove the DK from the device and restore each target's keymap entry to that DK's own binding (mutex: its per-key binding). UI-only fields (hold delay, toggle mode/state, null-bind bottom-out/RT) live in session memory keyed by slot and fall back to defaults. | No duplicated server state; delete actually deletes; matches upstream `last_binding` restore. |
+| D5 | "Configured keys" tables (dashboard, tap-hold, toggle, null-bind, DKS) are **derived from device dynamic keys**. Delete/Reset/Reset-all remove the DK from the device and restore each target's keymap entry to that DK's own binding (mutex: its per-key binding). UI-only fields (hold delay, toggle mode/state, null-bind bottom-out/RT) live in session memory keyed by the dynamic key's target `KeyLocation` (a mutex's first target) — not by slot: libamp stops scanning at the first empty slot, so freeing a slot compacts the table and slot numbers change. They fall back to defaults. | No duplicated server state; delete actually deletes; matches upstream `last_binding` restore. |
 | D6 | Applying a dynamic key reuses the slot already bound to that key/layer, else the first `DynamicKeyNone` slot; if none is free, the apply is rejected and logged. | Svelte leaked slots and could write to index -1. |
 | D7 | Profiles: store schema and `keyboard-profiles` key unchanged. Activating profile 1–4 from the Profiles page **or** the toolbar dropdown calls `set_profile_index(n-1)`; 5–16 remain local records (activation marks them active, no device call). On every device load the active profile follows `get_profile_index()` + 1, including when a local profile (5–16) was active. | Consistent entry points; UI reflects the keyboard. |
 | D8 | The four Profile-tab placeholders (`↔ PF`, `↔ PF1`, `→ PF`, `← PF`) stay visible but are inert (firmware has no equivalent). `PF(0–3)` → `KeyboardOperation \| (0x10+n)<<8`. "NKRO Toggle" → keyboard-config toggle of NKRO (`0xFE \| ((2<<6)\|(0x20+1))<<8`). "Recovery" keeps its current meaning (Bootloader). | Stop assigning Reboot/debug-off by accident. |
@@ -94,7 +94,7 @@ See §1 items 1–6.
 | D15 | Tap-hold default hold = Left Ctrl encoded as `KeyLeftCtrl<<8`; all pickers emit full encoded keycodes (incl. sub-codes) from the single catalog (§6.1). | One encoder, tested. |
 | D16 | Debug tracking polls `request_debug_at([key])` in an async loop (controller suppresses overlap), consumes `updateDebugData`, and pushes points straight into Chart.js (no React state per sample). | Performance + correctness. |
 | D17 | i18n: dictionaries ported verbatim; the 6 missing keys added (en+zh); unused keys and zh-only `demo.*` removed; `zh` is typed `Record<TranslationKey, string>`. Hard-coded English strings stay hard-coded (parity). | Type-checked completeness. |
-| D18 | PWA: vite-plugin-pwa `generateSW` + `registerSW` (autoUpdate), identical manifest; a self-unregistering `/service-worker.js` stub for any legacy registration. | Offline actually works. |
+| D18 | PWA: vite-plugin-pwa `generateSW` + `registerSW` with `registerType: 'prompt'` and no update UI: a new deployment waits as a waiting worker and is applied (page reload) only while the app is idle — no keyboard session and no firmware update (`src/app/update-policy.ts`). Identical manifest; a self-unregistering `/service-worker.js` stub for any legacy registration. | Offline actually works; an update can never interrupt a flash or a connected keyboard, and the running page keeps loading its old precached chunks after an `rsync --delete` deploy. |
 | D19 | Hosting contract unchanged: static files in `build/`, trailing-slash URLs (`/remap/`), per-route `index.html` copies so deep links work on the current server, same rsync deploy. | No server change needed. |
 | D20 | Toolchain: TypeScript 6.0.x (typescript-eslint supports `<6.1`; TS 7 native breaks type-aware lint). Tailwind **engine pinned at 4.1.10** via `@tailwindcss/postcss` (the 4.1.10 Vite plugin does not support Vite 8). lucide-react pinned to 0.511.0 (same SVGs as lucide-svelte 0.511.0), chart.js 4.4.9, chartjs-plugin-zoom 2.2.0, tinycolor2 1.6.0, kle-serial 0.15.1. Upgrades are separate, screenshot-verified changes. | Pixel parity; supported lint. |
 
@@ -171,7 +171,8 @@ that index.
   `removeEventListener`, `get_layout_json`, `get_layout_labels`, `get_feature`,
   `get_firmware_version`, `get_profile_num`, `get_profile_index`, `set_profile_index`, the
   `get_*`/`set_*` pairs for advanced keys, keymap, RGB base, RGB configs and dynamic keys,
-  `save`, `flash`, the five `send_*_packet` methods, `request_debug_at`, `system_reset`,
+  `save`, `flash`, the five `send_*_packet` methods, `request_debug_at`, `start_debug`,
+  `stop_debug` (libamp only streams debug data while its debug config bit is on), `system_reset`,
   `factory_reset`, `enter_bootloader` and `detect_bootloader`. Each registry entry is checked
   with `satisfies`, so a controller API change breaks this one module at compile time.
 
@@ -422,6 +423,12 @@ attribution trailers), report changes/decisions/tests/limitations.
   and document how to re-sync.
 - The DKS UI model cannot represent a hold that continues through stage 3; such device values
   are displayed clamped (documented, tested).
+- The firmware DKS encoding cannot express a release plus a tap (or a release plus a new press)
+  at the same stage: an interval ended by a tap is sent as one press that ends shortly after the
+  tap stage, and 56 editor bitmaps reload in a normalized form (e.g. the Reset preset's Space
+  `[0,1]+[1,3]` reloads as `[0,3]`). Enumerated in `dks-codec.test.ts`; logged in the parity log.
+- A `switchProfile()` sent while a device-initiated reload is already running can resolve on the
+  older load; the follow-up reload corrects the snapshot (documented in `session.ts`).
 - The layout dropdown's fixed group mapping is Starlight-shaped; other models may show
   imperfect options (unchanged behavior, documented).
 - No real hardware in CI: protocol correctness rests on upstream's tests plus the simulator;

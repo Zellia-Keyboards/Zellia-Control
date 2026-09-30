@@ -18,10 +18,18 @@ protocol is supported.
 
 - `test/device-detection.test.ts` fails 2 of its cases at this commit: the test expects a
   device named `Zellia Starlight` to match `ZelliaStarlightController`, but the controller's
-  `detect()` name filter only accepts `ZelliaKB`. Zellia Control's CI excludes this file (see
-  `vitest.config.ts` at the repo root) and the app's device matcher handles the
+  `detect()` name filter only accepts `ZelliaKB`. Zellia Control's CI excludes this file (the
+  `controller` test project in the root `vite.config.ts`) and the app's device matcher handles the
   `Zellia Starlight` name explicitly (`src/features/device/models.ts`). Remove both once
   upstream is fixed.
+- `LibampKeyboardController.packet_process_dynamic_key()` ends its GET branch with
+  `else (buf[0] == PacketCode.PacketCodeSet) { … }`: the `else` has no `if`, so the SET
+  serializer also runs after every GET and throws on the (always empty) `target_keys_location`
+  of a freshly read dynamic key. Unpatched, any keyboard with a configured dynamic key fails to
+  load. `src/features/device/controller.ts` (`withUpstreamFixes`) swallows exactly that failure
+  for every model; remove it once upstream is fixed.
+- libamp's `QK_DEBUG_TOGGLE` alias sets keyboard-config action bits 3, which the firmware's
+  operation handler ignores (FYI; the app encodes toggles with action 2).
 
 ## Re-syncing
 
