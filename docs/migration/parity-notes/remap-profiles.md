@@ -44,5 +44,7 @@ screens: the Remap palettes already assigned full keycodes with sub-codes.
   are dropped (slots 1–4 are recreated, as before), every profile's `id` is its
   slot, an invalid active id falls back to 1. Valid Svelte data reads back
   unchanged.
+- An imported file keeps the schema's fields only (`name` and the four
+  configuration fields); the Svelte store also kept any unknown fields.
 - Choosing the already active profile in the dropdown does not switch the
   keyboard again (a switch reloads the profile from flash).
