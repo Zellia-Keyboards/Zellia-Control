@@ -199,6 +199,18 @@ describe('KeyboardRender', () => {
     expect(selected()).toEqual([0, 1, 2, 3, 4]);
   });
 
+  it('leaves the selection store alone when only the labels change', () => {
+    const { rerender } = render(<KeyboardRender keys={[layoutKey(0), layoutKey(1)]} />);
+    const changes = vi.fn();
+    const unsubscribe = keySelectionStore.subscribe(changes);
+
+    rerender(<KeyboardRender keys={[layoutKey(0, { labels: { 0: 'Esc' } }), layoutKey(1)]} />);
+    unsubscribe();
+
+    expect(screen.getByText('Esc')).toBeInTheDocument();
+    expect(changes).not.toHaveBeenCalled();
+  });
+
   it('shows the layout variants chosen in the Layout dropdown', () => {
     connectModel([['Backspace', 'Split Backspace']]);
     const keys = [
