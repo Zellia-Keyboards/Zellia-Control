@@ -46,8 +46,8 @@ export function DeadzoneControl({
       {/* Single bar with dual handles */}
       <div>
         <div className="flex justify-between items-center text-sm dark:text-gray-400 text-gray-500 mb-2">
-          <div>Start: {upperDeadzone.toFixed(3)}mm</div>
-          <div>Bottom: {lowerDeadzone.toFixed(3)}mm</div>
+          <div>{`Start: ${upperDeadzone.toFixed(3)}mm`}</div>
+          <div>{`Bottom: ${lowerDeadzone.toFixed(3)}mm`}</div>
         </div>
 
         {/* Dual-handle slider with visual feedback */}

@@ -191,7 +191,7 @@ export function RGBSubPanel({
           </h4>
           <div className="flex justify-between text-xs text-gray-600 dark:text-gray-300 mb-1.5">
             <span>{t('lighting.speed')}</span>
-            <span className="font-semibold">{localSpeed}%</span>
+            <span className="font-semibold">{`${localSpeed}%`}</span>
           </div>
           <ThemedSlider
             min={1}

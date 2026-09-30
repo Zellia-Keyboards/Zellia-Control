@@ -114,7 +114,7 @@ export function RGBPanel({ baseConfig, onConfigChange, title }: RGBPanelProps) {
           style={{ padding: 'calc(1rem * var(--ui-scale, 1))' }}
         >
           <h4 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">
-            {t('lighting.mode')} &amp; {t('lighting.color')}
+            {`${t('lighting.mode')} & ${t('lighting.color')}`}
           </h4>
 
           {/* Mode buttons */}
@@ -156,7 +156,7 @@ export function RGBPanel({ baseConfig, onConfigChange, title }: RGBPanelProps) {
                 className="block text-xs text-gray-600 dark:text-gray-300 mb-2"
                 style={{ marginBottom: 'calc(0.5rem * var(--ui-scale, 1))' }}
               >
-                {t('lighting.color')}
+                {`${t('lighting.color')} `}
                 <div className="flex items-center gap-3 mt-2">
                   <input
                     type="color"
@@ -177,7 +177,7 @@ export function RGBPanel({ baseConfig, onConfigChange, title }: RGBPanelProps) {
                 className="block text-xs text-gray-600 dark:text-gray-300 mb-2"
                 style={{ marginBottom: 'calc(0.5rem * var(--ui-scale, 1))' }}
               >
-                {t('lighting.secondaryColor')}
+                {`${t('lighting.secondaryColor')} `}
                 <div className="flex items-center gap-3 mt-2">
                   <input
                     type="color"
@@ -209,7 +209,7 @@ export function RGBPanel({ baseConfig, onConfigChange, title }: RGBPanelProps) {
           <div className="mb-4">
             <div className="flex justify-between text-xs text-gray-600 dark:text-gray-300 mb-1.5">
               <span>{t('lighting.speed')}</span>
-              <span className="font-semibold">{draft.speed}%</span>
+              <span className="font-semibold">{`${draft.speed}%`}</span>
             </div>
             <ThemedSlider
               min={1}
