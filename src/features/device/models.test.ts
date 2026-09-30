@@ -1,6 +1,8 @@
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, onTestFinished } from 'vitest';
 import {
+  VirtualDfuDevice,
   VirtualHidDevice,
+  VirtualUsb,
   createVirtualKeyboard,
   installVirtualHid,
   type InstalledVirtualKeyboard,
@@ -31,6 +33,41 @@ describe('model registry', () => {
       ['zellia-80', 'Zellia 80HE'],
       ['oholeo', 'Oholeo Keyboard'],
       ['trinity-pad', 'Trinity Pad'],
+    ]);
+  });
+
+  it("declares the bootloader each model's controller looks for", async () => {
+    const usb = new VirtualUsb();
+    const at32 = new VirtualDfuDevice({ vendorId: 0x2e3c, productId: 0xdf11, productName: 'AT32' });
+    const stm32 = new VirtualDfuDevice({
+      vendorId: 0x0483,
+      productId: 0xdf11,
+      productName: 'STM32',
+    });
+    for (const device of [at32, stm32]) {
+      usb.attach(device, { authorized: true });
+      usb.plugIn(device);
+    }
+    Object.defineProperty(navigator, 'usb', { configurable: true, value: usb });
+    onTestFinished(() => {
+      Reflect.deleteProperty(navigator, 'usb');
+    });
+
+    for (const model of MODELS) {
+      const found = await model.create().detect_bootloader(true);
+      const expected = [at32, stm32].filter(
+        device =>
+          device.vendorId === model.bootloaderFilter?.vendorId &&
+          device.productId === model.bootloaderFilter.productId
+      );
+      expect({ model: model.id, found }).toEqual({ model: model.id, found: expected });
+    }
+    expect(MODELS.map(model => [model.id, model.bootloaderFilter !== null])).toEqual([
+      ['zellia-starlight', true],
+      ['zellia-60', true],
+      ['zellia-80', false],
+      ['oholeo', true],
+      ['trinity-pad', false],
     ]);
   });
 
