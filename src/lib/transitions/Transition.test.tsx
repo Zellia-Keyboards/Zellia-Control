@@ -251,6 +251,7 @@ describe('Transition', () => {
   });
 
   it('behaves the same under StrictMode double effects', () => {
+    const errors = vi.spyOn(console, 'error');
     const { unmount } = render(
       <StrictMode>
         <Transition show transition={[opacity]}>
@@ -278,6 +279,69 @@ describe('Transition', () => {
     advance(0);
     advance(300);
     expect(screen.queryByTestId('panel')).not.toBeInTheDocument();
+    expect(errors).not.toHaveBeenCalled();
+  });
+
+  it('reports a component child that does not attach the ref, and still shows and hides it', () => {
+    const errors = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    function Unforwarded(): ReactElement {
+      return <div data-testid="panel">content</div>;
+    }
+    const view = (show: boolean) => (
+      <Transition show={show} transition={[opacity]}>
+        <Unforwarded />
+      </Transition>
+    );
+    const { rerender } = render(view(true));
+    expect(errors).toHaveBeenCalledTimes(1);
+    expect(errors).toHaveBeenCalledWith(expect.stringContaining('did not attach the ref'));
+    rerender(view(false));
+    expect(screen.queryByTestId('panel')).not.toBeInTheDocument();
+    expect(animations.all).toHaveLength(0);
+    expect(errors).toHaveBeenCalledTimes(2);
+  });
+
+  it('treats a Fragment child as a child without an element instead of crashing', () => {
+    const errors = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    const view = (show: boolean) => (
+      <Transition show={show} transition={[opacity]}>
+        <>
+          <div data-testid="panel">content</div>
+        </>
+      </Transition>
+    );
+    const { rerender } = render(view(true));
+    expect(errors).toHaveBeenCalledWith(expect.stringContaining('did not attach the ref'));
+    rerender(view(false));
+    expect(screen.queryByTestId('panel')).not.toBeInTheDocument();
+    expect(animations.all).toHaveLength(0);
+  });
+
+  it('reports nothing when the ref is attached or there is nothing to animate', () => {
+    const errors = vi.spyOn(console, 'error');
+    function Unforwarded(): ReactElement {
+      return <div data-testid="plain">content</div>;
+    }
+    const view = (show: boolean) => (
+      <>
+        <Transition show={show} transition={[opacity]}>
+          <Panel />
+        </Transition>
+        <Transition show={show} in={[opacity]} out={[opacity]}>
+          <div data-testid="element" />
+        </Transition>
+        <Transition show={show}>
+          <Unforwarded />
+        </Transition>
+      </>
+    );
+    const { rerender } = render(view(false));
+    rerender(view(true));
+    advance(300);
+    rerender(view(false));
+    advance(300);
+    expect(screen.queryByTestId('panel')).not.toBeInTheDocument();
+    expect(errors).not.toHaveBeenCalled();
   });
 
   it("forwards the child's own ref", () => {

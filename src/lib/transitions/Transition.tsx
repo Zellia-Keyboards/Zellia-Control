@@ -29,8 +29,15 @@ import {
 } from './engine';
 import type { TransitionConfig, TransitionSpec } from './types';
 
-/** A single element; components must pass the `ref` prop on to their root DOM element. */
+/**
+ * A single element; components must pass the `ref` prop on to their root DOM element. A child
+ * that does not (or a Fragment) is shown and hidden without animating, reported in development.
+ */
 export type TransitionChild = ReactElement<{ ref?: Ref<HTMLElement> }>;
+
+const MISSING_ELEMENT =
+  'Transition: the child did not attach the ref to an HTML element, so it is shown and ' +
+  'hidden without animating. A component child must pass its `ref` prop on to its root element.';
 
 type ConfigFactory = (node: HTMLElement) => TransitionConfig;
 
@@ -38,6 +45,10 @@ interface ConfigFactories {
   readonly transition: ConfigFactory | undefined;
   readonly in: ConfigFactory | undefined;
   readonly out: ConfigFactory | undefined;
+}
+
+function hasDirectives({ transition, in: intro, out: outro }: ConfigFactories): boolean {
+  return transition !== undefined || intro !== undefined || outro !== undefined;
 }
 
 function toFactory<P extends object>(
@@ -127,8 +138,9 @@ function PresenceItem({
   /** The `present` value the transitions last acted on; `null` before the first run. */
   const acted = useRef<boolean | null>(null);
 
-  const setNode = useCallback((instance: HTMLElement | null) => {
-    node.current = instance;
+  /** Receives whatever the child attaches the ref to; only an HTML element can be animated. */
+  const setNode = useCallback((instance: unknown) => {
+    node.current = instance instanceof HTMLElement ? instance : null;
   }, []);
 
   useLayoutEffect(() => {
@@ -152,6 +164,9 @@ function PresenceItem({
     if (previous === present) return;
 
     const element = node.current;
+    if (element === null && import.meta.env.DEV && hasDirectives(latest.current.factories)) {
+      console.error(MISSING_ELEMENT);
+    }
     if (bound.current?.node !== element) {
       bound.current = element
         ? { node: element, managers: createManagers(element, () => latest.current.factories) }
