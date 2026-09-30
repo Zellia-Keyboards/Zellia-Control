@@ -3,6 +3,7 @@ import { fileURLToPath } from 'node:url';
 import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
+import { staticHosting } from './scripts/static-hosting';
 
 const controllerEntry = fileURLToPath(new URL('./src-controller/src/index.ts', import.meta.url));
 
@@ -46,6 +47,8 @@ export default defineConfig({
       },
       devOptions: { enabled: false },
     }),
+    // build/<route>/index.html copies for deep links on the static host; preview emulates it.
+    staticHosting(),
   ],
   resolve: {
     alias: { 'emi-keyboard-controller': controllerEntry },
@@ -64,6 +67,16 @@ export default defineConfig({
           include: ['src/**/*.test.{ts,tsx}'],
           setupFiles: ['./src/testing/setup.ts'],
           restoreMocks: true,
+        },
+      },
+      {
+        // Build tooling, Vite plugins, parity harness and the service-worker kill switch.
+        test: {
+          name: 'tooling',
+          environment: 'node',
+          include: ['scripts/**/*.test.ts'],
+          restoreMocks: true,
+          testTimeout: 30_000,
         },
       },
       {
