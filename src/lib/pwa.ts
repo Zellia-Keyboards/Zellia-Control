@@ -1,13 +1,5 @@
 import { registerSW } from 'virtual:pwa-register';
 
-export interface RegisterServiceWorkerOptions {
-  /**
-   * Called instead of the default page reload when an updated service worker has taken control
-   * (autoUpdate), e.g. to postpone the reload while a keyboard session is active.
-   */
-  onNeedReload?: () => void;
-}
-
 let registered = false;
 
 /**
@@ -15,12 +7,16 @@ let registered = false;
  * offline precache of the app shell, and a new deployment activates immediately and reloads the
  * page. workbox-window defers registration to the window `load` event. Idempotent; a no-op in dev,
  * where vite-plugin-pwa serves a stub module.
+ *
+ * The reload cannot be postponed: with skipWaiting + clientsClaim the new worker has already taken
+ * over the page and deleted the old build's precache by then, so a page kept open on the old build
+ * could not load its lazy routes. Holding updates back (e.g. during a firmware flash) would need a
+ * waiting-worker flow instead: `registerType: 'prompt'` and the `updateSW` returned by `registerSW`.
  */
-export function registerServiceWorker(options: RegisterServiceWorkerOptions = {}): void {
+export function registerServiceWorker(): void {
   if (registered) return;
   registered = true;
   registerSW({
-    ...(options.onNeedReload ? { onNeedReload: options.onNeedReload } : {}),
     onRegisterError(error: unknown) {
       console.error('Service worker registration failed', error);
     },

@@ -214,8 +214,11 @@ export default scenarios;
 - `vite-plugin-pwa` generates the Workbox worker `/sw.js` (autoUpdate, precache
   id `zellia-control`, Google Fonts runtime cache).
   `src/lib/pwa.ts` registers it from `main.tsx`; a new deployment activates
-  immediately and reloads open pages (`registerServiceWorker({ onNeedReload })`
-  can take over the reload).
+  immediately (`skipWaiting`, `clientsClaim`) and reloads open pages. The
+  reload cannot be postponed: by then the old build's precache is gone, so a
+  page left on the old build could not load its lazy routes. Holding updates
+  back (for example during a firmware flash) would need a waiting-worker flow
+  (`registerType: 'prompt'`).
 - `public/service-worker.js` is a kill switch for browsers that still hold the
   SvelteKit worker registration: it deletes that worker's caches and
   unregisters itself.
