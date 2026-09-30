@@ -1,18 +1,11 @@
 import { act, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { afterEach, describe, expect, it, onTestFinished } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
 import { keySelectionStore } from '../../features/keyboard';
 import { LAYOUT_OPTIONS_STORAGE_KEY } from '../../features/keyboard/model';
-import { connectVirtualKeyboard } from '../../testing/app-keyboard';
-import { renderApp, resetShellState } from '../testing/render-app';
+import { connectShellKeyboard, renderApp, resetShellState } from '../testing/render-app';
 
 afterEach(resetShellState);
-
-async function connect() {
-  const keyboard = await connectVirtualKeyboard({ seedDynamicKeys: false });
-  onTestFinished(keyboard.dispose);
-  return keyboard;
-}
 
 function layerButtons(): HTMLElement[] {
   return [1, 2, 3, 4].map(layer => screen.getByTitle(`Layer ${layer}`));
@@ -33,7 +26,7 @@ describe('LayerSelector', () => {
       timeout: 15_000,
     },
     async () => {
-      await connect();
+      await connectShellKeyboard();
       for (const path of ['performance', 'remap', 'dynamic']) {
         const { unmount } = renderApp(`/${path}/`);
         await screen.findByTestId('page');
@@ -50,7 +43,7 @@ describe('LayerSelector', () => {
   );
 
   it('selects the layer the pages edit', async () => {
-    await connect();
+    await connectShellKeyboard();
     const user = userEvent.setup();
     renderApp('/remap/');
     await screen.findByTestId('page');
@@ -66,7 +59,7 @@ describe('LayerSelector', () => {
 
 describe('LayoutConfigDropdown', () => {
   it('opens and closes on any click outside the menu', async () => {
-    await connect();
+    await connectShellKeyboard();
     const user = userEvent.setup();
     renderApp('/remap/');
     const toggle = await screen.findByTitle('Configure keyboard layout');
@@ -92,7 +85,7 @@ describe('LayoutConfigDropdown', () => {
   });
 
   it('switches the keyboard between layout variants and persists the choice', async () => {
-    await connect();
+    await connectShellKeyboard();
     const user = userEvent.setup();
     renderApp('/remap/');
     await user.click(await screen.findByTitle('Configure keyboard layout'));
@@ -131,7 +124,7 @@ describe('LayoutConfigDropdown', () => {
   });
 
   it('keeps its menu state local to the toolbar', async () => {
-    await connect();
+    await connectShellKeyboard();
     const user = userEvent.setup();
     const { router } = renderApp('/remap/');
     await user.click(await screen.findByTitle('Configure keyboard layout'));

@@ -1,10 +1,11 @@
 /**
  * Test helpers for the shell: renders the app's routes in a memory router, with stand-in pages
- * (each renders "<path> page") unless real loaders are given, and resets the shared stores the
- * shell touches.
+ * (each renders "<path> page") unless real loaders are given, connects the app's session to a
+ * virtual keyboard, and resets the shared stores the shell touches.
  */
 import { render, type RenderResult } from '@testing-library/react';
 import { createMemoryRouter, RouterProvider } from 'react-router';
+import { onTestFinished } from 'vitest';
 import { deviceSession } from '../../features/device';
 import { setFirmwareUpdateActive } from '../../features/firmware-update';
 import {
@@ -15,6 +16,7 @@ import {
 import { DEFAULT_LAYOUT_OPTIONS } from '../../features/keyboard/model';
 import { setLanguage } from '../../lib/i18n';
 import { bootstrapTheme, setThemeColor } from '../../lib/theme';
+import { connectVirtualKeyboard, type ConnectedKeyboard } from '../../testing/app-keyboard';
 import type { PageLoader, PageLoaders, PagePath } from '../pages';
 import { createAppRoutes } from '../routes';
 
@@ -49,6 +51,16 @@ export interface RenderedApp extends RenderResult {
 export function renderApp(path = '/', pages: PageLoaders = standInPages()): RenderedApp {
   const router = createMemoryRouter(createAppRoutes(pages), { initialEntries: [path] });
   return { router, ...render(<RouterProvider router={router} />) };
+}
+
+/**
+ * Connects the app's session to a virtual keyboard without seeded dynamic keys; the keyboard is
+ * disconnected and removed when the test finishes.
+ */
+export async function connectShellKeyboard(): Promise<ConnectedKeyboard> {
+  const keyboard = await connectVirtualKeyboard({ seedDynamicKeys: false });
+  onTestFinished(keyboard.dispose);
+  return keyboard;
 }
 
 /** The current location of `router` as a URL path with search and hash. */

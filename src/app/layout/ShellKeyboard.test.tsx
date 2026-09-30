@@ -1,6 +1,6 @@
 import { act, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { afterEach, describe, expect, it, onTestFinished } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
 import { deviceSession, deviceStore, type DeviceConfig } from '../../features/device';
 import { keySelection } from '../../features/keyboard';
 import {
@@ -11,16 +11,9 @@ import {
   type KeyLabels,
   type LayoutKey,
 } from '../../features/keyboard/model';
-import { connectVirtualKeyboard } from '../../testing/app-keyboard';
-import { renderApp, resetShellState } from '../testing/render-app';
+import { connectShellKeyboard, renderApp, resetShellState } from '../testing/render-app';
 
 afterEach(resetShellState);
-
-async function connect() {
-  const keyboard = await connectVirtualKeyboard({ seedDynamicKeys: false });
-  onTestFinished(keyboard.dispose);
-  return keyboard;
-}
 
 function loaded(): { keys: readonly LayoutKey[]; config: DeviceConfig } {
   const { connection, config } = deviceStore.getState();
@@ -63,7 +56,7 @@ function keyboardWrapper(): Element | null {
 
 describe('ShellKeyboard', () => {
   it('shows the keycodes of the selected layer on Remap', async () => {
-    await connect();
+    await connectShellKeyboard();
     const user = userEvent.setup();
     renderApp('/remap/');
     await screen.findByTestId('page');
@@ -78,7 +71,7 @@ describe('ShellKeyboard', () => {
   });
 
   it('shows the keycodes and dynamic keys of the selected layer on Dynamic Keys (PL-023)', async () => {
-    await connect();
+    await connectShellKeyboard();
     renderApp('/dynamic/');
     await screen.findByTestId('page');
     const { keys, config } = loaded();
@@ -88,7 +81,7 @@ describe('ShellKeyboard', () => {
   });
 
   it('shows performance values with smaller legends on Performance', async () => {
-    await connect();
+    await connectShellKeyboard();
     renderApp('/performance/');
     await screen.findByTestId('page');
     const { keys, config } = loaded();
@@ -98,7 +91,7 @@ describe('ShellKeyboard', () => {
   });
 
   it('shows lighting modes with smaller legends on Lighting', async () => {
-    await connect();
+    await connectShellKeyboard();
     renderApp('/lighting/');
     await screen.findByTestId('page');
     const { keys, config } = loaded();
@@ -108,7 +101,7 @@ describe('ShellKeyboard', () => {
   });
 
   it('follows changes of the keyboard configuration', async () => {
-    await connect();
+    await connectShellKeyboard();
     renderApp('/remap/');
     await screen.findByTestId('page');
 
@@ -120,7 +113,7 @@ describe('ShellKeyboard', () => {
   });
 
   it('selects keys unless the page disallows selection', async () => {
-    await connect();
+    await connectShellKeyboard();
     const user = userEvent.setup();
     renderApp('/remap/');
     await screen.findByTestId('page');

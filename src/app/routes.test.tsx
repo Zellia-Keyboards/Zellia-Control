@@ -1,6 +1,6 @@
 import { act, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { afterEach, describe, expect, it, onTestFinished, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { AboutPage } from '../features/about';
 import { DebugPage } from '../features/debug';
 import { DynamicKeysPage } from '../features/dynamic-keys';
@@ -10,17 +10,16 @@ import { PerformancePage } from '../features/performance';
 import { ProfilesPage } from '../features/profiles';
 import { RemapPage } from '../features/remap';
 import { SettingsPage } from '../features/settings';
-import { connectVirtualKeyboard } from '../testing/app-keyboard';
 import { APP_PAGES, PAGE_PATHS } from './pages';
-import { currentPath, renderApp, resetShellState, standInPages } from './testing/render-app';
+import {
+  connectShellKeyboard,
+  currentPath,
+  renderApp,
+  resetShellState,
+  standInPages,
+} from './testing/render-app';
 
 afterEach(resetShellState);
-
-async function connect(): Promise<Awaited<ReturnType<typeof connectVirtualKeyboard>>> {
-  const keyboard = await connectVirtualKeyboard({ seedDynamicKeys: false });
-  onTestFinished(keyboard.dispose);
-  return keyboard;
-}
 
 describe('routes', () => {
   it('shows the connection screen at / while no keyboard is connected', async () => {
@@ -71,7 +70,7 @@ describe('routes', () => {
   });
 
   it('renders the lazily loaded page below the toolbar and the keyboard', async () => {
-    await connect();
+    await connectShellKeyboard();
     const { container } = renderApp('/remap/');
 
     const page = await screen.findByTestId('page');
@@ -83,7 +82,7 @@ describe('routes', () => {
   });
 
   it('hides the toolbar and the keyboard on About, Profiles, Debug, Settings and Update', async () => {
-    await connect();
+    await connectShellKeyboard();
     for (const path of ['about', 'profiles', 'debug', 'settings', 'update']) {
       const { container, unmount } = renderApp(`/${path}/`);
       expect(await screen.findByTestId('page')).toHaveTextContent(`${path} page`);
@@ -94,7 +93,7 @@ describe('routes', () => {
   });
 
   it('goes from / to Remap once connected, replacing the history entry', async () => {
-    await connect();
+    await connectShellKeyboard();
     const { router } = renderApp('/');
 
     await waitFor(() => {
@@ -105,7 +104,7 @@ describe('routes', () => {
   });
 
   it('keeps the Update page when the keyboard goes away (D3)', async () => {
-    const keyboard = await connect();
+    const keyboard = await connectShellKeyboard();
     const { router } = renderApp('/update/');
     const page = await screen.findByTestId('page');
 
@@ -130,7 +129,7 @@ describe('routes', () => {
   });
 
   it('stays on a page while a firmware update reboots the keyboard', async () => {
-    const keyboard = await connect();
+    const keyboard = await connectShellKeyboard();
     const { router } = renderApp('/about/');
     await screen.findByTestId('page');
 
@@ -147,7 +146,7 @@ describe('routes', () => {
 
   it('shows the error page inside the shell when a page fails to load', async () => {
     const logged = vi.spyOn(console, 'error').mockImplementation(() => undefined);
-    await connect();
+    await connectShellKeyboard();
     const { container } = renderApp('/about/', {
       ...standInPages(),
       about: () => Promise.reject(new Error('chunk failed')),

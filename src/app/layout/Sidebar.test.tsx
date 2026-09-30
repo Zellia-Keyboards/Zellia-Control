@@ -1,19 +1,17 @@
 import { act, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { afterEach, describe, expect, it, onTestFinished } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
 import { deviceSession, deviceStore } from '../../features/device';
 import { setFirmwareUpdateActive } from '../../features/firmware-update';
 import { setLanguage } from '../../lib/i18n';
-import { connectVirtualKeyboard } from '../../testing/app-keyboard';
-import { currentPath, renderApp, resetShellState } from '../testing/render-app';
+import {
+  connectShellKeyboard,
+  currentPath,
+  renderApp,
+  resetShellState,
+} from '../testing/render-app';
 
 afterEach(resetShellState);
-
-async function connect() {
-  const keyboard = await connectVirtualKeyboard({ seedDynamicKeys: false });
-  onTestFinished(keyboard.dispose);
-  return keyboard;
-}
 
 function sidebar(): HTMLElement {
   const element = document.querySelector<HTMLElement>('.sidebar');
@@ -31,7 +29,7 @@ describe('Sidebar', () => {
   });
 
   it('shows the connected keyboard with Save and Disconnect', async () => {
-    await connect();
+    await connectShellKeyboard();
     renderApp('/remap/');
 
     expect(await screen.findByText('ZelliaKB')).toBeInTheDocument();
@@ -44,7 +42,7 @@ describe('Sidebar', () => {
   });
 
   it('saves the configuration to the keyboard (PL-002)', async () => {
-    const keyboard = await connect();
+    const keyboard = await connectShellKeyboard();
     const user = userEvent.setup();
     renderApp('/remap/');
     const before = keyboard.vk.state.profiles[0]?.keymap[0]?.[1];
@@ -60,7 +58,7 @@ describe('Sidebar', () => {
   });
 
   it('disconnects and returns to the connection screen', async () => {
-    await connect();
+    await connectShellKeyboard();
     const user = userEvent.setup();
     const { router } = renderApp('/performance/');
 
@@ -74,7 +72,7 @@ describe('Sidebar', () => {
   });
 
   it('adds a single history entry when disconnecting', async () => {
-    await connect();
+    await connectShellKeyboard();
     const user = userEvent.setup();
     const { router } = renderApp('/performance/');
 
@@ -90,7 +88,7 @@ describe('Sidebar', () => {
   });
 
   it('disconnects to the connection screen during a firmware update too', async () => {
-    await connect();
+    await connectShellKeyboard();
     const user = userEvent.setup();
     const { router } = renderApp('/update/');
     act(() => {
@@ -148,7 +146,7 @@ describe('Sidebar', () => {
   });
 
   it('follows the language', async () => {
-    await connect();
+    await connectShellKeyboard();
     renderApp('/remap/');
     await screen.findByText('ZelliaKB');
 
