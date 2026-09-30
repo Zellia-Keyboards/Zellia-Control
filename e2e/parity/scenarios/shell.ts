@@ -184,6 +184,16 @@ const scenarios: readonly ParityScenario[] = [
     },
   },
   {
+    name: 'shell-remap-hover',
+    path: '/',
+    virtualKeyboard: KEYBOARD,
+    setup: async page => {
+      await connect(page);
+      await hidePageRegion(page);
+      await page.locator('.keycap', { hasText: /^Tab$/ }).hover();
+    },
+  },
+  {
     name: 'shell-layout-menu',
     path: '/',
     virtualKeyboard: KEYBOARD,
