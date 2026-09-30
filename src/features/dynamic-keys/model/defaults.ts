@@ -66,16 +66,16 @@ export const DKS_RESET_PRESET: DksEditorState = {
  * Tap-hold editor defaults. The hold action is Left Ctrl as a standalone modifier (spec D15);
  * the tap timeout is the firmware mod-tap duration, the hold delay is UI-only (spec D5).
  */
-export const TAP_HOLD_DEFAULTS = {
-  tap: kc.key(EmiKeycode.Escape),
-  hold: kc.modifier(KeyModifier.KeyLeftCtrl),
-  holdDelayMs: 200,
-  tapTimeoutMs: 150,
-} as const satisfies {
+export const TAP_HOLD_DEFAULTS: Readonly<{
   tap: Keycode;
   hold: Keycode;
   holdDelayMs: number;
   tapTimeoutMs: number;
+}> = {
+  tap: kc.key(EmiKeycode.Escape),
+  hold: kc.modifier(KeyModifier.KeyLeftCtrl),
+  holdDelayMs: 200,
+  tapTimeoutMs: 150,
 };
 
 /** Toggle editor default binding. */

@@ -9,7 +9,8 @@ import {
   MouseKeycode,
   SystemRawKeycode,
 } from 'emi-keyboard-controller';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, expectTypeOf, it } from 'vitest';
+import type { Keycode } from '../device/model/types';
 import {
   decodeKeycode,
   dynamicKeySlotOf,
@@ -67,6 +68,14 @@ describe('kc constructors: firmware examples (libamp keycode.h / keyboard.c)', (
     expect(kc.user(7)).toBe(0x07fd);
     expect(kc.transparent).toBe(0x00ff);
     expect(kc.none).toBe(0x0000);
+  });
+
+  it('types every constructor result and constant as Keycode (so they can seed editable state)', () => {
+    // A literal `0` would make `useState(kc.none)` reject any other keycode.
+    expectTypeOf(kc.none).toEqualTypeOf<Keycode>();
+    expectTypeOf(kc.transparent).toEqualTypeOf<Keycode>();
+    expectTypeOf(kc.key).returns.toEqualTypeOf<Keycode>();
+    expectTypeOf(kc.profile).returns.toEqualTypeOf<Keycode>();
   });
 
   it('combines a key with modifiers as code | mask << 8', () => {
