@@ -1,0 +1,22 @@
+/* Port of the <style> block of KeyboardRender.svelte, selectors unchanged. */
+
+.grid-container {
+  display: grid;
+  place-items: center;
+  width: 100%;
+}
+
+.keyboard {
+  background-color: transparent;
+  padding: 10px;
+  /* position: relative is needed for the absolute positioning of children during animations */
+  position: relative;
+  transition: all 0.5s ease;
+}
+
+.no-select {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
