@@ -1,7 +1,7 @@
 import { act, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, onTestFinished } from 'vitest';
-import { deviceStore } from '../features/device';
+import { deviceSession, deviceStore } from '../features/device';
 import {
   installVirtualHid,
   type InstalledVirtualKeyboard,
@@ -47,6 +47,28 @@ describe('connecting from the welcome screen', () => {
       expect(screen.getByText('ZelliaKB')).toBeInTheDocument();
     }
   );
+
+  it('keeps the sidebar waiting while the configuration loads (PL-003)', async () => {
+    // Slow replies keep the session loading well past the checks below.
+    install({ latencyMs: 50 });
+    void deviceSession.connect();
+    await waitFor(() => {
+      expect(deviceStore.getState().connection.status).toBe('loading');
+    });
+
+    renderApp('/');
+
+    // The keyboard is open and its name known, yet the screen stays as it was while connecting.
+    expect(await screen.findByText('Loading configurator interface...')).toBeInTheDocument();
+    expect(screen.getByText('Waiting to connect')).toBeInTheDocument();
+    expect(screen.queryByText('ZelliaKB')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Save' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Disconnect' })).not.toBeInTheDocument();
+    expect(deviceStore.getState().connection).toMatchObject({
+      status: 'loading',
+      deviceName: 'ZelliaKB',
+    });
+  });
 
   it('shows why the connection failed and lets the user try again', async () => {
     const keyboard = install({ picker: 'cancel' });
