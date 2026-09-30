@@ -151,9 +151,12 @@ describe('label builders replay the recorded Svelte transformKeyboardKeys', () =
       // Deliberate deviation: Svelte labelled modifier-only keycodes (the default Shift, Ctrl, Alt
       // and GUI keys) "No Event" with the modifiers top-left; like upstream, the modifiers are
       // now the key name.
+      // Deliberate deviation: keys without a keymap entry showed their KLE legends (key id and
+      // layout-group tag); they are now blank.
       const expected = recorded.map((labels, index) => {
         const keycode = row?.[keys[index]?.id ?? -1];
-        const modifierOnly = keycode !== undefined && keycode !== 0 && (keycode & 0xff) === 0;
+        if (keycode === undefined) return EMPTY;
+        const modifierOnly = keycode !== 0 && (keycode & 0xff) === 0;
         return modifierOnly ? withSlots({ 6: labels[0] ?? '' }) : labels;
       });
       expect(
@@ -248,13 +251,12 @@ describe('remapLabels', () => {
     expect(labels.get(3)).toEqual(withSlots({ 6: '9', 9: '9' }));
   });
 
-  it('keeps the layout labels of keys the layer does not cover, and of every key on a missing layer', () => {
-    expect(labels.get(7)).toBe(original);
+  it('leaves keys the layer does not cover, and every key on a missing layer, blank', () => {
+    // Svelte showed their KLE legends (key id and layout-group tag).
+    expect(labels.get(7)).toEqual(EMPTY);
     const missingLayer = remapLabels([key(0, original)], keymap, 1, dynamicKeys);
-    expect(missingLayer.get(0)).toBe(original);
-    expect(remapLabels([key(0, original)], [], 0, []).get(0)).toBe(original);
-    // Hand-built keys with fewer label slots are padded to 12.
-    expect(remapLabels([key(0, ['x'])], [], 0, []).get(0)).toEqual(withSlots({ 0: 'x' }));
+    expect(missingLayer.get(0)).toEqual(EMPTY);
+    expect(remapLabels([key(0, original)], [], 0, []).get(0)).toEqual(EMPTY);
   });
 });
 
@@ -282,7 +284,7 @@ describe('lightingLabels', () => {
 });
 
 describe('every builder', () => {
-  it('returns one 12-slot label array per key id, the first key winning for duplicate ids', () => {
+  it('returns one 12-slot label array per key id', () => {
     const keys = [key(0, withSlots({ 0: 'first' })), key(0, withSlots({ 0: 'second' })), key(1)];
     const results = [
       performanceLabels(keys, [advancedKey({}), advancedKey({})]),
@@ -293,6 +295,5 @@ describe('every builder', () => {
       expect([...labels.keys()]).toEqual([0, 1]);
       for (const slots of labels.values()) expect(slots).toHaveLength(12);
     }
-    expect(results[1]?.get(0)?.[0]).toBe('first');
   });
 });
