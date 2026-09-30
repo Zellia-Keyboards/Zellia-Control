@@ -156,7 +156,10 @@ export interface DeviceSession {
 // ---------------------------------------------------------------------------------------------
 // Keymap packets
 
-/** One `send_keymap_packet` holds at most this many keycodes (`(64 − 7) / 2`). */
+/**
+ * At most 27 codes per `send_keymap_packet`: the limit documented by the controller README (D10).
+ * 28 would fit into a 64-byte report, and the controller accepts 28.
+ */
 export const MAX_KEYMAP_PACKET_CODES = 27;
 
 export interface KeymapRun {
