@@ -1,7 +1,9 @@
 import { defineConfig } from '@playwright/test';
 import { resolveBrowserChannel } from './scripts/browser-channel';
+import { resolveE2EPort } from './scripts/e2e-port';
 
-const PORT = 4173;
+// 4273 unless E2E_PORT is set; not Vite's default preview port (see scripts/e2e-port.ts).
+const PORT = resolveE2EPort();
 const baseURL = `http://localhost:${PORT}`;
 const isCI = Boolean(process.env.CI);
 
@@ -43,7 +45,10 @@ export default defineConfig({
   webServer: {
     command: isCI ? preview : `corepack yarn build && ${preview}`,
     url: baseURL,
-    reuseExistingServer: !isCI,
+    // Only ever test the server this run started. Anything already answering on the port (a
+    // preview of another worktree, the Svelte baseline) fails the run instead of being tested;
+    // pick another port with E2E_PORT.
+    reuseExistingServer: false,
     timeout: 180_000,
   },
 });

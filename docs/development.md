@@ -79,8 +79,9 @@ Tailwind only looks for class candidates in `src/` (`base` in
    mocking our own modules.
 3. **End-to-end** (Playwright, project `e2e`, `e2e/**/*.spec.ts`). Runs against
    the production build served by `vite preview`, which behaves like the static
-   host (no SPA fallback). Locally Playwright builds first; in CI it reuses the
-   build step's output. Import `test` and `expect` from `e2e/fixtures.ts`:
+   host (no SPA fallback). Locally Playwright builds first; in CI (`CI` set) it
+   serves the build step's output. Import `test` and `expect` from
+   `e2e/fixtures.ts`:
    - Google Fonts are answered locally, so tests never depend on the CDN.
    - `virtualKeyboard` injects the simulated keyboard before any page script:
      it bundles `src/testing/virtual-keyboard/browser.ts` with Vite's build API
@@ -101,6 +102,12 @@ Tailwind only looks for class candidates in `src/` (`base` in
 Browser: `PLAYWRIGHT_CHANNEL` if set, otherwise stable Chrome when installed,
 otherwise Playwright's bundled Chromium (`scripts/browser-channel.ts`). Reports
 and traces go to `e2e/.artifacts/`.
+
+Server: Playwright serves the build on port 4273, not Vite's default preview
+port 4173 (`corepack yarn preview`, and the Svelte baseline's). Set `E2E_PORT`
+to use another port, e.g. to run two worktrees at the same time. Playwright
+only tests a server it started itself: if something already answers on the
+port, the run fails with "is already used" instead of testing that server.
 
 ## Visual parity
 

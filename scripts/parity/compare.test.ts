@@ -66,7 +66,7 @@ async function parityDir(captures: readonly CaptureFixture[]): Promise<string> {
           status: 200,
           errors: capture.errors?.baseline ?? [],
         },
-        react: { url: 'http://localhost:4173/', status: 200, errors: capture.errors?.react ?? [] },
+        react: { url: 'http://localhost:4273/', status: 200, errors: capture.errors?.react ?? [] },
       },
     };
     await writeFile(path.join(capturesDir, `${capture.id}.json`), JSON.stringify(record));
