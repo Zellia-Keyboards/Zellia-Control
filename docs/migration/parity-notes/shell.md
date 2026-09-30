@@ -10,25 +10,25 @@ keyboard. `shell-settings` hides the whole page region.
 
 ## Results
 
-Run of 2026-09-30 (160 captures, strict comparison).
+Run of 2026-09-30 (160 captures, strict comparison; `shell-remap-hover`, added afterwards, was captured separately with the same result as `shell-remap`).
 
-| Scenario                                      | Identical | Differences                                                       |
-| --------------------------------------------- | --------- | ----------------------------------------------------------------- |
-| `welcome`                                     | 7/8       | one capture with a raster glitch (see noise); 8/8 on re-run       |
-| `shell-not-connected`                         | 7/8       | one capture with a raster glitch in the baseline; 8/8 on re-run   |
-| `shell-not-found`                             | 8/8       |                                                                   |
-| `shell-theme-colors`                          | 8/8       |                                                                   |
-| `shell-connection-error`                      | 8/8       |                                                                   |
-| `shell-loading-overlay`                       | 8/8       |                                                                   |
-| `shell-loading-config`                        | 0/8       | PL-003                                                            |
-| `shell-unplugged`                             | 0/8       | PL-004                                                            |
-| `shell-settings`                              | 0/8       | PL-002 (Save label)                                               |
-| `shell-remap`, `-selection`, `shell-layout-*` | 0/8       | profile dropdown stub (F), PL-002, PL-016, PL-022                 |
-| `shell-remap-layer-2`, `-layer-4`             | 0/8       | profile dropdown stub (F), PL-002, PL-022                         |
-| `shell-remap-layer-3`                         | 0/8       | profile dropdown stub (F), PL-002, PL-017, PL-022                 |
-| `shell-performance`                           | 0/8       | profile dropdown stub (F), PL-002, PL-005                         |
-| `shell-lighting`                              | 0/8       | profile dropdown stub (F), PL-002                                 |
-| `shell-dynamic`                               | 0/8       | profile dropdown stub (F), PL-002, PL-016, PL-022, PL-023, PL-024 |
+| Scenario                                                | Identical | Differences                                                       |
+| ------------------------------------------------------- | --------- | ----------------------------------------------------------------- |
+| `welcome`                                               | 7/8       | one capture with a raster glitch (see noise); 8/8 on re-run       |
+| `shell-not-connected`                                   | 7/8       | one capture with a raster glitch in the baseline; 8/8 on re-run   |
+| `shell-not-found`                                       | 8/8       |                                                                   |
+| `shell-theme-colors`                                    | 8/8       |                                                                   |
+| `shell-connection-error`                                | 8/8       |                                                                   |
+| `shell-loading-overlay`                                 | 8/8       |                                                                   |
+| `shell-loading-config`                                  | 0/8       | PL-003                                                            |
+| `shell-unplugged`                                       | 0/8       | PL-004                                                            |
+| `shell-settings`                                        | 0/8       | PL-002 (Save label)                                               |
+| `shell-remap`, `-selection`, `-hover`, `shell-layout-*` | 0/8       | profile dropdown stub (F), PL-002, PL-016, PL-022                 |
+| `shell-remap-layer-2`, `-layer-4`                       | 0/8       | profile dropdown stub (F), PL-002, PL-022                         |
+| `shell-remap-layer-3`                                   | 0/8       | profile dropdown stub (F), PL-002, PL-017, PL-022                 |
+| `shell-performance`                                     | 0/8       | profile dropdown stub (F), PL-002, PL-005                         |
+| `shell-lighting`                                        | 0/8       | profile dropdown stub (F), PL-002                                 |
+| `shell-dynamic`                                         | 0/8       | profile dropdown stub (F), PL-002, PL-016, PL-022, PL-023, PL-024 |
 
 Keyboard and toolbar check without the pending profile dropdown: the connected scenarios were
 captured once more with the baseline's profile dropdown and both apps' Save button hidden (a
