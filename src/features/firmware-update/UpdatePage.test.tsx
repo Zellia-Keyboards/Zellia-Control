@@ -4,7 +4,12 @@ import { MemoryRouter } from 'react-router';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { connectVirtualKeyboard, type ConnectedKeyboard } from '../../testing/app-keyboard';
 import type { VirtualKeyboardOptions } from '../../testing/virtual-keyboard';
-import { firmwareUpdateSession, UpdatePage, useFirmwareUpdateSession } from './index';
+import {
+  firmwareUpdateSession,
+  setFirmwareUpdateActive,
+  UpdatePage,
+  useFirmwareUpdateSession,
+} from './index';
 
 const STEP_NAMES = [
   'Choose Binary',
@@ -76,6 +81,7 @@ beforeEach(() => {
 
 afterEach(() => {
   keyboard.dispose();
+  setFirmwareUpdateActive(false);
 });
 
 describe('UpdatePage', () => {
@@ -203,7 +209,7 @@ describe('UpdatePage', () => {
     expect(steps()[2]).toBe('Connect Recovery: error');
   });
 
-  it('aborts the update and ends the session when the page is left', async () => {
+  it('aborts the update when the page is left, keeping the session to try again', async () => {
     await connect({ dfu: { authorized: true, busyPolls: 2, pollTimeoutMs: 5 } });
     const { unmount } = renderPage();
     const size = 48 * 1024;
@@ -216,9 +222,10 @@ describe('UpdatePage', () => {
       unmount();
     });
 
-    expect(firmwareUpdateSession.getState().active).toBe(false);
     await new Promise(resolve => setTimeout(resolve, 100));
     expect(keyboard.vk.dfu?.image.length).toBeLessThan(size);
+    // The keyboard waits in its bootloader: the shell keeps the Update page reachable.
     expect(keyboard.vk.dfu?.connected).toBe(true);
+    expect(firmwareUpdateSession.getState().active).toBe(true);
   });
 });

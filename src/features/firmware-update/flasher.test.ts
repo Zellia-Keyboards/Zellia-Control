@@ -1,12 +1,12 @@
-import { KeyboardKeycode } from 'emi-keyboard-controller';
+import { KeyboardKeycode, WebDfuDevice } from 'emi-keyboard-controller';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { deviceStore } from '../device';
 import { kc } from '../keycodes';
 import { connectVirtualKeyboard, type ConnectedKeyboard } from '../../testing/app-keyboard';
-import type { VirtualKeyboardOptions } from '../../testing/virtual-keyboard';
+import { VirtualDfuDevice, type VirtualKeyboardOptions } from '../../testing/virtual-keyboard';
 import { createFirmwareFlasher, type FirmwareFlasher } from './flasher';
 import type { FlasherState } from './model/flash-steps';
-import { firmwareUpdateSession } from './session';
+import { firmwareUpdateSession, setFirmwareUpdateActive } from './session';
 
 const BOOTLOADER = kc.keyboardOperation(KeyboardKeycode.KeyboardBootloader);
 
@@ -23,6 +23,10 @@ async function bytesOf(file: File): Promise<Uint8Array> {
   return new Uint8Array(await file.arrayBuffer());
 }
 
+function delay(ms: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 function vk() {
   if (!keyboard) throw new Error('no keyboard');
   return keyboard.vk;
@@ -34,8 +38,7 @@ function dfu() {
   return device;
 }
 
-async function setup(options: VirtualKeyboardOptions = {}): Promise<void> {
-  keyboard = await connectVirtualKeyboard({ seedDynamicKeys: false, ...options });
+function attachFlasher(): void {
   flasher = createFirmwareFlasher({ pollIntervalMs: 10 });
   phases = [flasher.getState().phase];
   flasher.subscribe(() => {
@@ -43,6 +46,11 @@ async function setup(options: VirtualKeyboardOptions = {}): Promise<void> {
     if (phases[phases.length - 1] !== phase) phases.push(phase);
   });
   detach = flasher.attach();
+}
+
+async function setup(options: VirtualKeyboardOptions = {}): Promise<void> {
+  keyboard = await connectVirtualKeyboard({ seedDynamicKeys: false, ...options });
+  attachFlasher();
 }
 
 async function phase(expected: FlasherState['phase']): Promise<FlasherState> {
@@ -57,6 +65,23 @@ function sentOperations(): number[] {
   return vk().sentPackets.flatMap(packet => (packet.op === 'event' ? [packet.keycode] : []));
 }
 
+/** Keeps the keyboard connected: it ignores the bootloader request. */
+function ignoreBootloaderRequests(): () => void {
+  return vk().dropReplies(packet => packet.op === 'event' && packet.keycode === BOOTLOADER);
+}
+
+/** Another board of the same kind, already in its bootloader and authorized. */
+function otherAuthorizedBootloader(): VirtualDfuDevice {
+  const other = new VirtualDfuDevice({
+    vendorId: 0x2e3c,
+    productId: 0xdf11,
+    productName: 'Other board',
+  });
+  vk().usb.attach(other, { authorized: true });
+  vk().usb.plugIn(other);
+  return other;
+}
+
 beforeEach(() => {
   vi.spyOn(console, 'info').mockImplementation(() => undefined);
 });
@@ -65,6 +90,7 @@ afterEach(() => {
   detach();
   keyboard?.dispose();
   keyboard = null;
+  setFirmwareUpdateActive(false);
 });
 
 describe('firmware flasher', () => {
@@ -134,7 +160,7 @@ describe('firmware flasher', () => {
 
     await flasher.chooseFile(file);
     await phase('connect');
-    await new Promise(resolve => setTimeout(resolve, 40));
+    await delay(40);
     expect(flasher.getState().phase).toBe('connect');
     expect(dfu().connected).toBe(true);
 
@@ -145,11 +171,9 @@ describe('firmware flasher', () => {
 
   it('opens the picker from "Device is in DFU Mode" when the keyboard entered DFU by hand', async () => {
     await setup();
-    const restore = vk().dropReplies(
-      packet => packet.op === 'event' && packet.keycode === BOOTLOADER
-    );
+    const restore = ignoreBootloaderRequests();
     await flasher.chooseFile(firmware(2048));
-    await new Promise(resolve => setTimeout(resolve, 30));
+    await delay(30);
     expect(flasher.getState().phase).toBe('reboot');
     restore();
 
@@ -161,16 +185,71 @@ describe('firmware flasher', () => {
     expect(dfu().image).toHaveLength(2048);
   });
 
-  it('finds an authorized bootloader that appears later', async () => {
+  it('does not flash a bootloader on its own before the keyboard has left', async () => {
     await setup({ dfu: { authorized: true } });
-    vk().dropReplies(packet => packet.op === 'event' && packet.keycode === BOOTLOADER);
+    ignoreBootloaderRequests();
     await flasher.chooseFile(firmware(2048));
-    await new Promise(resolve => setTimeout(resolve, 30));
-    expect(flasher.getState().phase).toBe('reboot');
 
     vk().usb.plugIn(dfu());
+    await delay(60);
+    expect(flasher.getState().phase).toBe('reboot');
+    expect(dfu().image).toHaveLength(0);
+
+    await flasher.confirmDfuMode();
+    await phase('done');
+  });
+
+  it('flashes the bootloader that appears once the keyboard has left', async () => {
+    await setup({ dfu: { authorized: true } });
+    flasher.subscribe(() => {
+      // The bootloader enumerates a little after the keyboard left.
+      if (flasher.getState().phase === 'connect' && dfu().connected) {
+        vk().usb.unplug(dfu());
+        setTimeout(() => {
+          vk().usb.plugIn(dfu());
+        }, 40);
+      }
+    });
+
+    await flasher.chooseFile(firmware(2048));
 
     await phase('done');
+    expect(dfu().image).toHaveLength(2048);
+  });
+
+  it('never flashes another authorized bootloader on its own', async () => {
+    await setup();
+    const other = otherAuthorizedBootloader();
+    const file = firmware(2048);
+
+    await flasher.chooseFile(file);
+    await phase('connect');
+    await delay(60);
+    expect(flasher.getState().phase).toBe('connect');
+    expect(other.image).toHaveLength(0);
+
+    // From the click, the browser's chooser picks the keyboard's own bootloader.
+    await flasher.connectDevice();
+    await phase('done');
+    expect(dfu().image).toEqual(await bytesOf(file));
+    expect(other.image).toHaveLength(0);
+  });
+
+  it('starts a single flash when the buttons are clicked twice during a lookup', async () => {
+    await setup();
+    const getDevices = vk().usb.getDevices.bind(vk().usb);
+    vi.spyOn(vk().usb, 'getDevices').mockImplementation(async () => {
+      await delay(20);
+      return getDevices();
+    });
+    const connect = vi.spyOn(WebDfuDevice, 'connect');
+
+    await flasher.chooseFile(firmware(2048));
+    await phase('connect');
+    await Promise.all([flasher.connectDevice(), flasher.connectDevice()]);
+
+    await phase('done');
+    expect(connect).toHaveBeenCalledOnce();
   });
 
   it('ignores "Device is in DFU Mode" while the file is still being read or rejected', async () => {
@@ -207,7 +286,7 @@ describe('firmware flasher', () => {
 
   it('ends the session on Try Again while the keyboard is still connected', async () => {
     await setup();
-    vk().dropReplies(packet => packet.op === 'event' && packet.keycode === BOOTLOADER);
+    ignoreBootloaderRequests();
     await flasher.chooseFile(firmware(2048));
     expect(firmwareUpdateSession.getState().active).toBe(true);
 
@@ -266,7 +345,7 @@ describe('firmware flasher', () => {
     expect(firmwareUpdateSession.getState().active).toBe(true);
   });
 
-  it('aborts a running update when detached and ends the session', async () => {
+  it('aborts a running update when detached, keeping the session for another attempt', async () => {
     await setup({ dfu: { authorized: true, busyPolls: 2, pollTimeoutMs: 5 } });
     const size = 32 * 1024;
     await flasher.chooseFile(firmware(size));
@@ -276,15 +355,68 @@ describe('firmware flasher', () => {
     });
 
     detach();
-    detach = () => undefined;
 
-    expect(firmwareUpdateSession.getState().active).toBe(false);
-    await new Promise(resolve => setTimeout(resolve, 100));
+    expect(flasher.getState()).toEqual({ phase: 'choose' });
+    await delay(100);
     expect(dfu().image.length).toBeLessThan(size);
-    // Not manifested: the keyboard stays in its bootloader, ready for another attempt.
+    // Not manifested: the keyboard stays in its bootloader, so the Update page stays available.
     expect(dfu().connected).toBe(true);
     expect(vk().connected).toBe(false);
-    expect(flasher.getState()).toEqual({ phase: 'choose' });
+    expect(firmwareUpdateSession.getState().active).toBe(true);
+
+    // Back on the page, a new flasher finishes the job.
+    attachFlasher();
+    const file = firmware(4096);
+    await flasher.chooseFile(file);
+    expect(flasher.getState().phase).toBe('reboot');
+    await flasher.confirmDfuMode();
+    await phase('done');
+    expect(dfu().image).toEqual(await bytesOf(file));
+
+    detach();
+    expect(firmwareUpdateSession.getState().active).toBe(false);
+  });
+
+  it('ends the session when the page is left after a successful update', async () => {
+    await setup({ dfu: { authorized: true } });
+    await flasher.chooseFile(firmware(2048));
+    await phase('done');
+
+    detach();
+
+    expect(firmwareUpdateSession.getState().active).toBe(false);
+  });
+
+  it('continues a session started elsewhere while the keyboard waits in its bootloader', async () => {
+    await setup();
+    detach();
+    // Settings → Enter Bootloader.
+    setFirmwareUpdateActive(true);
+    vk().enterBootloader();
+    await vi.waitFor(() => {
+      expect(deviceStore.getState().connection.status).toBe('disconnected');
+    });
+
+    attachFlasher();
+    detach();
+    expect(firmwareUpdateSession.getState().active).toBe(true);
+
+    attachFlasher();
+    await flasher.chooseFile(firmware(2048));
+    await flasher.confirmDfuMode();
+    await phase('done');
+    detach();
+    expect(firmwareUpdateSession.getState().active).toBe(false);
+  });
+
+  it('ends a leftover session once the keyboard is connected again', async () => {
+    await setup();
+    detach();
+    setFirmwareUpdateActive(true);
+
+    attachFlasher();
+
+    expect(firmwareUpdateSession.getState().active).toBe(false);
   });
 
   it('can be attached again after being detached (React StrictMode)', async () => {
