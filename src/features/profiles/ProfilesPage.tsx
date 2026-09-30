@@ -295,14 +295,17 @@ export function ProfilesPage() {
         />
       </Transition>
 
-      {/* Duplicate Modal */}
+      {/* Duplicate Modal. The messages keep one text node on each side of the name, as Svelte's
+          {@html} rendered them: a run of text split into several nodes moves the glyphs after it
+          by fractions of a pixel. */}
       <ConfirmationModal
         open={showDuplicateModal && duplicateSourceId !== null}
         title="Duplicate Profile"
         message={
           <>
-            Create a copy of <strong className="text-white">{nameOf(duplicateSourceId)}</strong> in
-            the next available slot?
+            {'Create a copy of '}
+            <strong className="text-white">{nameOf(duplicateSourceId)}</strong>
+            {' in the next available slot?'}
           </>
         }
         confirmText="Duplicate"
@@ -319,9 +322,9 @@ export function ProfilesPage() {
         title="Restore to Default"
         message={
           <>
-            Are you sure you want to restore{' '}
-            <strong className="text-white">{nameOf(restoreProfileId)}</strong> to its default
-            settings? This action cannot be undone.
+            {'Are you sure you want to restore '}
+            <strong className="text-white">{nameOf(restoreProfileId)}</strong>
+            {' to its default settings? This action cannot be undone.'}
           </>
         }
         confirmText="Restore"

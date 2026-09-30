@@ -54,6 +54,18 @@ async function openMenu(name: string) {
   return screen.getByRole('menu');
 }
 
+/**
+ * The child nodes of a dialog's message: quoted text nodes and element names. Svelte's `{@html}`
+ * made one text node on each side of the `<strong>` name; splitting a run of text into several
+ * nodes moves the glyphs after it by fractions of a pixel.
+ */
+function messageNodes(dialog: HTMLElement): string[] {
+  const message = document.getElementById(dialog.getAttribute('aria-describedby') ?? '');
+  return Array.from(message?.childNodes ?? [], node =>
+    node.nodeType === Node.TEXT_NODE ? `"${node.textContent ?? ''}"` : node.nodeName.toLowerCase()
+  );
+}
+
 async function connect() {
   const keyboard = await connectVirtualKeyboard({ seedDynamicKeys: false });
   onTestFinished(keyboard.dispose);
@@ -207,6 +219,11 @@ describe('ProfilesPage', () => {
       expect(within(dialog).getByText('Profile 2', { selector: 'strong' })).toHaveClass(
         'text-white'
       );
+      expect(messageNodes(dialog)).toEqual([
+        '"Create a copy of "',
+        'strong',
+        '" in the next available slot?"',
+      ]);
 
       await user.click(within(dialog).getByRole('button', { name: 'Duplicate' }));
 
@@ -263,6 +280,11 @@ describe('ProfilesPage', () => {
       expect(dialog).toHaveAccessibleDescription(
         'Are you sure you want to restore Tuned to its default settings? This action cannot be undone.'
       );
+      expect(messageNodes(dialog)).toEqual([
+        '"Are you sure you want to restore "',
+        'strong',
+        '" to its default settings? This action cannot be undone."',
+      ]);
       expect(within(dialog).getByRole('button', { name: 'Restore' })).toHaveClass(
         'bg-orange-600/80'
       );
