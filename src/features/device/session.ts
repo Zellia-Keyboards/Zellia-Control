@@ -56,6 +56,7 @@ import {
   type DynamicKeyDraft,
   type KeymapEntry,
 } from './model/dynamic-key-binding';
+import { clampFraction, isEqual } from './model/validation';
 import type {
   AdvancedKeyConfig,
   ConnectionState,
@@ -207,18 +208,6 @@ function assertIndex(index: number, length: number, label: (index: number) => st
   if (!Number.isInteger(index) || index < 0 || index >= length) throw new RangeError(label(index));
 }
 
-/** Structural equality of plain snapshot values. */
-function isEqual(a: unknown, b: unknown): boolean {
-  if (Object.is(a, b)) return true;
-  if (typeof a !== 'object' || typeof b !== 'object' || a === null || b === null) return false;
-  if (Array.isArray(a) !== Array.isArray(b)) return false;
-  const keys = Object.keys(a);
-  return (
-    keys.length === Object.keys(b).length &&
-    keys.every(key => isEqual(Reflect.get(a, key), Reflect.get(b, key)))
-  );
-}
-
 function hasChanges(change: DynamicKeyChange): boolean {
   return change.changedSlots.length > 0 || change.changedKeymapEntries.length > 0;
 }
@@ -241,10 +230,6 @@ function withLiveReadings(
     }
     return key;
   });
-}
-
-function clampFraction(value: number): number {
-  return Number.isFinite(value) ? Math.min(Math.max(value, 0), 1) : 0;
 }
 
 type LoadOutcome = 'loaded' | 'failed' | 'closed' | 'timeout';

@@ -9,6 +9,7 @@
  */
 import { DynamicKeyMutexMode } from 'emi-keyboard-controller';
 import type { DynamicKeySlot, KeyLocation, Keycode, Keymap, StrokeDistances } from './types';
+import { assertFraction, assertUint, isEqual } from './validation';
 
 export const DYNAMIC_KEY_KEYCODE = 0xa7;
 const NO_KEYCODE: Keycode = 0x00;
@@ -98,18 +99,6 @@ function assertLocation(keymap: Keymap, location: KeyLocation): void {
   }
 }
 
-function assertInteger(value: number, max: number, label: string): void {
-  if (!Number.isInteger(value) || value < 0 || value > max) {
-    throw new RangeError(`${label} ${value} is out of range`);
-  }
-}
-
-function assertFraction(value: number, label: string): void {
-  if (!Number.isFinite(value) || value < 0 || value > 1) {
-    throw new RangeError(`${label} ${value} is not a fraction of travel`);
-  }
-}
-
 function copyKeymap(keymap: Keymap): Keycode[][] {
   return keymap.map(layer => [...layer]);
 }
@@ -179,47 +168,6 @@ function bindingFor(slot: DynamicKeySlot, location: KeyLocation): Keycode {
   }
 }
 
-function sameTuple(a: readonly number[], b: readonly number[]): boolean {
-  return a.length === b.length && a.every((value, index) => value === b[index]);
-}
-
-function sameSlot(a: DynamicKeySlot, b: DynamicKeySlot): boolean {
-  if (a === b) return true;
-  switch (a.kind) {
-    case 'none':
-      return b.kind === 'none';
-    case 'stroke':
-      return (
-        b.kind === 'stroke' &&
-        sameTuple(a.bindings, b.bindings) &&
-        sameTuple(a.keyControl, b.keyControl) &&
-        a.distances.pressBegin === b.distances.pressBegin &&
-        a.distances.pressFully === b.distances.pressFully &&
-        a.distances.releaseBegin === b.distances.releaseBegin &&
-        a.distances.releaseFully === b.distances.releaseFully &&
-        sameLocation(a.target, b.target)
-      );
-    case 'modTap':
-      return (
-        b.kind === 'modTap' &&
-        a.tap === b.tap &&
-        a.hold === b.hold &&
-        a.durationMs === b.durationMs &&
-        sameLocation(a.target, b.target)
-      );
-    case 'toggle':
-      return b.kind === 'toggle' && a.binding === b.binding && sameLocation(a.target, b.target);
-    case 'mutex':
-      return (
-        b.kind === 'mutex' &&
-        sameTuple(a.bindings, b.bindings) &&
-        a.mode === b.mode &&
-        sameLocation(a.targets[0], b.targets[0]) &&
-        sameLocation(a.targets[1], b.targets[1])
-      );
-  }
-}
-
 function diffKeymap(before: Keymap, after: Keymap): KeymapEntry[] {
   const changes: KeymapEntry[] = [];
   after.forEach((layer, layerIndex) => {
@@ -233,7 +181,7 @@ function diffKeymap(before: Keymap, after: Keymap): KeymapEntry[] {
 function diffSlots(before: readonly DynamicKeySlot[], after: readonly DynamicKeySlot[]): number[] {
   return after.flatMap((slot, index) => {
     const previous = before[index];
-    return previous && sameSlot(previous, slot) ? [] : [index];
+    return previous && isEqual(previous, slot) ? [] : [index];
   });
 }
 
@@ -346,10 +294,10 @@ function assertDraft(keymap: Keymap, draft: DynamicKeyDraft): void {
   switch (draft.kind) {
     case 'stroke':
       draft.bindings.forEach(keycode => {
-        assertInteger(keycode, MAX_KEYCODE, 'Keycode');
+        assertUint(keycode, MAX_KEYCODE, 'Keycode');
       });
       draft.keyControl.forEach(control => {
-        assertInteger(control, 0xff, 'Key control');
+        assertUint(control, 0xff, 'Key control');
       });
       assertFraction(draft.distances.pressBegin, 'Press-begin distance');
       assertFraction(draft.distances.pressFully, 'Press-fully distance');
@@ -357,18 +305,18 @@ function assertDraft(keymap: Keymap, draft: DynamicKeyDraft): void {
       assertFraction(draft.distances.releaseFully, 'Release-fully distance');
       return;
     case 'modTap':
-      assertInteger(draft.tap, MAX_KEYCODE, 'Keycode');
-      assertInteger(draft.hold, MAX_KEYCODE, 'Keycode');
-      assertInteger(draft.durationMs, MAX_DURATION_MS, 'Duration');
+      assertUint(draft.tap, MAX_KEYCODE, 'Keycode');
+      assertUint(draft.hold, MAX_KEYCODE, 'Keycode');
+      assertUint(draft.durationMs, MAX_DURATION_MS, 'Duration');
       return;
     case 'toggle':
-      assertInteger(draft.binding, MAX_KEYCODE, 'Keycode');
+      assertUint(draft.binding, MAX_KEYCODE, 'Keycode');
       return;
     case 'mutex':
       draft.bindings.forEach(keycode => {
-        assertInteger(keycode, MAX_KEYCODE, 'Keycode');
+        assertUint(keycode, MAX_KEYCODE, 'Keycode');
       });
-      assertInteger(draft.mode, DynamicKeyMutexMode.DKMutexNeutral, 'Mutex mode');
+      assertUint(draft.mode, DynamicKeyMutexMode.DKMutexNeutral, 'Mutex mode');
       if (sameLocation(draft.targets[0], draft.targets[1])) {
         throw new RangeError('A mutex needs two different keys');
       }
@@ -479,7 +427,7 @@ export function setKeymapEntries(
 ): DynamicKeyChange {
   for (const entry of entries) {
     assertLocation(keymap, entry);
-    assertInteger(entry.keycode, MAX_KEYCODE, 'Keycode');
+    assertUint(entry.keycode, MAX_KEYCODE, 'Keycode');
   }
   const nextKeymap = copyKeymap(keymap);
   const overwritten = new Set<number>();

@@ -152,7 +152,7 @@ describe('setKeycodes', () => {
     h.session.setKeycodes(0, [64], Keycode.A);
     expect(h.state().lastError?.message).toBe('Key 64 on layer 0 is outside the keymap');
     h.session.setKeycodes(0, [1], 0x10000);
-    expect(h.state().lastError?.message).toBe('Keycode 65536 is out of range');
+    expect(h.state().lastError?.message).toBe('Keycode 65536 is out of range 0..65535');
     await settle();
     expect(h.state().config).toBe(before);
     expect(wire(h)).toEqual([]);
