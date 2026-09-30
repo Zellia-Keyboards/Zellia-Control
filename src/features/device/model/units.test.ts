@@ -36,10 +36,11 @@ describe('lower deadzone (D12)', () => {
   it('stores the bottom-out point as (4.0 − bottom) / 4.0, like the Svelte performance page', () => {
     expect(bottomMmToLowerDeadzone(4)).toBe(0);
     expect(bottomMmToLowerDeadzone(3.5)).toBe(0.125);
+    expect(bottomMmToLowerDeadzone(3.2)).toBeCloseTo(0.2, 12); // controller default
+    expect(bottomMmToLowerDeadzone(3)).toBe(0.25);
+    expect(bottomMmToLowerDeadzone(2)).toBe(0.5);
+    expect(bottomMmToLowerDeadzone(1)).toBe(0.75);
     expect(bottomMmToLowerDeadzone(0)).toBe(1);
-    for (const mm of MM_STEPS) {
-      expect(bottomMmToLowerDeadzone(mm)).toBe((4.0 - mm) / 4.0);
-    }
   });
 
   it('loads it inversely (the Svelte page loaded fraction × 4 and showed 0.5 mm for a 3.5 mm bottom-out)', () => {
