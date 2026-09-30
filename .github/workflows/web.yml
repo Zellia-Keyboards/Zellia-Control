@@ -7,25 +7,44 @@ on:
     paths:
       - 'src/**'
       - 'src-controller/**'
+      - 'public/**'
+      - 'index.html'
+      - 'e2e/**'
+      - 'scripts/**'
       - '.github/workflows/web.yml'
       - 'package.json'
       - 'yarn.lock'
-      - 'vite.config.js'
+      - 'vite.config.ts'
+      - 'playwright.config.ts'
+      - 'postcss.config.js'
+      - 'eslint.config.js'
+      - 'tsconfig*.json'
+      - '.prettierrc.json'
+      - '.prettierignore'
   pull_request:
     branches:
       - main
     paths:
       - 'src/**'
       - 'src-controller/**'
+      - 'public/**'
+      - 'index.html'
+      - 'e2e/**'
+      - 'scripts/**'
       - '.github/workflows/web.yml'
       - 'package.json'
       - 'yarn.lock'
-      - 'vite.config.js'
+      - 'vite.config.ts'
+      - 'playwright.config.ts'
+      - 'postcss.config.js'
+      - 'eslint.config.js'
+      - 'tsconfig*.json'
+      - '.prettierrc.json'
+      - '.prettierignore'
   workflow_dispatch: # Manual trigger
 
 env:
-  NODE_VERSION: '20'
-  YARN_VERSION: '1.22.22'
+  NODE_VERSION: '24'
 
 jobs:
   build:
@@ -41,33 +60,44 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
 
-      - name: Setup Yarn
-        run: |
-          corepack enable
-          yarn set version ${{ env.YARN_VERSION }}
-
-      - name: Clean caches
-        run: |
-          rm -rf node_modules
-          rm -rf src-controller/node_modules
-          rm -rf ~/.yarn/cache
-          rm -rf .yarn/cache
-          rm -f .yarncrc .yarnrc.yml
+      # yarn 1.22.22 comes from the packageManager field of package.json.
+      - name: Enable Corepack
+        run: corepack enable
 
       - name: Install dependencies
-        run: yarn install
+        run: corepack yarn install --frozen-lockfile
 
-      - name: Build controller
-        run: |
-          cd src-controller
-          yarn install
-          yarn build
+      - name: Type check
+        run: corepack yarn typecheck
+
+      - name: Lint
+        run: corepack yarn lint
+
+      - name: Check formatting
+        run: corepack yarn format:check
+
+      - name: Unit and integration tests
+        run: corepack yarn test
 
       - name: Build website
-        run: |
-          yarn build
+        run: corepack yarn build
         env:
           NODE_ENV: production
+
+      - name: Install Playwright browser
+        run: corepack yarn playwright install --with-deps chrome
+
+      # Runs against the build/ from the previous step (vite preview, like the static host).
+      - name: End-to-end tests
+        run: corepack yarn test:e2e
+
+      - name: Upload Playwright report
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: e2e/.artifacts/playwright-report/
+          retention-days: 14
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
