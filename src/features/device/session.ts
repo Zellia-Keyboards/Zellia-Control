@@ -71,6 +71,7 @@ import type {
   RgbBaseConfig,
   RgbKeyConfig,
 } from './model/types';
+import { bootloaderFilters, detectBootloaderOf } from './bootloader';
 import { HID_REQUEST_FILTERS, MODELS, matchModel, type ModelDefinition } from './models';
 
 export type { DynamicKeyDraft } from './model/dynamic-key-binding';
@@ -169,7 +170,12 @@ export interface DeviceSession {
    */
   startDebug(keyId: number): void;
   stopDebug(): void;
-  /** The model's DFU bootloader; uses the last connected model after a disconnect. */
+  /**
+   * The model's DFU bootloader; uses the last connected model after a disconnect, and the
+   * bootloaders of every supported model when no keyboard was connected since the page loaded
+   * (§1.7). `silent` only returns already authorized devices; otherwise the browser's chooser
+   * opens (call from a user gesture).
+   */
   detectBootloader(silent: boolean): Promise<USBDevice[]>;
 }
 
@@ -1162,7 +1168,9 @@ class Session implements DeviceSession {
     const connection = this.#connection;
     if (connection) return connection.controller.detect_bootloader(silent);
     const model = this.#lastModel;
-    return model ? model.create().detect_bootloader(silent) : Promise.resolve([]);
+    if (model) return model.create().detect_bootloader(silent);
+    // No keyboard since the page loaded (§1.7): one may be waiting in its bootloader.
+    return detectBootloaderOf(bootloaderFilters(this.#models), silent);
   }
 }
 
