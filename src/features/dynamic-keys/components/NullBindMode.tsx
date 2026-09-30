@@ -30,6 +30,7 @@ import {
   NULL_BIND_SWITCH_DISTANCE_MM,
   loadNullBindDraft,
   mutexDraft,
+  mutexFields,
   nullBindFieldsOnApply,
   withBottomOut,
   type NullBindDraft,
@@ -118,7 +119,7 @@ export function NullBindMode({ onBack }: NullBindModeProps) {
   );
   // A configured pair shows its remembered values, other pairs the editor defaults.
   const pairFields = source.mutex
-    ? (source.fields ?? NULL_BIND_FIELD_DEFAULTS)
+    ? mutexFields(source.mutex.dynamicKey, source.fields)
     : NULL_BIND_FIELD_DEFAULTS;
   const [activeTab, setActiveTab] = useState<Tab>('performance');
   const [deletingPairs, setDeletingPairs] = useState(NO_KEYS);
@@ -157,7 +158,7 @@ export function NullBindMode({ onBack }: NullBindModeProps) {
         { layer, id: second },
       ];
       const bindings = [ownBinding(config, targets[0]), ownBinding(config, targets[1])] as const;
-      const remembered = source.mutex ? source.fields : undefined;
+      const remembered = source.mutex ? pairFields : undefined;
       // null: no free slot; the editor keeps its state (the device layer logs the rejection).
       if (deviceSession.applyDynamicKey(mutexDraft(targets, bindings, draft)) === null) return;
 

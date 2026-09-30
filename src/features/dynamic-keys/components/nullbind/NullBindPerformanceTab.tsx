@@ -8,10 +8,9 @@ import { deviceStore, useDeviceConfig, type DeviceConfig, type KeyLocation } fro
 import { useLoadedDraft } from '../../hooks/use-loaded-draft';
 import { dynamicKeyOfKindAt, dynamicKeySignature, locationKey } from '../../model/configured-keys';
 import {
-  NULL_BIND_FIELD_DEFAULTS,
   NULL_BIND_PERFORMANCE_DEFAULTS,
   loadNullBindPerformance,
-  mutexBottomOutMm,
+  mutexFields,
   withPerformance,
   type NullBindPerformance,
 } from '../../model/editor-drafts';
@@ -60,7 +59,10 @@ export function NullBindPerformanceTab({ selectedKeys, layer }: NullBindPerforma
     adopt,
   } = useLoadedDraft<NullBindPerformance>(
     source.deps,
-    previous => (source.mutex ? loadNullBindPerformance(source.fields) : previous),
+    previous =>
+      source.mutex
+        ? loadNullBindPerformance(mutexFields(source.mutex.dynamicKey, source.fields))
+        : previous,
     () => NULL_BIND_PERFORMANCE_DEFAULTS
   );
   const rapidTriggerEnabled = performance.rtDown > 0;
@@ -74,11 +76,8 @@ export function NullBindPerformanceTab({ selectedKeys, layer }: NullBindPerforma
       const mutex = dynamicKeyOfKindAt(current, location, 'mutex')?.dynamicKey;
       const memoryKey = mutex?.targets[0];
       if (!mutex || !memoryKey) continue;
-      const remembered = uiFieldsStore.getState().nullBind[locationKey(memoryKey)] ?? {
-        ...NULL_BIND_FIELD_DEFAULTS,
-        bottomOutMm: mutexBottomOutMm(mutex, undefined),
-      };
-      uiFields.setNullBind(memoryKey, withPerformance(remembered, next));
+      const remembered = uiFieldsStore.getState().nullBind[locationKey(memoryKey)];
+      uiFields.setNullBind(memoryKey, withPerformance(mutexFields(mutex, remembered), next));
     }
     // The tab already shows what it wrote.
     adopt(
