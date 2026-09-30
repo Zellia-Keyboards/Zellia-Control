@@ -298,8 +298,12 @@ function toControllerLocation(location: KeyLocation): ControllerKeyLocation {
   return result;
 }
 
+/** The leading known targets (a later target never moves into an earlier position). */
 function locations(targets: readonly (KeyLocation | null)[]): ControllerKeyLocation[] {
-  return targets.flatMap(target => (target ? [toControllerLocation(target)] : []));
+  const known = targets.findIndex(target => target === null);
+  return targets
+    .slice(0, known < 0 ? targets.length : known)
+    .flatMap(target => (target ? [toControllerLocation(target)] : []));
 }
 
 export function toControllerDynamicKey(slot: DynamicKeySlot): IDynamicKey {
@@ -342,4 +346,60 @@ export function toControllerDynamicKey(slot: DynamicKeySlot): IDynamicKey {
 
 export function toControllerKeymap(keymap: Keymap): number[][] {
   return keymap.map(layer => [...layer]);
+}
+
+// ---------------------------------------------------------------------------------------------
+// Validation of domain values before they reach the wire (DataView setters wrap silently)
+
+function assertMember(members: readonly number[], value: number, label: string): void {
+  if (!members.includes(value)) throw new RangeError(`${label} ${value} is not supported`);
+}
+
+function assertUint(value: number, max: number, label: string): void {
+  if (!Number.isInteger(value) || value < 0 || value > max) {
+    throw new RangeError(`${label} ${value} is out of range 0..${max}`);
+  }
+}
+
+function assertFraction(value: number, label: string): void {
+  if (!Number.isFinite(value) || value < 0 || value > 1) {
+    throw new RangeError(`${label} ${value} is not a fraction of travel (0..1)`);
+  }
+}
+
+function assertRgb(color: Rgb, label: string): void {
+  assertUint(color.red, BYTE, `${label} red`);
+  assertUint(color.green, BYTE, `${label} green`);
+  assertUint(color.blue, BYTE, `${label} blue`);
+}
+
+export function assertAdvancedKeyConfig(config: AdvancedKeyConfig): void {
+  assertMember(KEY_MODES, config.mode, 'Key mode');
+  assertMember(CALIBRATION_MODES, config.calibrationMode, 'Calibration mode');
+  assertFraction(config.activation, 'Activation');
+  assertFraction(config.deactivation, 'Deactivation');
+  assertFraction(config.triggerDistance, 'Trigger distance');
+  assertFraction(config.releaseDistance, 'Release distance');
+  assertFraction(config.triggerSpeed, 'Trigger speed');
+  assertFraction(config.releaseSpeed, 'Release speed');
+  assertFraction(config.upperDeadzone, 'Upper deadzone');
+  assertFraction(config.lowerDeadzone, 'Lower deadzone');
+  assertUint(config.upperBound, U16, 'Upper bound');
+  assertUint(config.lowerBound, U16, 'Lower bound');
+}
+
+export function assertRgbBaseConfig(config: RgbBaseConfig): void {
+  assertMember(RGB_BASE_MODES, config.mode, 'RGB base mode');
+  assertRgb(config.color, 'Colour');
+  assertRgb(config.secondaryColor, 'Secondary colour');
+  assertUint(config.speed, U16, 'Speed');
+  assertUint(config.direction, U16, 'Direction');
+  assertUint(config.density, BYTE, 'Density');
+  assertUint(config.brightness, BYTE, 'Brightness');
+}
+
+export function assertRgbKeyConfig(config: RgbKeyConfig): void {
+  assertMember(RGB_MODES, config.mode, 'RGB mode');
+  assertRgb(config.color, 'Colour');
+  assertUint(config.speed, U16, 'Speed');
 }

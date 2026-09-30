@@ -18,6 +18,9 @@ import {
 } from 'emi-keyboard-controller';
 import { describe, expect, it } from 'vitest';
 import {
+  assertAdvancedKeyConfig,
+  assertRgbBaseConfig,
+  assertRgbKeyConfig,
   deepFreeze,
   readDeviceConfig,
   readFeatureFlags,
@@ -35,7 +38,15 @@ import {
 } from './mapping';
 import { MODELS } from './models';
 import { dynamicKeyKeycode } from './model/dynamic-key-binding';
-import type { AdvancedKeyConfig, DynamicKeySlot, RgbBaseConfig, RgbKeyConfig } from './model/types';
+import type {
+  AdvancedKeyConfig,
+  DynamicKeySlot,
+  KeyLocation,
+  RgbBaseConfig,
+  RgbKeyConfig,
+} from './model/types';
+
+type KeyLocationOrNull = KeyLocation | null;
 
 const ADVANCED: AdvancedKeyConfig = {
   mode: KeyMode.KeyAnalogSpeedMode,
@@ -193,6 +204,18 @@ describe('dynamic keys', () => {
     }
   });
 
+  it('never shifts a mutex target into the other position', () => {
+    const mutex = (targets: readonly [KeyLocationOrNull, KeyLocationOrNull]) =>
+      toControllerDynamicKey({
+        kind: 'mutex',
+        bindings: [0x04, 0x07],
+        mode: DynamicKeyMutexMode.DKMutexNeutral,
+        targets,
+      }).target_keys_location;
+    expect(mutex([{ layer: 0, id: 31 }, null])).toEqual([{ layer: 0, id: 31 }]);
+    expect(mutex([null, { layer: 0, id: 33 }])).toEqual([]);
+  });
+
   it('omits missing targets and treats unknown or inconsistent keys as empty', () => {
     expect(
       toControllerDynamicKey({ kind: 'toggle', binding: 4, target: null }).target_keys_location
@@ -298,5 +321,59 @@ describe('metadata', () => {
     const value = deepFreeze({ list: [{ a: 1 }], nested: { b: [2] } });
     expect(Object.isFrozen(value.list[0])).toBe(true);
     expect(Object.isFrozen(value.nested.b)).toBe(true);
+  });
+});
+
+describe('validation of domain values before they reach the wire', () => {
+  it('accepts valid configurations', () => {
+    expect(() => {
+      assertAdvancedKeyConfig(ADVANCED);
+    }).not.toThrow();
+    expect(() => {
+      assertRgbBaseConfig(RGB_BASE);
+    }).not.toThrow();
+    expect(() => {
+      assertRgbKeyConfig(RGB_KEY);
+    }).not.toThrow();
+  });
+
+  it.each([
+    ['mode', { mode: 9 }],
+    ['calibration mode', { calibrationMode: -1 }],
+    ['activation', { activation: 1.01 }],
+    ['deactivation', { deactivation: -0.1 }],
+    ['trigger distance', { triggerDistance: Number.NaN }],
+    ['release speed', { releaseSpeed: Number.POSITIVE_INFINITY }],
+    ['lower deadzone', { lowerDeadzone: 2 }],
+    ['upper bound', { upperBound: 0x10000 }],
+    ['lower bound', { lowerBound: 1.5 }],
+  ] as const)('rejects an advanced key with an invalid %s', (_, change) => {
+    expect(() => {
+      assertAdvancedKeyConfig({ ...ADVANCED, ...change });
+    }).toThrow(RangeError);
+  });
+
+  it.each([
+    ['mode', { mode: 99 }],
+    ['colour', { color: { red: 256, green: 0, blue: 0 } }],
+    ['secondary colour', { secondaryColor: { red: 0, green: -1, blue: 0 } }],
+    ['speed', { speed: 0x10000 }],
+    ['direction', { direction: 12.5 }],
+    ['density', { density: 256 }],
+    ['brightness', { brightness: -1 }],
+  ] as const)('rejects an RGB base config with an invalid %s', (_, change) => {
+    expect(() => {
+      assertRgbBaseConfig({ ...RGB_BASE, ...change });
+    }).toThrow(RangeError);
+  });
+
+  it.each([
+    ['mode', { mode: 42 }],
+    ['colour', { color: { red: 0, green: 0, blue: 3.5 } }],
+    ['speed', { speed: -2 }],
+  ] as const)('rejects a per-key RGB config with an invalid %s', (_, change) => {
+    expect(() => {
+      assertRgbKeyConfig({ ...RGB_KEY, ...change });
+    }).toThrow(RangeError);
   });
 });
