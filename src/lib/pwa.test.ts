@@ -1,8 +1,12 @@
 import type { RegisterSWOptions } from 'virtual:pwa-register';
-import { beforeEach, describe, expect, expectTypeOf, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type * as PwaModule from './pwa';
+import type { UpdatePolicy } from './pwa';
 
-const registerSW = vi.hoisted(() => vi.fn<(options?: RegisterSWOptions) => () => Promise<void>>());
+const updateServiceWorker = vi.hoisted(() => vi.fn<(reloadPage?: boolean) => Promise<void>>());
+const registerSW = vi.hoisted(() =>
+  vi.fn<(options?: RegisterSWOptions) => typeof updateServiceWorker>()
+);
 
 vi.mock('virtual:pwa-register', () => ({ registerSW }));
 
@@ -18,41 +22,83 @@ function lastOptions(): RegisterSWOptions {
   return options;
 }
 
+/** An update policy whose idleness the test controls. */
+function controllablePolicy(initiallyIdle: boolean) {
+  let idle = initiallyIdle;
+  const listeners = new Set<() => void>();
+  const policy: UpdatePolicy = {
+    isIdle: () => idle,
+    subscribe: listener => {
+      listeners.add(listener);
+      return () => listeners.delete(listener);
+    },
+  };
+  return {
+    policy,
+    listenerCount: () => listeners.size,
+    setIdle(value: boolean) {
+      idle = value;
+      listeners.forEach(listener => {
+        listener();
+      });
+    },
+  };
+}
+
 beforeEach(() => {
+  updateServiceWorker.mockReset();
+  updateServiceWorker.mockResolvedValue(undefined);
   registerSW.mockReset();
-  registerSW.mockReturnValue(() => Promise.resolve());
+  registerSW.mockReturnValue(updateServiceWorker);
 });
 
 describe('registerServiceWorker', () => {
-  it('registers the generated service worker once', async () => {
+  it('registers the generated service worker once, after the window load event', async () => {
     const { registerServiceWorker } = await loadPwa();
+    const { policy } = controllablePolicy(true);
 
-    registerServiceWorker();
-    registerServiceWorker();
+    registerServiceWorker(policy);
+    registerServiceWorker(policy);
 
     expect(registerSW).toHaveBeenCalledTimes(1);
-  });
-
-  it('defers registration to the window load event', async () => {
-    const { registerServiceWorker } = await loadPwa();
-
-    registerServiceWorker();
-
     expect(lastOptions().immediate).toBeFalsy();
   });
 
-  it('always leaves the reload after an update to autoUpdate', async () => {
+  it('applies a waiting update right away when the app is idle', async () => {
     const { registerServiceWorker } = await loadPwa();
+    const { policy } = controllablePolicy(true);
 
-    // With skipWaiting + clientsClaim (vite.config.ts) the new worker has already taken over the
-    // page and deleted the old build's precache when vite-plugin-pwa would call onNeedReload, and
-    // the deploy's rsync --delete removed the old chunks. A page that postponed the reload could no
-    // longer load its lazy routes, so callers cannot take the reload over.
-    expectTypeOf(registerServiceWorker).parameters.toEqualTypeOf<[]>();
-    registerServiceWorker();
+    registerServiceWorker(policy);
+    lastOptions().onNeedRefresh?.();
 
-    // vite-plugin-pwa reloads the page itself when no onNeedReload handler is given.
-    expect(lastOptions()).not.toHaveProperty('onNeedReload');
+    expect(updateServiceWorker).toHaveBeenCalledExactlyOnceWith(true);
+  });
+
+  it('holds a waiting update until the app becomes idle, then applies it once', async () => {
+    const { registerServiceWorker } = await loadPwa();
+    const control = controllablePolicy(false);
+
+    registerServiceWorker(control.policy);
+    lastOptions().onNeedRefresh?.();
+    expect(updateServiceWorker).not.toHaveBeenCalled();
+
+    control.setIdle(false);
+    expect(updateServiceWorker).not.toHaveBeenCalled();
+
+    control.setIdle(true);
+    control.setIdle(true);
+    expect(updateServiceWorker).toHaveBeenCalledExactlyOnceWith(true);
+    expect(control.listenerCount()).toBe(0);
+  });
+
+  it('never activates an update that was not downloaded', async () => {
+    const { registerServiceWorker } = await loadPwa();
+    const control = controllablePolicy(false);
+
+    registerServiceWorker(control.policy);
+    control.setIdle(true);
+
+    expect(updateServiceWorker).not.toHaveBeenCalled();
   });
 
   it('logs registration failures instead of throwing', async () => {
@@ -60,7 +106,7 @@ describe('registerServiceWorker', () => {
     const consoleError = vi.spyOn(console, 'error').mockImplementation(() => undefined);
     const failure = new Error('blocked');
 
-    registerServiceWorker();
+    registerServiceWorker(controllablePolicy(true).policy);
     lastOptions().onRegisterError?.(failure);
 
     expect(consoleError).toHaveBeenCalledWith('Service worker registration failed', failure);

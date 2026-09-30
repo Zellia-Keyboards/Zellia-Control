@@ -11,8 +11,9 @@ export default defineConfig({
   plugins: [
     react(),
     VitePWA({
-      // Registered by src/lib/pwa.ts through `virtual:pwa-register`.
-      registerType: 'autoUpdate',
+      // Registered by src/lib/pwa.ts through `virtual:pwa-register`. 'prompt': a new deployment
+      // waits until src/app/update-policy.ts reports the app idle (no keyboard, no flash).
+      registerType: 'prompt',
       injectRegister: false,
       includeAssets: ['favicon.png', 'robots.txt'],
       manifest: {
@@ -32,9 +33,9 @@ export default defineConfig({
         categories: ['productivity', 'utilities'],
       },
       workbox: {
-        // autoUpdate: a new worker takes over open pages at once. vite-plugin-pwa only sets these
-        // itself when it injects the registration script.
-        skipWaiting: true,
+        // No skipWaiting: an update waits and the old worker keeps serving the running page (and its
+        // precached lazy chunks) until src/lib/pwa.ts applies it while idle. clientsClaim only lets
+        // the very first install control the page at once (offline right after the first visit).
         clientsClaim: true,
         // Distinct from the legacy SvelteKit worker's `workbox-precache-*` caches, which the
         // public/service-worker.js kill switch deletes.
