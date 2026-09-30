@@ -39,8 +39,12 @@ function assertScenario(value: unknown, where: string): asserts value is ParityS
   if (setup !== undefined && typeof setup !== 'function') {
     throw new Error(`${where}: setup must be a function`);
   }
-  if (virtualKeyboard !== undefined && typeof virtualKeyboard !== 'boolean') {
-    throw new Error(`${where}: virtualKeyboard must be a boolean`);
+  if (
+    virtualKeyboard !== undefined &&
+    typeof virtualKeyboard !== 'boolean' &&
+    (!isRecord(virtualKeyboard) || Array.isArray(virtualKeyboard))
+  ) {
+    throw new Error(`${where}: virtualKeyboard must be a boolean or an options object`);
   }
   if (storage !== undefined) assertStorage(storage, where);
 }

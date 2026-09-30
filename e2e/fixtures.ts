@@ -6,28 +6,29 @@ import {
   type Page,
 } from '@playwright/test';
 import { VIRTUAL_KEYBOARD_ENTRY, buildVirtualKeyboard } from '../scripts/build-virtual-keyboard';
+import type {
+  VirtualKeyboardBrowserOptions,
+  VirtualKeyboardHandle,
+} from '../src/testing/virtual-keyboard/handle';
 
 /**
  * Browser-side handle that src/testing/virtual-keyboard/browser.ts publishes as
- * `window.__virtualKeyboard` (see that module for the full API). e2e code is compiled without the
- * app's types, so only the members the fixtures rely on are declared here.
+ * `window.__virtualKeyboard`: live device state, decoded host packets and the simulation
+ * controls (disconnect, reconnect, firmware version, on-board config changes, …).
  */
-export interface VirtualKeyboardHandle {
-  /** HIDDevice-compatible simulated keyboard. */
-  readonly device: unknown;
-  /** HID-compatible manager installed as `navigator.hid`. */
-  readonly hid: unknown;
-  /** Simulated device state (config, keymap, dynamic keys, …). */
-  readonly state: unknown;
-  /** Reports the app sent to the device. */
-  readonly sentReports: unknown;
-  /** Simulates unplugging the keyboard. */
-  disconnect(): void;
-}
+export type {
+  VirtualDfuHandle,
+  VirtualKeyboardBrowserOptions,
+  VirtualKeyboardHandle,
+  VirtualKeyboardStateData,
+  VirtualPicker,
+  VirtualProfileData,
+} from '../src/testing/virtual-keyboard/handle';
 
 declare global {
   interface Window {
     __virtualKeyboard?: VirtualKeyboardHandle;
+    __virtualKeyboardOptions?: VirtualKeyboardBrowserOptions;
   }
 }
 
@@ -47,6 +48,11 @@ interface TestFixtures {
    * script runs, so the app finds it on `navigator.hid`. Request it before navigating.
    */
   virtualKeyboard: VirtualKeyboard;
+  /**
+   * Options of the injected keyboard (model, firmware version, seeded dynamic keys, chooser
+   * answer, …), e.g. `test.use({ virtualKeyboardOptions: { seedDynamicKeys: false } })`.
+   */
+  virtualKeyboardOptions: VirtualKeyboardBrowserOptions;
 }
 
 interface WorkerFixtures {
@@ -105,7 +111,15 @@ export const test = base.extend<TestFixtures, WorkerFixtures>({
     { auto: true },
   ],
 
-  virtualKeyboard: async ({ context, page, virtualKeyboardScript }, use) => {
+  virtualKeyboardOptions: [{}, { option: true }],
+
+  virtualKeyboard: async (
+    { context, page, virtualKeyboardOptions, virtualKeyboardScript },
+    use
+  ) => {
+    await context.addInitScript(options => {
+      window.__virtualKeyboardOptions = options;
+    }, virtualKeyboardOptions);
     await context.addInitScript({ content: virtualKeyboardScript });
     await use(virtualKeyboardOn(page));
   },

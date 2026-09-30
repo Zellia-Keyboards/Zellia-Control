@@ -1,5 +1,8 @@
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, expectTypeOf, it } from 'vitest';
 import { installBrowserVirtualKeyboard, parseBrowserOptions } from './browser-install';
+import type { VirtualKeyboardOptions } from './device';
+import type { VirtualKeyboardBrowserOptions } from './handle';
+import type { VirtualModelId } from './state';
 
 function removeVirtualKeyboard(): void {
   window.__virtualKeyboard?.uninstall();
@@ -11,6 +14,35 @@ beforeEach(removeVirtualKeyboard);
 afterEach(removeVirtualKeyboard);
 
 describe('parseBrowserOptions', () => {
+  it('accepts every option the e2e fixture can send', () => {
+    expectTypeOf<VirtualKeyboardBrowserOptions>().toExtend<VirtualKeyboardOptions>();
+    expectTypeOf<
+      NonNullable<VirtualKeyboardBrowserOptions['model']>
+    >().toEqualTypeOf<VirtualModelId>();
+    const options: Required<VirtualKeyboardBrowserOptions> = {
+      model: 'oholeo',
+      productName: 'Oholeo',
+      firmware: { major: 1, minor: 2, patch: 3, info: 'x' },
+      seedDynamicKeys: false,
+      latencyMs: 1,
+      debugIntervalMs: 5,
+      reconnectDelayMs: null,
+      calibrationDelayMs: 0,
+      authorized: true,
+      picker: 'cancel',
+      dfu: {
+        memoryMap: null,
+        transferSize: 64,
+        busyPolls: 2,
+        pollTimeoutMs: 1,
+        manifestationTolerant: true,
+        authorized: true,
+      },
+      firmwareAfterUpdate: { patch: 4 },
+    };
+    expect(parseBrowserOptions(JSON.parse(JSON.stringify(options)))).toEqual(options);
+  });
+
   it('keeps valid JSON options and drops everything else', () => {
     expect(
       parseBrowserOptions({

@@ -24,12 +24,21 @@ describe('validateScenarios', () => {
       storage: { themeColor: 'blue' },
       setup,
     };
+    const lighting = {
+      name: 'lighting-basic',
+      path: '/lighting/',
+      virtualKeyboard: { seedDynamicKeys: false },
+    };
     const scenarios = validateScenarios([
       module('a.ts', { default: [{ name: 'welcome', path: '/' }] }),
-      module('b.ts', { default: [remap] }),
+      module('b.ts', { default: [remap, lighting] }),
     ]);
 
-    expect(scenarios.map(scenario => scenario.name)).toEqual(['welcome', 'remap-basic']);
+    expect(scenarios.map(scenario => scenario.name)).toEqual([
+      'welcome',
+      'remap-basic',
+      'lighting-basic',
+    ]);
     expect(scenarios[1]).toBe(remap);
     expect(scenarios[1]?.setup).toBe(setup);
   });
@@ -47,6 +56,7 @@ describe('validateScenarios', () => {
       { name: 'welcome', path: 'remap/' },
       { name: 'welcome', path: '/', setup: 'click' },
       { name: 'welcome', path: '/', virtualKeyboard: 'yes' },
+      { name: 'welcome', path: '/', virtualKeyboard: [true] },
       { name: 'welcome', path: '/', storage: { themeColor: 1 } },
       'welcome',
     ];

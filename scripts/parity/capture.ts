@@ -89,6 +89,10 @@ async function captureApp(
       seededStorage(variant, scenario.storage ?? {})
     );
     if (scenario.virtualKeyboard) {
+      const options = scenario.virtualKeyboard === true ? {} : scenario.virtualKeyboard;
+      await context.addInitScript(json => {
+        Reflect.set(window, '__virtualKeyboardOptions', json);
+      }, options);
       virtualKeyboardScript ??= buildVirtualKeyboard();
       await context.addInitScript({ content: await virtualKeyboardScript });
     }

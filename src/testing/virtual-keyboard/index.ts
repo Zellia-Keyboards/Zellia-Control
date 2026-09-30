@@ -22,5 +22,13 @@ export {
   type VirtualDfuResetInfo,
 } from './dfu';
 export { installVirtualHid, type InstalledVirtualKeyboard } from './install';
+export type {
+  VirtualDfuHandle,
+  VirtualKeyboardBrowserOptions,
+  VirtualKeyboardHandle,
+  VirtualKeyboardStateData,
+  VirtualPicker,
+  VirtualProfileData,
+} from './handle';
 export * from './protocol';
 export * from './state';
