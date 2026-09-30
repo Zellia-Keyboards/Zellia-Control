@@ -3,7 +3,7 @@ import { fileURLToPath } from 'node:url';
 import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
-import { staticHosting } from './scripts/static-hosting';
+import { STATIC_ROUTES, staticHosting } from './scripts/static-hosting.js';
 
 const controllerEntry = fileURLToPath(new URL('./src-controller/src/index.ts', import.meta.url));
 
@@ -11,6 +11,7 @@ export default defineConfig({
   plugins: [
     react(),
     VitePWA({
+      // Registered by src/lib/pwa.ts through `virtual:pwa-register`.
       registerType: 'autoUpdate',
       injectRegister: false,
       includeAssets: ['favicon.png', 'robots.txt'],
@@ -31,7 +32,21 @@ export default defineConfig({
         categories: ['productivity', 'utilities'],
       },
       workbox: {
+        // autoUpdate: a new worker takes over open pages at once. vite-plugin-pwa only sets these
+        // itself when it injects the registration script.
+        skipWaiting: true,
+        clientsClaim: true,
+        // Distinct from the legacy SvelteKit worker's `workbox-precache-*` caches, which the
+        // public/service-worker.js kill switch deletes.
+        cacheId: 'zellia-control',
         globPatterns: ['**/*.{js,css,html,svg,png,ico,json,woff,woff2,jpg}'],
+        // Route copies are identical to index.html (navigateFallback serves them offline); the
+        // kill switch is only for legacy registrations.
+        globIgnores: [
+          '**/node_modules/**/*',
+          'service-worker.js',
+          ...STATIC_ROUTES.map(route => `${route}/index.html`),
+        ],
         navigateFallback: '/index.html',
         cleanupOutdatedCaches: true,
         runtimeCaching: [
