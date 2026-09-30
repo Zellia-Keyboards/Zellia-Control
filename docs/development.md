@@ -129,7 +129,9 @@ outdated `src-controller/` with this repository's synced copy, installs with
 yarn 1 (frozen lockfile), builds with SvelteKit (`build/`) and serves `build/`
 on :4180. It never commits in the baseline; a stamp in `build/` skips install
 and build until the baseline commit, its lockfile or `src-controller/` change
-(`--force` rebuilds).
+(`--force` rebuilds). The baseline is served with the same static-host
+emulation as this app's `vite preview` (`scripts/static-host.mjs`), so both
+sides of a comparison answer every request the same way.
 
 ### Running
 
