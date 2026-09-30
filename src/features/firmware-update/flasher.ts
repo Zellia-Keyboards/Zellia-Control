@@ -8,7 +8,9 @@
  * 3. Once the keyboard has left (or the user says it is in DFU mode), the bootloader is looked
  *    up again and, from a user click only, picked in the browser's USB chooser
  *    (`detectBootloader(false)` needs transient user activation); then it is opened.
- * 4. `WebDfuDevice.download()` erases, 6. writes with progress and 7. manifests and resets it.
+ * 4.–7. `WebDfuDevice.download()` erases ("Update Program"), needs no second connection
+ *    ("Connect Flash" completes at once), writes with progress ("Flash Firmware"), then
+ *    manifests and resets the bootloader, which boots the new firmware ("Finish").
  *
  * While a session runs, `setFirmwareUpdateActive(true)` keeps the Update page mounted through
  * the keyboard's HID disconnect. The session ends when the flasher is detached (the page is
@@ -81,8 +83,8 @@ class Flasher implements FirmwareFlasher {
   /** The device search, or the open-and-flash, in progress; at most one at a time. */
   #task: Promise<void> | null = null;
   #pollTimer: ReturnType<typeof setTimeout> | null = null;
+  /** Aborts the running download; the download then closes the device itself. */
   #abort: AbortController | null = null;
-  #dfu: WebDfuDevice | null = null;
   #unsubscribeStore: (() => void) | null = null;
 
   constructor(options: FirmwareFlasherOptions) {
@@ -101,6 +103,7 @@ class Flasher implements FirmwareFlasher {
   }
 
   attach(): () => void {
+    this.#unsubscribeStore?.();
     this.#attached = true;
     this.#unsubscribeStore = deviceStore.subscribe(state => {
       // The keyboard left after the bootloader request: it is rebooting into DFU mode.
@@ -185,14 +188,11 @@ class Flasher implements FirmwareFlasher {
     this.#setState({ phase: 'error', step, stepStatus, message });
   }
 
-  /** Ends the current attempt: aborts the download, closes the device, forgets the image. */
+  /** Ends the current attempt: aborts the download and forgets the image. */
   #stop(): void {
     this.#generation += 1;
     this.#abort?.abort();
     this.#abort = null;
-    const dfu = this.#dfu;
-    this.#dfu = null;
-    if (dfu) void dfu.close();
     if (this.#pollTimer !== null) clearTimeout(this.#pollTimer);
     this.#pollTimer = null;
     this.#task = null;
@@ -283,10 +283,9 @@ class Flasher implements FirmwareFlasher {
       return;
     }
     if (!current()) {
-      void dfu.close();
+      await dfu.close();
       return;
     }
-    this.#dfu = dfu;
     const abort = new AbortController();
     this.#abort = abort;
     this.#setState({ phase: 'erase' });
@@ -305,8 +304,8 @@ class Flasher implements FirmwareFlasher {
       const step = this.#state.phase === 'erase' ? 'update_program' : 'flash_firmware';
       this.#fail(step, FLASHER_ERRORS.flashFailed);
     } finally {
-      if (this.#dfu === dfu) this.#dfu = null;
       if (this.#abort === abort) this.#abort = null;
+      // After manifestation the bootloader has reset and is gone; close() allows for that.
       await dfu.close();
     }
   }
