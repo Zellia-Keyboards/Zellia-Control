@@ -1,7 +1,7 @@
 import { Keycode as EmiKeycode, KeyModifier } from 'emi-keyboard-controller';
 import { describe, expect, expectTypeOf, it } from 'vitest';
 import type { Keycode } from '../../device/model/types';
-import { decodeKeycode, findAction } from '../../keycodes';
+import { decodeKeycode, findAction, kc } from '../../keycodes';
 import { DksAction } from './dks-bitmap';
 import { encodeKeyControl } from './dks-codec';
 import {
@@ -11,6 +11,8 @@ import {
   TAP_HOLD_DEFAULTS,
   TOGGLE_DEFAULT_BINDING,
   bottomOutMmOf,
+  dksBindingLabel,
+  strokeBindings,
   strokeDistances,
 } from './defaults';
 
@@ -43,9 +45,9 @@ describe('DKS stroke distances (D14)', () => {
 });
 
 describe('DKS editor presets', () => {
-  it('starts an unconfigured key with empty bindings, released nodes and a 3.0 mm bottom-out', () => {
+  it('starts an unconfigured key with unset bindings, released nodes and a 3.0 mm bottom-out', () => {
     expect(DKS_EMPTY_EDITOR).toEqual({
-      bindings: [0, 0, 0, 0],
+      bindings: [null, null, null, null],
       bitmaps: [
         [R, R, R, R],
         [R, R, R, R],
@@ -55,6 +57,27 @@ describe('DKS editor presets', () => {
       bottomOutMm: 3,
     });
     expect(DKS_EMPTY_EDITOR.bitmaps.map(encodeKeyControl)).toEqual([0, 0, 0, 0]);
+  });
+
+  it('labels binding buttons like Svelte (`name || keycode`): unset blank, a picked None "None"', () => {
+    // Svelte: unset bindings were '' and their buttons blank; a picked None was '0' and read "None".
+    expect(DKS_EMPTY_EDITOR.bindings.map(dksBindingLabel)).toEqual(['', '', '', '']);
+    expect(dksBindingLabel(kc.none)).toBe('None');
+    expect(dksBindingLabel(kc.key(EmiKeycode.Escape))).toBe('Esc');
+    // A keycode the picker does not offer (e.g. set by another tool) shows its number.
+    expect(findAction(0x1234)).toBeUndefined();
+    expect(dksBindingLabel(0x1234)).toBe('4660');
+  });
+
+  it('sends unset bindings as no key (like the Svelte editor)', () => {
+    expect(strokeBindings(DKS_EMPTY_EDITOR.bindings)).toEqual([0, 0, 0, 0]);
+    expect(strokeBindings([null, EmiKeycode.Escape, null, kc.none])).toEqual([
+      0,
+      EmiKeycode.Escape,
+      0,
+      0,
+    ]);
+    expect(strokeBindings(DKS_RESET_PRESET.bindings)).toEqual(DKS_RESET_PRESET.bindings);
   });
 
   it('resets to Esc/Enter/Space/Backspace with the Svelte preset bitmaps and a 4.0 mm bottom-out', () => {
@@ -69,7 +92,7 @@ describe('DKS editor presets', () => {
       bottomOutMm: 4,
     });
     // The Svelte preset stored the strings 'esc', 'enter', … and showed them verbatim.
-    expect(DKS_RESET_PRESET.bindings.map(binding => findAction(binding)?.name)).toEqual([
+    expect(DKS_RESET_PRESET.bindings.map(dksBindingLabel)).toEqual([
       'Esc',
       'Enter',
       'Space',

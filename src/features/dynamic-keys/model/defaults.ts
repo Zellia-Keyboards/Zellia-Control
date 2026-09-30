@@ -1,11 +1,11 @@
 /**
  * Defaults and presets of the dynamic-key editors (from the Svelte editors), with bindings as full
- * EMI keycodes.
+ * EMI keycodes (`null` for an unset DKS binding).
  */
 import { Keycode as EmiKeycode, KeyModifier } from 'emi-keyboard-controller';
 import type { Keycode, StrokeDistances } from '../../device/model/types';
 import { fractionToMm, mmToFraction } from '../../device/model/units';
-import { kc } from '../../keycodes';
+import { findAction, kc } from '../../keycodes';
 import { DksAction, type DksBitmap } from './dks-bitmap';
 
 /** DKS press/release point at the top of the stroke (fixed at 1.5 mm, as in the Svelte app). */
@@ -29,10 +29,33 @@ export function bottomOutMmOf(distances: StrokeDistances): number {
   return fractionToMm(distances.pressFully);
 }
 
+/**
+ * A DKS editor binding: a keycode, or `null` while unset. Unset bindings show a blank button (the
+ * Svelte `''`), unlike an explicitly picked None (`kc.none`), which reads "None".
+ */
+export type DksBinding = Keycode | null;
+
 export interface DksEditorState {
-  readonly bindings: readonly [Keycode, Keycode, Keycode, Keycode];
+  readonly bindings: readonly [DksBinding, DksBinding, DksBinding, DksBinding];
   readonly bitmaps: readonly [DksBitmap, DksBitmap, DksBitmap, DksBitmap];
   readonly bottomOutMm: number;
+}
+
+/**
+ * Text of a binding's button (Svelte `currentKeyAction?.name || keycode`): blank while unset, the
+ * picker name when the catalog has one, else the keycode number.
+ */
+export function dksBindingLabel(binding: DksBinding): string {
+  if (binding === null) return '';
+  return findAction(binding)?.name ?? String(binding);
+}
+
+/** The stroke slot's bindings for the editor's: unset bindings send no key, as in Svelte. */
+export function strokeBindings(
+  bindings: DksEditorState['bindings']
+): readonly [Keycode, Keycode, Keycode, Keycode] {
+  const [a, b, c, d] = bindings;
+  return [a ?? kc.none, b ?? kc.none, c ?? kc.none, d ?? kc.none];
 }
 
 const { Hold: H, Press: P, Release: R, Tap: T } = DksAction;
@@ -40,7 +63,7 @@ const RELEASED: DksBitmap = [R, R, R, R];
 
 /** Editor state for a key without a DKS. */
 export const DKS_EMPTY_EDITOR: DksEditorState = {
-  bindings: [kc.none, kc.none, kc.none, kc.none],
+  bindings: [null, null, null, null],
   bitmaps: [RELEASED, RELEASED, RELEASED, RELEASED],
   bottomOutMm: 3.0,
 };
