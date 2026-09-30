@@ -12,7 +12,12 @@ import {
   RGBMode,
 } from 'emi-keyboard-controller';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { dynamicKeyKeycode, fractionToRaw, type HostPacket } from '../../testing/virtual-keyboard';
+import {
+  dynamicKeyKeycode,
+  fractionToRaw,
+  unreachableDynamicKeySlots,
+  type HostPacket,
+} from '../../testing/virtual-keyboard';
 import { createDeviceStore } from './device-store';
 import { readDeviceConfig } from './mapping';
 import type { AdvancedKeyConfig, DeviceConfig, RgbBaseConfig, RgbKeyConfig } from './model/types';
@@ -56,6 +61,11 @@ function sets(h: SessionHarness): SetPacket[] {
 
 function wire(h: SessionHarness): string[] {
   return h.packets().map(describePacket);
+}
+
+/** libamp stops at the first empty slot: every dynamic key on the keyboard must be reachable. */
+function expectAllDynamicKeysRun(h: SessionHarness): void {
+  expect(unreachableDynamicKeySlots(h.vk.state.active)).toEqual([]);
 }
 
 function configOf(h: SessionHarness): DeviceConfig {
@@ -158,14 +168,32 @@ describe('setKeycodes', () => {
     expect(wire(h)).toEqual([]);
   });
 
-  it('releases the dynamic key of an overwritten key: keymap first, then the slot (D4)', async () => {
+  it('releases the dynamic key of an overwritten key and moves the last one into its slot (D4)', async () => {
     const h = await connected();
+    const mutex = configOf(h).dynamicKeys[3];
     h.session.setKeycodes(0, [32], Keycode.A);
-    expect(configOf(h).dynamicKeys[0]).toEqual({ kind: 'none' });
+    expect(configOf(h).dynamicKeys.slice(0, 4)).toEqual([
+      mutex,
+      configOf(h).dynamicKeys[1],
+      configOf(h).dynamicKeys[2],
+      { kind: 'none' },
+    ]);
+    expect(configOf(h).keymap[0]?.slice(31, 34)).toEqual([dk(0), Keycode.A, dk(0)]);
     await settle();
-    expect(wire(h)).toEqual(['set keymap 0:32 [0x0004]', 'set dynamicKey 0 none']);
-    expect(h.vk.state.active.dynamicKeys[0]).toEqual({ type: 'none' });
-    expect(h.vk.state.active.keymap[0]?.[32]).toBe(Keycode.A);
+    // The mutex is written to its new slot first, its keys follow, then the old slot is freed.
+    expect(wire(h)).toEqual([
+      'set dynamicKey 0 mutex',
+      'set keymap 0:31 [0x00a7 0x0004 0x00a7]',
+      'set dynamicKey 3 none',
+    ]);
+    expect(h.vk.state.active.dynamicKeys.slice(0, 4)).toEqual([
+      { type: 'mutex', bindings: [Keycode.D, Keycode.G], keyIds: [31, 33], mode: 1 },
+      expect.objectContaining({ type: 'modTap' }),
+      expect.objectContaining({ type: 'toggle' }),
+      { type: 'none' },
+    ]);
+    expect(h.vk.state.active.keymap[0]?.slice(31, 34)).toEqual([dk(0), Keycode.A, dk(0)]);
+    expectAllDynamicKeysRun(h);
   });
 
   it('releases a mutex that loses one key and gives the other key its binding back', async () => {
@@ -179,6 +207,7 @@ describe('setKeycodes', () => {
     ]);
     expect(h.vk.state.active.keymap[0]?.slice(31, 34)).toEqual([Keycode.D, dk(0), Keycode.A]);
     expect(configOf(h).dynamicKeys[3]).toEqual({ kind: 'none' });
+    expectAllDynamicKeysRun(h);
   });
 });
 
@@ -374,6 +403,7 @@ describe('dynamic keys', () => {
       keyId: 10,
     });
     expect(h.vk.state.active.keymap[1]?.[10]).toBe(dk(4));
+    expectAllDynamicKeysRun(h);
   });
 
   it('writes every dynamic-key kind at the firmware offsets', async () => {
@@ -433,6 +463,7 @@ describe('dynamic keys', () => {
       duration: 300,
       keyId: 30,
     });
+    expectAllDynamicKeysRun(h);
   });
 
   it('rejects a dynamic key when every slot is taken', async () => {
@@ -473,17 +504,26 @@ describe('dynamic keys', () => {
 
   it("removes a dynamic key and restores its key's own binding (D5)", async () => {
     const h = await connected();
+    const mutex = configOf(h).dynamicKeys[3];
     h.session.removeDynamicKey(1);
-    expect(configOf(h).dynamicKeys[1]).toEqual({ kind: 'none' });
     expect(configOf(h).keymap[0]?.[30]).toBe(Keycode.S);
+    // The mutex moves from slot 3 into the freed slot 1, so the keyboard keeps running it.
+    expect(configOf(h).dynamicKeys[1]).toEqual(mutex);
+    expect(configOf(h).dynamicKeys[3]).toEqual({ kind: 'none' });
     await settle();
-    expect(wire(h)).toEqual(['set keymap 0:30 [0x0016]', 'set dynamicKey 1 none']);
-    expect(h.vk.state.active.keymap[0]?.[30]).toBe(Keycode.S);
-    expect(h.vk.state.active.dynamicKeys[1]).toEqual({ type: 'none' });
+    expect(wire(h)).toEqual([
+      'set dynamicKey 1 mutex',
+      'set keymap 0:30 [0x0016 0x01a7]',
+      'set keymap 0:33 [0x01a7]',
+      'set dynamicKey 3 none',
+    ]);
+    expect(h.vk.state.active.keymap[0]?.slice(30, 34)).toEqual([Keycode.S, dk(1), dk(0), dk(1)]);
+    expect(h.vk.state.active.dynamicKeys[1]).toMatchObject({ type: 'mutex', keyIds: [31, 33] });
+    expect(h.vk.state.active.dynamicKeys[3]).toEqual({ type: 'none' });
+    expectAllDynamicKeysRun(h);
 
     h.vk.clearHistory();
-    h.session.removeDynamicKey(1);
-    h.session.removeDynamicKey(99);
+    h.session.removeDynamicKey(3);
     await settle();
     expect(wire(h)).toEqual([]);
     expect(h.state().lastError).toBeNull();
@@ -513,14 +553,41 @@ describe('dynamic keys', () => {
       'none',
     ]);
     await settle();
+    // Freed from the top down, so the slots in use stay contiguous after every packet.
     expect(wire(h)).toEqual([
       'set keymap 0:31 [0x0007]',
       'set keymap 0:33 [0x000a]',
       'set keymap 0:42 [0x001d 0x001b]',
-      'set dynamicKey 3 none',
       'set dynamicKey 4 none',
+      'set dynamicKey 3 none',
     ]);
     expect(h.vk.state.active.keymap[0]?.slice(42, 44)).toEqual([Keycode.Z, Keycode.X]);
+    expectAllDynamicKeysRun(h);
+  });
+
+  it('keeps every dynamic key running when kinds in lower slots are removed', async () => {
+    const h = await connected();
+    h.session.removeDynamicKeysOfKind('stroke');
+    h.session.removeDynamicKeysOfKind('toggle');
+    expect(
+      configOf(h)
+        .dynamicKeys.slice(0, 3)
+        .map(slot => slot.kind)
+    ).toEqual(['mutex', 'modTap', 'none']);
+    await settle();
+    expect(h.vk.state.active.dynamicKeys.slice(0, 3).map(key => key.type)).toEqual([
+      'mutex',
+      'modTap',
+      'none',
+    ]);
+    expect(h.vk.state.active.keymap[0]?.slice(30, 35)).toEqual([
+      dk(1),
+      dk(0),
+      Keycode.F,
+      dk(0),
+      Keycode.H,
+    ]);
+    expectAllDynamicKeysRun(h);
   });
 });
 

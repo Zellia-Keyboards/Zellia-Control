@@ -137,7 +137,11 @@ export interface DeviceSession {
   setAdvancedKeys(keyIds: readonly number[], config: AdvancedKeyConfig): void;
   setRgbBase(config: RgbBaseConfig): void;
   setRgbKeys(entries: readonly { keyId: number; config: RgbKeyConfig }[]): void;
-  /** Writes the draft to its key's slot or the first free one (D6); null when rejected. */
+  /**
+   * Writes the draft to its key's slot or the first free one (D6); null when rejected. Slot
+   * numbers are not stable: the slots in use are kept contiguous from 0 (libamp stops at the
+   * first empty slot), so freeing a slot moves the highest dynamic key down into it.
+   */
   applyDynamicKey(draft: DynamicKeyDraft): number | null;
   /** Frees the slot and restores each of its keys to the dynamic key's own binding (D5). */
   removeDynamicKey(slot: number): void;
@@ -815,8 +819,10 @@ class Session implements DeviceSession {
   }
 
   /**
-   * Applies a keymap/dynamic-key change: cache, then packets (configure dynamic keys before keys
-   * point at them, free released ones after their keys are restored), then the store.
+   * Applies a keymap/dynamic-key change: cache, then packets, then the store. Dynamic keys are
+   * written before keys point at them (including keys moved down into a freed slot), and released
+   * slots are freed after their keys are restored, from the top down, so the slots in use stay
+   * contiguous on the keyboard (libamp stops at the first empty slot).
    */
   #applyDynamicKeyChange(
     connection: Connection,
@@ -845,7 +851,7 @@ class Session implements DeviceSession {
             ...run.keycodes,
           ])
       ),
-      ...change.changedSlots.filter(released).map(slotPacket),
+      ...change.changedSlots.filter(released).toReversed().map(slotPacket),
     ]);
     this.#patch({ config: next });
   }

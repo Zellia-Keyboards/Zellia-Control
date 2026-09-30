@@ -448,6 +448,19 @@ export function factoryReset(state: VirtualKeyboardState): void {
   restoreProfile(state);
 }
 
+/**
+ * Slots holding a dynamic key that libamp never runs: `dynamic_key_process()` and
+ * `dynamic_key_add_to_report()` walk the slots from 0 and stop at the first empty one, and keys
+ * pointing at a slot they do not reach do nothing (`keyboard_event_handler` ignores them).
+ */
+export function unreachableDynamicKeySlots(profile: VirtualProfile): number[] {
+  const firstEmpty = profile.dynamicKeys.findIndex(key => key.type === 'none');
+  if (firstEmpty < 0) return [];
+  return profile.dynamicKeys.flatMap((key, slot) =>
+    slot > firstEmpty && key.type !== 'none' ? [slot] : []
+  );
+}
+
 // ---------------------------------------------------------------------------------------------
 // What a controller should hold after loading a profile (for integration assertions)
 
