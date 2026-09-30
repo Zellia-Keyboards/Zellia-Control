@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, onTestFinished, vi } from 'vitest';
+import { createStore } from 'zustand/vanilla';
 import { connectVirtualKeyboard } from '../../../testing/app-keyboard';
 import { installVirtualHid, selectProfile } from '../../../testing/virtual-keyboard';
 import { deviceSession, deviceStore } from '../../device';
@@ -8,7 +9,7 @@ import {
   initialProfileState,
   type ProfileState,
 } from '../model/profiles';
-import { profileActions, profileStore } from './profile-store';
+import { followKeyboardProfile, profileActions, profileStore } from './profile-store';
 
 const NOW = '2026-09-30T12:00:00.000Z';
 
@@ -217,5 +218,21 @@ describe('keyboard profiles (D7)', () => {
     await loaded();
 
     expect(activeProfileId()).toBe(2);
+  });
+
+  it('follows a keyboard that had loaded before the profiles started following', async () => {
+    const vk = installVirtualHid(navigator, { seedDynamicKeys: false });
+    onTestFinished(() => {
+      deviceSession.disconnect();
+      vk.uninstall();
+    });
+    selectProfile(vk.state, 2);
+    await deviceSession.connect();
+    await loaded();
+    const profiles = createStore<ProfileState>()(() => initialProfileState(NOW));
+
+    onTestFinished(followKeyboardProfile(profiles, deviceStore));
+
+    expect(profiles.getState().activeProfileId).toBe(3);
   });
 });
