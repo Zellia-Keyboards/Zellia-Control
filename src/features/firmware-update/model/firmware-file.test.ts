@@ -41,6 +41,25 @@ describe('readFirmwareImage', () => {
     });
   });
 
+  it('refuses a file of the wrong size without reading it', async () => {
+    const huge = file(MAX_FIRMWARE_BYTES + 1);
+    const read = vi.spyOn(huge, 'arrayBuffer');
+
+    await expect(readFirmwareImage(huge)).resolves.toMatchObject({ ok: false });
+    expect(read).not.toHaveBeenCalled();
+  });
+
+  it('checks the size of what was actually read', async () => {
+    const changed = file(2048);
+    Object.defineProperty(changed, 'arrayBuffer', {
+      value: () => Promise.resolve(new ArrayBuffer(MAX_FIRMWARE_BYTES + 1)),
+    });
+    await expect(readFirmwareImage(changed)).resolves.toEqual({
+      ok: false,
+      message: FIRMWARE_FILE_ERRORS.tooLarge,
+    });
+  });
+
   it('reports files that cannot be read', async () => {
     const logged = vi.spyOn(console, 'error').mockImplementation(() => undefined);
     const unreadable = file(2048);
