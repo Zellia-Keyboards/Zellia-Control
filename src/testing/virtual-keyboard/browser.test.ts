@@ -67,3 +67,36 @@ describe('installBrowserVirtualKeyboard', () => {
     expect(navigator.hid).toBe(window.__virtualKeyboard?.hid);
   });
 });
+
+describe('browser bundle', () => {
+  const sources = import.meta.glob<string>(['./*.ts', '!./*.test.ts'], {
+    query: '?raw',
+    import: 'default',
+    eager: true,
+  });
+
+  it('only depends on the controller package (no Node built-ins), so it bundles for a page', () => {
+    const visited = new Set<string>();
+    const packages = new Set<string>();
+    const visit = (path: string) => {
+      if (visited.has(path)) return;
+      visited.add(path);
+      const source = sources[path];
+      if (source === undefined) throw new Error(`Unknown module ${path}`);
+      for (const [, specifier = ''] of source.matchAll(/from '([^']+)'/g)) {
+        if (specifier.startsWith('./')) visit(`${specifier}.ts`);
+        else packages.add(specifier);
+      }
+    };
+    visit('./browser.ts');
+    expect([...visited].sort()).toEqual([
+      './browser.ts',
+      './device.ts',
+      './dfu.ts',
+      './install.ts',
+      './protocol.ts',
+      './state.ts',
+    ]);
+    expect([...packages]).toEqual(['emi-keyboard-controller']);
+  });
+});
