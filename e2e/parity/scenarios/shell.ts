@@ -122,8 +122,9 @@ const scenarios: readonly ParityScenario[] = [
     },
   },
   {
-    // PL-003: the React app keeps the overlay until the first configuration arrives; the
-    // baseline shows /remap/ with the controller's defaults meanwhile.
+    // PL-003: the React app keeps the overlay and the waiting sidebar until the first
+    // configuration arrives; the baseline shows /remap/ with the controller's defaults and a
+    // connected sidebar meanwhile.
     name: 'shell-loading-config',
     path: '/',
     virtualKeyboard: { ...KEYBOARD, latencyMs: 1000 },
