@@ -2,8 +2,8 @@ import { Keycode as EmiKeycode, KeyModifier } from 'emi-keyboard-controller';
 import { describe, expect, expectTypeOf, it } from 'vitest';
 import type { Keycode } from '../../device/model/types';
 import { decodeKeycode, findAction, kc } from '../../keycodes';
-import { DksAction } from './dks-bitmap';
-import { encodeKeyControl } from './dks-codec';
+import { DksAction, getIntervals } from './dks-bitmap';
+import { decodeKeyControl, encodeKeyControl } from './dks-codec';
 import {
   DKS_ACTUATION_MM,
   DKS_EMPTY_EDITOR,
@@ -97,6 +97,33 @@ describe('DKS editor presets', () => {
       'Enter',
       'Space',
       'Backspace',
+    ]);
+  });
+});
+
+describe('DKS Reset preset on the device', () => {
+  it('reloads with the Space binding’s touching intervals merged into one press', () => {
+    const reloaded = DKS_RESET_PRESET.bitmaps.map(bitmap =>
+      decodeKeyControl(encodeKeyControl(bitmap))
+    );
+    // What the editor draws (Esc, Enter, Space, Backspace): only Space changes, because the
+    // firmware cannot release and re-press at stage 1.
+    expect(DKS_RESET_PRESET.bitmaps.map(getIntervals)).toEqual([
+      [[0, 3]],
+      [[0, 0]],
+      [
+        [0, 1],
+        [1, 3],
+      ],
+      [],
+    ]);
+    expect(reloaded.map(getIntervals)).toEqual([[[0, 3]], [[0, 0]], [[0, 3]], []]);
+    // Idle nodes read back as released; they are drawn the same.
+    expect(reloaded).toEqual([
+      [P, H, H, R],
+      [T, R, R, R],
+      [P, H, H, R],
+      [R, R, R, R],
     ]);
   });
 });
