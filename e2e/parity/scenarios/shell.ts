@@ -84,6 +84,8 @@ const scenarios: readonly ParityScenario[] = [
       await page.getByRole('button', { name: /Theme Colors|主题颜色/ }).click();
       await page.getByTitle('Teal', { exact: true }).click();
       await parkPointer(page);
+      // Let the recoloured, blurred background blobs settle before the capture.
+      await page.waitForTimeout(1000);
     },
   },
   {
