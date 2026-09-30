@@ -153,8 +153,11 @@ export function KeyTracking() {
 
             {/* Start/Stop and Clear buttons row */}
             <div className="flex gap-2">
+              {/* Keyed: a new element each time, like Svelte's {#if}/{:else}, so the focus of the
+                  clicked button is not carried over to the other one. */}
               {!tracking ? (
                 <button
+                  key="start"
                   type="button"
                   className={`flex-1 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all duration-200 ${!selectedKeyName ? 'opacity-50 cursor-not-allowed glassmorphism-button' : 'bg-green-500 hover:bg-green-600 text-white shadow-lg shadow-green-500/30 hover:shadow-xl active:scale-95'}`}
                   disabled={!selectedKeyName}
@@ -164,6 +167,7 @@ export function KeyTracking() {
                 </button>
               ) : (
                 <button
+                  key="stop"
                   type="button"
                   className="flex-1 px-4 py-2.5 rounded-lg text-sm font-semibold bg-red-500 hover:bg-red-600 text-white shadow-lg shadow-red-500/30 hover:shadow-xl transition-all duration-200 active:scale-95"
                   onClick={stop}
