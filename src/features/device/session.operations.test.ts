@@ -288,16 +288,65 @@ describe('profiles (D7)', () => {
     });
   });
 
-  it('keeps the last snapshot when the reload after a switch fails', async () => {
+  it('ends the connection when the reload after a switch fails, so nothing stale is saved', async () => {
     const h = await connected();
-    const before = h.state().config;
+    const profile1 = structuredClone(h.vk.state.profiles[1]);
     h.vk.dropReplies(packet => packet.op === 'get' && packet.kind === 'rgbBase');
     await h.session.switchProfile(1);
-    expect(h.state()).toMatchObject({
-      reloading: false,
-      lastError: { operation: 'reload' },
+    expect(h.state().connection).toEqual({
+      status: 'error',
+      message: expect.stringMatching(/^Failed to load keyboard configuration: /) as string,
     });
-    expect(h.state().config).toBe(before);
+
+    // The keyboard is on profile 1 now; the old snapshot must not be written into it.
+    await h.session.save();
+    expect(h.state().lastError).toEqual({
+      operation: 'save',
+      message: COMMAND_ERRORS.notConnected,
+    });
+    await settle();
+    expect(h.packets().filter(packet => packet.op === 'set')).toEqual([]);
+    expect(h.vk.state.profiles[1]).toEqual(profile1);
+  });
+
+  it('settles a save queued behind a switch whose reload fails', async () => {
+    const h = await connected();
+    const profile1 = structuredClone(h.vk.state.profiles[1]);
+    h.vk.dropReplies(packet => packet.op === 'get' && packet.kind === 'rgbBase');
+    const switching = h.session.switchProfile(1);
+    const saving = h.session.save();
+    expect(h.state().saving).toBe(true);
+
+    await Promise.all([switching, saving]);
+    expect(h.state()).toMatchObject({ saving: false, connection: { status: 'error' } });
+    await settle();
+    expect(h.packets().filter(packet => packet.op === 'set')).toEqual([]);
+    expect(h.vk.state.profiles[1]).toEqual(profile1);
+  });
+
+  it('runs a save queued behind a switch that never reached the keyboard', async () => {
+    const h = await connected({ timeouts: { loadStartMs: 50 } });
+    h.session.setKeycodes(2, [10], Keycode.Tab);
+    await settle();
+    h.vk.clearHistory();
+    vi.spyOn(h.vk.device, 'sendReport').mockRejectedValueOnce(
+      new DOMException('Failed to write the report.', 'NetworkError')
+    );
+    const switching = h.session.switchProfile(1);
+    const saving = h.session.save();
+
+    await Promise.all([switching, saving]);
+    expect(h.state()).toMatchObject({
+      saving: false,
+      reloading: false,
+      lastError: { operation: 'switchProfile', message: 'Keyboard did not respond' },
+      config: { profileIndex: 0 },
+    });
+    await settle();
+    // The keyboard stayed on profile 0, and that is where the save went.
+    expect(operations(h)).toEqual([OPERATION_KEYCODES.save]);
+    expect(h.vk.state.profileIndex).toBe(0);
+    expect(h.vk.state.profiles[0]?.keymap[2]?.[10]).toBe(Keycode.Tab);
   });
 });
 

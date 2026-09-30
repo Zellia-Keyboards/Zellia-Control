@@ -434,29 +434,27 @@ describe('device-initiated reloads', () => {
     expect(after.config?.keymap[0]?.[0]).toBe(Keycode.F13 + 2);
   });
 
-  it('keeps the last snapshot and records a failed reload', async () => {
+  it('ends the connection when a reload fails, so no stale snapshot can be saved (D2)', async () => {
     const h = setup();
     await h.session.connect();
-    const before = h.state();
     const restore = h.vk.dropReplies(packet => packet.op === 'get' && packet.kind === 'rgbBase');
     h.vk.notifyConfigChanged();
-    const failed = await waitForState(h.store, state => state.lastError !== null);
+    const failed = await waitForState(h.store, state => state.connection.status === 'error');
 
-    expect(failed.lastError).toEqual({
-      operation: 'reload',
-      message: expect.stringMatching(/^Timeout waiting for packet id/) as string,
+    expect(failed).toEqual({
+      ...INITIAL_DEVICE_STATE,
+      connection: {
+        status: 'error',
+        message: expect.stringMatching(
+          /^Failed to load keyboard configuration: Timeout waiting for packet id \d+, code 2, type 3$/
+        ) as string,
+      },
     });
-    expect(failed.connection).toBe(before.connection);
-    expect(failed.config).toBe(before.config);
-    await waitForState(h.store, state => !state.reloading);
+    await settle();
+    expect(h.vk.device.opened).toBe(false);
 
     restore();
-    h.vk.state.active.keymap[2]?.splice(3, 1, Keycode.Tab);
-    h.vk.notifyConfigChanged();
-    const reloaded = await waitForState(
-      h.store,
-      state => state.config?.keymap[2]?.[3] === Keycode.Tab
-    );
-    expect(reloaded.connection.status).toBe('ready');
+    await h.session.connect();
+    expect(h.state().connection.status).toBe('ready');
   });
 });
