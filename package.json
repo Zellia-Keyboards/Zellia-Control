@@ -15,7 +15,7 @@
     "format:check": "prettier --check .",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:e2e": "playwright test",
+    "test:e2e": "playwright test --project=e2e",
     "validate": "yarn typecheck && yarn lint && yarn format:check && yarn test && yarn build"
   },
   "dependencies": {
