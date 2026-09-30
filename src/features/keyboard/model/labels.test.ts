@@ -242,6 +242,8 @@ describe('remapLabels', () => {
     const missingLayer = remapLabels([key(0, original)], keymap, 1, dynamicKeys);
     expect(missingLayer.get(0)).toBe(original);
     expect(remapLabels([key(0, original)], [], 0, []).get(0)).toBe(original);
+    // Hand-built keys with fewer label slots are padded to 12.
+    expect(remapLabels([key(0, ['x'])], [], 0, []).get(0)).toEqual(withSlots({ 0: 'x' }));
   });
 });
 

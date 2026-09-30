@@ -4,7 +4,7 @@
  * into the controller arrays; falls back to the key's position), and `labels[8]` "group,option"
  * puts a key in a layout group, visible only while that option is selected.
  */
-import { Serial } from '@ijprest/kle-serial';
+import { Serial, type Keyboard } from '@ijprest/kle-serial';
 
 /** Number of KLE label slots (3×3 legend grid, then front legends). */
 export const KLE_LABEL_SLOTS = 12;
@@ -43,7 +43,7 @@ function parseLayoutGroup(label: string): LayoutGroup | null {
   return { groupId, option: optionId };
 }
 
-function deserialize(rows: unknown): ReturnType<typeof Serial.deserialize> {
+function deserialize(rows: unknown): Keyboard {
   if (!Array.isArray(rows)) throw new Error('Invalid keyboard layout: expected a JSON array');
   try {
     return Serial.deserialize(rows);
