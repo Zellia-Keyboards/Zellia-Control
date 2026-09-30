@@ -11,6 +11,12 @@ const COMPARE = fileURLToPath(new URL('./compare.mjs', import.meta.url));
 type Rgba = readonly [number, number, number, number];
 const WHITE: Rgba = [255, 255, 255, 255];
 const BLACK: Rgba = [0, 0, 0, 255];
+const GRAY: Rgba = [128, 128, 128, 255];
+// Neighbouring Tailwind shades: the kind of slip a port makes (wrong shade, wrong opacity).
+const GRAY_900: Rgba = [0x11, 0x18, 0x27, 255];
+const GRAY_800: Rgba = [0x1f, 0x29, 0x37, 255];
+const GRAY_200: Rgba = [0xe5, 0xe7, 0xeb, 255];
+const NEUTRAL_50: Rgba = [0xfa, 0xfa, 0xfa, 255];
 
 const tempDirs: string[] = [];
 
@@ -93,6 +99,9 @@ interface SummaryResult {
 }
 
 interface Summary {
+  threshold: number;
+  includeAA: boolean;
+  strict: boolean;
   totals: { captures: number; identical: number; different: number; missing: number };
   browsers: string[];
   results: SummaryResult[];
@@ -179,17 +188,105 @@ describe('compare.mjs', () => {
     expect(summary.results.map(result => result.status)).toEqual(['missing', 'identical']);
   });
 
-  it('honours --threshold', async () => {
-    const light: Rgba = [250, 250, 250, 255];
+  it('counts every changed pixel by default, however small the colour change', async () => {
     const dir = await parityDir([
-      { id: 'welcome--dark-en-1440x900', baseline: solid(4, 4, WHITE), react: solid(4, 4, light) },
+      {
+        id: 'welcome--dark-en-1440x900',
+        baseline: solid(4, 4, GRAY_900),
+        react: solid(4, 4, GRAY_800),
+      },
+      {
+        id: 'welcome--light-en-1440x900',
+        baseline: solid(4, 4, WHITE),
+        react: solid(4, 4, GRAY_200),
+      },
+      {
+        id: 'welcome--light-zh-1440x900',
+        baseline: solid(4, 4, WHITE),
+        react: solid(4, 4, NEUTRAL_50),
+      },
     ]);
 
-    await compare(dir, '--threshold', '0');
-    expect((await readSummary(dir)).results[0]?.mismatchedPixels).toBe(16);
+    const { code } = await compare(dir);
 
-    await compare(dir, '--threshold', '0.1');
-    expect((await readSummary(dir)).results[0]?.mismatchedPixels).toBe(0);
+    expect(code).toBe(1);
+    const summary = await readSummary(dir);
+    expect(summary).toMatchObject({ threshold: 0, includeAA: true, strict: true });
+    expect(summary.totals).toEqual({ captures: 3, identical: 0, different: 3, missing: 0 });
+    for (const result of summary.results) {
+      expect(result, result.id).toMatchObject({ status: 'different', mismatchedPixels: 16 });
+    }
+  });
+
+  it('counts anti-aliased pixels by default', async () => {
+    // A vertical black/white edge; the React capture has a grey column on it, which pixelmatch
+    // classifies as anti-aliasing (a sub-pixel shift of text or an icon looks the same).
+    const edge = (x: number, onEdge: Rgba): Rgba => (x < 6 ? BLACK : x === 6 ? onEdge : WHITE);
+    const dir = await parityDir([
+      {
+        id: 'welcome--dark-en-1440x900',
+        baseline: png(12, 12, x => edge(x, WHITE)),
+        react: png(12, 12, x => edge(x, GRAY)),
+      },
+    ]);
+
+    expect((await compare(dir)).code).toBe(1);
+    expect((await readSummary(dir)).results[0]).toMatchObject({
+      status: 'different',
+      mismatchedPixels: 12,
+    });
+
+    await compare(dir, '--ignore-aa');
+    expect((await readSummary(dir)).results[0]).toMatchObject({
+      status: 'identical',
+      mismatchedPixels: 0,
+    });
+  });
+
+  it('tolerates small colour changes only when asked, and says so', async () => {
+    const dir = await parityDir([
+      {
+        id: 'welcome--light-en-1440x900',
+        baseline: solid(4, 4, WHITE),
+        react: solid(4, 4, NEUTRAL_50),
+      },
+    ]);
+
+    const { code, output } = await compare(dir, '--threshold', '0.1');
+
+    expect(code).toBe(0);
+    const summary = await readSummary(dir);
+    expect(summary).toMatchObject({ threshold: 0.1, includeAA: true, strict: false });
+    expect(summary.results[0]).toMatchObject({ status: 'identical', mismatchedPixels: 0 });
+    expect(output).toMatch(/tolerant comparison.*not a parity result/i);
+    const html = await readFile(path.join(dir, 'index.html'), 'utf8');
+    expect(html).toMatch(/tolerant comparison.*not a parity result/i);
+  });
+
+  it('marks the default comparison as strict in the report', async () => {
+    const image = solid(4, 4, WHITE);
+    const dir = await parityDir([
+      { id: 'welcome--dark-en-1440x900', baseline: image, react: image },
+    ]);
+
+    const { output } = await compare(dir);
+
+    expect(output).not.toMatch(/not a parity result/i);
+    const html = await readFile(path.join(dir, 'index.html'), 'utf8');
+    expect(html).toMatch(/strict comparison/i);
+    expect(html).not.toMatch(/not a parity result/i);
+  });
+
+  it('rejects an out-of-range --threshold', async () => {
+    const image = solid(4, 4, WHITE);
+    const dir = await parityDir([
+      { id: 'welcome--dark-en-1440x900', baseline: image, react: image },
+    ]);
+
+    const { code, output } = await compare(dir, '--threshold', '2');
+
+    expect(code).toBe(2);
+    expect(output).toMatch(/--threshold must be between 0 and 1/);
   });
 
   it('writes an HTML report that links the images and escapes text', async () => {
