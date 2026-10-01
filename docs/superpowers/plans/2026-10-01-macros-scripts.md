@@ -43,7 +43,7 @@
 | `src/features/keycodes/{codec,display,palettes,index}.ts` (+ tests) | `kc.macro` / `kc.script`, script names, Macro/Script palettes | 4 |
 | `src/features/remap/components/ExtensionTab.tsx`, `RemapPage.test.tsx` | gated Macro and Script groups | 4 |
 | `src/lib/i18n/{en,zh,i18n.test}.ts(x)` | new copy | 4, 6, 9, 10 |
-| `src/features/macros/model/*` | timing, actions, browser key table, recorder, key picker catalog | 5 |
+| `src/features/macros/model/*` | timing, actions (delay references, inserting by time), browser key and mouse button tables, recorder, key picker catalog | 5 |
 | `src/features/macros/{MacrosPage.tsx,index.ts,commands.ts,hooks/use-macro-recorder.ts,components/*}` (+ test) | Macros page, staged edits, recorder | 6 |
 | `vendor/mqjs/*`, `.gitattributes`, `package.json`, `vite.config.ts`, `eslint.config.js`, `.prettierignore`, `.github/workflows/web.yml`, `README.md`, `docs/development.md` | compiler build, alias, precache, tooling | 7 |
 | `src/features/scripts/model/{mqjs-compiler.d.ts,compiler.ts,compiler-browser.ts,example.ts}`, `testing/node-compiler.ts` (+ test) | compiler wrapper | 7 |
@@ -1954,7 +1954,9 @@ git commit -m "feat(remap): macro and script keys in the Extension tab"
 
 ---
 
-### Task 5: Macros model — timing, edits, browser keys, recorder
+### Task 5: Macros model — timing, edits, browser keys and mouse buttons, recorder
+
+Where the product owner chose upstream's behaviour (2026-10-01), the model follows it: "Add key" counts its delay from a delay reference (the macro's start, its first or its last action) and gives the press→release pair a duration, and recording takes mouse buttons as well as keys (upstream's button → Mouse keycode mapping). Added and recorded actions go in at their times; otherwise the list stays in the order the keyboard plays it.
 
 **Files:**
 - Create: `src/features/macros/model/timing.ts`, `timing.test.ts`
@@ -1965,12 +1967,12 @@ git commit -m "feat(remap): macro and script keys in the Extension tab"
 - Create: `src/features/macros/model/index.ts`
 
 **Interfaces:**
-- Consumes: `MacroAction`, `Keycode` (`features/device/model/types`); `kc`, `ACTION_CATEGORIES`, `findAction`, `describeKeycode` (`features/keycodes`).
+- Consumes: `MacroAction`, `Keycode` (`features/device/model/types`); `kc`, `ACTION_CATEGORIES`, `findAction`, `describeKeycode` (`features/keycodes`); `MouseKeycode` (`emi-keyboard-controller`).
 - Produces (`features/macros/model`):
   - `DEFAULT_POLLING_RATE = 1000`, `ticksToMs(ticks: number, pollingRate: number): number`, `msToTicks(ms: number, pollingRate: number): number`, `formatMs(ms: number): string`
-  - `lastTicks(actions): number`, `withKeyTap(actions, keycode, gap: number, hold: number): MacroAction[]` (ticks), `sortByTime(actions): MacroAction[]`, `replaceAction(actions, index, patch: Partial<MacroAction>): MacroAction[]`, `removeAction(actions, index): MacroAction[]`, `hasRoom(actions, count: number, limit: number): boolean`
-  - `BROWSER_KEYCODES: ReadonlyMap<string, Keycode>`, `hidKeycodeOf(code: string): Keycode | null`
-  - `interface Recording { startedAt; baseTicks; pollingRate; limit; held: readonly Keycode[]; skipped: number; full: boolean }`, `interface RecordedKey { code: string; repeat: boolean; now: number }`, `interface RecordingStep { recording: Recording; actions: readonly MacroAction[] }`, `startRecording(actions, now, pollingRate, limit): Recording`, `recordKeyDown(recording, actions, key: RecordedKey): RecordingStep`, `recordKeyUp(recording, actions, key: Omit<RecordedKey, 'repeat'>): RecordingStep`, `stopRecording(recording, actions, now): RecordingStep` (steps return the same `actions` array when nothing changed)
+  - `type DelayReference = 'start' | 'first' | 'last'`, `firstTicks(actions): number`, `lastTicks(actions): number`, `referenceTicks(actions, reference): number`, `insertByTime(actions, action): MacroAction[]`, `withKeyPress(actions, keycode, reference, delay: number, duration: number): MacroAction[]` (ticks), `sortByTime(actions): MacroAction[]`, `replaceAction(actions, index, patch: Partial<MacroAction>): MacroAction[]`, `removeAction(actions, index): MacroAction[]`, `hasRoom(actions, count: number, limit: number): boolean`
+  - `BROWSER_KEYCODES: ReadonlyMap<string, Keycode>`, `hidKeycodeOf(code: string): Keycode | null`, `mouseButtonKeycodeOf(button: number): Keycode | null`
+  - `interface Recording { startedAt; baseTicks; pollingRate; limit; held: readonly Keycode[]; skipped: number; full: boolean }`, `interface RecordedPress { keycode: Keycode | null; repeat: boolean; now: number }`, `interface RecordedRelease { keycode: Keycode | null; now: number }`, `interface RecordingStep { recording: Recording; actions: readonly MacroAction[] }`, `startRecording(actions, now, pollingRate, limit): Recording`, `recordPress(recording, actions, press: RecordedPress): RecordingStep`, `recordRelease(recording, actions, release: RecordedRelease): RecordingStep`, `stopRecording(recording, actions, now): RecordingStep` (steps return the same `actions` array when nothing changed)
   - `MACRO_KEY_CATEGORIES: readonly ActionCategory[]` (the Dynamic Keys catalog without "None"), `macroKeyName(keycode: Keycode): string`
 
 - [ ] **Step 1: Write the failing tests**
@@ -2013,7 +2015,17 @@ describe('macro timing', () => {
 import { Keycode } from 'emi-keyboard-controller';
 import { describe, expect, it } from 'vitest';
 import type { MacroAction } from '../../device/model/types';
-import { hasRoom, lastTicks, removeAction, replaceAction, sortByTime, withKeyTap } from './actions';
+import {
+  firstTicks,
+  hasRoom,
+  insertByTime,
+  lastTicks,
+  referenceTicks,
+  removeAction,
+  replaceAction,
+  sortByTime,
+  withKeyPress,
+} from './actions';
 
 const press = (delay: number, keycode: number = Keycode.A): MacroAction => ({
   delay,
@@ -2022,21 +2034,63 @@ const press = (delay: number, keycode: number = Keycode.A): MacroAction => ({
   isVirtual: true,
   keyId: 0,
 });
+const release = (delay: number, keycode: number = Keycode.A): MacroAction => ({
+  ...press(delay, keycode),
+  event: 'up',
+});
 
 describe('macro actions', () => {
-  it('find the time of the latest action', () => {
+  it('find the times of the earliest and the latest action', () => {
+    expect(firstTicks([press(100), press(40)])).toBe(40);
     expect(lastTicks([press(100), press(40)])).toBe(100);
+    expect(firstTicks([])).toBe(0);
     expect(lastTicks([])).toBe(0);
   });
 
-  it('add a virtual press and release of a key after the latest action', () => {
-    expect(withKeyTap([press(100), press(40)], Keycode.B, 400, 160)).toEqual([
-      press(100),
-      press(40),
-      { delay: 500, keycode: Keycode.B, event: 'down', isVirtual: true, keyId: 0 },
-      { delay: 660, keycode: Keycode.B, event: 'up', isVirtual: true, keyId: 0 },
+  it('count a delay from the macro start, its first or its last action', () => {
+    const actions = [press(100), press(40)];
+    expect(referenceTicks(actions, 'start')).toBe(0);
+    expect(referenceTicks(actions, 'first')).toBe(40);
+    expect(referenceTicks(actions, 'last')).toBe(100);
+  });
+
+  it('insert an action before the first later one, after those at its time', () => {
+    const actions = [press(0), release(300)];
+    expect(insertByTime(actions, press(100, Keycode.B))).toEqual([
+      press(0),
+      press(100, Keycode.B),
+      release(300),
     ]);
-    expect(withKeyTap([], Keycode.A, 400, 160).map(action => action.delay)).toEqual([400, 560]);
+    expect(insertByTime(actions, press(300, Keycode.B))).toEqual([
+      press(0),
+      release(300),
+      press(300, Keycode.B),
+    ]);
+  });
+
+  it('add a virtual press and release of a key after the delay reference, each at its time', () => {
+    const actions = [press(0), release(300)];
+    expect(withKeyPress(actions, Keycode.B, 'last', 400, 160)).toEqual([
+      press(0),
+      release(300),
+      press(700, Keycode.B),
+      release(860, Keycode.B),
+    ]);
+    expect(withKeyPress(actions, Keycode.B, 'start', 100, 50)).toEqual([
+      press(0),
+      press(100, Keycode.B),
+      release(150, Keycode.B),
+      release(300),
+    ]);
+    expect(withKeyPress(actions, Keycode.B, 'first', 0, 300)).toEqual([
+      press(0),
+      press(0, Keycode.B),
+      release(300),
+      release(300, Keycode.B),
+    ]);
+    expect(withKeyPress([], Keycode.A, 'last', 400, 160).map(action => action.delay)).toEqual([
+      400, 560,
+    ]);
   });
 
   it('sort by time, keeping the order of actions at the same time', () => {
@@ -2047,10 +2101,7 @@ describe('macro actions', () => {
   });
 
   it('replace one field of one action and remove actions', () => {
-    expect(replaceAction([press(0), press(8)], 1, { event: 'up' })).toEqual([
-      press(0),
-      { ...press(8), event: 'up' },
-    ]);
+    expect(replaceAction([press(0), press(8)], 1, { event: 'up' })).toEqual([press(0), release(8)]);
     expect(removeAction([press(0), press(8)], 0)).toEqual([press(8)]);
   });
 
@@ -2066,8 +2117,10 @@ describe('macro actions', () => {
 `src/features/macros/model/browser-keys.test.ts`:
 
 ```ts
+import { MouseKeycode } from 'emi-keyboard-controller';
 import { describe, expect, it } from 'vitest';
-import { BROWSER_KEYCODES, hidKeycodeOf } from './browser-keys';
+import { kc } from '../../keycodes';
+import { BROWSER_KEYCODES, hidKeycodeOf, mouseButtonKeycodeOf } from './browser-keys';
 
 describe('browser keys', () => {
   it('map letters, digits, function keys and the numpad to their HID usages', () => {
@@ -2111,6 +2164,19 @@ describe('browser keys', () => {
   it('give every key its own keycode', () => {
     expect(new Set(BROWSER_KEYCODES.values()).size).toBe(BROWSER_KEYCODES.size);
   });
+
+  it('map the five mouse buttons to the Mouse keycodes, as upstream does', () => {
+    expect([0, 1, 2, 3, 4].map(button => mouseButtonKeycodeOf(button))).toEqual([
+      kc.mouse(MouseKeycode.MouseLButton),
+      kc.mouse(MouseKeycode.MouseMButton),
+      kc.mouse(MouseKeycode.MouseRButton),
+      kc.mouse(MouseKeycode.MouseBack),
+      kc.mouse(MouseKeycode.MouseForward),
+    ]);
+    expect(mouseButtonKeycodeOf(0)).toBe(0x00a5);
+    expect(mouseButtonKeycodeOf(2)).toBe(0x01a5);
+    expect(mouseButtonKeycodeOf(5)).toBeNull();
+  });
 });
 ```
 
@@ -2121,8 +2187,8 @@ import { Keycode } from 'emi-keyboard-controller';
 import { describe, expect, it } from 'vitest';
 import type { MacroAction } from '../../device/model/types';
 import {
-  recordKeyDown,
-  recordKeyUp,
+  recordPress,
+  recordRelease,
   startRecording,
   stopRecording,
   type RecordingStep,
@@ -2130,6 +2196,9 @@ import {
 
 const RATE = 8000;
 const LIMIT = 127;
+/** libamp's modifier-only keycode of Left Shift and the Mouse keycode of the left button. */
+const LEFT_SHIFT = 0x0200;
+const MOUSE_LEFT = 0x00a5;
 
 const recorded = (delay: number, keycode: number, event: 'down' | 'up'): MacroAction => ({
   delay,
@@ -2139,12 +2208,17 @@ const recorded = (delay: number, keycode: number, event: 'down' | 'up'): MacroAc
   keyId: 0,
 });
 
-function down(step: RecordingStep, code: string, now: number, repeat = false): RecordingStep {
-  return recordKeyDown(step.recording, step.actions, { code, now, repeat });
+function down(
+  step: RecordingStep,
+  keycode: number | null,
+  now: number,
+  repeat = false
+): RecordingStep {
+  return recordPress(step.recording, step.actions, { keycode, now, repeat });
 }
 
-function up(step: RecordingStep, code: string, now: number): RecordingStep {
-  return recordKeyUp(step.recording, step.actions, { code, now });
+function up(step: RecordingStep, keycode: number | null, now: number): RecordingStep {
+  return recordRelease(step.recording, step.actions, { keycode, now });
 }
 
 function start(actions: readonly MacroAction[] = [], limit = LIMIT): RecordingStep {
@@ -2154,8 +2228,8 @@ function start(actions: readonly MacroAction[] = [], limit = LIMIT): RecordingSt
 describe('macro recorder', () => {
   it('records presses and releases as virtual actions timed from the start', () => {
     let step = start();
-    step = down(step, 'KeyA', 1100);
-    step = up(step, 'KeyA', 1180);
+    step = down(step, Keycode.A, 1100);
+    step = up(step, Keycode.A, 1180);
     expect(step.actions).toEqual([
       recorded(800, Keycode.A, 'down'),
       recorded(1440, Keycode.A, 'up'),
@@ -2163,38 +2237,48 @@ describe('macro recorder', () => {
     expect(step.recording.held).toEqual([]);
   });
 
+  it('records mouse buttons like keys', () => {
+    let step = down(start(), MOUSE_LEFT, 1100);
+    step = up(step, MOUSE_LEFT, 1150);
+    expect(step.actions).toEqual([
+      recorded(800, MOUSE_LEFT, 'down'),
+      recorded(1200, MOUSE_LEFT, 'up'),
+    ]);
+  });
+
   it('continues after the latest action of the slot', () => {
     const existing = [recorded(4000, Keycode.B, 'down')];
-    const step = down(start(existing), 'KeyA', 1100);
+    const step = down(start(existing), Keycode.A, 1100);
     expect(step.actions.at(-1)).toEqual(recorded(4800, Keycode.A, 'down'));
   });
 
-  it('ignores repeated keydowns of a held key', () => {
-    let step = down(start(), 'KeyA', 1100);
+  it('ignores repeated keydowns and second presses of a held key', () => {
+    let step = down(start(), Keycode.A, 1100);
     const held = step;
-    step = down(step, 'KeyA', 1150, true);
-    step = down(step, 'KeyA', 1160);
+    step = down(step, Keycode.A, 1150, true);
+    step = down(step, Keycode.A, 1160);
     expect(step.actions).toBe(held.actions);
   });
 
-  it('skips and counts presses of keys without a HID keycode', () => {
-    let step = down(start(), 'Fn', 1100);
-    step = down(step, 'BrowserBack', 1110);
-    step = down(step, 'BrowserBack', 1120, true);
+  it('skips and counts presses of keys without a keycode', () => {
+    let step = down(start(), null, 1100);
+    step = down(step, null, 1110);
+    step = down(step, null, 1120, true);
     expect(step.actions).toEqual([]);
     expect(step.recording.skipped).toBe(2);
+    expect(up(step, null, 1130).actions).toBe(step.actions);
   });
 
   it('ignores releases of keys it did not see pressed', () => {
     const before = start();
-    expect(up(before, 'KeyA', 1100).actions).toBe(before.actions);
+    expect(up(before, Keycode.A, 1100).actions).toBe(before.actions);
   });
 
   it('stops when the slot is full, releasing the keys still held', () => {
     let step = start([], 4);
-    step = down(step, 'KeyA', 1100);
-    step = down(step, 'KeyB', 1200);
-    step = down(step, 'KeyC', 1300);
+    step = down(step, Keycode.A, 1100);
+    step = down(step, Keycode.B, 1200);
+    step = down(step, Keycode.C, 1300);
     expect(step.recording.full).toBe(true);
     expect(step.actions).toEqual([
       recorded(800, Keycode.A, 'down'),
@@ -2202,13 +2286,13 @@ describe('macro recorder', () => {
       recorded(2400, Keycode.A, 'up'),
       recorded(2400, Keycode.B, 'up'),
     ]);
-    expect(down(step, 'KeyD', 1400).actions).toBe(step.actions);
+    expect(down(step, Keycode.D, 1400).actions).toBe(step.actions);
   });
 
   it('releases the held keys when it stops', () => {
-    const step = down(start(), 'ShiftLeft', 1100);
+    const step = down(start(), LEFT_SHIFT, 1100);
     const stopped = stopRecording(step.recording, step.actions, 1250);
-    expect(stopped.actions.at(-1)).toEqual(recorded(2000, 0x0200, 'up'));
+    expect(stopped.actions.at(-1)).toEqual(recorded(2000, LEFT_SHIFT, 'up'));
     expect(stopped.recording.held).toEqual([]);
     const idle = start();
     expect(stopRecording(idle.recording, idle.actions, 1300).actions).toBe(idle.actions);
@@ -2219,7 +2303,7 @@ describe('macro recorder', () => {
 `src/features/macros/model/key-picker.test.ts`:
 
 ```ts
-import { Keycode, KeyModifier } from 'emi-keyboard-controller';
+import { Keycode, KeyModifier, MouseKeycode } from 'emi-keyboard-controller';
 import { describe, expect, it } from 'vitest';
 import { ACTION_CATEGORIES, kc } from '../../keycodes';
 import { MACRO_KEY_CATEGORIES, macroKeyName } from './key-picker';
@@ -2239,6 +2323,7 @@ describe('macro key picker', () => {
   it('names keys by the picker, else by their keycap with modifiers, else in hex', () => {
     expect(macroKeyName(Keycode.A)).toBe('A');
     expect(macroKeyName(kc.modifier(KeyModifier.KeyLeftShift))).toBe('Left Shift');
+    expect(macroKeyName(kc.mouse(MouseKeycode.MouseRButton))).toBe('Mouse Right');
     expect(macroKeyName(kc.withModifiers(Keycode.C, KeyModifier.KeyLeftCtrl))).toBe('Left Ctrl C');
     expect(macroKeyName(0x00b5)).toBe('0x00B5');
   });
@@ -2290,31 +2375,68 @@ export function formatMs(ms: number): string {
 /**
  * Edits of a macro slot's actions (delays in ticks). The list is in the order the keyboard plays
  * it: libamp plays actions by index, each when its time has come, so editing a time does not move
- * the action; `sortByTime` does.
+ * the action; `sortByTime` does. Added actions go in at their times.
  */
 import type { Keycode, MacroAction } from '../../device/model/types';
+
+/** What the delay of an added key counts from (upstream's delay reference). */
+export type DelayReference = 'start' | 'first' | 'last';
+
+/** The time of the earliest action; 0 without actions. */
+export function firstTicks(actions: readonly MacroAction[]): number {
+  return actions.length === 0 ? 0 : Math.min(...actions.map(action => action.delay));
+}
 
 /** The time of the latest action; 0 without actions. */
 export function lastTicks(actions: readonly MacroAction[]): number {
   return actions.reduce((latest, action) => Math.max(latest, action.delay), 0);
 }
 
+/** The time a delay reference stands for: the macro's start, or its earliest or latest action. */
+export function referenceTicks(actions: readonly MacroAction[], reference: DelayReference): number {
+  switch (reference) {
+    case 'start':
+      return 0;
+    case 'first':
+      return firstTicks(actions);
+    case 'last':
+      return lastTicks(actions);
+  }
+}
+
+/** `action` inserted before the first action that comes later (after those at its time). */
+export function insertByTime(actions: readonly MacroAction[], action: MacroAction): MacroAction[] {
+  const at = actions.findIndex(existing => existing.delay > action.delay);
+  return at < 0 ? [...actions, action] : [...actions.slice(0, at), action, ...actions.slice(at)];
+}
+
 /**
- * A press of `keycode` `gap` ticks after the latest action and its release `hold` ticks later,
- * both virtual (from no physical key, key ID 0) like recorded events.
+ * "Add key": a press of `keycode` `delay` ticks after the reference and its release `duration`
+ * ticks later, both virtual (from no physical key, key ID 0) like recorded events, each inserted
+ * at its time.
  */
-export function withKeyTap(
+export function withKeyPress(
   actions: readonly MacroAction[],
   keycode: Keycode,
-  gap: number,
-  hold: number
+  reference: DelayReference,
+  delay: number,
+  duration: number
 ): MacroAction[] {
-  const press = lastTicks(actions) + gap;
-  return [
-    ...actions,
-    { delay: press, keycode, event: 'down', isVirtual: true, keyId: 0 },
-    { delay: press + hold, keycode, event: 'up', isVirtual: true, keyId: 0 },
-  ];
+  const pressAt = referenceTicks(actions, reference) + delay;
+  const pressed = insertByTime(actions, {
+    delay: pressAt,
+    keycode,
+    event: 'down',
+    isVirtual: true,
+    keyId: 0,
+  });
+  return insertByTime(pressed, {
+    delay: pressAt + duration,
+    keycode,
+    event: 'up',
+    isVirtual: true,
+    keyId: 0,
+  });
 }
 
 /** Ordered by time; actions at the same time keep their order. */
@@ -2340,17 +2462,18 @@ export function hasRoom(actions: readonly MacroAction[], count: number, limit: n
 }
 ```
 
-- [ ] **Step 4: Implement the browser key table**
+- [ ] **Step 4: Implement the browser key and mouse button tables**
 
 `src/features/macros/model/browser-keys.ts`:
 
 ```ts
 /**
- * Browser keys (`KeyboardEvent.code`, UI Events) and the keycodes libamp plays for them: HID
- * Keyboard/Keypad usages (page 0x07) and libamp's modifier-only keycodes (`mask << 8`). Keys
- * without a HID usage (Fn, media and browser keys) are missing: the recorder skips them.
+ * Browser keys (`KeyboardEvent.code`, UI Events) and mouse buttons (`MouseEvent.button`) and the
+ * keycodes libamp plays for them: HID Keyboard/Keypad usages (page 0x07), libamp's modifier-only
+ * keycodes (`mask << 8`) and its Mouse keycodes. Keys without a HID usage (Fn, media and browser
+ * keys) are missing: the recorder skips and counts them.
  */
-import { Keycode as EmiKeycode, KeyModifier } from 'emi-keyboard-controller';
+import { Keycode as EmiKeycode, KeyModifier, MouseKeycode } from 'emi-keyboard-controller';
 import type { Keycode } from '../../device/model/types';
 import { kc } from '../../keycodes';
 
@@ -2467,6 +2590,24 @@ export const BROWSER_KEYCODES: ReadonlyMap<string, Keycode> = new Map<string, Ke
 export function hidKeycodeOf(code: string): Keycode | null {
   return BROWSER_KEYCODES.get(code) ?? null;
 }
+
+/**
+ * `MouseEvent.button` → its Mouse keycode, as upstream maps them: main (left), auxiliary
+ * (middle), secondary (right), back, forward.
+ */
+const MOUSE_BUTTONS: readonly MouseKeycode[] = [
+  MouseKeycode.MouseLButton,
+  MouseKeycode.MouseMButton,
+  MouseKeycode.MouseRButton,
+  MouseKeycode.MouseBack,
+  MouseKeycode.MouseForward,
+];
+
+/** The keycode of a mouse button, or null for buttons beyond the fifth. */
+export function mouseButtonKeycodeOf(button: number): Keycode | null {
+  const sub = MOUSE_BUTTONS[button];
+  return sub === undefined ? null : kc.mouse(sub);
+}
 ```
 
 - [ ] **Step 5: Implement the recorder and the key picker catalog**
@@ -2475,15 +2616,14 @@ export function hidKeycodeOf(code: string): Keycode | null {
 
 ```ts
 /**
- * Recording a macro from this computer's keyboard: browser key events become virtual actions with
+ * Recording a macro from this computer: key and mouse-button events become virtual actions with
  * key ID 0, as upstream records them, timed from the moment recording started and continuing
  * after the slot's latest action. Each press keeps room for its release, and stopping releases
- * the keys still held, so playback never leaves a key stuck. Pure: the page passes the events and
- * `performance.now()`.
+ * the keys still held, so playback never leaves a key held. Pure: the page resolves each event's
+ * keycode (`hidKeycodeOf`, `mouseButtonKeycodeOf`) and passes `performance.now()`.
  */
 import type { Keycode, MacroAction, MacroEvent } from '../../device/model/types';
 import { lastTicks } from './actions';
-import { hidKeycodeOf } from './browser-keys';
 import { msToTicks } from './timing';
 
 export interface Recording {
@@ -2494,7 +2634,7 @@ export interface Recording {
   readonly pollingRate: number;
   /** The most actions the slot holds. */
   readonly limit: number;
-  /** Keys pressed and not released yet. */
+  /** Keys and buttons pressed and not released yet. */
   readonly held: readonly Keycode[];
   /** Presses of keys without a HID keycode, which were not recorded. */
   readonly skipped: number;
@@ -2502,11 +2642,17 @@ export interface Recording {
   readonly full: boolean;
 }
 
-export interface RecordedKey {
-  /** `KeyboardEvent.code`. */
-  readonly code: string;
+export interface RecordedPress {
+  /** The keycode of the key or mouse button; null for a key without one (skipped and counted). */
+  readonly keycode: Keycode | null;
   /** An auto-repeated keydown (`KeyboardEvent.repeat`). */
   readonly repeat: boolean;
+  /** `performance.now()` of the event. */
+  readonly now: number;
+}
+
+export interface RecordedRelease {
+  readonly keycode: Keycode | null;
   /** `performance.now()` of the event. */
   readonly now: number;
 }
@@ -2566,41 +2712,41 @@ export function stopRecording(
 }
 
 /** A press: recorded unless it repeats a held key; when the slot is full, recording ends. */
-export function recordKeyDown(
+export function recordPress(
   recording: Recording,
   actions: readonly MacroAction[],
-  key: RecordedKey
+  press: RecordedPress
 ): RecordingStep {
-  if (key.repeat || recording.full) return { recording, actions };
-  const keycode = hidKeycodeOf(key.code);
+  if (press.repeat || recording.full) return { recording, actions };
+  const { keycode } = press;
   if (keycode === null) {
     return { recording: { ...recording, skipped: recording.skipped + 1 }, actions };
   }
   if (recording.held.includes(keycode)) return { recording, actions };
   // Room for this press and its release, and for the releases of the keys still held.
   if (actions.length + recording.held.length + 2 > recording.limit) {
-    const stopped = stopRecording(recording, actions, key.now);
+    const stopped = stopRecording(recording, actions, press.now);
     return { recording: { ...stopped.recording, full: true }, actions: stopped.actions };
   }
   return {
     recording: { ...recording, held: [...recording.held, keycode] },
-    actions: [...actions, recordedAction(recording, keycode, 'down', key.now)],
+    actions: [...actions, recordedAction(recording, keycode, 'down', press.now)],
   };
 }
 
-/** A release of a held key. */
-export function recordKeyUp(
+/** A release of a held key or button. */
+export function recordRelease(
   recording: Recording,
   actions: readonly MacroAction[],
-  key: Omit<RecordedKey, 'repeat'>
+  release: RecordedRelease
 ): RecordingStep {
-  const keycode = hidKeycodeOf(key.code);
+  const { keycode } = release;
   if (recording.full || keycode === null || !recording.held.includes(keycode)) {
     return { recording, actions };
   }
   return {
     recording: { ...recording, held: recording.held.filter(held => held !== keycode) },
-    actions: [...actions, recordedAction(recording, keycode, 'up', key.now)],
+    actions: [...actions, recordedAction(recording, keycode, 'up', release.now)],
   };
 }
 ```
@@ -2633,20 +2779,25 @@ export function macroKeyName(keycode: Keycode): string {
 ```ts
 export { DEFAULT_POLLING_RATE, formatMs, msToTicks, ticksToMs } from './timing';
 export {
+  firstTicks,
   hasRoom,
+  insertByTime,
   lastTicks,
+  referenceTicks,
   removeAction,
   replaceAction,
   sortByTime,
-  withKeyTap,
+  withKeyPress,
+  type DelayReference,
 } from './actions';
-export { BROWSER_KEYCODES, hidKeycodeOf } from './browser-keys';
+export { BROWSER_KEYCODES, hidKeycodeOf, mouseButtonKeycodeOf } from './browser-keys';
 export {
-  recordKeyDown,
-  recordKeyUp,
+  recordPress,
+  recordRelease,
   startRecording,
   stopRecording,
-  type RecordedKey,
+  type RecordedPress,
+  type RecordedRelease,
   type Recording,
   type RecordingStep,
 } from './recorder';
@@ -2665,7 +2816,7 @@ Expected: no errors.
 
 ```bash
 git add src/features/macros/model
-git commit -m "feat(macros): model macro timing, edits, browser keys and recording"
+git commit -m "feat(macros): model macro timing, edits, browser keys, mouse buttons and recording"
 ```
 
 ---
@@ -2673,6 +2824,8 @@ git commit -m "feat(macros): model macro timing, edits, browser keys and recordi
 ### Task 6: The Macros page
 
 The page and its components, reachable from Task 10 on. It edits the staged macros through `deviceSession.setMacro`, reading the slot from the store at the time of each edit (two inputs can arrive before the next render, as on the Lighting page).
+
+It follows upstream's behaviour where the product owner chose it (2026-10-01): "Add key" has a delay reference (From macro start / From first action / From last action), a delay and a duration, shown in ms rather than ticks, and says "Not enough space for a complete action." when fewer than two entries are left; recording takes the keyboard's keys and the mouse buttons and suppresses clicks, middle clicks and the context menu while it runs. The controls stay our own: Record and Stop buttons rather than upstream's hover area, so the Stop button's own clicks are neither recorded nor suppressed. Macros reach the keyboard with Save, as upstream writes them (`set_macros`, then `save()`), and the page says nothing about how long the keyboard keeps them.
 
 **Files:**
 - Create: `src/components/ui/UnsupportedFeature.tsx`, `src/components/ui/UnsupportedFeature.test.tsx`; Modify: `src/components/ui/index.ts`
@@ -2683,7 +2836,7 @@ The page and its components, reachable from Task 10 on. It edits the staged macr
 - Modify: `src/lib/i18n/en.ts`, `zh.ts`, `i18n.test.tsx`
 
 **Interfaces:**
-- Consumes: `deviceSession.setMacro`, `useFeatureFlags`, `useDeviceStore`, `useDeviceLoads`, `supportsMacros`, `macroActionLimit` (Tasks 2–3); `KeycodePicker`, `Modal` `'3xl'` (Task 3); `macros.slot` (Task 4); the Task 5 model.
+- Consumes: `deviceSession.setMacro`, `useFeatureFlags`, `useDeviceStore`, `useDeviceLoads`, `supportsMacros`, `macroActionLimit` (Tasks 2–3); `KeycodePicker`, `Modal` `'3xl'` (Task 3); `macros.slot` (Task 4); the Task 5 model (`withKeyPress`, `DelayReference`, `recordPress`, `recordRelease`, `hidKeycodeOf`, `mouseButtonKeycodeOf`, …).
 - Produces: `MacrosPage` (`features/macros` index); `UnsupportedFeature({ message })` (`components/ui`); translation keys `macros.*` below.
 
 - [ ] **Step 1: Write the failing tests**
@@ -2725,8 +2878,10 @@ import { connectVirtualKeyboard, type ConnectedKeyboard } from '../../testing/ap
 import { deviceSession, deviceStore, type MacroAction } from '../device';
 import { MacrosPage } from './MacrosPage';
 
-/** libamp's modifier-only keycode of Left Shift. */
+/** libamp's modifier-only keycode of Left Shift and the Mouse keycode of the right button. */
 const LEFT_SHIFT = 0x0200;
+const MOUSE_RIGHT = 0x01a5;
+const NO_ROOM = 'Not enough space for a complete action.';
 
 function action(delay: number, keycode: number, event: 'down' | 'up'): MacroAction {
   return { delay, keycode, event, isVirtual: true, keyId: 0 };
@@ -2754,6 +2909,13 @@ function rows(): HTMLElement[] {
 function key(type: 'keydown' | 'keyup', code: string, repeat = false): boolean {
   const event = new KeyboardEvent(type, { code, repeat, bubbles: true, cancelable: true });
   fireEvent(window, event);
+  return event.defaultPrevented;
+}
+
+/** Dispatches a mouse button event on the page; returns whether it was cancelled. */
+function mouse(type: 'mousedown' | 'mouseup', button: number): boolean {
+  const event = new MouseEvent(type, { button, bubbles: true, cancelable: true });
+  fireEvent(document.body, event);
   return event.defaultPrevented;
 }
 
@@ -2808,6 +2970,7 @@ describe('MacrosPage (Trinity Pad)', { timeout: 20_000 }, () => {
     expect(
       screen.getByText('This macro has no actions yet. Record them or add keys.')
     ).toBeInTheDocument();
+    expect(screen.queryByText(NO_ROOM)).not.toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: 'Macro 2 1 action' }));
 
@@ -2816,15 +2979,22 @@ describe('MacrosPage (Trinity Pad)', { timeout: 20_000 }, () => {
     expect(rows()).toHaveLength(1);
   });
 
-  it('adds a press and a release of a chosen key after the last action', async () => {
+  it('adds a press and a release of a chosen key after the delay reference', async () => {
     deviceSession.setMacro(0, [action(0, Keycode.A, 'down'), action(160, Keycode.A, 'up')]);
     const user = userEvent.setup();
     renderPage();
 
-    const after = screen.getByLabelText('After (ms)');
-    expect(after).toHaveValue(50);
-    expect(screen.getByLabelText('Hold (ms)')).toHaveValue(20);
-    fireEvent.change(after, { target: { value: '12.5' } });
+    const reference = screen.getByLabelText('Delay reference');
+    expect(reference).toHaveValue('last');
+    expect(within(reference).getAllByRole('option').map(option => option.textContent)).toEqual([
+      'From macro start',
+      'From first action',
+      'From last action',
+    ]);
+    const delay = screen.getByLabelText('Delay (ms)');
+    expect(delay).toHaveValue(50);
+    expect(screen.getByLabelText('Duration (ms)')).toHaveValue(20);
+
     await user.click(screen.getByRole('button', { name: 'Add key' }));
     const dialog = screen.getByRole('dialog', { name: 'Choose a key' });
     // Keycode 0 ends a macro: the picker has no "None".
@@ -2832,17 +3002,34 @@ describe('MacrosPage (Trinity Pad)', { timeout: 20_000 }, () => {
     await user.click(within(dialog).getByRole('button', { name: 'B' }));
 
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
-    // 12.5 ms and 20 ms at 8000 Hz: 100 ticks after the last action, released 160 ticks later.
+    // From the last action (160): 50 ms (400 ticks at 8000 Hz) later, released 20 ms (160) later.
     expect(macro()).toEqual([
       action(0, Keycode.A, 'down'),
       action(160, Keycode.A, 'up'),
-      action(260, Keycode.B, 'down'),
-      action(420, Keycode.B, 'up'),
+      action(560, Keycode.B, 'down'),
+      action(720, Keycode.B, 'up'),
     ]);
     expect(deviceStore.getState().unsaved).toBe(true);
-    expect(screen.getByLabelText('Time of action 3')).toHaveValue(32.5);
-    expect(screen.getByLabelText('Time of action 4')).toHaveValue(52.5);
-    expect(screen.getByText('4 / 127 actions')).toBeInTheDocument();
+
+    // From the macro start, 12.5 ms in: the press and the release go in at their times.
+    await user.selectOptions(reference, 'From macro start');
+    fireEvent.change(delay, { target: { value: '12.5' } });
+    await user.click(screen.getByRole('button', { name: 'Add key' }));
+    await user.click(
+      within(screen.getByRole('dialog', { name: 'Choose a key' })).getByRole('button', {
+        name: 'C',
+      })
+    );
+    expect(macro()?.map(entry => [entry.delay, entry.keycode, entry.event])).toEqual([
+      [0, Keycode.A, 'down'],
+      [100, Keycode.C, 'down'],
+      [160, Keycode.A, 'up'],
+      [260, Keycode.C, 'up'],
+      [560, Keycode.B, 'down'],
+      [720, Keycode.B, 'up'],
+    ]);
+    expect(screen.getByLabelText('Time of action 2')).toHaveValue(12.5);
+    expect(screen.getByText('6 / 127 actions')).toBeInTheDocument();
   });
 
   it('edits the time, the key, the event and the virtual flag in place', async () => {
@@ -2930,14 +3117,14 @@ describe('MacrosPage (Trinity Pad)', { timeout: 20_000 }, () => {
     expect(screen.getByRole('button', { name: 'Sort by time' })).toBeDisabled();
   });
 
-  it('records key presses and releases with their timing until Stop', async () => {
+  it('records keys and mouse buttons with their timing until Stop', async () => {
     const now = vi.spyOn(performance, 'now').mockReturnValue(1000);
     const user = userEvent.setup();
     renderPage();
 
     await user.click(screen.getByRole('button', { name: 'Record' }));
     expect(screen.getByRole('status')).toHaveTextContent(
-      "Recording: press keys on this computer's keyboard. Mouse buttons are not recorded."
+      'Recording: the keys and mouse buttons you press are added to this macro.'
     );
     expect(screen.getByRole('button', { name: 'Macro 2 0 actions' })).toBeDisabled();
 
@@ -2949,21 +3136,30 @@ describe('MacrosPage (Trinity Pad)', { timeout: 20_000 }, () => {
     expect(key('keydown', 'BrowserBack')).toBe(true); // no HID keycode: skipped
     now.mockReturnValue(1200);
     expect(key('keyup', 'KeyA')).toBe(true);
+    // A right click is recorded as Mouse Right, without the context menu.
+    expect(mouse('mousedown', 2)).toBe(true);
+    expect(fireEvent.contextMenu(document.body)).toBe(false);
+    now.mockReturnValue(1250);
+    expect(mouse('mouseup', 2)).toBe(true);
     expect(screen.getByRole('status')).toHaveTextContent('1 key could not be recorded.');
 
     now.mockReturnValue(1300);
     await user.click(screen.getByRole('button', { name: 'Stop' }));
 
-    // Ticks from the start of the recording; the key still held is released at Stop.
+    // Ticks from the start of the recording; the key still held is released at Stop, and the
+    // click on Stop is not recorded.
     expect(macro()).toEqual([
       action(800, LEFT_SHIFT, 'down'),
       action(1200, Keycode.A, 'down'),
       action(1600, Keycode.A, 'up'),
+      action(1600, MOUSE_RIGHT, 'down'),
+      action(2000, MOUSE_RIGHT, 'up'),
       action(2400, LEFT_SHIFT, 'up'),
     ]);
     expect(screen.getByRole('status')).toHaveTextContent('1 key could not be recorded.');
     expect(key('keydown', 'KeyB')).toBe(false);
-    expect(macro()).toHaveLength(4);
+    expect(fireEvent.contextMenu(document.body)).toBe(true);
+    expect(macro()).toHaveLength(6);
   });
 
   it('stops recording when the macro is full, releasing the keys still held', async () => {
@@ -2991,17 +3187,20 @@ describe('MacrosPage (Trinity Pad)', { timeout: 20_000 }, () => {
     expect(screen.getByRole('status')).toHaveTextContent('The macro is full.');
     expect(screen.getByRole('button', { name: 'Record' })).toBeDisabled();
     expect(screen.getByRole('button', { name: 'Add key' })).toBeDisabled();
+    expect(screen.getByText(NO_ROOM)).toBeInTheDocument();
   });
 });
 ```
 
-`src/lib/i18n/i18n.test.tsx`: in the key-count test add the comment line `// + 34: the Macros page (macros and scripts spec).` and add 34 to the number in `toHaveLength(…)`. Add:
+`src/lib/i18n/i18n.test.tsx`: in the key-count test add the comment line `// + 39: the Macros page (macros and scripts spec).` and add 39 to the number in `toHaveLength(…)`. Add:
 
 ```ts
   it('add the Macros page copy (macros and scripts spec)', () => {
     expect(en).toMatchObject({
       'macros.title': 'Macros',
       'macros.limit': '{0} / {1} actions',
+      'macros.fromStart': 'From macro start',
+      'macros.noRoom': 'Not enough space for a complete action.',
       'macros.skipped': '{0} keys could not be recorded.',
       'macros.unsupported': 'This keyboard does not support macros',
     });
@@ -3046,14 +3245,18 @@ Expected: FAIL ("Cannot find module './UnsupportedFeature'", "Cannot find module
   'macros.changeKey': 'Change the key',
   'macros.deleteAction': 'Delete action {0}',
   'macros.empty': 'This macro has no actions yet. Record them or add keys.',
-  'macros.after': 'After (ms)',
-  'macros.hold': 'Hold (ms)',
+  'macros.reference': 'Delay reference',
+  'macros.fromStart': 'From macro start',
+  'macros.fromFirst': 'From first action',
+  'macros.fromLast': 'From last action',
+  'macros.delay': 'Delay (ms)',
+  'macros.duration': 'Duration (ms)',
   'macros.addKey': 'Add key',
+  'macros.noRoom': 'Not enough space for a complete action.',
   'macros.chooseKey': 'Choose a key',
   'macros.record': 'Record',
   'macros.stop': 'Stop',
-  'macros.recording':
-    "Recording: press keys on this computer's keyboard. Mouse buttons are not recorded.",
+  'macros.recording': 'Recording: the keys and mouse buttons you press are added to this macro.',
   'macros.skippedOne': '1 key could not be recorded.',
   'macros.skipped': '{0} keys could not be recorded.',
   'macros.full': 'The macro is full.',
@@ -3088,13 +3291,18 @@ Expected: FAIL ("Cannot find module './UnsupportedFeature'", "Cannot find module
   'macros.changeKey': '更换按键',
   'macros.deleteAction': '删除动作 {0}',
   'macros.empty': '此宏还没有动作。可以录制或添加按键。',
-  'macros.after': '间隔（毫秒）',
-  'macros.hold': '按住（毫秒）',
+  'macros.reference': '延迟基准',
+  'macros.fromStart': '从宏开始',
+  'macros.fromFirst': '从第一个动作',
+  'macros.fromLast': '从最后一个动作',
+  'macros.delay': '延迟（毫秒）',
+  'macros.duration': '持续时长（毫秒）',
   'macros.addKey': '添加按键',
+  'macros.noRoom': '剩余空间不足以添加完整的动作。',
   'macros.chooseKey': '选择按键',
   'macros.record': '录制',
   'macros.stop': '停止',
-  'macros.recording': '录制中：请按下此电脑键盘上的按键。鼠标按键不会被录制。',
+  'macros.recording': '录制中：按下的键盘按键和鼠标按键都会加入此宏。',
   'macros.skippedOne': '有 1 个按键无法录制。',
   'macros.skipped': '有 {0} 个按键无法录制。',
   'macros.full': '宏已满。',
@@ -3178,17 +3386,22 @@ export function editMacro(
 
 ```ts
 /**
- * Recording a macro slot from this computer's keyboard: window key events while recording. Every
- * recorded event is staged at once, so the table fills while recording. Recording ends with
- * Stop, when the macro is full, when the window loses focus (its releases would be missed) and
- * when the editor unmounts (leaving the page, a device load); keys still held are released then.
+ * Recording a macro slot from this computer's keyboard and mouse buttons (window events while
+ * recording), as upstream records them. Every recorded event is staged at once, so the table
+ * fills while recording. While recording, keys and mouse buttons do nothing else: their default
+ * actions are prevented, and so are clicks, middle clicks and the context menu, except on the
+ * Stop button (`data-macro-recorder-stop`), whose clicks are not recorded. Recording ends with
+ * Stop, when the macro is full, when the window loses focus (releases would be missed) and when
+ * the editor unmounts (leaving the page, a device load); keys still held are released then.
  */
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { deviceSession, deviceStore, type MacroAction } from '../../device';
 import { slotActions } from '../commands';
 import {
-  recordKeyDown,
-  recordKeyUp,
+  hidKeycodeOf,
+  mouseButtonKeycodeOf,
+  recordPress,
+  recordRelease,
   startRecording,
   stopRecording,
   type Recording,
@@ -3214,6 +3427,19 @@ interface Shown extends RecorderState {
 }
 
 const IDLE: RecorderState = { recording: false, skipped: 0, full: false };
+
+/** Events on the Stop button are neither recorded nor suppressed. */
+function onStopButton(event: Event): boolean {
+  return (
+    event.target instanceof Element && event.target.closest('[data-macro-recorder-stop]') !== null
+  );
+}
+
+/** Keeps a recorded or suppressed event from doing anything else. */
+function swallow(event: Event): void {
+  event.preventDefault();
+  event.stopPropagation();
+}
 
 export function useMacroRecorder(slot: number, pollingRate: number, limit: number): MacroRecorder {
   // The recording in progress, for the window listeners; null while not recording.
@@ -3251,27 +3477,56 @@ export function useMacroRecorder(slot: number, pollingRate: number, limit: numbe
   const active = shown.slot === slot && shown.recording;
   useEffect(() => {
     if (!active) return;
-    const onKey = (event: KeyboardEvent) => {
+    const record = (
+      event: Event,
+      step: (current: Recording, before: readonly MacroAction[], now: number) => RecordingStep
+    ) => {
       const current = recording.current;
       if (!current) return;
-      // A recorded key does nothing else: Space or Enter would press the focused Stop button.
-      event.preventDefault();
+      // A recorded event does nothing else: Space or Enter would press a focused button.
+      swallow(event);
       const before = slotActions(slot);
-      const now = performance.now();
-      apply(
-        before,
+      apply(before, step(current, before, performance.now()), false);
+    };
+    const onKey = (event: KeyboardEvent) => {
+      const keycode = hidKeycodeOf(event.code);
+      record(event, (current, before, now) =>
         event.type === 'keydown'
-          ? recordKeyDown(current, before, { code: event.code, repeat: event.repeat, now })
-          : recordKeyUp(current, before, { code: event.code, now }),
-        false
+          ? recordPress(current, before, { keycode, repeat: event.repeat, now })
+          : recordRelease(current, before, { keycode, now })
       );
+    };
+    const onMouseButton = (event: MouseEvent) => {
+      const keycode = mouseButtonKeycodeOf(event.button);
+      // Buttons beyond the fifth are left alone.
+      if (keycode === null || onStopButton(event)) return;
+      record(event, (current, before, now) =>
+        event.type === 'mousedown'
+          ? recordPress(current, before, { keycode, repeat: false, now })
+          : recordRelease(current, before, { keycode, now })
+      );
+    };
+    // A click would press what is under the pointer, a middle click open a link, a right click
+    // the context menu.
+    const suppress = (event: MouseEvent) => {
+      if (!onStopButton(event)) swallow(event);
     };
     window.addEventListener('keydown', onKey, true);
     window.addEventListener('keyup', onKey, true);
+    window.addEventListener('mousedown', onMouseButton, true);
+    window.addEventListener('mouseup', onMouseButton, true);
+    window.addEventListener('click', suppress, true);
+    window.addEventListener('auxclick', suppress, true);
+    window.addEventListener('contextmenu', suppress, true);
     window.addEventListener('blur', stop);
     return () => {
       window.removeEventListener('keydown', onKey, true);
       window.removeEventListener('keyup', onKey, true);
+      window.removeEventListener('mousedown', onMouseButton, true);
+      window.removeEventListener('mouseup', onMouseButton, true);
+      window.removeEventListener('click', suppress, true);
+      window.removeEventListener('auxclick', suppress, true);
+      window.removeEventListener('contextmenu', suppress, true);
       window.removeEventListener('blur', stop);
     };
   }, [active, slot, apply, stop]);
@@ -3470,72 +3725,126 @@ export function MacroSlots({ macros, selected, disabled, onSelect }: MacroSlotsP
 
 ```tsx
 import { useState } from 'react';
-import { useT } from '../../../lib/i18n';
+import { useT, type TranslationKey } from '../../../lib/i18n';
 import type { Keycode } from '../../device';
-import { msToTicks } from '../model';
+import { msToTicks, type DelayReference } from '../model';
 import { MacroKeyPicker } from './MacroKeyPicker';
 import { FIELD, PRIMARY_BUTTON } from './styles';
 
-export interface AddKeyFormProps {
-  readonly pollingRate: number;
-  readonly disabled: boolean;
-  /** `gap` and `hold` in ticks. */
-  readonly onAdd: (keycode: Keycode, gap: number, hold: number) => void;
+const LABEL = 'flex flex-col gap-1 text-sm text-gray-600 dark:text-gray-400';
+
+/** Upstream's delay references, in its order. */
+const REFERENCES: readonly (readonly [DelayReference, TranslationKey])[] = [
+  ['start', 'macros.fromStart'],
+  ['first', 'macros.fromFirst'],
+  ['last', 'macros.fromLast'],
+];
+
+function isDelayReference(value: string): value is DelayReference {
+  return REFERENCES.some(([reference]) => reference === value);
 }
 
-/** "Add key": a press of a chosen key `After` ms after the last action, released `Hold` ms later. */
-export function AddKeyForm({ pollingRate, disabled, onAdd }: AddKeyFormProps) {
+export interface AddKeyFormProps {
+  readonly pollingRate: number;
+  /** Room for a press and its release. */
+  readonly room: boolean;
+  readonly disabled: boolean;
+  /** `delay` and `duration` in ticks. */
+  readonly onAdd: (
+    keycode: Keycode,
+    reference: DelayReference,
+    delay: number,
+    duration: number
+  ) => void;
+}
+
+/**
+ * "Add key" (upstream's "Add macro action"): a press of a chosen key `Delay` ms after the delay
+ * reference — the macro's start, its first or its last action — released `Duration` ms later.
+ * Without room for both, the form says so.
+ */
+export function AddKeyForm({ pollingRate, room, disabled, onAdd }: AddKeyFormProps) {
   const t = useT();
-  const [after, setAfter] = useState('50');
-  const [hold, setHold] = useState('20');
+  const [reference, setReference] = useState<DelayReference>('last');
+  const [delay, setDelay] = useState('50');
+  const [duration, setDuration] = useState('20');
   const [picking, setPicking] = useState(false);
+  const off = disabled || !room;
 
   return (
-    <div className="flex flex-wrap items-end gap-3">
-      <label className="flex flex-col gap-1 text-sm text-gray-600 dark:text-gray-400">
-        {t('macros.after')}
-        <input
-          type="number"
-          min="0"
-          step="any"
-          value={after}
-          disabled={disabled}
-          onChange={event => {
-            setAfter(event.currentTarget.value);
+    <div className="flex flex-col gap-2">
+      <div className="flex flex-wrap items-end gap-3">
+        <label className={LABEL}>
+          {t('macros.reference')}
+          <select
+            value={reference}
+            disabled={off}
+            className={FIELD}
+            onChange={event => {
+              const { value } = event.currentTarget;
+              if (isDelayReference(value)) setReference(value);
+            }}
+          >
+            {REFERENCES.map(([value, label]) => (
+              <option key={value} value={value}>
+                {t(label)}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className={LABEL}>
+          {t('macros.delay')}
+          <input
+            type="number"
+            min="0"
+            step="any"
+            value={delay}
+            disabled={off}
+            onChange={event => {
+              setDelay(event.currentTarget.value);
+            }}
+            className={`w-24 ${FIELD}`}
+          />
+        </label>
+        <label className={LABEL}>
+          {t('macros.duration')}
+          <input
+            type="number"
+            min="0"
+            step="any"
+            value={duration}
+            disabled={off}
+            onChange={event => {
+              setDuration(event.currentTarget.value);
+            }}
+            className={`w-24 ${FIELD}`}
+          />
+        </label>
+        <button
+          type="button"
+          className={PRIMARY_BUTTON}
+          disabled={off}
+          onClick={() => {
+            setPicking(true);
           }}
-          className={`w-24 ${FIELD}`}
-        />
-      </label>
-      <label className="flex flex-col gap-1 text-sm text-gray-600 dark:text-gray-400">
-        {t('macros.hold')}
-        <input
-          type="number"
-          min="0"
-          step="any"
-          value={hold}
-          disabled={disabled}
-          onChange={event => {
-            setHold(event.currentTarget.value);
-          }}
-          className={`w-24 ${FIELD}`}
-        />
-      </label>
-      <button
-        type="button"
-        className={PRIMARY_BUTTON}
-        disabled={disabled}
-        onClick={() => {
-          setPicking(true);
-        }}
-      >
-        {t('macros.addKey')}
-      </button>
+        >
+          {t('macros.addKey')}
+        </button>
+      </div>
+      {!room && (
+        <p className="text-sm text-amber-600 dark:text-amber-400">{t('macros.noRoom')}</p>
+      )}
       <MacroKeyPicker
         open={picking}
         selected={null}
         onPick={keycode => {
           setPicking(false);
-          onAdd(keycode, msToTicks(Number(after), pollingRate), msToTicks(Number(hold), pollingRate));
+          onAdd(
+            keycode,
+            reference,
+            msToTicks(Number(delay), pollingRate),
+            msToTicks(Number(duration), pollingRate)
+          );
         }}
         onClose={() => {
           setPicking(false);
@@ -3715,7 +4024,7 @@ import { useT, type TranslationKey } from '../../../lib/i18n';
 import type { MacroAction } from '../../device';
 import { editMacro } from '../commands';
 import { useMacroRecorder, type MacroRecorder } from '../hooks/use-macro-recorder';
-import { hasRoom, removeAction, replaceAction, sortByTime, withKeyTap } from '../model';
+import { hasRoom, removeAction, replaceAction, sortByTime, withKeyPress } from '../model';
 import { ActionTable } from './ActionTable';
 import { AddKeyForm } from './AddKeyForm';
 import { MacroSlots } from './MacroSlots';
@@ -3759,8 +4068,14 @@ export function MacroEditor({ macros, pollingRate, limit }: MacroEditorProps) {
           {t('macros.limit', String(actions.length), String(limit))}
         </p>
         <div className="flex-1" />
+        {/* Clicks on Stop are neither recorded nor suppressed (see use-macro-recorder). */}
         {recording ? (
-          <button type="button" className={STOP_BUTTON} onClick={recorder.stop}>
+          <button
+            type="button"
+            data-macro-recorder-stop
+            className={STOP_BUTTON}
+            onClick={recorder.stop}
+          >
             {t('macros.stop')}
           </button>
         ) : (
@@ -3802,9 +4117,10 @@ export function MacroEditor({ macros, pollingRate, limit }: MacroEditorProps) {
       </p>
       <AddKeyForm
         pollingRate={pollingRate}
-        disabled={recording || !roomForKey}
-        onAdd={(keycode, gap, hold) => {
-          editMacro(slot, current => withKeyTap(current, keycode, gap, hold));
+        room={roomForKey}
+        disabled={recording}
+        onAdd={(keycode, reference, delay, duration) => {
+          editMacro(slot, current => withKeyPress(current, keycode, reference, delay, duration));
         }}
       />
       <ActionTable
@@ -3921,7 +4237,7 @@ git commit -m "feat(macros): the Macros page"
 
 ### Task 7: libamp's script compiler in `vendor/mqjs/`
 
-Two commits: the generated compiler with its build script and tooling, then the app's wrapper. The spec pins the compiler to the commit the Zellia firmware uses (`ee9d947`), but that commit has no script support at all (no `tools/mqjs`, no `lib/mquickjs`, no `src/script.c`), so `build.sh` pins `8f9c439`, the newest libamp: `Zellia-Keyboards/Zellia_libamp` main and `zhangqili/libamp` main are both that commit.
+Two commits: the generated compiler with its build script and tooling, then the app's wrapper. As the spec says, `build.sh` pins libamp `8f9c439`, the newest commit (`Zellia-Keyboards/Zellia_libamp` main and `zhangqili/libamp` main are both that commit): the commit the Zellia firmware uses, `ee9d947`, has no script support at all (no `tools/mqjs`, no `lib/mquickjs`, no `src/script.c`).
 
 **Files:**
 - Create: `vendor/mqjs/build.sh`; generated by it and committed: `vendor/mqjs/mqjs_wasm.js`, `vendor/mqjs/mqjs_wasm.wasm`, `vendor/mqjs/LICENSE`, `vendor/mqjs/PROVENANCE.md`, `vendor/mqjs/licenses/*`
@@ -4443,7 +4759,7 @@ git commit -m "feat(scripts): compile scripts with libamp's compiler"
 
 ### Task 8: Scripts model and the CodeMirror editor
 
-The editor and its completions, the hex view and the buffer sizes. The completion list follows libamp's `mqjs_libamp_stdlib.c` at the compiler's commit rather than the spec's list where they differ: the firmware has no `keyboard.suspend` (commented out), `emit` is a method of keys (`key.emit`), the lighting object is `led` (not `LED`), and `script.c` also calls `onExit`.
+The editor and its completions, the hex view and the buffer sizes. As the spec lists it, the completion list is the API the firmware has (`mqjs_libamp_stdlib.c` and `script.c` at the compiler's commit): no `keyboard.suspend` (commented out there), `emit` as a method of keys (`key.emit`), the lighting object `led`, and the callback `onExit` besides `loop`, `onKeyDown` and `onKeyUp`.
 
 **Files:**
 - Modify: `package.json`, `package-lock.json` (CodeMirror)
@@ -6090,6 +6406,7 @@ const PRESS = 3;
 const RELEASE = 1;
 const LEFT_SHIFT = 0x0200;
 const B = 0x05;
+const MOUSE_LEFT = 0x00a5;
 
 // The Trinity Pad's controller declares 4 macro slots and AOT scripts.
 test.use({ virtualKeyboardOptions: { model: 'trinity-pad', seedDynamicKeys: false } });
@@ -6114,7 +6431,7 @@ async function save(page: Page): Promise<void> {
 }
 
 test.describe('macros', () => {
-  test('records a macro, edits it and saves it to the keyboard', async ({
+  test('records keys and a click, edits the macro and saves it to the keyboard', async ({
     page,
     virtualKeyboard,
   }) => {
@@ -6126,11 +6443,13 @@ test.describe('macros', () => {
     await page.keyboard.down('Shift');
     await page.keyboard.press('KeyA');
     await page.keyboard.up('Shift');
+    // A left click on the page is recorded as Mouse Left; the click on Stop is not.
+    await page.getByRole('heading', { name: 'Macros' }).click();
     await page.getByRole('button', { name: 'Stop' }).click();
 
     const rows = page.getByRole('table', { name: 'Macro 1' }).getByRole('row');
-    // The header and Shift down, A down, A up, Shift up.
-    await expect(rows).toHaveCount(5);
+    // The header and Shift down, A down, A up, Shift up, Mouse Left down and up.
+    await expect(rows).toHaveCount(7);
     for (const row of [2, 3]) {
       await rows.nth(row).getByRole('button', { name: 'A', exact: true }).click();
       await page
@@ -6145,7 +6464,7 @@ test.describe('macros', () => {
       .poll(() =>
         keyboard.evaluate(vk =>
           vk.state.macros[0]
-            ?.slice(0, 5)
+            ?.slice(0, 7)
             .map(entry => [entry.event, entry.keycode, entry.isVirtual] as const)
         )
       )
@@ -6154,14 +6473,16 @@ test.describe('macros', () => {
         [PRESS, B, true],
         [RELEASE, B, true],
         [RELEASE, LEFT_SHIFT, true],
+        [PRESS, MOUSE_LEFT, true],
+        [RELEASE, MOUSE_LEFT, true],
         // The end marker the firmware stops at.
         [0, 0, false],
       ]);
     const delays = await keyboard.evaluate(
-      vk => vk.state.macros[0]?.slice(0, 5).map(entry => entry.delay) ?? []
+      vk => vk.state.macros[0]?.slice(0, 7).map(entry => entry.delay) ?? []
     );
     expect(delays).toEqual([...delays].sort((a, b) => a - b));
-    expect(delays[4]).toBe(delays[3]);
+    expect(delays[6]).toBe(delays[5]);
   });
 });
 
@@ -6214,7 +6535,7 @@ Expected: no errors.
 
 ```bash
 git add src/testing/virtual-keyboard/handle.ts e2e/macros-scripts.spec.ts
-git commit -m "test(e2e): record and save a macro, compile and save a script"
+git commit -m "test(e2e): record and save a macro with a click, compile and save a script"
 ```
 
 ---
@@ -6587,7 +6908,7 @@ Expected: no errors; PASS (the loader validates the new file).
 - [ ] **Step 2: Capture the new screens in one variant**
 
 Run (alone): `npm run parity -- --workers=2 --grep "(macros-|scripts-|remap-extension-macro).*--dark-en-1440x900"`
-Expected: 6 captures, all `new`, no page errors; exit code 0. Open `e2e/.artifacts/parity/index.html` (or the PNGs in `captures/react/`) and check each screen against the spec: four slot buttons with counts, the "N / 127 actions" counter, Record/Stop, Sort by time, Clear, Add key with After and Hold, the table columns (Time, Key, Event, Virtual, Key ID, delete); the editor with highlighting, the status line, the error with its line, the bytecode section; the Macro and Script groups on Remap. Fix and re-run until the screens are right.
+Expected: 6 captures, all `new`, no page errors; exit code 0. Open `e2e/.artifacts/parity/index.html` (or the PNGs in `captures/react/`) and check each screen against the spec: four slot buttons with counts, the "N / 127 actions" counter, Record/Stop, Sort by time, Clear, Add key with the delay reference, Delay and Duration, the table columns (Time, Key, Event, Virtual, Key ID, delete); the editor with highlighting, the status line, the error with its line, the bytecode section; the Macro and Script groups on Remap. Fix and re-run until the screens are right.
 
 - [ ] **Step 3: Full parity run**
 
@@ -6608,7 +6929,7 @@ cp e2e/.artifacts/parity/captures/react/remap-extension-macro--dark-en-1440x900.
 In `docs/migration/parity-log.md`, add four rows after the last row of the "Deviations" table (PL-050 once the lighting plan's rows are in; take the next free ids if they are not PL-051 to PL-054, and use them everywhere in this task), in the table's format, Before "— (new screen)", Status `logged`:
 
 - **PL-051** sidebar — every `macros-*`, `scripts-*` and `remap-extension-macro` capture (virtual Trinity Pad): "Macros" and "Scripts" follow "Dynamic Keys" while the connected keyboard's controller declares macros or scripts; the Zellia models declare neither, so no baseline screen changes. Reason: macros and scripts spec (Navigation). After: `parity/pl-051-after.png`.
-- **PL-052** `/macros/` — `macros-empty--*`, `macros-actions--*`, `macros-recording--*`: the new Macros page: slot buttons with their action counts, the "N / 127 actions" counter, Record (Stop while recording, with the recording line), Sort by time, Clear, Add key with After and Hold, and the action table (Time in ms, Key, Event, Virtual, Key ID, delete). Edits wait for Save. Reason: macros and scripts spec (Macros page). After: `parity/pl-052-after.png`.
+- **PL-052** `/macros/` — `macros-empty--*`, `macros-actions--*`, `macros-recording--*`: the new Macros page: slot buttons with their action counts, the "N / 127 actions" counter, Record (Stop while recording, with the recording line; keys and mouse buttons are recorded), Sort by time, Clear, Add key with the delay reference (From macro start / From first action / From last action), Delay and Duration in ms, and the action table (Time in ms, Key, Event, Virtual, Key ID, delete). Edits wait for Save. Reason: macros and scripts spec (Macros page). After: `parity/pl-052-after.png`.
 - **PL-053** `/scripts/` — `scripts-example--*`, `scripts-error--*`: the new Scripts page: the CodeMirror editor, Open .js, Save .js and Load example, the compile status ("Compiled: N bytes — sent to the keyboard on Save" or "Errors: fix them to send this script" with "Line L: message") and the collapsible bytecode. Reason: macros and scripts spec (Scripts page). After: `parity/pl-053-after.png`.
 - **PL-054** `/remap/` — `remap-extension-macro--*`: on keyboards that support them, the Extension tab gains the Macro group (record, play, stop and pause keys of each slot) and the Script group (Watch, Start, Stop, Suspend, Restart, Toggle). Reason: macros and scripts spec (Keycodes). After: `parity/pl-054-after.png`.
 
@@ -6645,7 +6966,7 @@ their screens do not change.
 
 Then add to that file a section `## Results` with the date of the Step 3 run and its totals from `summary.json` (captures, identical, different, missing, new) and any page errors seen in the new captures.
 
-In `docs/superpowers/specs/2026-10-01-macros-scripts-design.md`, set the status line to "Status: implemented (plan: `docs/superpowers/plans/2026-10-01-macros-scripts.md`)."
+In `docs/superpowers/specs/2026-10-01-macros-scripts-design.md`, replace the status paragraph ("Status: approved 2026-10-01; revised after planning …") with "Status: implemented (plan: `docs/superpowers/plans/2026-10-01-macros-scripts.md`)."
 
 Run: `npx prettier --write docs/migration/parity-log.md docs/migration/parity-notes/macros-scripts.md`
 
