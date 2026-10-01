@@ -47,7 +47,10 @@ const SETTINGS_OPTIONS: readonly SettingsOption[] = [
 
 interface Confirmation {
   readonly titleKey: TranslationKey;
-  /** Hard-coded English, like the other confirmation dialogs (profiles). */
+  /**
+   * English, like the profiles dialogs and the shared modal's Cancel, until there are translation
+   * keys for them (PL-012); the title and the confirm button show the translated action name.
+   */
   readonly message: string;
   readonly confirmColor: 'orange' | 'red';
   readonly run: (navigate: NavigateFunction) => void;
