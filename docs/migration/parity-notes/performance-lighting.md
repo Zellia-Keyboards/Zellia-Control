@@ -3,7 +3,8 @@
 Merged into the [parity log](../parity-log.md) on 2026-10-01; ids are final.
 
 Scenarios: `e2e/parity/scenarios/performance-lighting.ts`, 31 in all: 10 on Performance
-(`performance-*`) and 21 on Lighting (`lighting-*`). Fast mode (product owner decision,
+(`performance-*`) and 21 on Lighting (`lighting-*`); the lighting redesign added a 22nd,
+`lighting-keys-mixed` ([below](#lighting-redesign-2026-10-01)). Fast mode (product owner decision,
 2026-10-01): captured in the `dark-en-1440x900` variant only, with
 `E2E_PORT=4313 npm run parity -- --workers=2 --grep '(performance|lighting)-.*--dark-en-1440x900'`;
 the lead runs the full matrix once all pages are merged.
@@ -48,6 +49,45 @@ every `performance-*` capture React's keycaps show each key's values and the bas
 PL-002 (the sidebar's Save label, logged by worker E): with both labels hidden, the Save icon
 still sits elsewhere, because the baseline's raw `ui.save` label is wider than "Save".
 
+## Lighting redesign (2026-10-01)
+
+The Lighting page follows the
+[lighting redesign spec](../../superpowers/specs/2026-10-01-lighting-redesign-design.md): edits
+wait for Save, the key panel edits its targets (the selected keys, or all keys while none is
+selected) and shows their shared values, and every mode is explained. The
+[parity log](../parity-log.md) records what that changes on screen as PL-047 to PL-050 and updates
+PL-007 and PL-032.
+
+Scenario changes in `e2e/parity/scenarios/performance-lighting.ts`:
+
+- `openLighting` waits for the base panel's Blank button: the React panels have no Apply button
+  to wait for.
+- `lighting-base-applied` and `lighting-key-applied-selection` press Apply only in the baseline,
+  which sends its edits with it (`applyInBaseline`); the React app has staged the same edits, so
+  both apps show the same values. `lighting-base-applied` then removes the focus, which the React
+  direction input otherwise keeps (with its spinner) because no Apply click takes it.
+- New `lighting-keys-mixed`: keys 0 (Static) and 1 (Linear), each in its own colour, selected: the
+  React key panel shows "2 keys", no pressed mode, the mixed-modes line and Mixed (PL-048); the
+  baseline shows key 0.
+
+Integration run of 2026-10-01 (all eight variants, 176 lighting captures, strict comparison): 0
+identical. The headers keep the height they had with Apply (the baseline's Apply button is 38 px
+tall with its glass border), so up to the first explanation line both panels line up with the
+baseline's in every variant.
+
+| Scenario                                           | Differences                                                                                               |
+| -------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| `lighting-default`, `-scrolled`, `-rainbow-preset` | PL-047 (no Apply, the save hint, "All keys"), PL-048 (no pressed key mode, Mixed), PL-049, PL-006, PL-032 |
+| `lighting-keys-mixed`                              | PL-048 ("2 keys", Mixed), PL-047, PL-049, PL-006, PL-032                                                  |
+| `lighting-edited`, `-base-mode-*`, `-base-applied` | PL-047 (the edits show at once), PL-049, PL-048, PL-006, PL-032, PL-050 (the dot)                         |
+| `lighting-key-mode-*` (11 modes)                   | PL-047 (every keycap shows the clicked mode), PL-049, PL-048 (Mixed colour), PL-006, PL-050 (the dot)     |
+| `lighting-key-applied-selection`                   | PL-047 ("3 keys"), PL-048, PL-049, PL-006, PL-050 (the dot)                                               |
+| `lighting-rainbow-applied`                         | PL-007, PL-047, PL-048, PL-049, PL-006, PL-050 (the dot)                                                  |
+
+Every capture also shows PL-002 (the Save label) and PL-050's darker rows under the Save button.
+The Performance captures differ as before, plus PL-050: its rows in every capture and the dot in
+`performance-keys-selected-rapid-trigger`, which turns rapid trigger on for the selected keys.
+
 ## Deviations
 
 | ID     | Screen / route                 | State and captures                                                                                                                                                                                                                                           | Deviation                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | Reason                                                                             | Before                                | After                               | Status |
@@ -67,9 +107,22 @@ captures.
 
 - **Rounded corners.** One or two anti-aliased pixels per corner of some keycaps, of the travel
   badge and of slider thumbs, as worker E describes for the shell's keycap corners: they come
-  and go with other differences on the page.
+  and go with other differences on the page. At times many more: about 80 keycap corners of 4 px
+  (up to 43 colour levels, about 325 px) in one app's `performance-travel-tooltip--dark-en-1440x900`,
+  about 1 000 px along the actuation slider's track (at most 8 levels) in
+  `performance-low-actuation` at 2560×1440, and 7 px per corner at the main panel's bottom
+  corners at 2560×1440.
 - **Raster glitches.** One capture (`lighting-base-mode-wave`, React) got a few small blocks of
-  wrong pixels over text (roughly 7×7 px each); the same capture in the next run was clean.
+  wrong pixels over text (roughly 7×7 px each); the same capture in the next run was clean. Later
+  ones: `performance-keys-selected--dark-en-2560x1440` (React), 63 px over "Theme Colors" and
+  24 px over the "u" of "Language".
+- **A page that scrolls in one app only.** When React's page is taller than the viewport and the
+  baseline's is not (`performance-rapid-trigger-key-selected--{dark,light}-en-1440x900`, PL-005's
+  longer English rapid-trigger page with two-line descriptions), Chrome rasterizes React's
+  scrollable main column differently: the toolbar's text 1–2 levels off (728 px dark, 1 180 px
+  light), keycap corners up to 42 levels (2 500–3 000 px with the legends' anti-aliasing), the
+  sidebar links' corners (about 100 px, at most 2 levels), the card's top corners and the travel
+  badge (at most 2 levels). Invisible.
 
 ## Kept on purpose (not deviations)
 
@@ -80,9 +133,12 @@ captures.
 - Performance: controls clamp on every keystroke (e.g. typing "0.5" into the travel badge ends at
   1.5 mm, because "0" clamps to 1.0 at once), and a loaded deactivation point within 0.1 mm of
   the actuation point is pulled down when the travel badge is edited.
-- Lighting: after Apply, the key panel shows key 0's colour and speed again while keeping the
-  chosen mode; the mode buttons never follow the panels' own Apply (Svelte: "initialize from prop
-  but don't sync back"). A configuration the keyboard loads opens both panels again (PL-032).
+- Lighting, until the [lighting redesign](#lighting-redesign-2026-10-01): after Apply, the key
+  panel showed key 0's colour and speed again while keeping the chosen mode; the mode buttons
+  never followed the panels' own Apply (Svelte: "initialize from prop but don't sync back"). A
+  configuration the keyboard loads opened both panels again (PL-032). Since the redesign the
+  panels always show the app's copy of the configuration: the base lighting, and the targets'
+  shared values (PL-047, PL-048).
 
 ## Behavior change not visible in the captures
 

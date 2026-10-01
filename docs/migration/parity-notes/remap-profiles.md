@@ -43,6 +43,13 @@ sidebar's Save button.
 | `profiles-import-invalid`                                                                                                                    | PL-028, PL-002                                                                                        |
 | `profiles-keyboard-switch`                                                                                                                   | PL-013, PL-002                                                                                        |
 
+Integration run of 2026-10-01, after the lighting redesign (all eight variants, 200 captures of
+these scenarios, strict comparison): 0 identical, every difference listed above, plus PL-050 in
+every capture (the darker rows under the sidebar's Save button; the unsaved dot in
+`remap-assigned`, `remap-brush-layer`, `remap-profile-assigned` and `remap-extension-assigned`,
+which assign keycodes) and the noise below. `remap-toast` was captured again after its scenario
+fix (below) and then differed exactly like `remap-basic`.
+
 The pattern also matches the shell's `shell-remap-*` scenarios. With the profile dropdown in
 place the shell's toolbar is identical there too (the shell notes expected the dropdown stub's
 16 px offset until this branch is merged): `shell-remap-selection` and `-hover` differ by PL-002,
@@ -86,7 +93,28 @@ and PL-022 (key 64 is blank, every Remap capture).
 - **Icon anti-aliasing.** In `profiles-default` and `profiles-menu-active` one pixel of the
   sidebar's Theme Colors icon can be one colour level off (47 against 48, in opposite directions
   in the two captures): two runs showed it in both captures, a third only in `-menu-active`
-  (596 against 597 differing pixels).
+  (596 against 597 differing pixels). The integration runs saw it at random in most `profiles-*`
+  scenarios, and dithered pixels of the Save button's shadow (one colour level, light theme, up
+  to about 270 px at 2560×1440, e.g. `profiles-default--light-en-2560x1440`).
+- **Raster glitches.** As in the shell notes; the baseline's
+  `profiles-restore--light-zh-1440x900` had one (87 px) in the run reviewed before the lighting
+  redesign.
+- **The toolbar's profile dropdown at 2560×1440.** The root font is 18.4 px from 2400 px wide, so
+  the dropdown's rows sit on fractional pixels, and its glass panel is a composited layer. Its
+  `slide` was often still running when the capture started; Playwright then finished it and the
+  panel kept the last keyframe (`fill: 'forwards'`), and Chrome drew its lower rows, the line
+  above "Manage All Profiles" and the link 1 px apart between runs, in either app (8 of the 12
+  dropdown captures at 2560×1440 in the run reviewed before the lighting redesign; shifting the
+  rows by 1 px left no difference). `openProfileDropdown` now waits for the running animations to
+  end and cancels what is left of the slide (`settleDropdown`): over Lighting
+  (`profiles-dropdown-lighting`, `-local`) the panel then matched in every capture of three runs
+  (24 captures). Over Remap (`profiles-dropdown`) some rows still land 1 px apart in either app,
+  in 6 of 20 captures over five runs (also when the dropdown opens 1.5 s after connecting), so
+  that remains capture noise.
+- **The Remap palette's scroll in `remap-toast`.** The click on the palette key `Q` at times left
+  the palette's scroll area scrolled down, in either app (the React capture of
+  `remap-toast--light-en-2560x1440` and the baseline's `--light-zh-2560x1440` in the integration
+  run). The scenario scrolls it back to its start, where both apps open it.
 
 ## Not visible (no log row)
 
