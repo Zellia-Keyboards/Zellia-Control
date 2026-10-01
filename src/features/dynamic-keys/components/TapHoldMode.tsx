@@ -4,7 +4,7 @@
  * UI-only (D5); the configured list and its deletes are the keyboard's mod-taps.
  */
 import { useState } from 'react';
-import { NoKeySelected } from '../../../components/ui';
+import { KeycodePicker, NoKeySelected } from '../../../components/ui';
 import {
   deviceSession,
   deviceStore,
@@ -13,6 +13,7 @@ import {
   type KeyLocation,
 } from '../../device';
 import { useSelectedKeys, useSelectedLayer } from '../../keyboard';
+import { ACTION_CATEGORIES } from '../../keycodes';
 import { removeDynamicKeyAt, removeDynamicKeysOfKind } from '../commands';
 import { useLoadedDraft } from '../hooks/use-loaded-draft';
 import { useTimeouts } from '../hooks/use-timeouts';
@@ -32,7 +33,6 @@ import {
 import { keyIndexName } from '../model/key-names';
 import { uiFields, uiFieldsStore, useUiFields, type UiFieldsState } from '../store/ui-fields';
 import { NO_KEYS, withKey, withKeys, withoutKey } from './shared/key-sets';
-import { KeycodePicker } from './shared/KeycodePicker';
 import { TapHoldConfiguredKeys } from './tap-hold/TapHoldConfiguredKeys';
 import {
   TapHoldHeader,
@@ -152,6 +152,7 @@ export function TapHoldMode({ onBack }: TapHoldModeProps) {
             <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
               <div className="xl:col-span-2 space-y-6">
                 <KeycodePicker
+                  categories={ACTION_CATEGORIES}
                   title="Tap Action"
                   description="Select the action to perform when the key is tapped quickly"
                   selectedAction={draft.tap}
@@ -162,6 +163,7 @@ export function TapHoldMode({ onBack }: TapHoldModeProps) {
                 />
 
                 <KeycodePicker
+                  categories={ACTION_CATEGORIES}
                   title="Hold Action"
                   description="Select the action to perform when the key is held down"
                   selectedAction={draft.hold}

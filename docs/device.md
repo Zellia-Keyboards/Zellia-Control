@@ -35,16 +35,17 @@ UI components ──hooks──▶ device store (immutable DeviceState)
 
 ## Public API (`features/device` index)
 
-| Export                                                             | Use                                                                                       |
-| ------------------------------------------------------------------ | ----------------------------------------------------------------------------------------- |
-| `deviceSession`                                                    | The app's session, bound lazily to `navigator.hid` on `connect()`.                        |
-| `useConnection()`, `useIsReady()`, `useModel()`, `useDeviceName()` | Connection state slices.                                                                  |
-| `useFeatureFlags()`, `useSupportsMacros()`, `useSupportsScripts()` | The keyboard's feature flags and what its controller declares (`model/capabilities.ts`).  |
-| `useDeviceConfig()`                                                | The loaded `DeviceConfig` (`null` before the first load).                                 |
-| `useDeviceStore(selector)`, `deviceStore`                          | Any other slice (`saving`, `unsaved`, `reloading`, `lastError`, `feature`, `firmware`).   |
-| `subscribeDebugSamples(listener)`                                  | Samples of the key being debugged (see _Debug stream_).                                   |
-| `createDeviceSession(options)`                                     | A separate session (tests, tools); takes its own `hid`, store, models, timeouts.          |
-| types                                                              | `DeviceConfig`, `DynamicKeySlot`, `KeyLocation`, `ConnectionState`, … (`model/types.ts`). |
+| Export                                                             | Use                                                                                                       |
+| ------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------- |
+| `deviceSession`                                                    | The app's session, bound lazily to `navigator.hid` on `connect()`.                                        |
+| `useConnection()`, `useIsReady()`, `useModel()`, `useDeviceName()` | Connection state slices.                                                                                  |
+| `useFeatureFlags()`, `useSupportsMacros()`, `useSupportsScripts()` | The keyboard's feature flags and what its controller declares (`model/capabilities.ts`).                  |
+| `useDeviceLoads()`                                                 | Counts the configurations the keyboard loads while mounted: a `key` for drafts that start over on a load. |
+| `useDeviceConfig()`                                                | The loaded `DeviceConfig` (`null` before the first load).                                                 |
+| `useDeviceStore(selector)`, `deviceStore`                          | Any other slice (`saving`, `unsaved`, `reloading`, `lastError`, `feature`, `firmware`).                   |
+| `subscribeDebugSamples(listener)`                                  | Samples of the key being debugged (see _Debug stream_).                                                   |
+| `createDeviceSession(options)`                                     | A separate session (tests, tools); takes its own `hid`, store, models, timeouts.                          |
+| types                                                              | `DeviceConfig`, `DynamicKeySlot`, `KeyLocation`, `ConnectionState`, … (`model/types.ts`).                 |
 
 The pure modules in `features/device/model/` may be imported directly by other features' pure
 code: `types` (the shared domain types), `units` (fraction ↔ mm), `mutex-mode` (null-bind

@@ -45,6 +45,15 @@ describe('Modal', () => {
     );
   });
 
+  it('offers a 3xl width for wide content (the Macros key picker)', () => {
+    render(
+      <Modal open onClose={vi.fn()} maxWidth="3xl">
+        <p>content</p>
+      </Modal>
+    );
+    expect(screen.getByRole('dialog')).toHaveClass('max-w-3xl');
+  });
+
   it('can be labelled and described for assistive technology', () => {
     render(
       <Modal open onClose={vi.fn()} labelledBy="title" describedBy="message">

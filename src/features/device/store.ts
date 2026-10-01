@@ -2,6 +2,7 @@
  * Device store and its React hooks. Hooks select slices, so a component re-renders only when its
  * slice changes (snapshots are immutable and replaced, never mutated).
  */
+import { useState, useSyncExternalStore } from 'react';
 import { useStore } from 'zustand';
 import { deviceNameOf, deviceStore, modelOf, type DeviceState } from './device-store';
 import { supportsMacros, supportsScripts } from './model/capabilities';
@@ -65,4 +66,35 @@ export function useSupportsMacros(): boolean {
 /** Whether the connected keyboard's controller declares scripts. */
 export function useSupportsScripts(): boolean {
   return useDeviceStore(selectSupportsScripts);
+}
+
+/**
+ * Whether the keyboard has just loaded a configuration (a profile switch, a reset): it replaces
+ * the configuration while the store is `reloading`, when the session rejects every edit.
+ */
+function isDeviceLoad(state: DeviceState, previous: DeviceState): boolean {
+  return state.reloading && state.config !== previous.config;
+}
+
+function createLoadCounter() {
+  let loads = 0;
+  return {
+    subscribe: (onLoad: () => void): (() => void) =>
+      deviceStore.subscribe((state, previous) => {
+        if (!isDeviceLoad(state, previous)) return;
+        loads += 1;
+        onLoad();
+      }),
+    count: () => loads,
+  };
+}
+
+/**
+ * How many configurations the keyboard has loaded while the component is mounted: a `key` for
+ * components whose drafts start over on every load (Lighting, Macros, Scripts). Read like the
+ * store's slices, so the render that shows a new configuration already has its count.
+ */
+export function useDeviceLoads(): number {
+  const [counter] = useState(createLoadCounter);
+  return useSyncExternalStore(counter.subscribe, counter.count);
 }

@@ -4,6 +4,7 @@ import { useT } from '../../lib/i18n';
 import {
   deviceSession,
   deviceStore,
+  useDeviceLoads,
   useDeviceStore,
   type RgbBaseConfig,
   type RgbKeyConfig,
@@ -17,7 +18,6 @@ import {
 } from '../keyboard';
 import { RGBPanel } from './components/RGBPanel';
 import { RGBSubPanel } from './components/RGBSubPanel';
-import { useDeviceLoads } from './hooks/use-device-loads';
 import {
   editKeys,
   lightingTargets,

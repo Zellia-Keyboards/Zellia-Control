@@ -3,11 +3,12 @@
  * header, keycode selection panel and the key tester tab. The binding rows, bottom-out slider,
  * performance tab and configured list have their own modules.
  */
-import type { Keycode } from '../../../device';
+import { KeycodePicker } from '../../../../components/ui';
 import { useT, type TranslationKey } from '../../../../lib/i18n';
+import type { Keycode } from '../../../device';
+import { ACTION_CATEGORIES } from '../../../keycodes';
 import { DKS_NODE_SIZE, DKS_SLIDER_GAP, DKS_SLIDER_WIDTH } from '../../model/dks-bitmap';
 import { EditorHeader } from '../shared/EditorHeader';
-import { KeycodePicker } from '../shared/KeycodePicker';
 
 /** Port of `DKSHeader.svelte`. */
 interface DKSHeaderProps {
@@ -199,6 +200,7 @@ export function DKSBinding({
       </div>
 
       <KeycodePicker
+        categories={ACTION_CATEGORIES}
         description={description}
         selectedAction={selectedAction}
         onActionSelect={onActionSelect}

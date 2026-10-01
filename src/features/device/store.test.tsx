@@ -1,7 +1,7 @@
 import { act, render, renderHook } from '@testing-library/react';
-import { ScriptLevel } from 'emi-keyboard-controller';
+import { RGBBaseMode, ScriptLevel } from 'emi-keyboard-controller';
 import { afterEach, describe, expect, it } from 'vitest';
-import type { FeatureFlags, ModelInfo } from './model/types';
+import type { DeviceConfig, FeatureFlags, ModelInfo } from './model/types';
 import {
   INITIAL_DEVICE_STATE,
   createDeviceStore,
@@ -10,6 +10,7 @@ import {
   modelOf,
   useConnection,
   useDeviceConfig,
+  useDeviceLoads,
   useDeviceName,
   useDeviceStore,
   useFeatureFlags,
@@ -34,6 +35,26 @@ const TRINITY_FEATURE: FeatureFlags = {
   macroSlots: 4,
   macroActions: 128,
   bootloader: { enabled: false, download: false, upload: false },
+};
+
+const CONFIG: DeviceConfig = {
+  advancedKeys: [],
+  keymap: [],
+  rgbBase: {
+    mode: RGBBaseMode.RgbBaseModeOff,
+    color: { red: 0, green: 0, blue: 0 },
+    secondaryColor: { red: 0, green: 0, blue: 0 },
+    speed: 0,
+    direction: 0,
+    density: 0,
+    brightness: 0,
+  },
+  rgbKeys: [],
+  dynamicKeys: [],
+  profileIndex: 0,
+  profileCount: 1,
+  macros: [],
+  script: null,
 };
 
 afterEach(() => {
@@ -159,5 +180,24 @@ describe('hooks', () => {
     });
     expect(feature.result.current).toBe(TRINITY_FEATURE);
     expect([macros.result.current, scripts.result.current]).toEqual([true, true]);
+  });
+
+  it('count the configurations the keyboard loads while mounted (useDeviceLoads)', () => {
+    const loads = renderHook(() => useDeviceLoads());
+    expect(loads.result.current).toBe(0);
+    act(() => {
+      deviceStore.setState({ reloading: true });
+    });
+    expect(loads.result.current).toBe(0);
+    // A load replaces the configuration while the store is reloading.
+    act(() => {
+      deviceStore.setState({ config: CONFIG });
+    });
+    expect(loads.result.current).toBe(1);
+    // An edit afterwards is no load.
+    act(() => {
+      deviceStore.setState({ reloading: false, config: { ...CONFIG, profileCount: 2 } });
+    });
+    expect(loads.result.current).toBe(1);
   });
 });

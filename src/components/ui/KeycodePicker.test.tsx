@@ -1,9 +1,9 @@
 import { KeyModifier, LayerControlKeycode, MouseKeycode } from 'emi-keyboard-controller';
 import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { kc } from '../../../keycodes';
-import { installFakeAnimations, type FakeAnimations } from '../../../../lib/transitions/testing';
-import { KeycodePicker } from './KeycodePicker';
+import { ACTION_CATEGORIES, kc } from '../../features/keycodes';
+import { installFakeAnimations, type FakeAnimations } from '../../lib/transitions/testing';
+import { KeycodePicker, type KeycodePickerCategory } from './KeycodePicker';
 
 let animations: FakeAnimations;
 
@@ -28,7 +28,12 @@ describe('KeycodePicker', () => {
   it('opens the default section and emits full keycodes of every category (D15)', () => {
     const onActionSelect = vi.fn();
     render(
-      <KeycodePicker title="Tap Action" selectedAction={null} onActionSelect={onActionSelect} />
+      <KeycodePicker
+        categories={ACTION_CATEGORIES}
+        title="Tap Action"
+        selectedAction={null}
+        onActionSelect={onActionSelect}
+      />
     );
     expect(screen.getByRole('button', { name: 'Basic' })).toHaveAttribute('aria-expanded', 'true');
     for (const name of ['Layer', 'System', 'Mouse']) {
@@ -51,6 +56,7 @@ describe('KeycodePicker', () => {
   it('marks the selected action pressed', () => {
     render(
       <KeycodePicker
+        categories={ACTION_CATEGORIES}
         description="Pick one"
         selectedAction={kc.modifier(KeyModifier.KeyLeftCtrl)}
         onActionSelect={() => {}}
@@ -65,13 +71,25 @@ describe('KeycodePicker', () => {
 
   it('uses the Svelte card classes with and without a description', () => {
     const { container, rerender } = render(
-      <KeycodePicker title="T" selectedAction={null} onActionSelect={() => {}} />
+      <KeycodePicker
+        categories={ACTION_CATEGORIES}
+        title="T"
+        selectedAction={null}
+        onActionSelect={() => {}}
+      />
     );
     expect(container.firstElementChild).toHaveClass(
       'rounded-lg border border-gray-200 dark:border-gray-600 p-4 sm:p-6 bg-white dark:bg-gray-900 glassmorphism-card',
       { exact: true }
     );
-    rerender(<KeycodePicker description="D" selectedAction={null} onActionSelect={() => {}} />);
+    rerender(
+      <KeycodePicker
+        categories={ACTION_CATEGORIES}
+        description="D"
+        selectedAction={null}
+        onActionSelect={() => {}}
+      />
+    );
     expect(container.firstElementChild).toHaveClass(
       'rounded-lg border p-4 sm:p-6 glassmorphism-card',
       {
@@ -81,7 +99,14 @@ describe('KeycodePicker', () => {
   });
 
   it('slides a section in and out (300 ms, y axis), but not the default one on mount', () => {
-    render(<KeycodePicker title="T" selectedAction={null} onActionSelect={() => {}} />);
+    render(
+      <KeycodePicker
+        categories={ACTION_CATEGORIES}
+        title="T"
+        selectedAction={null}
+        onActionSelect={() => {}}
+      />
+    );
     expect(animations.all).toHaveLength(0);
 
     fireEvent.click(screen.getByRole('button', { name: 'Basic' }));
@@ -105,5 +130,30 @@ describe('KeycodePicker', () => {
       vi.advanceTimersByTime(0);
     });
     expect(animations.all.at(-1)?.duration).toBe(300);
+  });
+
+  it('shows the categories it is given, the first one open', () => {
+    const categories: readonly KeycodePickerCategory[] = [
+      { name: 'Letters', actions: [{ name: 'A', keycode: 0x04 }] },
+      { name: 'Digits', actions: [{ name: '1', keycode: 0x1e }] },
+    ];
+    const onActionSelect = vi.fn();
+    render(
+      <KeycodePicker
+        categories={categories}
+        selectedAction={null}
+        onActionSelect={onActionSelect}
+      />
+    );
+    expect(screen.getByRole('button', { name: 'Letters' })).toHaveAttribute(
+      'aria-expanded',
+      'true'
+    );
+    expect(screen.getByRole('button', { name: 'Digits' })).toHaveAttribute(
+      'aria-expanded',
+      'false'
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'A' }));
+    expect(onActionSelect).toHaveBeenCalledWith(0x04);
   });
 });

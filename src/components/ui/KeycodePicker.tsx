@@ -1,6 +1,7 @@
 /**
- * Action picker of the dynamic-key editors (port of `advancedkey/shared/KeycodePicker.svelte`):
- * collapsible categories of `ACTION_CATEGORIES`, each emitting its full encoded keycode (D15).
+ * Action picker (port of `advancedkey/shared/KeycodePicker.svelte`): collapsible categories, each
+ * action emitting its full encoded keycode (D15). Shared by the Dynamic Keys editors and the
+ * Macros page, which pass the catalog (`features/keycodes` `ACTION_CATEGORIES`).
  *
  * With glassmorphism always on (the Svelte `glassmorphismMode` store was a constant `true`), every
  * action button carried `glassmorphism-button` and the picked-action highlight classes never
@@ -8,34 +9,41 @@
  * exposed as `aria-pressed` instead.
  */
 import { useState } from 'react';
-import type { Keycode } from '../../../device';
-import { ACTION_CATEGORIES, type ActionCategoryName } from '../../../keycodes';
-import { Transition, slide } from '../../../../lib/transitions';
+import { Transition, slide } from '../../lib/transitions';
+
+export interface KeycodePickerAction {
+  readonly name: string;
+  /** The full 16-bit keycode the action assigns. */
+  readonly keycode: number;
+}
+
+export interface KeycodePickerCategory {
+  readonly name: string;
+  readonly actions: readonly KeycodePickerAction[];
+}
 
 export interface KeycodePickerProps {
+  readonly categories: readonly KeycodePickerCategory[];
   readonly title?: string;
   readonly description?: string;
   /** The action currently assigned, if any. */
-  readonly selectedAction: Keycode | null;
-  readonly onActionSelect: (keycode: Keycode) => void;
-  readonly defaultExpandedSection?: ActionCategoryName;
+  readonly selectedAction: number | null;
+  readonly onActionSelect: (keycode: number) => void;
+  /** The category open at first; the first category by default. */
+  readonly defaultExpandedSection?: string;
 }
 
 export function KeycodePicker({
+  categories,
   title,
   description,
   selectedAction,
   onActionSelect,
-  defaultExpandedSection = 'Basic',
+  defaultExpandedSection,
 }: KeycodePickerProps) {
-  const [expandedSections, setExpandedSections] = useState<
-    Readonly<Record<ActionCategoryName, boolean>>
-  >(() => ({
-    Basic: defaultExpandedSection === 'Basic',
-    Layer: defaultExpandedSection === 'Layer',
-    System: defaultExpandedSection === 'System',
-    Mouse: defaultExpandedSection === 'Mouse',
-  }));
+  const [expandedSections, setExpandedSections] = useState<ReadonlySet<string>>(
+    () => new Set([defaultExpandedSection ?? categories[0]?.name ?? ''])
+  );
 
   const cardClasses = description
     ? 'rounded-lg border p-4 sm:p-6 ' + 'glassmorphism-card'
@@ -51,8 +59,8 @@ export function KeycodePicker({
       )}
 
       <div className="space-y-2">
-        {ACTION_CATEGORIES.map(category => {
-          const expanded = expandedSections[category.name];
+        {categories.map(category => {
+          const expanded = expandedSections.has(category.name);
           return (
             <div key={category.name} className="border rounded-lg glassmorphism-card">
               <button
@@ -60,10 +68,12 @@ export function KeycodePicker({
                 className="w-full px-4 py-3 flex items-center justify-between glassmorphism-button rounded-lg transition-colors"
                 aria-expanded={expanded}
                 onClick={() => {
-                  setExpandedSections(sections => ({
-                    ...sections,
-                    [category.name]: !sections[category.name],
-                  }));
+                  setExpandedSections(sections => {
+                    const next = new Set(sections);
+                    if (next.has(category.name)) next.delete(category.name);
+                    else next.add(category.name);
+                    return next;
+                  });
                 }}
               >
                 <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300">
