@@ -90,6 +90,22 @@ describe('ConfirmationModal', () => {
     expect(onCancel).toHaveBeenCalledTimes(1);
   });
 
+  it('labels Cancel with cancelText when given', () => {
+    render(
+      <ConfirmationModal
+        open
+        title="恢复出厂设置"
+        message="确定吗？"
+        confirmText="恢复出厂设置"
+        cancelText="取消"
+        onConfirm={() => undefined}
+        onCancel={() => undefined}
+      />
+    );
+    expect(screen.getByRole('button', { name: '取消' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Cancel' })).toBeNull();
+  });
+
   it('cancels on Escape', async () => {
     const user = userEvent.setup();
     const { onCancel, onConfirm } = renderDuplicate();

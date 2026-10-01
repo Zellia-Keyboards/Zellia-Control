@@ -240,6 +240,7 @@ export const en = {
   'common.actions': 'Actions',
   'common.key': 'key',
   'common.unknown': 'Unknown',
+  'common.cancel': 'Cancel',
 
   // Advanced binding related
   'advancedkey.keycodeSelectionTitle': 'Keycode Selection',
@@ -270,6 +271,10 @@ export const en = {
   'settings.bootloaderDesc': 'Enter bootloader mode for firmware updates',
   'settings.factoryReset': 'Factory Reset',
   'settings.factoryResetDesc': 'Reset all settings to factory defaults',
+  'settings.bootloaderConfirm':
+    'Are you sure you want to enter bootloader mode? The keyboard will disconnect and wait for a firmware update.',
+  'settings.factoryResetConfirm':
+    'Are you sure you want to reset all settings to factory defaults? This action cannot be undone.',
   // About Page
   'about.title': 'About Zellia Control',
   'about.subtitle': 'Hall Effect keyboard configurator',

@@ -47,11 +47,7 @@ const SETTINGS_OPTIONS: readonly SettingsOption[] = [
 
 interface Confirmation {
   readonly titleKey: TranslationKey;
-  /**
-   * English, like the profiles dialogs and the shared modal's Cancel, until there are translation
-   * keys for them (PL-012); the title and the confirm button show the translated action name.
-   */
-  readonly message: string;
+  readonly messageKey: TranslationKey;
   readonly confirmColor: 'orange' | 'red';
   readonly run: (navigate: NavigateFunction) => void;
 }
@@ -59,8 +55,7 @@ interface Confirmation {
 const CONFIRMATIONS: Readonly<Record<ConfirmedAction, Confirmation>> = {
   bootloader: {
     titleKey: 'settings.bootloader',
-    message:
-      'Are you sure you want to enter bootloader mode? The keyboard will disconnect and wait for a firmware update.',
+    messageKey: 'settings.bootloaderConfirm',
     confirmColor: 'orange',
     // §1.8: the Update page opens with the update started, ready to flash the bootloader.
     run: navigate => {
@@ -70,8 +65,7 @@ const CONFIRMATIONS: Readonly<Record<ConfirmedAction, Confirmation>> = {
   },
   'factory-reset': {
     titleKey: 'settings.factoryReset',
-    message:
-      'Are you sure you want to reset all settings to factory defaults? This action cannot be undone.',
+    messageKey: 'settings.factoryResetConfirm',
     confirmColor: 'red',
     run: () => {
       deviceSession.factoryReset();
@@ -180,8 +174,9 @@ export function SettingsPage() {
             key={action}
             open={confirming === action}
             title={title}
-            message={confirmation.message}
+            message={t(confirmation.messageKey)}
             confirmText={title}
+            cancelText={t('common.cancel')}
             confirmColor={confirmation.confirmColor}
             onConfirm={() => {
               setConfirming(null);
