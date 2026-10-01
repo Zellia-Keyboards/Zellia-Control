@@ -4,6 +4,7 @@
  */
 export { KeyboardRender, type KeyboardRenderProps } from './KeyboardRender';
 export { useLayoutKeys, type LayoutKeys } from './hooks/use-layout-keys';
+export { useSelectionShortcuts } from './hooks/use-selection-shortcuts';
 export {
   addedKeys,
   INITIAL_KEY_SELECTION,
