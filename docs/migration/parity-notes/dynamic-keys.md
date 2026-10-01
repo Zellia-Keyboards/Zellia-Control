@@ -21,50 +21,42 @@ because where the click left it depends on that shell region.
 ## Results
 
 Full-matrix run of 2026-10-01 before the review fixes (30 scenarios, 240 captures, strict
-comparison): 75 identical, 165 different, as listed. After the review fixes all 36 scenarios were
-captured in dark-en-1440x900 only (the full matrix runs once at integration): 8 identical, 28
-different, each for the reason listed; the six scenarios marked "new" have no other variants yet.
-"Text runs" and "noise" are explained below the deviation table; the text runs were fixed after
-the merge.
+comparison): 75 identical, 165 different. After the review fixes all 36 scenarios were captured
+in dark-en-1440x900 only (the full matrix runs once at integration): 8 identical, 28 different.
+Both runs still had the "text runs" fixed after the merge (see below).
 
-| Scenario                                    | Identical | Differences                                                      |
-| ------------------------------------------- | --------- | ---------------------------------------------------------------- |
-| `dynamic-keys-dashboard`                    | 0/8       | PL-009 (the count)                                               |
-| `dynamic-keys-dashboard-configured`         | 0/8       | PL-009, PL-010 (the tap-hold row's hold keycode)                 |
-| `dynamic-keys-dashboard-edit`               | 0/8       | PL-037; PL-001; text runs (2560×1440)                            |
-| `dynamic-keys-dashboard-dks-order`          | new       | PL-040; PL-009 (the count)                                       |
-| `dynamic-keys-tap-hold`                     | 5/8       | text runs of the "Tip" (en; 1 px in zh)                          |
-| `dynamic-keys-tap-hold-key`                 | 0/8       | PL-010                                                           |
-| `dynamic-keys-tap-hold-actions`             | 6/8       | noise (picker button corners, 16 px)                             |
-| `dynamic-keys-tap-hold-category-actions`    | 0/8       | PL-019                                                           |
-| `dynamic-keys-tap-hold-timing`              | 0/8       | PL-034                                                           |
-| `dynamic-keys-tap-hold-timing-moved`        | new       | PL-038; PL-034 (the thumbs)                                      |
-| `dynamic-keys-tap-hold-timing-moved-panels` | new       | PL-038; PL-010                                                   |
-| `dynamic-keys-tap-hold-pickers`             | 0/8       | PL-010                                                           |
-| `dynamic-keys-tap-hold-configured`          | 0/8       | PL-010                                                           |
-| `dynamic-keys-tap-hold-configured-order`    | new       | PL-010 (same order: Key 16, then Key 17)                         |
-| `dynamic-keys-toggle`                       | 5/8       | text runs of the "Tip" (en; 1 px in zh)                          |
-| `dynamic-keys-toggle-key`                   | 3/8       | text runs of "How it works" (2560×1440; 1 px at 1440×900 zh)     |
-| `dynamic-keys-toggle-configured`            | 0/8       | PL-001; text runs (2560×1440)                                    |
-| `dynamic-keys-toggle-options`               | 4/8       | text runs of "How it works" (2560×1440)                          |
-| `dynamic-keys-toggle-options-configured`    | 0/8       | PL-001; text runs (2560×1440)                                    |
-| `dynamic-keys-null-bind`                    | 6/8       | noise (sidebar icons, 1–2 px)                                    |
-| `dynamic-keys-null-bind-one-key`            | 4/8       | noise (sidebar, 2–35 px)                                         |
-| `dynamic-keys-null-bind-pair`               | 8/8       |                                                                  |
-| `dynamic-keys-null-bind-bottom-out`         | 0/8       | PL-034; noise (the toggled switch's thumb, 2560×1440)            |
-| `dynamic-keys-null-bind-bottom-out-moved`   | new       | PL-038; PL-034 (the thumb)                                       |
-| `dynamic-keys-null-bind-rapid-trigger`      | 0/8       | PL-034; noise (the toggled switch's thumb, 2560×1440)            |
-| `dynamic-keys-null-bind-key-tester`         | 8/8       |                                                                  |
-| `dynamic-keys-null-bind-configured`         | 7/8       | noise (73 px of circle edges and sidebar corners in one variant) |
-| `dynamic-keys-null-bind-two-pairs`          | new       | PL-039                                                           |
-| `dynamic-keys-dks`                          | 3/8       | text runs of the "Tip" (en; 1 px in zh); noise (sidebar)         |
-| `dynamic-keys-dks-key`                      | 8/8       |                                                                  |
-| `dynamic-keys-dks-bindings`                 | 0/8       | PL-001 ("Done")                                                  |
-| `dynamic-keys-dks-performance`              | 0/8       | PL-035                                                           |
-| `dynamic-keys-dks-key-tester`               | 8/8       |                                                                  |
-| `dynamic-keys-dks-reset`                    | 0/8       | PL-020; noise (button corners)                                   |
-| `dynamic-keys-dks-reloaded`                 | 0/8       | PL-021 (and PL-020 in the baseline); noise (button corners)      |
-| `dynamic-keys-dks-configured`               | 0/8       | PL-036 (the page is longer, so the whole capture moves)          |
+Integration run of 2026-10-01, after the lighting redesign (36 scenarios, 288 captures, strict
+comparison): 0 identical, 288 different. In that run the sidebar's Save button was still
+positioned for PL-050's dot, which drew darker rows under it (1 300–3 300 px) in every capture:
+these scenarios hide only the button's content, so the 99 captures that had been identical
+differed by those rows alone. The Save button fix of the same day removed them. The targeted
+re-run after it captured these scenarios in dark-en-1440x900 and light-en-1440x900 (72
+captures, see the parity log's [Per-feature results](../parity-log.md#per-feature-results)); the
+table gives its results. The dot never shows here (the button's content is hidden). "Noise" is
+explained below the deviation table.
+
+| Scenario                                                                                                                                                                                                            | Identical after the fix (dark-en, light-en 1440×900) | Differences                                                   |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------- | ------------------------------------------------------------- |
+| `dynamic-keys-tap-hold`, `-tap-hold-actions`, `-toggle`, `-toggle-key`, `-toggle-options`, `-null-bind`, `-null-bind-pair`, `-null-bind-key-tester`, `-null-bind-configured`, `-dks`, `-dks-key`, `-dks-key-tester` | 2/2                                                  |                                                               |
+| `dynamic-keys-null-bind-one-key`                                                                                                                                                                                    | 0/2                                                  | noise (sidebar link corners, 27–74 px)                        |
+| `dynamic-keys-dashboard`                                                                                                                                                                                            | 0/2                                                  | PL-009 (the count)                                            |
+| `dynamic-keys-dashboard-configured`                                                                                                                                                                                 | 0/2                                                  | PL-009, PL-010 (the tap-hold row's hold keycode)              |
+| `dynamic-keys-dashboard-edit`                                                                                                                                                                                       | 0/2                                                  | PL-037, PL-001                                                |
+| `dynamic-keys-dashboard-dks-order`                                                                                                                                                                                  | 0/2                                                  | PL-040, PL-009 (the count)                                    |
+| `dynamic-keys-tap-hold-key`, `-tap-hold-pickers`, `-tap-hold-configured`, `-tap-hold-configured-order`                                                                                                              | 0/2                                                  | PL-010                                                        |
+| `dynamic-keys-tap-hold-category-actions`                                                                                                                                                                            | 0/2                                                  | PL-019                                                        |
+| `dynamic-keys-tap-hold-timing`                                                                                                                                                                                      | 0/2                                                  | PL-034                                                        |
+| `dynamic-keys-tap-hold-timing-moved`                                                                                                                                                                                | 0/2                                                  | PL-038, PL-034 (the thumbs)                                   |
+| `dynamic-keys-tap-hold-timing-moved-panels`                                                                                                                                                                         | 0/2                                                  | PL-038, PL-010                                                |
+| `dynamic-keys-toggle-configured`, `-toggle-options-configured`                                                                                                                                                      | 0/2                                                  | PL-001                                                        |
+| `dynamic-keys-null-bind-bottom-out`, `-null-bind-rapid-trigger`                                                                                                                                                     | 0/2                                                  | PL-034; noise (the toggled switch's thumb, 2560×1440)         |
+| `dynamic-keys-null-bind-bottom-out-moved`                                                                                                                                                                           | 0/2                                                  | PL-038, PL-034 (the thumb)                                    |
+| `dynamic-keys-null-bind-two-pairs`                                                                                                                                                                                  | 0/2                                                  | PL-039                                                        |
+| `dynamic-keys-dks-bindings`                                                                                                                                                                                         | 0/2                                                  | PL-001 ("Done")                                               |
+| `dynamic-keys-dks-performance`                                                                                                                                                                                      | 0/2                                                  | PL-035                                                        |
+| `dynamic-keys-dks-reset`                                                                                                                                                                                            | 0/2                                                  | PL-020; noise (button and card corners)                       |
+| `dynamic-keys-dks-reloaded`                                                                                                                                                                                         | 0/2                                                  | PL-021 (and PL-020 in the baseline); noise (the same corners) |
+| `dynamic-keys-dks-configured`                                                                                                                                                                                       | 0/2                                                  | PL-036 (the page is longer, so the whole capture moves)       |
 
 The report is `e2e/.artifacts/parity/index.html` (not committed).
 
@@ -120,15 +112,23 @@ moved to `src/components/ui`; the runs above predate it as well.
 
 ## Known capture noise
 
-The first three stay below 250 px per capture, come and go between variants or runs, and lie
+The first four stay below 250 px per capture, come and go between variants or runs, and lie
 where both apps have the same DOM, layout and computed styles.
 
-- **Sidebar (shell region).** 1–2 px in the Theme Colors and Dark Mode icons, a 2 px column at
-  the Save button's right edge, or a few dithered pixels of its shadow (light theme, 35 px).
+- **Sidebar (shell region).** 1–2 px in the Theme Colors and Dark Mode icons, 8–12 px of the
+  connection dot, a 2 px column at the Save button's right edge, or a few dithered pixels of its
+  shadow (light theme, 35 px).
 - **Rounded corners.** One to four pixels per corner of the keycode picker's buttons, the header
   buttons, a picked action's button or the null-bind indicator circles swap between two
   anti-aliasing patterns, mostly next to content that differs (the DKS bindings of PL-020/PL-021),
-  like the keycap corners in the shell notes.
+  like the keycap corners in the shell notes. Also the DKS editor's cards in `dks-reset` and
+  `dks-reloaded` (the bottom corners of "Configure DKS Bindings", the top corners of "Bottom Out
+  Point") and, at 2560×1440, the main panel's bottom corners (7 px per corner, 3–4 colour
+  levels).
+- **Raster glitches.** As in the shell notes, a small block of wrong pixels over text in one
+  capture, gone in a re-run; in the baseline's `dynamic-keys-dashboard--dark-en-1440x900` and
+  `dynamic-keys-null-bind-rapid-trigger--light-{en,zh}-1440x900` in the run reviewed before the
+  lighting redesign.
 - **Toggled switch thumbs (2560×1440).** The thumb of the switch the scenario just turned on
   (bottom-out, rapid trigger) is anti-aliased differently (up to 240 px) at the same position.
 - **Finished fade-ins (2560×1440), settled by the scenarios.** The configured lists' fade-in

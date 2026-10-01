@@ -109,9 +109,37 @@ async function importFile(page: Page, name: string, content: string): Promise<vo
 
 const MANAGE_ALL_PROFILES = /Manage All Profiles|管理所有配置文件/;
 
+/**
+ * Lets the running animations end and cancels what is left of the dropdown panel's slide, as the
+ * dynamic-keys scenarios do with their finished fade-ins. A slide still running at the capture is
+ * finished by Playwright and keeps its last keyframe (`fill: 'forwards'`): at 2560×1440, where the
+ * panel's rows sit on fractional pixels, Chrome then rasterized its lower rows 1 px apart between
+ * runs, in either app. Without the fill the panel looks the same (fully slid in). Over Remap
+ * (`profiles-dropdown`) the rows still land 1 px apart in some captures (known capture noise in
+ * the parity log).
+ */
+async function settleDropdown(page: Page): Promise<void> {
+  // A slide is two animations: its delay, then the slide itself, started when the delay ends.
+  await page.waitForFunction(() =>
+    document.getAnimations().every(animation => {
+      const iterations = animation.effect?.getComputedTiming().iterations;
+      return animation.playState !== 'running' || iterations === Infinity;
+    })
+  );
+  const panel = page.locator('.backdrop-blur-xl', {
+    has: page.getByRole('link', { name: MANAGE_ALL_PROFILES }),
+  });
+  await panel.evaluate(element => {
+    for (const animation of element.getAnimations({ subtree: true })) {
+      if (animation.playState === 'finished') animation.cancel();
+    }
+  });
+}
+
 async function openProfileDropdown(page: Page): Promise<void> {
   await page.getByTitle('Switch profiles').click();
   await page.getByRole('link', { name: MANAGE_ALL_PROFILES }).waitFor();
+  await settleDropdown(page);
 }
 
 /**
@@ -179,6 +207,13 @@ const scenarios: readonly ParityScenario[] = [
   connected('remap-toast', async page => {
     await paletteKey(page, 'Q').click();
     await page.getByText('Select the key you want to remap first').waitFor();
+    // The click at times left the palette's scroll area scrolled down, in either app (seen at
+    // 2560×1440): back to its start, where both apps open it.
+    await remapPage(page)
+      .locator('main .overflow-y-auto')
+      .evaluate(palette => {
+        palette.scrollTop = 0;
+      });
   }),
   connected('remap-assigned', async page => {
     await keycap(page, 'Escape').click();

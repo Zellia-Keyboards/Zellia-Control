@@ -8,3 +8,4 @@ src-controller
 vendor/mqjs
 package-lock.json
 docs/superpowers
+.superpowers

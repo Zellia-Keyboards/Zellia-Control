@@ -101,8 +101,9 @@ The app runs at `http://localhost:5173`.
    browser's device list.
 2. Use the sidebar: **Performance**, **Remap**, **Lighting**, **Dynamic Keys**, **Debug**,
    **Settings**, **Update** and **About**; **Profiles** sits at the top.
-3. Changes apply to the keyboard immediately; **Save** stores them on the keyboard so they
-   survive a restart.
+3. Remap, Performance and Dynamic Keys changes apply to the keyboard at once; lighting changes
+   reach the keyboard when you press **Save**. The dot on **Save** marks unsaved changes; **Save**
+   also stores everything on the keyboard so it survives a restart.
 
 ---
 

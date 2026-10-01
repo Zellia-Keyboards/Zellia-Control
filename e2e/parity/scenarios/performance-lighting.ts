@@ -3,8 +3,9 @@ import type { ParityScenario } from '../scenario';
 
 /**
  * Performance and Lighting pages inside the connected shell: the default screens, keys selected,
- * rapid trigger, the travel badge, every lighting mode button, the rainbow preset and the states
- * after Apply.
+ * rapid trigger, the travel badge, every lighting mode button, the rainbow preset, a selection of
+ * keys with different lighting and the states after an edit (applied in the baseline, staged in
+ * the React app).
  *
  * Setups run unchanged in both apps and languages: they use roles and structure the two apps
  * share (the Svelte inputs have no accessible names, so inputs are found by type and order inside
@@ -110,8 +111,7 @@ async function toggleRapidTrigger(page: Page): Promise<void> {
 async function openLighting(page: Page): Promise<void> {
   await connectTo(page, /Lighting|灯光/, '/lighting/');
   await pageRegion(page)
-    .getByRole('button', { name: /^(Apply|应用)$/ })
-    .first()
+    .getByRole('button', { name: exactly('Blank', '空白') })
     .waitFor();
 }
 
@@ -158,6 +158,16 @@ function exactly(en: string, zh: string): RegExp {
 
 async function clickMode(panel: Locator, en: string, zh: string): Promise<void> {
   await panel.getByRole('button', { name: exactly(en, zh) }).click();
+}
+
+/**
+ * Presses a panel's Apply button where it has one: the baseline sends its edits with it. The
+ * React panels have none (their edits wait for Save, PL-047), so both apps then show the same
+ * values.
+ */
+async function applyInBaseline(panel: Locator): Promise<void> {
+  const apply = panel.getByRole('button', { name: exactly('Apply', '应用') });
+  if ((await apply.count()) > 0) await apply.click();
 }
 
 const scenarios: readonly ParityScenario[] = [
@@ -283,7 +293,8 @@ const scenarios: readonly ParityScenario[] = [
 
   // Lighting
   {
-    // PL-006 (speed), PL-032 (the key panel opens on key 0's mode).
+    // PL-006 (speed), PL-048: with no key selected the React key panel shows the shared values of
+    // all keys, whose modes and colours differ (no mode pressed, Mixed).
     name: 'lighting-default',
     path: '/',
     virtualKeyboard: KEYBOARD,
@@ -304,7 +315,8 @@ const scenarios: readonly ParityScenario[] = [
     },
   },
   {
-    // Edits wait for Apply: new colours, density and brightness in the panels.
+    // Edits in the panels: new colours, density and brightness (the baseline holds them until
+    // Apply; the React app stages them until Save, PL-047).
     name: 'lighting-edited',
     path: '/',
     virtualKeyboard: KEYBOARD,
@@ -347,8 +359,9 @@ const scenarios: readonly ParityScenario[] = [
     },
   })),
   {
-    // Base Apply with a new mode and direction; the panel then shows the applied values (the
-    // baseline's speed reads 20000% again: it applies speed / 1000 and re-reads it × 1000).
+    // Base edits with a new mode and direction (Apply in the baseline, staged in React: PL-047);
+    // the panel then shows the edited values (the baseline's speed reads 20000% again: it applies
+    // speed / 1000 and re-reads it × 1000).
     name: 'lighting-base-applied',
     path: '/',
     virtualKeyboard: KEYBOARD,
@@ -357,12 +370,15 @@ const scenarios: readonly ParityScenario[] = [
       const { base } = lightingPanels(page);
       await clickMode(base, 'Rainbow', '彩虹');
       await base.locator('input[type="number"]').fill('90');
-      await base.getByRole('button', { name: /^(Apply|应用)$/ }).click();
+      await applyInBaseline(base);
+      // Without an Apply click the React direction input keeps the focus (and its spinner).
+      await blur(page);
       await parkPointer(page);
     },
   },
   {
-    // Key Apply with keys selected: the selected keycaps show the new mode ("ripple").
+    // A new mode for the selected keys (Apply in the baseline, staged in React: PL-047): the
+    // selected keycaps show it ("ripple").
     name: 'lighting-key-applied-selection',
     path: '/',
     virtualKeyboard: KEYBOARD,
@@ -372,7 +388,21 @@ const scenarios: readonly ParityScenario[] = [
       for (const position of [1, 2, 3]) await keycaps.nth(position).click();
       const { key } = lightingPanels(page);
       await clickMode(key, 'Fading Diamond Ripple', '渐变菱形涟漪');
-      await key.getByRole('button', { name: /^(Apply|应用)$/ }).click();
+      await applyInBaseline(key);
+      await parkPointer(page);
+    },
+  },
+  {
+    // PL-048: keys 0 (Static) and 1 (Linear), each in its own colour, selected: the React key
+    // panel shows "2 keys", no mode pressed and Mixed; the baseline shows key 0.
+    name: 'lighting-keys-mixed',
+    path: '/',
+    virtualKeyboard: KEYBOARD,
+    setup: async page => {
+      await openLighting(page);
+      const keycaps = page.locator('.keycap');
+      await keycaps.nth(0).click();
+      await keycaps.nth(1).click();
       await parkPointer(page);
     },
   },
@@ -395,8 +425,9 @@ const scenarios: readonly ParityScenario[] = [
     },
   },
   {
-    // PL-007: the React app colours every visible key from its layout position with the panel's
-    // mode (keycaps read "reactive"); the baseline changed nothing.
+    // PL-007: the React app colours every visible key from its layout position and keeps each
+    // key's mode and speed (Linear, which the click before gave every key: the keycaps read
+    // "reactive"); the baseline changed nothing.
     name: 'lighting-rainbow-applied',
     path: '/',
     virtualKeyboard: KEYBOARD,

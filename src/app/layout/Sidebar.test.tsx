@@ -205,6 +205,8 @@ describe('Sidebar', () => {
     });
     expect(save).toHaveAccessibleDescription('Unsaved changes');
     expect(dot()).toHaveClass('bg-amber-400');
+    // A positioned Save button makes Chrome draw the Disconnect button's top rows differently.
+    expect(save).not.toHaveClass('relative');
 
     await user.click(save);
     await waitFor(() => {
