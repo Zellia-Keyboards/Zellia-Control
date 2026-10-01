@@ -79,6 +79,15 @@ describe('macro actions', () => {
     ]);
   });
 
+  it('clamps an added key delay and its duration to the u32 maximum', () => {
+    const actions = [press(0xffffffff - 10)];
+    expect(withKeyPress(actions, Keycode.B, 'last', 100, 50)).toEqual([
+      press(0xffffffff - 10),
+      press(0xffffffff, Keycode.B),
+      release(0xffffffff, Keycode.B),
+    ]);
+  });
+
   it('sort by time, keeping the order of actions at the same time', () => {
     const late = press(300, Keycode.C);
     const first = press(100, Keycode.A);
