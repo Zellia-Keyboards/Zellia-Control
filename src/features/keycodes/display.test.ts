@@ -30,6 +30,9 @@ const OPERATIONS_NAMED_SINCE_SVELTE: ReadonlySet<number> = new Set<number>([
 
 /** What the Svelte app rendered for `keycode`, given our (corrected) description. */
 function asSvelteRendered(keycode: number, ours: KeycodeDescription): KeycodeDescription {
+  // Script keycodes: the Svelte table had no ScriptCollection names (named since the macros and
+  // scripts spec, like upstream's keyCodeToString).
+  if ((keycode & 0xff) === 0xae) return { main: '', sub: '' };
   // Modifier-only: the Svelte port dropped upstream's rule and named the missing key "No Event".
   if ((keycode & 0xff) === 0 && keycode !== 0) return { main: 'No Event', sub: ours.main };
   if ((keycode & 0xff) !== 0xfe) return ours;
@@ -158,7 +161,9 @@ describe('describeKeycode', () => {
       [0x01ff, '∇', 'Left Ctrl '],
       // Like upstream, the HID range check is `code < ExSel`, so ExSel itself is not named.
       [0x00a4, '', ''],
-      [0x00ae, '', ''],
+      [0x00ae, 'Watch', 'Script'],
+      [0x05ae, 'Toggle', 'Script'],
+      [0x06ae, '', 'Script'],
       [0x00af, '', ''],
       [0x00b0, '', ''],
     ];

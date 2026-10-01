@@ -391,6 +391,26 @@ export const en = {
   'profiles.slot': 'Slot',
   'profiles.manageAll': 'Manage All Profiles',
   'profiles.noProfile': 'No Profile',
+
+  // Remap: the Extension tab's Macro and Script groups (macros and scripts spec)
+  'remap.macroGroup': 'Macro',
+  'remap.scriptGroup': 'Script',
+  'macros.slot': 'Macro {0}',
+  'remap.macroRecordStart': 'Record\nStart',
+  'remap.macroRecordStop': 'Record\nStop',
+  'remap.macroRecordToggle': 'Record\nToggle',
+  'remap.macroPlayOnce': 'Play\nOnce',
+  'remap.macroPlayLoop': 'Play\nLoop',
+  'remap.macroPlayOnceNoGap': 'Play Once\nNo Gaps',
+  'remap.macroPlayLoopNoGap': 'Play Loop\nNo Gaps',
+  'remap.macroStop': 'Stop',
+  'remap.macroPause': 'Pause',
+  'remap.scriptWatch': 'Watch',
+  'remap.scriptStart': 'Start',
+  'remap.scriptStop': 'Stop',
+  'remap.scriptSuspend': 'Suspend',
+  'remap.scriptRestart': 'Restart',
+  'remap.scriptToggle': 'Toggle',
 } satisfies Record<string, string>;
 
 export type TranslationKey = keyof typeof en;

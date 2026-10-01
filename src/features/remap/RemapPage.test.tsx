@@ -111,6 +111,25 @@ function totalVisibleKeys(): number {
   return Math.max(...keys.map(key => key.id)) + 1;
 }
 
+/** `list[index]`, which the test expects to exist. */
+function item<T>(list: readonly T[], index: number): T {
+  const value = list[index];
+  if (value === undefined) throw new Error(`no item ${index}`);
+  return value;
+}
+
+const MACRO_KEYS = [
+  'Record\nStart',
+  'Record\nStop',
+  'Record\nToggle',
+  'Play\nOnce',
+  'Play\nLoop',
+  'Play Once\nNo Gaps',
+  'Play Loop\nNo Gaps',
+  'Stop',
+  'Pause',
+];
+
 beforeEach(() => {
   keySelectionStore.setState(INITIAL_KEY_SELECTION, true);
 });
@@ -610,6 +629,62 @@ describe('RemapPage', () => {
 
       expect(animations.all).toEqual([]);
       expect(panels()).toHaveLength(1);
+    });
+  });
+
+  describe('Extension groups', () => {
+    it('add the Macro and Script keys on a keyboard that supports them (Trinity Pad)', async () => {
+      const keyboard = await connectVirtualKeyboard({
+        model: 'trinity-pad',
+        seedDynamicKeys: false,
+      });
+      onTestFinished(keyboard.dispose);
+      renderPage();
+      fireEvent.click(tab('Extension'));
+
+      const macro = screen.getByRole('region', { name: 'Macro' });
+      const rows = within(macro).getAllByRole('group');
+      expect(rows.map(row => row.getAttribute('aria-label'))).toEqual([
+        'Macro 1',
+        'Macro 2',
+        'Macro 3',
+        'Macro 4',
+      ]);
+      for (const row of rows) {
+        expect(
+          within(row)
+            .getAllByRole('button')
+            .map(button => button.textContent)
+        ).toEqual(MACRO_KEYS);
+      }
+      const script = screen.getByRole('region', { name: 'Script' });
+      expect(
+        within(script)
+          .getAllByRole('button')
+          .map(button => button.textContent)
+      ).toEqual(['Watch', 'Start', 'Stop', 'Suspend', 'Restart', 'Toggle']);
+
+      select(0);
+      fireEvent.click(within(item(rows, 1)).getByRole('button', { name: 'Play\nOnce' }));
+      await vi.waitFor(() => {
+        expect(deviceKeycode(keyboard, 0, 0)).toBe(0x41ad);
+      });
+      select(1);
+      fireEvent.click(within(script).getByRole('button', { name: 'Toggle' }));
+      await vi.waitFor(() => {
+        expect(deviceKeycode(keyboard, 0, 1)).toBe(0x05ae);
+      });
+    });
+
+    it('show neither group on a keyboard without macros and scripts (Starlight)', async () => {
+      await connect();
+      renderPage();
+      fireEvent.click(tab('Extension'));
+      expect(screen.queryByRole('region', { name: 'Macro' })).toBeNull();
+      expect(screen.queryByRole('region', { name: 'Script' })).toBeNull();
+      expect(paletteButtons().map(button => button.textContent)).toEqual(
+        REMAP_PALETTES.extension.map(key => key.label)
+      );
     });
   });
 });

@@ -39,7 +39,8 @@ describe('dictionaries', () => {
     // 263 keys used by the Svelte app, the six it referenced but never defined, the Settings
     // confirmations (PL-012), the Save button's unsaved-changes label (PL-050) and the Lighting
     // copy (PL-047 to PL-049), without the panels' Apply.
-    expect(Object.keys(en)).toHaveLength(293);
+    // + 18: Remap's Macro and Script groups (macros and scripts spec).
+    expect(Object.keys(en)).toHaveLength(311);
   });
 
   it('add the unsaved-changes label of the Save button (PL-050)', () => {
@@ -122,6 +123,21 @@ describe('dictionaries', () => {
     expect(en['debug.keyPressReportingDesc']).toBe(
       'Allows the keyboard to report whether a key is considered to be pressed. Pressed keys are indicated by the visual above.'
     );
+  });
+
+  it('add the Extension tab’s Macro and Script groups (macros and scripts spec)', () => {
+    expect(en).toMatchObject({
+      'remap.macroGroup': 'Macro',
+      'macros.slot': 'Macro {0}',
+      'remap.macroPlayOnceNoGap': 'Play Once\nNo Gaps',
+      'remap.scriptSuspend': 'Suspend',
+    });
+    expect(zh).toMatchObject({
+      'remap.macroGroup': '宏',
+      'remap.scriptGroup': '脚本',
+      'macros.slot': '宏 {0}',
+      'remap.macroPlayOnceNoGap': '播放一次\n无间隔',
+    });
   });
 });
 

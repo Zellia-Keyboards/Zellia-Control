@@ -9,7 +9,14 @@ export {
   type KeycodeConstructors,
 } from './codec';
 export { DYNAMIC_KEY_KIND_NAMES, describeKeycode, type KeycodeDescription } from './display';
-export { REMAP_PALETTES, type PaletteKey, type RemapPalettes } from './palettes';
+export {
+  REMAP_PALETTES,
+  SCRIPT_PALETTE,
+  macroPalette,
+  type GroupPaletteKey,
+  type PaletteKey,
+  type RemapPalettes,
+} from './palettes';
 export {
   ACTION_CATEGORIES,
   findAction,
