@@ -120,13 +120,44 @@ describe('dynamicKeyAt', () => {
 });
 
 describe('configured keys', () => {
-  it('lists the dynamic keys of one kind with their key, in slot order', () => {
-    const second: DynamicKeySlot = { kind: 'toggle', binding: F, target: at(1, 1) };
+  it('lists the dynamic keys of one kind with their key', () => {
+    const second: DynamicKeySlot = { kind: 'toggle', binding: F, target: at(1, 5) };
     const list = configuredKeys([TOGGLE, STROKE, second, NONE], 'toggle');
     expect(list).toEqual([
       { slot: 0, target: at(0, 4), dynamicKey: TOGGLE },
-      { slot: 2, target: at(1, 1), dynamicKey: second },
+      { slot: 2, target: at(1, 5), dynamicKey: second },
     ]);
+  });
+
+  it('lists tap-hold and toggle keys by key id, then layer, as the Svelte lists did', () => {
+    const modTapAt = (layer: number, id: number): DynamicKeySlot => ({
+      ...MOD_TAP,
+      target: at(layer, id),
+    });
+    const toggleAt = (layer: number, id: number): DynamicKeySlot => ({
+      ...TOGGLE,
+      target: at(layer, id),
+    });
+    const slots = [
+      modTapAt(0, 30),
+      toggleAt(0, 30),
+      modTapAt(2, 17),
+      toggleAt(1, 17),
+      modTapAt(0, 17),
+      toggleAt(0, 4),
+    ];
+    const targets = (list: readonly { target: KeyLocation }[]) => list.map(entry => entry.target);
+    expect(targets(configuredKeys(slots, 'modTap'))).toEqual([at(0, 17), at(2, 17), at(0, 30)]);
+    expect(targets(configuredKeys(slots, 'toggle'))).toEqual([at(0, 4), at(1, 17), at(0, 30)]);
+  });
+
+  it('lists DKS keys in slot order', () => {
+    const strokeAt = (layer: number, id: number): DynamicKeySlot => ({
+      ...STROKE,
+      target: at(layer, id),
+    });
+    const slots = [strokeAt(0, 30), TOGGLE, strokeAt(0, 17), strokeAt(1, 2)];
+    expect(configuredKeys(slots, 'stroke').map(entry => entry.slot)).toEqual([0, 2, 3]);
   });
 
   it('leaves out dynamic keys that no key runs', () => {
