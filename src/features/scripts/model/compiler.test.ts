@@ -86,6 +86,44 @@ describe('createCompiler', () => {
     expect(runs).toHaveLength(2);
     expect(runs[0]?.args).toEqual(['--no-column', '-m32', '-o', '/out.bin', '/main.js']);
   });
+
+  it('leaves out what the module prints while it loads', async () => {
+    // Emscripten prints its fallback while it loads a wasm served without `application/wasm`.
+    const createInstance: MqjsFactory = ({ print, printErr }) => {
+      print('loading');
+      printErr(
+        "wasm streaming compile failed: TypeError: Incorrect response MIME type. Expected 'application/wasm'."
+      );
+      printErr('falling back to ArrayBuffer instantiation');
+      const files = new Map<string, string | Uint8Array>();
+      const instance: MqjsInstance = {
+        FS: {
+          writeFile: (path, data) => {
+            files.set(path, data);
+          },
+          readFile: path => {
+            const file = files.get(path);
+            if (!(file instanceof Uint8Array)) throw new Error(`ENOENT: ${path}`);
+            return file;
+          },
+        },
+        callMain: () => {
+          print('compiled');
+          files.set('/out.bin', Uint8Array.of(0xfb, 0xac));
+          return 0;
+        },
+      };
+      return Promise.resolve(instance);
+    };
+    const compile = createCompiler(() => Promise.resolve(createInstance));
+
+    expect(await compile('fine')).toEqual({
+      bytecode: Uint8Array.of(0xfb, 0xac),
+      stdout: 'compiled\n',
+      stderr: '',
+      errors: [],
+    });
+  });
 });
 
 // The real compiler (vendor/mqjs). The messages are mquickjs's: if a rebuilt compiler words them
