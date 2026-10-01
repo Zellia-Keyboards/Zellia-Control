@@ -7,10 +7,11 @@ the brush loaded, the Profile tab's keys and the Extension tab's keyboard operat
 axes assigned. Profiles: the page (default, a profile activated, the card menu of a local and of
 the active profile, the Duplicate and Restore confirmations, the full-slots error, an imported
 file, a file that is not a profile, a profile switched on the keyboard) and the toolbar dropdown
-(over Remap, over Lighting, with a local profile active). Every scenario connects the virtual
-keyboard with "Get Started" and drives both apps like a user; the setups rely on copy both
-languages share (the Remap and Profiles pages are English-only in both apps; the sidebar link and
-the dropdown's link are matched in en and zh).
+(over Remap, over Lighting, with a local profile active, and its "Manage All Profiles" link
+followed). Every scenario connects the virtual keyboard with "Get Started" and drives both apps
+like a user; the setups rely on copy both languages share (the Remap and Profiles pages are
+English-only in both apps, as is the baseline's "No Keyboard Connected"; the sidebar link and the
+dropdown's link are matched in en and zh).
 
 ## Results
 
@@ -19,10 +20,12 @@ Fast mode (product owner decision): captured in the `dark-en-1440x900` variant o
 inside the merged shell. The lead captures the whole matrix (light/dark × en/zh ×
 1440×900/2560×1440) at integration.
 
-Run of 2026-10-01 (24 captures of these scenarios, strict comparison): 0 identical, every
-difference listed. The page regions (category tabs, palettes, message, profile cards, menus,
-dialogs, dropdown) are pixel-identical except where a row names F-1, F-2 or PL-013; all other
-differences are keycaps of the shell's keyboard and the sidebar's Save button.
+Run of 2026-10-01 after the review fixes (25 captures of these scenarios, strict comparison; the
+24 captured before the fixes kept their pixel counts, apart from the icon noise described below):
+0 identical, every difference listed. The page regions (category tabs, palettes, message,
+profile cards, menus, dialogs, dropdown) are pixel-identical except where a row names F-1, F-2,
+F-3 or PL-013; all other differences are keycaps of the shell's keyboard and the sidebar's Save
+button.
 
 | Scenario                                                                                                                                     | Differences                                                                                           |
 | -------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
@@ -32,7 +35,8 @@ differences are keycaps of the shell's keyboard and the sidebar's Save button.
 | `remap-extension-assigned`                                                                                                                   | PL-008, PL-017 (key 2), PL-018 (keys 3–4), PL-002, PL-016, PL-022; `Recovery` (key 1) is identical    |
 | `profiles-dropdown`                                                                                                                          | PL-002; the lower part of the dropdown's glass panel blurs the keycaps of PL-016 and PL-022 behind it |
 | `profiles-dropdown-lighting`, `profiles-dropdown-local`                                                                                      | PL-002 (`-local`: keycap-corner noise)                                                                |
-| `profiles-default`, `profiles-activated`, `profiles-menu`, `profiles-menu-active`, `profiles-duplicate`, `profiles-restore`, `profiles-full` | PL-002 (`-default`, `-menu-active`: one anti-aliased icon pixel)                                      |
+| `profiles-dropdown-manage`                                                                                                                   | F-3 (the whole screen: the baseline lost the keyboard)                                                |
+| `profiles-default`, `profiles-activated`, `profiles-menu`, `profiles-menu-active`, `profiles-duplicate`, `profiles-restore`, `profiles-full` | PL-002 (`-default`, `-menu-active`: at times one anti-aliased icon pixel)                             |
 | `profiles-imported`                                                                                                                          | F-2, PL-002                                                                                           |
 | `profiles-import-invalid`                                                                                                                    | F-1, PL-002                                                                                           |
 | `profiles-keyboard-switch`                                                                                                                   | PL-013, PL-002                                                                                        |
@@ -62,10 +66,11 @@ palettes already assigned full keycodes with sub-codes.
 
 ## New deviations
 
-| ID  | Screen / route | State and captures                                                                           | Deviation                                                                                                                                                                                                                                                                                                                                                     | Reason                                                                                                                          | Before                          | After                         | Status |
-| --- | -------------- | -------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- | ------------------------------- | ----------------------------- | ------ |
-| F-1 | `/profiles/`   | Import Profile with a file that is not JSON (or not a profile); `profiles-import-invalid--*` | The "Notice" dialog reads "Failed to import profile: " with the JSON parser's message (or "Invalid profile file" for JSON without a string `name`). The baseline's store caught and logged the error itself, so the page's error message never showed and the file was silently ignored (or a broken profile stored).                                         | intended UI (the page's own error path); imported files are validated at the boundary                                           | [before](parity/f-1-before.png) | [after](parity/f-1-after.png) | logged |
-| F-2 | `/profiles/`   | Import Profile with a valid file (`{ "name": "Travel Setup" }`); `profiles-imported--*`      | The imported profile's card appears at once in the first free slot (5), and Add Profile moves to the next cell. The baseline stored the profile but showed nothing: its store wrote it into the existing list in place, so the page's derived list did not change until another action replaced the list or the Profiles page was opened again (or reloaded). | bug: in-place store update in `importProfile` (Restore Default updates in place too, but shows no visible change in either app) | [before](parity/f-2-before.png) | [after](parity/f-2-after.png) | logged |
+| ID  | Screen / route                          | State and captures                                                                           | Deviation                                                                                                                                                                                                                                                                                                                                                                                                                                              | Reason                                                                                                                          | Before                          | After                         | Status |
+| --- | --------------------------------------- | -------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------- | ------------------------------- | ----------------------------- | ------ |
+| F-1 | `/profiles/`                            | Import Profile with a file that is not JSON (or not a profile); `profiles-import-invalid--*` | The "Notice" dialog reads "Failed to import profile: " with the JSON parser's message (or "Invalid profile file" for JSON without a string `name`). The baseline's store caught and logged the error itself, so the page's error message never showed and the file was silently ignored (or a broken profile stored).                                                                                                                                  | intended UI (the page's own error path); imported files are validated at the boundary                                           | [before](parity/f-1-before.png) | [after](parity/f-1-after.png) | logged |
+| F-2 | `/profiles/`                            | Import Profile with a valid file (`{ "name": "Travel Setup" }`); `profiles-imported--*`      | The imported profile's card appears at once in the first free slot (5), and Add Profile moves to the next cell. The baseline stored the profile but showed nothing: its store wrote it into the existing list in place, so the page's derived list did not change until another action replaced the list or the Profiles page was opened again (or reloaded).                                                                                          | bug: in-place store update in `importProfile` (Restore Default updates in place too, but shows no visible change in either app) | [before](parity/f-2-before.png) | [after](parity/f-2-after.png) | logged |
+| F-3 | toolbar profile dropdown → `/profiles/` | Remap, dropdown open, "Manage All Profiles" clicked; `profiles-dropdown-manage--*`           | "Manage All Profiles" opens the Profiles page inside the app, with the keyboard still connected. In the baseline the link reloaded the page: the panel's `stopPropagation()` ran in Svelte's click delegation on the app root, so SvelteKit's router, which listens on `<html>`, never saw the click. The reload dropped the WebHID connection (the app does not reconnect), and `/profiles/` showed "Waiting to connect" and "No Keyboard Connected". | bug: the panel's click handler hid the link from the client-side router                                                         | [before](parity/f-3-before.png) | [after](parity/f-3-after.png) | logged |
 
 ## Also visible in these captures
 
@@ -78,8 +83,9 @@ and PL-022 (key 64 is blank, every Remap capture).
   Chrome rasterizes the rounded corners of a few keycaps differently (2 px per corner);
   `profiles-dropdown-local` and `shell-remap-hover` show five and four such corners.
 - **Icon anti-aliasing.** In `profiles-default` and `profiles-menu-active` one pixel of the
-  sidebar's Theme Colors icon is one colour level off (47 against 48, in opposite directions in
-  the two captures); an earlier run of the same scenarios gave the same pixel counts.
+  sidebar's Theme Colors icon can be one colour level off (47 against 48, in opposite directions
+  in the two captures): two runs showed it in both captures, a third only in `-menu-active`
+  (596 against 597 differing pixels).
 
 ## Not visible (no log row)
 

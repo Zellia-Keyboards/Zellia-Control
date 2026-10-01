@@ -4,7 +4,7 @@ import type { ParityScenario } from '../scenario';
 /**
  * Remap page (the five category tabs, the "select a key first" message, assignments, select-all
  * and the brush), the Profiles page (cards, menu, confirmations, errors, import, activation) and
- * the toolbar's profile dropdown, all with a connected keyboard.
+ * the toolbar's profile dropdown and its "Manage All Profiles" link, all with a connected keyboard.
  *
  * The captures show the whole screen, so the sidebar and the keyboard (worker E's) carry their
  * logged differences: the Save label (PL-002), modifier keycaps (PL-016) and key 64 (PL-022). The
@@ -106,9 +106,11 @@ async function importFile(page: Page, name: string, content: string): Promise<vo
   await page.waitForTimeout(500);
 }
 
+const MANAGE_ALL_PROFILES = /Manage All Profiles|管理所有配置文件/;
+
 async function openProfileDropdown(page: Page): Promise<void> {
   await page.getByTitle('Switch profiles').click();
-  await page.getByRole('link', { name: /Manage All Profiles|管理所有配置文件/ }).waitFor();
+  await page.getByRole('link', { name: MANAGE_ALL_PROFILES }).waitFor();
 }
 
 /**
@@ -231,6 +233,17 @@ const scenarios: readonly ParityScenario[] = [
     await page.getByRole('heading', { name: 'Profile 5' }).click();
     await openLighting(page);
     await openProfileDropdown(page);
+  }),
+  // F-3: "Manage All Profiles" opens Profiles inside the app, with the keyboard still connected.
+  // The baseline's panel stopped the click before SvelteKit's router saw it, so the link reloaded
+  // the page, which drops the WebHID connection ("No Keyboard Connected").
+  connected('profiles-dropdown-manage', async page => {
+    await openProfileDropdown(page);
+    await page.getByRole('link', { name: MANAGE_ALL_PROFILES }).click();
+    await page.waitForURL('**/profiles/');
+    await page
+      .getByRole('heading', { name: /^(Configure Profiles|No Keyboard Connected)$/ })
+      .waitFor();
   }),
   connected('profiles-default', openProfiles),
   connected('profiles-activated', async page => {
