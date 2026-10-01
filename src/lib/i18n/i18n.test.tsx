@@ -38,8 +38,8 @@ describe('dictionaries', () => {
   it('keep the ported key set plus the React additions', () => {
     // 263 keys used by the Svelte app, the six it referenced but never defined, the Settings
     // confirmations (PL-012), the Save button's unsaved-changes label (PL-050) and the Lighting
-    // copy (PL-047 to PL-049).
-    expect(Object.keys(en)).toHaveLength(294);
+    // copy (PL-047 to PL-049), without the panels' Apply.
+    expect(Object.keys(en)).toHaveLength(293);
   });
 
   it('add the unsaved-changes label of the Save button (PL-050)', () => {

@@ -109,7 +109,6 @@ export const zh: Record<TranslationKey, string> = {
   'lighting.brightness': '亮度',
   'lighting.color': '颜色',
   'lighting.speed': '速度',
-  'lighting.apply': '应用',
   'lighting.mode': '模式',
   'lighting.secondaryColor': '次要颜色',
   'lighting.density': '密度',

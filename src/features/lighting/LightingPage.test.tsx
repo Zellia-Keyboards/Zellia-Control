@@ -1,6 +1,7 @@
 /**
  * Lighting page against the real device layer: the app's `deviceSession` connected to the virtual
  * keyboard. Key selection is driven through the key-selection store, like the shell's keyboard.
+ * Lighting edits are staged; they reach the keyboard on Save (PL-047).
  */
 import {
   act,
@@ -28,9 +29,10 @@ import {
   type LayoutKey,
 } from '../keyboard/model';
 import { LightingPage } from './LightingPage';
-import { rainbowColors } from './model';
+import { rainbowColors, rgbToHex } from './model';
 
 const TOTAL_KEYS = 70;
+const MIXED_MODES = 'These keys use different modes. Pick one to use it on all of them.';
 
 function renderPage() {
   return render(
@@ -38,6 +40,13 @@ function renderPage() {
       <LightingPage />
     </MemoryRouter>
   );
+}
+
+/** Lets the controller queue and the virtual keyboard finish pending exchanges. */
+async function settle(): Promise<void> {
+  for (let round = 0; round < 3; round++) {
+    await new Promise(resolve => setTimeout(resolve, 0));
+  }
 }
 
 it('renders nothing until a keyboard configuration is loaded', () => {
@@ -77,6 +86,19 @@ describe('LightingPage', () => {
     return keyboard.vk.state.active.rgbKeys;
   }
 
+  /** The app's (staged) per-key lighting. */
+  function stagedRgbKeys() {
+    const config = deviceStore.getState().config;
+    if (!config) throw new Error('no configuration');
+    return config.rgbKeys;
+  }
+
+  function stagedHex(keyId: number): string {
+    const config = stagedRgbKeys()[keyId];
+    if (!config) throw new Error(`no RGB key ${keyId}`);
+    return rgbToHex(config.color);
+  }
+
   /** Visible keys of the connected layout with the default Layout dropdown options. */
   function layoutKeys(): readonly LayoutKey[] {
     const { connection } = deviceStore.getState();
@@ -90,16 +112,19 @@ describe('LightingPage', () => {
 
   const rgb = (red: number, green: number, blue: number): Rgb => ({ red, green, blue });
 
-  /** Lighting edits reach the keyboard on Save (PL-047). */
   async function saveToKeyboard(): Promise<void> {
     await act(async () => {
       await deviceSession.save();
     });
   }
 
-  it('shows the keyboard’s base and first-key configuration', () => {
+  it('shows the base configuration, the save hint and the keys’ shared values', () => {
     renderPage();
     expect(screen.getByRole('heading', { level: 2, name: 'Lighting' })).toBeInTheDocument();
+    expect(
+      screen.getByText('Lighting changes reach the keyboard when you press Save.')
+    ).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Apply' })).not.toBeInTheDocument();
 
     const base = basePanel();
     expect(base.getByRole('button', { name: 'Blank' })).toHaveAttribute('aria-pressed', 'true');
@@ -109,30 +134,51 @@ describe('LightingPage', () => {
     expect(base.getByText('20%')).toBeInTheDocument();
     expect(base.getByText('255')).toBeInTheDocument();
 
+    // No key selected: all keys. On the virtual keyboard every 7th key is Static and the others
+    // Linear, each in its own colour, all at speed 20 (PL-048).
     const key = keyPanel();
-    // Key 0 of the virtual keyboard is static red.
-    expect(key.getByRole('button', { name: 'Static' })).toHaveAttribute('aria-pressed', 'true');
+    expect(key.getByText('All keys')).toBeInTheDocument();
+    expect(key.getByRole('button', { name: 'Static' })).toHaveAttribute('aria-pressed', 'false');
+    expect(key.getByRole('button', { name: 'Linear' })).toHaveAttribute('aria-pressed', 'false');
+    expect(key.getByText(MIXED_MODES)).toBeInTheDocument();
+    expect(key.getByText('Mixed')).toBeInTheDocument();
     expect(colorInput(key, 'Color')).toHaveValue('#ff0000');
     expect(key.getByText('20%')).toBeInTheDocument();
   });
 
-  it('opens with the keyboard’s own modes selected', async () => {
-    const { rgbBase } = keyboard.vk.state.active;
-    expect(rgbBase.mode).toBe(RGBBaseMode.RgbBaseModeBlank);
+  it('shows what the selected keys share', () => {
+    renderPage();
+    act(() => {
+      keySelection.setSelected([1, 2]);
+    });
+    const key = keyPanel();
+    expect(key.getByText('2 keys')).toBeInTheDocument();
+    expect(key.getByRole('button', { name: 'Linear' })).toHaveAttribute('aria-pressed', 'true');
+    expect(
+      key.getByText('Lights up in Color as the key goes down: the deeper the press, the brighter.')
+    ).toBeInTheDocument();
+    expect(key.getByText('Mixed')).toBeInTheDocument();
+
+    act(() => {
+      keySelection.setSelected([1]);
+    });
+    expect(key.getByText('1 key')).toBeInTheDocument();
+    expect(colorInput(key, 'Color')).toHaveValue(stagedHex(1));
+    expect(key.queryByText('Mixed')).not.toBeInTheDocument();
+    // Selecting keys never edits them.
+    expect(deviceStore.getState().unsaved).toBe(false);
+  });
+
+  it('opens with the keyboard’s own modes', async () => {
     const config = deviceStore.getState().config;
     if (!config) throw new Error('no configuration');
     deviceSession.setRgbBase({ ...config.rgbBase, mode: RGBBaseMode.RgbBaseModeRainbow });
-    deviceSession.setRgbKeys([
-      {
-        keyId: 0,
-        config: {
-          ...config.rgbKeys[0],
-          mode: RGBMode.RgbModeBubble,
-          color: rgb(0, 0, 255),
-          speed: 20,
-        },
-      },
-    ]);
+    deviceSession.setRgbKeys(
+      config.rgbKeys.map((rgbKey, keyId) => ({
+        keyId,
+        config: { ...rgbKey, mode: RGBMode.RgbModeBubble },
+      }))
+    );
     await saveToKeyboard();
     expect(keyboard.vk.state.active.rgbBase.mode).toBe(RGBBaseMode.RgbBaseModeRainbow);
 
@@ -177,29 +223,39 @@ describe('LightingPage', () => {
     expect(deviceStore.getState().unsaved).toBe(true);
     expect(base.getByRole('button', { name: 'Wave' })).toHaveAttribute('aria-pressed', 'true');
     expect(base.getByText('55%')).toBeInTheDocument();
+    await settle();
     expect(keyboard.vk.state.active.rgbBase).toEqual(before);
 
     await saveToKeyboard();
     expect(keyboard.vk.state.active.rgbBase).toEqual(expected);
   });
 
-  it('applies the key configuration to every key when none is selected', async () => {
+  it('edits only the changed field of every key while none is selected', async () => {
     const user = userEvent.setup();
+    const before = structuredClone(deviceRgbKeys());
     renderPage();
     const key = keyPanel();
     await user.click(key.getByRole('button', { name: 'Jelly' }));
-    fireEvent.input(colorInput(key, 'Color'), { target: { value: '#123456' } });
+    expect(key.getByRole('button', { name: 'Jelly' })).toHaveAttribute('aria-pressed', 'true');
+    expect(key.queryByText(MIXED_MODES)).not.toBeInTheDocument();
     fireEvent.change(key.getByRole('slider', { name: 'Speed' }), { target: { value: '70' } });
-    await user.click(key.getByRole('button', { name: 'Apply' }));
+    expect(key.getByText('70%')).toBeInTheDocument();
 
-    const expected = { mode: RGBMode.RgbModeJelly, color: rgb(0x12, 0x34, 0x56), speed: 70 };
+    const expected = before.map(config => ({
+      mode: RGBMode.RgbModeJelly,
+      color: config.color,
+      speed: 70,
+    }));
+    expect(stagedRgbKeys()).toEqual(expected);
+    await settle();
+    expect(deviceRgbKeys()).toEqual(before);
+
     await saveToKeyboard();
-    await expect.poll(() => deviceRgbKeys().every(config => config.speed === 70)).toBe(true);
     expect(deviceRgbKeys()).toHaveLength(TOTAL_KEYS);
-    for (const config of deviceRgbKeys()) expect(config).toEqual(expected);
+    expect(deviceRgbKeys()).toEqual(expected);
   });
 
-  it('applies the key configuration to the selected keys, then shows the first key again', async () => {
+  it('edits the selected keys only', async () => {
     const user = userEvent.setup();
     const before = structuredClone(deviceRgbKeys());
     renderPage();
@@ -209,21 +265,16 @@ describe('LightingPage', () => {
     const key = keyPanel();
     await user.click(key.getByRole('button', { name: 'Jelly' }));
     fireEvent.input(colorInput(key, 'Color'), { target: { value: '#123456' } });
-    fireEvent.change(key.getByRole('slider', { name: 'Speed' }), { target: { value: '70' } });
-    await user.click(key.getByRole('button', { name: 'Apply' }));
+    expect(colorInput(key, 'Color')).toHaveValue('#123456');
+    expect(key.queryByText('Mixed')).not.toBeInTheDocument();
 
-    const expected = { mode: RGBMode.RgbModeJelly, color: rgb(0x12, 0x34, 0x56), speed: 70 };
     await saveToKeyboard();
-    await expect.poll(() => deviceRgbKeys()[4]).toEqual(expected);
-    expect(deviceRgbKeys()[3]).toEqual(expected);
+    const edited = { mode: RGBMode.RgbModeJelly, color: rgb(0x12, 0x34, 0x56), speed: 20 };
+    expect(deviceRgbKeys()[3]).toEqual(edited);
+    expect(deviceRgbKeys()[4]).toEqual(edited);
     deviceRgbKeys().forEach((config, id) => {
       if (id !== 3 && id !== 4) expect(config).toEqual(before[id]);
     });
-
-    // As in Svelte, the panel re-reads key 0's colour and speed; the chosen mode stays.
-    expect(colorInput(key, 'Color')).toHaveValue('#ff0000');
-    expect(key.getByText('20%')).toBeInTheDocument();
-    expect(key.getByRole('button', { name: 'Jelly' })).toHaveAttribute('aria-pressed', 'true');
   });
 
   describe('rainbow preset (D11, PL-007)', () => {
@@ -240,25 +291,17 @@ describe('LightingPage', () => {
       await user.click(key.getByRole('button', { name: 'Apply Settings' }));
     }
 
-    it('colours every visible key from its position in the layout', async () => {
+    it('colours every visible key from its position, keeping modes and speeds', async () => {
       const before = structuredClone(deviceRgbKeys());
       renderPage();
       await applyRainbow('90', '20');
+      await saveToKeyboard();
 
       const keys = layoutKeys();
+      // The panel's colour is the first key's (key 0, red) while the colours are mixed.
       const colors = rainbowColors(keys, '#ff0000', 90, 20);
-      await saveToKeyboard();
-      await expect
-        .poll(() =>
-          keys.every(({ id }) => deviceRgbKeys()[id]?.color.green === colors.get(id)?.green)
-        )
-        .toBe(true);
       for (const { id } of keys) {
-        expect(deviceRgbKeys()[id]).toEqual({
-          mode: RGBMode.RgbModeStatic,
-          color: colors.get(id),
-          speed: 20,
-        });
+        expect(deviceRgbKeys()[id]).toEqual({ ...before[id], color: colors.get(id) });
       }
       expect(new Set(keys.map(({ id }) => JSON.stringify(colors.get(id)))).size).toBeGreaterThan(4);
       // Keys of layout options that are not shown keep their colours.
@@ -268,19 +311,20 @@ describe('LightingPage', () => {
       for (const id of hidden) expect(deviceRgbKeys()[id]).toEqual(before[id]);
     });
 
-    it('colours only the selected keys when keys are selected', async () => {
+    it('colours only the selected keys, from the first one’s colour', async () => {
       const before = structuredClone(deviceRgbKeys());
       renderPage();
       act(() => {
         keySelection.setSelected([5, 30, 47]);
       });
+      const reference = stagedHex(5);
       await applyRainbow('0', '30');
-
-      const colors = rainbowColors(layoutKeys(), '#ff0000', 0, 30);
       await saveToKeyboard();
-      await expect.poll(() => deviceRgbKeys()[47]?.color).toEqual(colors.get(47));
-      expect(deviceRgbKeys()[5]?.color).toEqual(colors.get(5));
-      expect(deviceRgbKeys()[30]?.color).toEqual(colors.get(30));
+
+      const colors = rainbowColors(layoutKeys(), reference, 0, 30);
+      for (const id of [5, 30, 47]) {
+        expect(deviceRgbKeys()[id]).toEqual({ ...before[id], color: colors.get(id) });
+      }
       deviceRgbKeys().forEach((config, id) => {
         if (![5, 30, 47].includes(id)) expect(config).toEqual(before[id]);
       });
@@ -297,22 +341,27 @@ describe('LightingPage', () => {
       profile.rgbKeys[0] = { ...key0, mode: RGBMode.RgbModeCycle };
     }
 
-    /** Picks modes in both panels without applying them, then switches to profile 1. */
-    async function pickModesAndSwitchToProfile1(user: ReturnType<typeof userEvent.setup>) {
+    /** Selects key 0, stages new modes in both panels, then switches to profile 1. */
+    async function editAndSwitchToProfile1(user: ReturnType<typeof userEvent.setup>) {
+      act(() => {
+        keySelection.setSelected([0]);
+      });
       await user.click(basePanel().getByRole('button', { name: 'Wave' }));
       await user.click(keyPanel().getByRole('button', { name: 'Bubble' }));
+      expect(deviceStore.getState().unsaved).toBe(true);
       await act(async () => {
         await deviceSession.switchProfile(1);
       });
       expect(deviceStore.getState().config?.profileIndex).toBe(1);
     }
 
-    it('shows the new configuration in both panels, modes included', async () => {
+    it('drops unsaved edits and shows the new configuration in both panels', async () => {
       const user = userEvent.setup();
       storeModesOnProfile1();
       renderPage();
-      await pickModesAndSwitchToProfile1(user);
+      await editAndSwitchToProfile1(user);
 
+      expect(deviceStore.getState().unsaved).toBe(false);
       // Profile 1 of the virtual keyboard: orange base colour, rainbow shifted by 90°.
       expect(colorInput(basePanel(), /^Color/)).toHaveValue('#ff6000');
       expect(colorInput(keyPanel(), 'Color')).toHaveValue('#80ff00');
@@ -326,32 +375,28 @@ describe('LightingPage', () => {
       );
     });
 
-    it('applies the new configuration’s modes, not the ones picked before the load', async () => {
+    it('edits the new configuration after the load', async () => {
       const user = userEvent.setup();
       storeModesOnProfile1();
       renderPage();
-      await pickModesAndSwitchToProfile1(user);
+      await editAndSwitchToProfile1(user);
 
       fireEvent.change(basePanel().getByRole('slider', { name: 'Brightness' }), {
         target: { value: '100' },
       });
-      expect(deviceStore.getState().config?.rgbBase).toMatchObject({
-        brightness: 100,
-        mode: RGBBaseMode.RgbBaseModeRainbow,
-      });
-
       fireEvent.change(keyPanel().getByRole('slider', { name: 'Speed' }), {
         target: { value: '70' },
       });
-      await user.click(keyPanel().getByRole('button', { name: 'Apply' }));
       await saveToKeyboard();
-      await expect.poll(() => deviceRgbKeys()[0]?.speed).toBe(70);
-      expect(deviceRgbKeys()[0]?.mode).toBe(RGBMode.RgbModeCycle);
+      expect(keyboard.vk.state.active.rgbBase).toMatchObject({
+        brightness: 100,
+        mode: RGBBaseMode.RgbBaseModeRainbow,
+      });
+      expect(deviceRgbKeys()[0]).toMatchObject({ speed: 70, mode: RGBMode.RgbModeCycle });
     });
   });
 
   it('works under StrictMode, which renders and runs its effects twice', async () => {
-    const user = userEvent.setup();
     render(
       <StrictMode>
         <MemoryRouter>
@@ -364,10 +409,9 @@ describe('LightingPage', () => {
     });
     const key = keyPanel();
     fireEvent.input(colorInput(key, 'Color'), { target: { value: '#00ffff' } });
-    await user.click(key.getByRole('button', { name: 'Apply' }));
+    expect(colorInput(key, 'Color')).toHaveValue('#00ffff');
     await saveToKeyboard();
-    await expect.poll(() => deviceRgbKeys()[8]?.color).toEqual(rgb(0, 255, 255));
-    expect(colorInput(key, 'Color')).toHaveValue('#ff0000');
+    expect(deviceRgbKeys()[8]?.color).toEqual(rgb(0, 255, 255));
   });
 
   it('allows key selection and toggles it with Ctrl/⌘+A and Ctrl/⌘+Escape', async () => {

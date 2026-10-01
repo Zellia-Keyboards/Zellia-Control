@@ -308,7 +308,6 @@ export const en = {
   'lighting.title': 'Lighting',
   'lighting.brightness': 'Brightness',
   'lighting.speed': 'Speed',
-  'lighting.apply': 'Apply',
   'lighting.mode': 'Mode',
   'lighting.secondaryColor': 'Secondary Color',
   'lighting.density': 'Density',
