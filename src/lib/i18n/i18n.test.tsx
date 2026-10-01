@@ -40,7 +40,8 @@ describe('dictionaries', () => {
     // confirmations (PL-012), the Save button's unsaved-changes label (PL-050) and the Lighting
     // copy (PL-047 to PL-049), without the panels' Apply.
     // + 18: Remap's Macro and Script groups (macros and scripts spec).
-    expect(Object.keys(en)).toHaveLength(311);
+    // + 39: the Macros page (macros and scripts spec).
+    expect(Object.keys(en)).toHaveLength(350);
   });
 
   it('add the unsaved-changes label of the Save button (PL-050)', () => {
@@ -137,6 +138,23 @@ describe('dictionaries', () => {
       'remap.scriptGroup': '脚本',
       'macros.slot': '宏 {0}',
       'remap.macroPlayOnceNoGap': '播放一次\n无间隔',
+    });
+  });
+
+  it('add the Macros page copy (macros and scripts spec)', () => {
+    expect(en).toMatchObject({
+      'macros.title': 'Macros',
+      'macros.limit': '{0} / {1} actions',
+      'macros.fromStart': 'From macro start',
+      'macros.noRoom': 'Not enough space for a complete action.',
+      'macros.skipped': '{0} keys could not be recorded.',
+      'macros.unsupported': 'This keyboard does not support macros',
+    });
+    expect(zh).toMatchObject({
+      'macros.title': '宏',
+      'macros.press': '按下',
+      'macros.release': '释放',
+      'macros.unsupported': '此键盘不支持宏',
     });
   });
 });
