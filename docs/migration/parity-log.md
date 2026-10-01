@@ -7,7 +7,7 @@ fixed or recorded here, with before/after screenshots from the parity harness
 
 ## How to record a deviation
 
-1. Run `corepack yarn parity` (or `--grep <scenario>`) and open
+1. Run `npm run parity` (or `npm run parity -- --grep <scenario>`) and open
    `e2e/.artifacts/parity/index.html`.
 2. For a difference that is intended, copy its captures into
    `docs/migration/parity/` as `<id>-before.png` (from `captures/baseline/`) and

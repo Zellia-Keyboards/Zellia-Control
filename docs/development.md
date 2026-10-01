@@ -7,32 +7,34 @@ keyboard over WebHID through the vendored `emi-keyboard-controller`
 ## Requirements
 
 - Node.js 24 (as in CI).
-- Corepack: `corepack yarn …` runs yarn 1.22.22, pinned by the `packageManager`
-  field of `package.json`. Run `corepack enable` once to get a plain `yarn`.
+- npm 11 (bundled with Node 24). `npm ci` installs exactly `package-lock.json`;
+  add or upgrade dependencies with `npm install <package>` and commit the
+  lockfile. Arguments for a script go after `--`, e.g.
+  `npm run parity -- --grep welcome`.
 - Google Chrome for end-to-end and parity runs. Without it Playwright falls back
-  to its bundled Chromium: `corepack yarn playwright install chromium`.
+  to its bundled Chromium: `npx playwright install chromium`.
 
 ```sh
-corepack yarn install --frozen-lockfile
-corepack yarn dev            # http://localhost:5173
+npm ci
+npm run dev                  # http://localhost:5173
 ```
 
 ## Commands
 
-| Command                      | What it does                                                     |
-| ---------------------------- | ---------------------------------------------------------------- |
-| `corepack yarn dev`          | Vite dev server (SPA fallback, no service worker)                |
-| `corepack yarn build`        | Production build into `build/` (PWA, per-route `index.html`)     |
-| `corepack yarn preview`      | Serves `build/` on :4173 like the production static host         |
-| `corepack yarn typecheck`    | `tsc -b`: app, node tooling and the vendored controller projects |
-| `corepack yarn lint`         | ESLint (type-aware, react-hooks, jsx-a11y)                       |
-| `corepack yarn format`       | Prettier, write                                                  |
-| `corepack yarn format:check` | Prettier, check only                                             |
-| `corepack yarn test`         | Vitest: projects `app`, `tooling` and `controller`               |
-| `corepack yarn test:watch`   | Vitest in watch mode                                             |
-| `corepack yarn test:e2e`     | Playwright project `e2e` against the production build            |
-| `corepack yarn parity`       | Visual parity pipeline (see below)                               |
-| `corepack yarn validate`     | typecheck, lint, format check, tests and build (the merge gates) |
+| Command                | What it does                                                     |
+| ---------------------- | ---------------------------------------------------------------- |
+| `npm run dev`          | Vite dev server (SPA fallback, no service worker)                |
+| `npm run build`        | Production build into `build/` (PWA, per-route `index.html`)     |
+| `npm run preview`      | Serves `build/` on :4173 like the production static host         |
+| `npm run typecheck`    | `tsc -b`: app, node tooling and the vendored controller projects |
+| `npm run lint`         | ESLint (type-aware, react-hooks, jsx-a11y)                       |
+| `npm run format`       | Prettier, write                                                  |
+| `npm run format:check` | Prettier, check only                                             |
+| `npm test`             | Vitest: projects `app`, `tooling` and `controller`               |
+| `npm run test:watch`   | Vitest in watch mode                                             |
+| `npm run test:e2e`     | Playwright project `e2e` against the production build            |
+| `npm run parity`       | Visual parity pipeline (see below)                               |
+| `npm run validate`     | typecheck, lint, format check, tests and build (the merge gates) |
 
 All five gates (`typecheck`, `lint`, `format:check`, `test`, `build`) must pass
 before a change is merged; CI runs them plus `test:e2e`.
@@ -90,12 +92,20 @@ Tailwind only looks for class candidates in `src/` (`base` in
      before navigating, then drive the device through its handle:
 
      ```ts
+     test.use({ virtualKeyboardOptions: { seedDynamicKeys: false } }); // optional
+
      test('connects', async ({ page, virtualKeyboard }) => {
        await page.goto('/');
        const keyboard = await virtualKeyboard.handle();
        await keyboard.evaluate(handle => handle.disconnect());
      });
      ```
+
+     The handle's type (`VirtualKeyboardHandle`) is shared with the simulator,
+     so specs see its real state (`state.active.keymap`, …) and controls.
+     Component tests connect the app's session the same way with
+     `connectVirtualKeyboard()` from `src/testing/app-keyboard.ts`; see
+     [device.md](device.md#testing).
 
 4. **Visual parity** (Playwright, project `parity`), below.
 
@@ -104,7 +114,7 @@ otherwise Playwright's bundled Chromium (`scripts/browser-channel.ts`). Reports
 and traces go to `e2e/.artifacts/`.
 
 Server: Playwright serves the build on port 4273, not Vite's default preview
-port 4173 (`corepack yarn preview`, and the Svelte baseline's). Set `E2E_PORT`
+port 4173 (`npm run preview`, and the Svelte baseline's). Set `E2E_PORT`
 to use another port, e.g. to run two worktrees at the same time. Playwright
 only tests a server it started itself: if something already answers on the
 port, the run fails with "is already used" instead of testing that server.
@@ -126,7 +136,7 @@ git worktree add --detach ../svelte-baseline 4f232a2
 `scripts/parity/prepare-baseline.mjs` finds it through `git worktree list`
 (or `--baseline-dir <dir>` / `PARITY_BASELINE_DIR`). It replaces the baseline's
 outdated `src-controller/` with this repository's synced copy, installs with
-yarn 1 (frozen lockfile), builds with SvelteKit (`build/`) and serves `build/`
+yarn 1 (its own frozen lockfile, via corepack), builds with SvelteKit (`build/`) and serves `build/`
 on :4180. It never commits in the baseline; a stamp in `build/` skips install
 and build until the baseline commit, its lockfile or `src-controller/` change
 (`--force` rebuilds). The baseline is served with the same static-host
@@ -136,9 +146,9 @@ sides of a comparison answer every request the same way.
 ### Running
 
 ```sh
-corepack yarn parity                    # everything
-corepack yarn parity --grep welcome     # extra arguments go to playwright test
-corepack yarn parity --force-baseline   # rebuild the baseline first
+npm run parity                          # everything
+npm run parity -- --grep welcome        # extra arguments go to playwright test
+npm run parity -- --force-baseline      # rebuild the baseline first
 ```
 
 The pipeline prepares the baseline, serves it on a free port of its own (never
@@ -172,8 +182,8 @@ Both apps are captured with the same browser and fonts, so any difference is
 real; pixelmatch's default threshold would pass neighbouring Tailwind shades
 such as `gray-800` and `gray-700`. To explore a large diff, re-compare the last
 captures tolerantly, e.g.
-`corepack yarn parity:compare --threshold 0.1 --ignore-aa`. That report is
-marked as tolerant and is not a parity result; `corepack yarn parity` always
+`npm run parity:compare -- --threshold 0.1 --ignore-aa`. That report is
+marked as tolerant and is not a parity result; `npm run parity` always
 compares strictly.
 
 `compare` exits 1 when any capture differs or is missing. A difference is either
@@ -191,7 +201,7 @@ const scenarios: readonly ParityScenario[] = [
   {
     name: 'remap-connected',
     path: '/',
-    virtualKeyboard: true,
+    virtualKeyboard: { seedDynamicKeys: false },
     setup: async page => {
       await page.getByRole('button', { name: /Get Started|开始使用/ }).click();
       await page.waitForURL('**/remap/');
@@ -206,19 +216,26 @@ export default scenarios;
 - `path`: path to open, e.g. `/remap/` (routes use trailing slashes).
 - `setup(page)`: optional. It runs unchanged in both apps and in every variant,
   including Chinese, so select by role and structure or match both languages.
-- `virtualKeyboard`: inject the virtual keyboard before the page loads.
+- `virtualKeyboard`: inject the virtual keyboard before the page loads — `true`
+  or its options (`model`, `seedDynamicKeys`, `latencyMs`, `picker`, …; see
+  `VirtualKeyboardBrowserOptions` in `src/testing/virtual-keyboard/handle.ts`).
+  Connected scenarios need `{ seedDynamicKeys: false }`: the baseline cannot
+  load a keyboard with dynamic keys (upstream bug, `src-controller/UPSTREAM.md`).
 - `storage`: extra `localStorage` entries seeded before the first page script.
 
 ## PWA
 
-- `vite-plugin-pwa` generates the Workbox worker `/sw.js` (autoUpdate, precache
-  id `zellia-control`, Google Fonts runtime cache).
-  `src/lib/pwa.ts` registers it from `main.tsx`; a new deployment activates
-  immediately (`skipWaiting`, `clientsClaim`) and reloads open pages. The
-  reload cannot be postponed: by then the old build's precache is gone, so a
-  page left on the old build could not load its lazy routes. Holding updates
-  back (for example during a firmware flash) would need a waiting-worker flow
-  (`registerType: 'prompt'`).
+- `vite-plugin-pwa` generates the Workbox worker `/sw.js` (precache id
+  `zellia-control`, Google Fonts runtime cache) with `registerType: 'prompt'`;
+  `src/lib/pwa.ts` registers it from `main.tsx`.
+- Updates wait for an idle app. A new deployment installs as a _waiting_
+  worker, so the running page keeps its old worker and precache (its lazy route
+  chunks stay loadable even after `rsync --delete` removed them from the
+  server). The update is applied — the waiting worker activated, the page
+  reloaded — only while `src/app/update-policy.ts` reports the app idle: no
+  keyboard connecting or connected and no firmware update running. There is no
+  update prompt. `clientsClaim` only lets the very first install control the
+  page at once, so the app works offline right after the first visit.
 - `public/service-worker.js` is a kill switch for browsers that still hold the
   SvelteKit worker registration: it deletes that worker's caches and
   unregisters itself.
@@ -243,8 +260,8 @@ fallback, `/remap` redirects to `/remap/`, unknown paths are 404.
 `src-controller/` is an unmodified copy of upstream `emi-keyboard-controller`.
 Follow `src-controller/UPSTREAM.md`, then:
 
-1. `corepack yarn typecheck && corepack yarn test`; adapt
+1. `npm run typecheck && npm test`; adapt
    `src/features/device/controller.ts` (the app's only adapter) to API changes.
-2. `corepack yarn test:e2e`.
-3. `corepack yarn parity`: the baseline stamp includes the controller hash, so
+2. `npm run test:e2e`.
+3. `npm run parity`: the baseline stamp includes the controller hash, so
    the baseline is rebuilt against the new copy automatically.

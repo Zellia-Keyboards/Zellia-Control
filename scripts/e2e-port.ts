@@ -1,6 +1,6 @@
 /**
  * Port Playwright serves the production build on (projects `e2e` and `parity`). Deliberately not
- * Vite's default preview port 4173, which `corepack yarn preview` and the Svelte baseline's
+ * Vite's default preview port 4173, which `npm run preview` and the Svelte baseline's
  * `yarn preview` use.
  */
 export const DEFAULT_E2E_PORT = 4273;
