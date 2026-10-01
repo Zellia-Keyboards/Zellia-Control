@@ -30,7 +30,7 @@ selection tools (marquee, add/subtract/toggle, invert).
   already does both: `save()` writes the whole snapshot, lighting included (the base packet and
   per-key pages of 7 keys), then flashes it.
 - The panels have no Apply buttons.
-- The keyboard keeps its old lighting until Save. The Lighting header says so, next to the
+- The keyboard keeps its old lighting until Save. The Lighting header says so, opposite the
   title: "Lighting changes reach the keyboard when you press Save."
 - Edits apply on every input, during a drag too. They cost no packets now.
 - A device load replaces the app's copy with the keyboard's, which drops unsaved lighting edits.
@@ -45,7 +45,7 @@ selection tools (marquee, add/subtract/toggle, invert).
 - A load clears it. A save clears it when it succeeds and no edit came in after the save
   started. A failed save keeps it.
 - While it is set, the sidebar Save button shows a small amber dot in its top-right corner
-  (`aria-hidden`), and "Unsaved changes" is added to the button's accessible description.
+  (`aria-hidden`), and the button's accessible description becomes "Unsaved changes".
 
 ### Targets
 
@@ -94,7 +94,7 @@ Bracketed names are the UI labels; the zh copy quotes them as 「…」.
 | ------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
 | base Off (`rgb_base_mode_off_desc`)              | Turns all lighting off, the per-key effects too.                                                                                   | 关闭所有灯光，包括按键灯效。                                                   |
 | base Blank (`…blank_desc`)                       | No base lighting: only the per-key effects light the keys.                                                                         | 没有基础灯光：只有按键灯效会点亮按键。                                         |
-| base Rainbow (`…rainbow_desc`)                   | A rainbow that starts at [Color]'s hue and scrolls across the keyboard. Speed sets how fast, Direction which way, Density how close the colours are. | 从「颜色」的色相开始、在键盘上滚动的彩虹。速度决定快慢，方向决定走向，密度决定颜色的疏密。 |
+| base Rainbow (`…rainbow_desc`)                   | A rainbow that starts at the hue of [Color] and scrolls across the keyboard. Speed sets how fast, Direction which way, Density how close the colors are. | 从「颜色」的色相开始、在键盘上滚动的彩虹。速度决定快慢，方向决定走向，密度决定颜色的疏密。 |
 | base Wave (`…wave_desc`)                         | Waves that blend [Color] into [Secondary Color] and move across the keyboard. Speed sets how fast, Direction which way, Density how close the waves are. | 「颜色」与「次要颜色」交融的波浪在键盘上移动。速度决定快慢，方向决定走向，密度决定波浪的疏密。 |
 | Fixed (`rgb_mode_fixed_desc`)                    | Always shows [Color], in place of the base lighting.                                                                               | 始终显示「颜色」，取代基础灯光。                                               |
 | Static (`…static_desc`)                          | Always adds [Color] on top of the base lighting.                                                                                   | 始终在基础灯光之上叠加「颜色」。                                               |
@@ -148,8 +148,6 @@ New UI strings:
     `{ mode: RGBMode | typeof MIXED; color: Rgb | typeof MIXED; speed: number | typeof MIXED; first: RgbKeyConfig }`.
   - `editKeys(rgbKeys, targets, patch: Partial<RgbKeyConfig>): KeyConfigEntry[]`: each target's
     configuration with `patch` applied.
-- `modes.ts`: the base and key mode lists (moved out of the panels), each with its label and
-  description `TranslationKey`.
 - `rainbow.ts`: `rainbowColors` is unchanged. The page turns its colours into entries that keep
   each key's mode and speed.
 
@@ -162,6 +160,9 @@ New UI strings:
     `deviceSession.setRgbKeys(editKeys(...))`.
   - Shows the save hint in its header.
   - Keeps `key={loads}`, so the rainbow preset closes on a load, as now.
+- **`components/modes.ts`**: the base and key mode lists (moved out of the panels), each with
+  its label and description `TranslationKey`. They are UI constants, so they stay out of the
+  pure model.
 - **`RGBPanel` (base)**: props `config: RgbBaseConfig` and
   `onEdit(patch: Partial<RgbBaseConfig>)`. It has no draft state.
 - **`RGBSubPanel` (keys)**
