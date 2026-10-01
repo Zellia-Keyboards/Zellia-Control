@@ -1,84 +1,31 @@
-import { RGBBaseMode } from 'emi-keyboard-controller';
-import { useId, useState } from 'react';
+import { useId } from 'react';
 import { ThemedSlider } from '../../../components/ui';
-import { useT, type TranslationKey } from '../../../lib/i18n';
+import { useT } from '../../../lib/i18n';
 import type { RgbBaseConfig } from '../../device';
 import { hexToRgb, rgbToHex } from '../model';
 import { DirectionSelector } from './DirectionSelector';
+import { BASE_MODES, modeOption } from './modes';
+import { PANEL_HEADER_STYLE } from './panel-header';
 import styles from './RGBPanel.module.css';
 
 export interface RGBPanelProps {
-  baseConfig: RgbBaseConfig;
-  onConfigChange: (config: RgbBaseConfig) => void;
+  /** The app's copy of the base lighting, staged until Save (PL-047). */
+  config: RgbBaseConfig;
+  /** Called with the changed field on every input. */
+  onEdit: (patch: Partial<RgbBaseConfig>) => void;
   title?: string;
-}
-
-// Base mode options
-const BASE_MODES = [
-  { value: RGBBaseMode.RgbBaseModeOff, label: 'rgb_base_mode_off' },
-  { value: RGBBaseMode.RgbBaseModeBlank, label: 'rgb_base_mode_blank' },
-  { value: RGBBaseMode.RgbBaseModeRainbow, label: 'rgb_base_mode_rainbow' },
-  { value: RGBBaseMode.RgbBaseModeWave, label: 'rgb_base_mode_wave' },
-] as const satisfies readonly { value: RGBBaseMode; label: TranslationKey }[];
-
-/** Edits waiting for Apply ("local state for deferred apply"). */
-interface BaseDraft {
-  readonly color: string;
-  readonly subColor: string;
-  /** Integer device value, shown as `{n}%` (D11). */
-  readonly speed: number;
-  readonly direction: number;
-  readonly density: number;
-  readonly brightness: number;
-}
-
-function draftFrom(config: RgbBaseConfig): BaseDraft {
-  return {
-    color: rgbToHex(config.color),
-    subColor: rgbToHex(config.secondaryColor),
-    speed: config.speed,
-    direction: config.direction,
-    density: config.density,
-    brightness: config.brightness,
-  };
 }
 
 const COLOR_INPUT_CLASS =
   'w-10 h-10 rounded-lg border-2 border-gray-300 dark:border-gray-600 p-0 cursor-pointer overflow-hidden transition-colors hover:border-primary/50';
 
-/** The keyboard-wide lighting settings (port of RGBPanel.svelte). */
-export function RGBPanel({ baseConfig, onConfigChange, title }: RGBPanelProps) {
+/** The keyboard-wide lighting settings (port of RGBPanel.svelte, edited in place: PL-047). */
+export function RGBPanel({ config, onEdit, title }: RGBPanelProps) {
   const t = useT();
   const titleId = useId();
-
-  // Mode: initialized from the configuration, never synced back from it, so a click shows at once
-  // (the page mounts the panel again when the keyboard loads a configuration).
-  const [selectedMode, setSelectedMode] = useState(baseConfig.mode);
-  const [draft, setDraft] = useState(() => draftFrom(baseConfig));
-  // Re-read the other fields whenever the configuration changes (the Svelte `$effect`).
-  const [draftSource, setDraftSource] = useState(baseConfig);
-  if (draftSource !== baseConfig) {
-    setDraftSource(baseConfig);
-    setDraft(draftFrom(baseConfig));
-  }
-
-  const edit = (patch: Partial<BaseDraft>) => {
-    setDraft(current => ({ ...current, ...patch }));
-  };
-
-  // Apply all changes at once
-  function applyChanges() {
-    onConfigChange({
-      mode: selectedMode,
-      speed: Number.isNaN(draft.speed) ? 0 : Math.round(draft.speed),
-      // Whole degrees, as the keyboard stores them (a typed fraction was truncated on the wire).
-      direction: Math.trunc(draft.direction),
-      density: draft.density,
-      brightness: draft.brightness,
-      color: hexToRgb(draft.color),
-      secondaryColor: hexToRgb(draft.subColor),
-    });
-  }
+  const color = rgbToHex(config.color);
+  const subColor = rgbToHex(config.secondaryColor);
+  const pressed = modeOption(BASE_MODES, config.mode);
 
   return (
     <div
@@ -86,10 +33,10 @@ export function RGBPanel({ baseConfig, onConfigChange, title }: RGBPanelProps) {
       role="region"
       aria-labelledby={titleId}
     >
-      {/* Header with Apply button */}
+      {/* Header */}
       <div
         className="px-5 pt-5 pb-3 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between"
-        style={{ padding: 'calc(1.25rem * var(--ui-scale, 1))' }}
+        style={PANEL_HEADER_STYLE}
       >
         <h3
           id={titleId}
@@ -98,13 +45,6 @@ export function RGBPanel({ baseConfig, onConfigChange, title }: RGBPanelProps) {
         >
           {title || t('lighting.baseConfigTitle')}
         </h3>
-        <button
-          type="button"
-          onClick={applyChanges}
-          className="px-4 py-2 rounded-lg bg-primary text-white font-medium text-sm hover:bg-primary/90 transition-colors glassmorphism-button"
-        >
-          {t('lighting.apply')}
-        </button>
       </div>
 
       {/* Content */}
@@ -119,21 +59,22 @@ export function RGBPanel({ baseConfig, onConfigChange, title }: RGBPanelProps) {
           </h4>
 
           {/* Mode buttons */}
-          <div className="grid grid-cols-4 gap-2 mb-4">
+          <div className="grid grid-cols-4 gap-2 mb-2">
             {BASE_MODES.map(mode => {
-              const isSelected = selectedMode === mode.value;
+              const isSelected = config.mode === mode.value;
               return (
                 <button
                   key={mode.value}
                   type="button"
                   aria-pressed={isSelected}
+                  title={t(mode.description)}
                   className={`px-3 py-2 min-h-[38px] rounded-lg border text-center transition-all duration-200 relative overflow-hidden ${
                     isSelected
                       ? 'border-primary bg-primary/20 dark:bg-primary/30'
                       : 'border-gray-300 dark:border-gray-600 hover:border-primary/50 glassmorphism-button'
                   }`}
                   onClick={() => {
-                    setSelectedMode(mode.value);
+                    onEdit({ mode: mode.value });
                   }}
                 >
                   <div
@@ -150,6 +91,11 @@ export function RGBPanel({ baseConfig, onConfigChange, title }: RGBPanelProps) {
             })}
           </div>
 
+          {/* Mode explanation (PL-049) */}
+          <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">
+            {pressed ? t(pressed.description) : null}
+          </p>
+
           {/* Color pickers */}
           <div className="grid grid-cols-2 gap-4">
             <div>
@@ -161,14 +107,14 @@ export function RGBPanel({ baseConfig, onConfigChange, title }: RGBPanelProps) {
                 <div className="flex items-center gap-3 mt-2">
                   <input
                     type="color"
-                    value={draft.color}
+                    value={color}
                     onChange={event => {
-                      edit({ color: event.currentTarget.value });
+                      onEdit({ color: hexToRgb(event.currentTarget.value) });
                     }}
                     className={`${COLOR_INPUT_CLASS} ${styles['color-input'] ?? ''}`}
                   />
                   <span className="text-sm font-mono text-gray-700 dark:text-gray-300 uppercase">
-                    {draft.color}
+                    {color}
                   </span>
                 </div>
               </label>
@@ -182,14 +128,14 @@ export function RGBPanel({ baseConfig, onConfigChange, title }: RGBPanelProps) {
                 <div className="flex items-center gap-3 mt-2">
                   <input
                     type="color"
-                    value={draft.subColor}
+                    value={subColor}
                     onChange={event => {
-                      edit({ subColor: event.currentTarget.value });
+                      onEdit({ secondaryColor: hexToRgb(event.currentTarget.value) });
                     }}
                     className={`${COLOR_INPUT_CLASS} ${styles['color-input'] ?? ''}`}
                   />
                   <span className="text-sm font-mono text-gray-700 dark:text-gray-300 uppercase">
-                    {draft.subColor}
+                    {subColor}
                   </span>
                 </div>
               </label>
@@ -210,14 +156,14 @@ export function RGBPanel({ baseConfig, onConfigChange, title }: RGBPanelProps) {
           <div className="mb-4">
             <div className="flex justify-between text-xs text-gray-600 dark:text-gray-300 mb-1.5">
               <span>{t('lighting.speed')}</span>
-              <span className="font-semibold">{`${draft.speed}%`}</span>
+              <span className="font-semibold">{`${config.speed}%`}</span>
             </div>
             <ThemedSlider
               min={1}
               max={100}
-              value={draft.speed}
+              value={config.speed}
               onChange={event => {
-                edit({ speed: Number(event.currentTarget.value) });
+                onEdit({ speed: Math.round(Number(event.currentTarget.value)) });
               }}
               aria-label={t('lighting.speed')}
             />
@@ -231,9 +177,10 @@ export function RGBPanel({ baseConfig, onConfigChange, title }: RGBPanelProps) {
                 {t('lighting.direction')}
               </span>
               <DirectionSelector
-                direction={draft.direction}
+                direction={config.direction}
                 onDirectionChange={direction => {
-                  edit({ direction });
+                  // Whole degrees, as the keyboard stores them.
+                  onEdit({ direction: Math.trunc(direction) });
                 }}
                 ariaLabel={t('lighting.direction')}
               />
@@ -243,14 +190,14 @@ export function RGBPanel({ baseConfig, onConfigChange, title }: RGBPanelProps) {
             <div>
               <div className="flex justify-between text-xs text-gray-600 dark:text-gray-300 mb-1.5">
                 <span>{t('lighting.density')}</span>
-                <span className="font-semibold">{draft.density}</span>
+                <span className="font-semibold">{config.density}</span>
               </div>
               <ThemedSlider
                 min={0}
                 max={255}
-                value={draft.density}
+                value={config.density}
                 onChange={event => {
-                  edit({ density: Number(event.currentTarget.value) });
+                  onEdit({ density: Number(event.currentTarget.value) });
                 }}
                 aria-label={t('lighting.density')}
               />
@@ -266,14 +213,14 @@ export function RGBPanel({ baseConfig, onConfigChange, title }: RGBPanelProps) {
 
           <div className="flex justify-between text-xs text-gray-600 dark:text-gray-300 mb-1.5">
             <span>{t('lighting.level') || 'Level'}</span>
-            <span className="font-semibold">{draft.brightness}</span>
+            <span className="font-semibold">{config.brightness}</span>
           </div>
           <ThemedSlider
             min={0}
             max={255}
-            value={draft.brightness}
+            value={config.brightness}
             onChange={event => {
-              edit({ brightness: Number(event.currentTarget.value) });
+              onEdit({ brightness: Number(event.currentTarget.value) });
             }}
             aria-label={t('lighting.brightness')}
           />
