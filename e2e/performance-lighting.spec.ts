@@ -6,7 +6,7 @@ type Keyboard = JSHandle<VirtualKeyboardHandle>;
 /** emi-keyboard-controller `KeyMode` / `RGBBaseMode` / `RGBMode` values on the wire. */
 const KEY_MODE = { normal: 1, rapid: 2 } as const;
 const RGB_BASE_MODE = { blank: 1, rainbow: 2 } as const;
-const RGB_MODE = { static: 1, cycle: 2, linear: 3, fadingDiamondRipple: 8 } as const;
+const RGB_MODE = { static: 1, cycle: 2, fadingDiamondRipple: 8 } as const;
 
 /** The keyboard's u16 fraction of the 4.0 mm travel for `mm` (the controller truncates). */
 const raw = (mm: number) => Math.trunc((mm / 4) * 65535);
@@ -266,69 +266,81 @@ test.describe('lighting', () => {
     };
   }
 
-  test('applies the base and the per-key lighting and saves them', async ({
+  const saveButton = (page: Page) => page.locator('.sidebar').getByRole('button', { name: 'Save' });
+
+  test('stages base and per-key edits, which reach the keyboard on Save', async ({
     page,
     virtualKeyboard,
   }) => {
     const keyboard = await openPage(page, virtualKeyboard, 'Lighting', '/lighting/');
     const { base, keys } = panels(page);
     const before = await activeProfile(keyboard);
+    await expect(
+      page.getByText('Lighting changes reach the keyboard when you press Save.')
+    ).toBeVisible();
+    await expect(saveButton(page)).toHaveAccessibleDescription('Save configuration');
 
-    // Base panel: edits wait for Apply. The speed is the device value (D11, PL-006).
+    // Base panel. The speed is the device value (D11, PL-006).
     await expect(base.getByText('20%')).toBeVisible();
     await base.getByRole('button', { name: 'Rainbow', exact: true }).click();
     await expect(base.getByRole('button', { name: 'Rainbow', exact: true })).toHaveAttribute(
       'aria-pressed',
       'true'
     );
+    await expect(base.getByText(/^A rainbow that starts at the hue of Color/)).toBeVisible();
     await base.getByRole('slider', { name: 'Speed' }).focus();
     await page.keyboard.press('End');
     await expect(base.getByText('100%')).toBeVisible();
     await base.getByRole('spinbutton', { name: 'Direction' }).fill('90');
     await expect(base.getByText('↑ DTU')).toBeVisible();
-    expect((await activeProfile(keyboard)).rgbBase).toEqual(before.rgbBase);
+    await expect(saveButton(page)).toHaveAccessibleDescription('Unsaved changes');
 
-    await base.getByRole('button', { name: 'Apply', exact: true }).click();
-    await expect
-      .poll(async () => (await activeProfile(keyboard)).rgbBase)
-      .toEqual({ ...before.rgbBase, mode: RGB_BASE_MODE.rainbow, speed: 100, direction: 90 });
-
-    // Key panel without a selection: every key, with the colour and speed the panel shows (key
-    // 0's).
-    const cycle = { mode: RGB_MODE.cycle, color: at(before.rgbKeys, 0).color, speed: 20 };
-    await expect(keys.getByText(/^#ff0000$/i)).toBeVisible();
+    // Key panel without a selection: all keys, whose modes and colours differ (PL-048).
+    await expect(keys.getByText('All keys')).toBeVisible();
+    await expect(
+      keys.getByText('These keys use different modes. Pick one to use it on all of them.')
+    ).toBeVisible();
+    await expect(keys.getByText('Mixed', { exact: true })).toBeVisible();
     await keys.getByRole('button', { name: 'Cycle', exact: true }).click();
-    await keys.getByRole('button', { name: 'Apply', exact: true }).click();
-    await expect
-      .poll(async () => (await activeProfile(keyboard)).rgbKeys)
-      .toEqual(before.rgbKeys.map(() => cycle));
+    await expect(keys.getByRole('button', { name: 'Cycle', exact: true })).toHaveAttribute(
+      'aria-pressed',
+      'true'
+    );
 
-    // Key panel with keys selected: only those.
+    // Selected keys: only they change; they keep their speed.
     await keycap(page, 1).click();
     await keycap(page, 2).click();
+    await expect(keys.getByText('2 keys')).toBeVisible();
     await keys.getByRole('button', { name: 'Fading Diamond Ripple', exact: true }).click();
     await keys.getByLabel('Color', { exact: true }).fill('#00ff00');
-    await keys.getByRole('button', { name: 'Apply', exact: true }).click();
+    await expect(keycap(page, 1)).toHaveText('ripple');
+    await expect(keycap(page, 3)).toHaveText('');
+
+    // Nothing reached the keyboard yet (PL-047).
+    expect(await activeProfile(keyboard)).toEqual(before);
+
+    await save(page);
+    await expect(saveButton(page)).toHaveAccessibleDescription('Save configuration');
     const ripple = {
       mode: RGB_MODE.fadingDiamondRipple,
       color: { red: 0, green: 255, blue: 0 },
       speed: 20,
     };
-    await expect.poll(async () => (await activeProfile(keyboard)).rgbKeys[2]).toEqual(ripple);
-    const applied = await activeProfile(keyboard);
-    expect(applied.rgbKeys[1]).toEqual(ripple);
-    expect(applied.rgbKeys[3]).toEqual(cycle);
-    await expect(keycap(page, 1)).toHaveText('ripple');
-    await expect(keycap(page, 3)).toHaveText('');
-
-    await save(page);
-    await expect
-      .poll(async () => (await storedProfile(keyboard))?.rgbKeys)
-      .toEqual(applied.rgbKeys);
-    expect((await storedProfile(keyboard))?.rgbBase).toEqual(applied.rgbBase);
+    const expectedKeys = before.rgbKeys.map((config, id) =>
+      id === 1 || id === 2 ? ripple : { ...config, mode: RGB_MODE.cycle }
+    );
+    const expectedBase = {
+      ...before.rgbBase,
+      mode: RGB_BASE_MODE.rainbow,
+      speed: 100,
+      direction: 90,
+    };
+    expect((await storedProfile(keyboard))?.rgbKeys).toEqual(expectedKeys);
+    expect((await storedProfile(keyboard))?.rgbBase).toEqual(expectedBase);
+    expect((await activeProfile(keyboard)).rgbKeys).toEqual(expectedKeys);
   });
 
-  test('colours each key from its position with the rainbow preset', async ({
+  test('colours each key from its position with the rainbow preset, keeping its mode', async ({
     page,
     virtualKeyboard,
   }) => {
@@ -337,19 +349,17 @@ test.describe('lighting', () => {
     const before = await activeProfile(keyboard);
     const visible = await visibleKeyIds(page);
 
-    await keys.getByRole('button', { name: 'Linear', exact: true }).click();
     await keys.getByRole('button', { name: 'Rainbow Preset' }).click();
     await expect(keys.getByRole('spinbutton', { name: 'Rainbow Direction' })).toHaveValue('0');
     await keys.getByRole('button', { name: 'Apply Settings' }).click();
+    await save(page);
+    await expect(saveButton(page)).toHaveAccessibleDescription('Save configuration');
 
-    // PL-007: every visible key gets the panel's mode and a colour of its own; with the
+    // PL-007: every visible key gets a colour of its own and keeps its mode and speed; with the
     // direction 0 and density 10 the hue moves 10° per key unit, from key 0's red.
-    await expect
-      .poll(async () => (await activeProfile(keyboard)).rgbKeys[1]?.mode)
-      .toBe(RGB_MODE.linear);
     const { rgbKeys } = await activeProfile(keyboard);
     for (const id of visible) {
-      expect(rgbKeys[id]?.mode, `key ${id}`).toBe(RGB_MODE.linear);
+      expect(rgbKeys[id]?.mode, `key ${id}`).toBe(at(before.rgbKeys, id).mode);
       expect(rgbKeys[id]?.speed, `key ${id}`).toBe(20);
     }
     // The number row: 1u keys side by side.
@@ -363,16 +373,17 @@ test.describe('lighting', () => {
       if (!visible.includes(id))
         expect(rgbKeys[id], `hidden key ${id}`).toEqual(before.rgbKeys[id]);
     }
-    await expect(keycap(page, 1)).toHaveText('reactive');
 
-    // With keys selected, only they are coloured.
+    // With a key selected, only it changes.
     await keycap(page, 10).click();
+    await expect(keys.getByText('1 key')).toBeVisible();
     await keys.getByRole('button', { name: 'Static', exact: true }).click();
     await keys.getByRole('button', { name: 'Apply Settings' }).click();
-    await expect
-      .poll(async () => (await activeProfile(keyboard)).rgbKeys[10]?.mode)
-      .toBe(RGB_MODE.static);
-    expect((await activeProfile(keyboard)).rgbKeys[9]?.mode).toBe(RGB_MODE.linear);
+    await save(page);
+    await expect(saveButton(page)).toHaveAccessibleDescription('Save configuration');
+    const after = await activeProfile(keyboard);
+    expect(after.rgbKeys[10]?.mode).toBe(RGB_MODE.static);
+    expect(after.rgbKeys[9]).toEqual(rgbKeys[9]);
   });
 
   test('selects every key with Ctrl/⌘+A and clears the selection with Ctrl/⌘+Escape', async ({
