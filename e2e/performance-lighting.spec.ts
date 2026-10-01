@@ -12,22 +12,37 @@ const RGB_MODE = { static: 1, cycle: 2, linear: 3, fadingDiamondRipple: 8 } as c
 const raw = (mm: number) => Math.trunc((mm / 4) * 65535);
 
 /**
- * Opens the app with the injected keyboard, clicks "Get Started", waits for Remap with the
- * keyboard's keymap, then opens a sidebar page. Returns the keyboard's handle.
+ * Opens the app with the injected keyboard, clicks "Get Started" and waits for Remap with the
+ * keyboard's keymap. `prepare` edits the keyboard before the app connects. Returns its handle.
  */
+async function connect(
+  page: Page,
+  virtualKeyboard: VirtualKeyboard,
+  prepare?: (keyboard: Keyboard) => Promise<void>
+): Promise<Keyboard> {
+  await page.goto('/');
+  const keyboard = await virtualKeyboard.handle();
+  await prepare?.(keyboard);
+  await page.getByRole('button', { name: 'Get Started' }).click();
+  await page.waitForURL('**/remap/');
+  await expect(page.locator('.keycap[data-key-id="16"]')).toHaveText('Tab');
+  return keyboard;
+}
+
+async function openSidebarPage(page: Page, name: string, path: string): Promise<void> {
+  await page.getByRole('navigation').getByRole('link', { name, exact: true }).click();
+  await expect(page).toHaveURL(new RegExp(`${path}$`));
+}
+
+/** `connect`, then opens a sidebar page. Returns the keyboard's handle. */
 async function openPage(
   page: Page,
   virtualKeyboard: VirtualKeyboard,
   name: string,
   path: string
 ): Promise<Keyboard> {
-  await page.goto('/');
-  const keyboard = await virtualKeyboard.handle();
-  await page.getByRole('button', { name: 'Get Started' }).click();
-  await page.waitForURL('**/remap/');
-  await expect(page.locator('.keycap[data-key-id="16"]')).toHaveText('Tab');
-  await page.getByRole('navigation').getByRole('link', { name, exact: true }).click();
-  await expect(page).toHaveURL(new RegExp(`${path}$`));
+  const keyboard = await connect(page, virtualKeyboard);
+  await openSidebarPage(page, name, path);
   return keyboard;
 }
 
@@ -50,6 +65,15 @@ function storedProfile(keyboard: Keyboard) {
 
 function advancedKey(keyboard: Keyboard, id: number) {
   return keyboard.evaluate((vk, keyId) => vk.state.active.advancedKeys[keyId], id);
+}
+
+/** Ids of the advanced keys written since the last `clearHistory()`, in order. */
+function advancedKeyWrites(keyboard: Keyboard) {
+  return keyboard.evaluate(vk =>
+    vk.sentPackets.flatMap(packet =>
+      packet.op === 'set' && packet.kind === 'advancedKey' ? [packet.index] : []
+    )
+  );
 }
 
 async function save(page: Page): Promise<void> {
@@ -157,6 +181,46 @@ test.describe('performance', () => {
       .poll(async () => (await storedProfile(keyboard))?.advancedKeys)
       .toEqual((await activeProfile(keyboard)).advancedKeys);
     expect((await storedProfile(keyboard))?.advancedKeys[5]).toEqual(tuned);
+  });
+
+  test('opens with keys selected on another page and writes to them only on a change', async ({
+    page,
+    virtualKeyboard,
+  }) => {
+    // Key 1 differs from key 2: actuation 1.2 mm, deactivation 1.0 mm.
+    const keyboard = await connect(page, virtualKeyboard, async keyboard => {
+      await keyboard.evaluate(
+        (vk, values) => {
+          const key = vk.state.active.advancedKeys[1];
+          if (!key) throw new Error('no advanced key 1');
+          vk.state.active.advancedKeys[1] = { ...key, ...values };
+        },
+        { activation: raw(1.2), deactivation: raw(1) }
+      );
+    });
+    const second = await advancedKey(keyboard, 2);
+
+    // Remap writes nothing for a selection, and the selection outlives navigation.
+    await keycap(page, 1).click();
+    await keycap(page, 2).click();
+    await keyboard.evaluate(vk => {
+      vk.clearHistory();
+    });
+    await openSidebarPage(page, 'Performance', '/performance/');
+
+    // The first key is loaded (D12); opening the page writes to none of them.
+    await expect(page.getByText('2 keys selected')).toBeVisible();
+    const actuation = page.getByRole('spinbutton', { name: 'Actuation' });
+    await expect(actuation).toHaveValue('1.2');
+    await expect(page.getByRole('spinbutton', { name: 'Deactivation' })).toHaveValue('1');
+    expect(await advancedKeyWrites(keyboard)).toEqual([]);
+    expect(await advancedKey(keyboard, 2)).toEqual(second);
+
+    // A change goes to every selected key, with the first key's other values.
+    await actuation.fill('2.5');
+    await expect.poll(async () => (await advancedKey(keyboard, 2))?.activation).toBe(raw(2.5));
+    expect(await advancedKey(keyboard, 2)).toMatchObject({ deactivation: raw(1) });
+    expect(await advancedKey(keyboard, 1)).toMatchObject({ activation: raw(2.5) });
   });
 
   test('keeps the settings within the switch travel', async ({ page, virtualKeyboard }) => {
