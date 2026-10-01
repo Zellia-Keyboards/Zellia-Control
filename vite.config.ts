@@ -6,6 +6,8 @@ import { VitePWA } from 'vite-plugin-pwa';
 import { STATIC_ROUTES, staticHosting } from './scripts/static-hosting.js';
 
 const controllerEntry = fileURLToPath(new URL('./src-controller/src/index.ts', import.meta.url));
+// libamp's script compiler (generated, see vendor/mqjs/PROVENANCE.md).
+const mqjsEntry = fileURLToPath(new URL('./vendor/mqjs/mqjs_wasm.js', import.meta.url));
 
 export default defineConfig({
   plugins: [
@@ -40,7 +42,7 @@ export default defineConfig({
         // Distinct from the legacy SvelteKit worker's `workbox-precache-*` caches, which the
         // public/service-worker.js kill switch deletes.
         cacheId: 'zellia-control',
-        globPatterns: ['**/*.{js,css,html,svg,png,ico,json,woff,woff2,jpg}'],
+        globPatterns: ['**/*.{js,css,html,svg,png,ico,json,woff,woff2,jpg,wasm}'],
         // Route copies are identical to index.html (navigateFallback serves them offline); the
         // kill switch is only for legacy registrations.
         globIgnores: [
@@ -67,7 +69,7 @@ export default defineConfig({
     staticHosting(),
   ],
   resolve: {
-    alias: { 'emi-keyboard-controller': controllerEntry },
+    alias: { 'emi-keyboard-controller': controllerEntry, 'mqjs-compiler': mqjsEntry },
   },
   build: {
     outDir: 'build',

@@ -9,6 +9,7 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
+    "build:mqjs": "bash vendor/mqjs/build.sh",
     "typecheck": "tsc -b",
     "lint": "eslint .",
     "format": "prettier --write .",
@@ -23,9 +24,14 @@
     "validate": "tsc -b && eslint . && prettier --check . && vitest run && vite build"
   },
   "dependencies": {
+    "@codemirror/autocomplete": "6.20.3",
+    "@codemirror/lang-javascript": "6.2.5",
+    "@codemirror/state": "6.7.6",
+    "@codemirror/theme-one-dark": "6.1.3",
     "@ijprest/kle-serial": "^0.15.1",
     "chart.js": "4.4.9",
     "chartjs-plugin-zoom": "2.2.0",
+    "codemirror": "6.0.2",
     "lucide-react": "0.511.0",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
