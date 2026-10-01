@@ -9,6 +9,7 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
+    "build:mqjs": "bash vendor/mqjs/build.sh",
     "typecheck": "tsc -b",
     "lint": "eslint .",
     "format": "prettier --write .",
