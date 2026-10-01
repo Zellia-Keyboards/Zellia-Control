@@ -59,8 +59,10 @@ export function LightingPage() {
 
   if (!rgbBase || !rgbKeys) return null;
 
-  const handleBaseConfigChange = (config: RgbBaseConfig) => {
-    deviceSession.setRgbBase(config);
+  // Reads the latest configuration: two inputs can arrive before the next render.
+  const editBase = (patch: Partial<RgbBaseConfig>) => {
+    const config = deviceStore.getState().config;
+    if (config) deviceSession.setRgbBase({ ...config.rgbBase, ...patch });
   };
 
   /** Applies to the selected keys, or to every given key when none is selected. */
@@ -101,8 +103,8 @@ export function LightingPage() {
         <div className="flex-1 min-w-0">
           <RGBPanel
             key={loads}
-            baseConfig={rgbBase}
-            onConfigChange={handleBaseConfigChange}
+            config={rgbBase}
+            onEdit={editBase}
             title={t('lighting.baseConfigTitle')}
           />
         </div>

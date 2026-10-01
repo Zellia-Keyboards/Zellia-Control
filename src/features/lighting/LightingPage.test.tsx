@@ -147,8 +147,9 @@ describe('LightingPage', () => {
     );
   });
 
-  it('applies the base configuration', async () => {
+  it('stages base edits, which reach the keyboard on Save (PL-047)', async () => {
     const user = userEvent.setup();
+    const before = structuredClone(keyboard.vk.state.active.rgbBase);
     renderPage();
     const base = basePanel();
     await user.click(base.getByRole('button', { name: 'Wave' }));
@@ -162,7 +163,6 @@ describe('LightingPage', () => {
     fireEvent.change(base.getByRole('slider', { name: 'Brightness' }), {
       target: { value: '200' },
     });
-    await user.click(base.getByRole('button', { name: 'Apply' }));
 
     const expected = {
       mode: RGBBaseMode.RgbBaseModeWave,
@@ -174,8 +174,13 @@ describe('LightingPage', () => {
       brightness: 200,
     };
     expect(deviceStore.getState().config?.rgbBase).toEqual(expected);
+    expect(deviceStore.getState().unsaved).toBe(true);
+    expect(base.getByRole('button', { name: 'Wave' })).toHaveAttribute('aria-pressed', 'true');
+    expect(base.getByText('55%')).toBeInTheDocument();
+    expect(keyboard.vk.state.active.rgbBase).toEqual(before);
+
     await saveToKeyboard();
-    await expect.poll(() => keyboard.vk.state.active.rgbBase).toEqual(expected);
+    expect(keyboard.vk.state.active.rgbBase).toEqual(expected);
   });
 
   it('applies the key configuration to every key when none is selected', async () => {
@@ -330,10 +335,10 @@ describe('LightingPage', () => {
       fireEvent.change(basePanel().getByRole('slider', { name: 'Brightness' }), {
         target: { value: '100' },
       });
-      await user.click(basePanel().getByRole('button', { name: 'Apply' }));
-      await saveToKeyboard();
-      await expect.poll(() => keyboard.vk.state.active.rgbBase.brightness).toBe(100);
-      expect(keyboard.vk.state.active.rgbBase.mode).toBe(RGBBaseMode.RgbBaseModeRainbow);
+      expect(deviceStore.getState().config?.rgbBase).toMatchObject({
+        brightness: 100,
+        mode: RGBBaseMode.RgbBaseModeRainbow,
+      });
 
       fireEvent.change(keyPanel().getByRole('slider', { name: 'Speed' }), {
         target: { value: '70' },
