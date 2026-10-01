@@ -143,6 +143,14 @@ function dksSlider(page: Page, index: number): Locator {
   return page.locator('.space-y-2 > .flex.items-center.gap-4 > .grow').nth(index);
 }
 
+/** A "+" node's accessible name: the glyph in the baseline, binding and phase in React. */
+const STAGE_NODE = /^(\+|Binding \d: add tap at phase \d)$/;
+
+/** Stage node `stage` (0–3) of DKS binding `binding`. */
+function dksNode(page: Page, binding: number, stage: number): Locator {
+  return dksSlider(page, binding).getByRole('button', { name: STAGE_NODE }).nth(stage);
+}
+
 /** Drags the grip of the interval that starts at `node` by `deltaX` pixels. */
 async function dragGrip(page: Page, slider: Locator, deltaX: number): Promise<void> {
   const grip = slider.getByRole('button', { name: 'Drag to resize interval' }).first();
@@ -162,11 +170,11 @@ async function dragGrip(page: Page, slider: Locator, deltaX: number): Promise<vo
 async function editDksBindings(page: Page): Promise<void> {
   await dksBinding(page, 0).click();
   await pickAction(picker(page), 'A');
-  await dksSlider(page, 0).getByRole('button', { name: '+', exact: true }).first().click();
+  await dksNode(page, 0, 0).click();
   await dragGrip(page, dksSlider(page, 0), 250);
   await dksBinding(page, 1).click();
   await pickAction(picker(page), 'B');
-  await dksSlider(page, 1).getByRole('button', { name: '+', exact: true }).nth(2).click();
+  await dksNode(page, 1, 2).click();
 }
 
 /** The null-bind editor's bottom-out switch, the only switch in its left column. */

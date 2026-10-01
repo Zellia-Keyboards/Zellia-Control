@@ -55,6 +55,8 @@ function DKSSlider({
         <button
           key={i}
           type="button"
+          // The "+" alone (16 of them) says nothing to assistive technology.
+          aria-label={`Binding ${bindingIndex + 1}: add tap at phase ${i + 1}`}
           className="rounded-full border-2 glassmorphism-button"
           onClick={() => {
             onNodeClick(bindingIndex, i);
