@@ -183,8 +183,10 @@ export function WebUsbFirmwareFlasher() {
                 </p>
               </div>
 
+              {/* I-6: the file input is visually hidden but reachable with Tab (Svelte hid it
+                  with display: none); the drop zone shows its keyboard focus like a hover. */}
               <div
-                className={`w-64 h-36 border-2 border-dashed bg-black border-gray-600 rounded-lg flex flex-col items-center justify-center transition-all duration-300 mx-auto hover:border-primary-500 ${fileDropActive ? 'border-primary-500 scale-105 bg-primary-900/40' : ''}`}
+                className={`w-64 h-36 border-2 border-dashed bg-black border-gray-600 rounded-lg flex flex-col items-center justify-center transition-all duration-300 mx-auto hover:border-primary-500 has-focus-visible:border-primary-500 ${fileDropActive ? 'border-primary-500 scale-105 bg-primary-900/40' : ''}`}
                 onDrop={handleFileDrop}
                 onDragOver={handleDragOver}
                 onDragLeave={handleDragLeave}
@@ -195,7 +197,7 @@ export function WebUsbFirmwareFlasher() {
                   type="file"
                   accept=".bin"
                   onChange={handleFileSelect}
-                  className="hidden"
+                  className="sr-only"
                   id="firmware-file-input"
                 />
 

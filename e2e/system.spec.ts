@@ -1,4 +1,4 @@
-import type { JSHandle, Page } from '@playwright/test';
+import type { JSHandle, Locator, Page } from '@playwright/test';
 import { expect, test, type VirtualKeyboardHandle } from './fixtures';
 
 /** Keyboard operation codes (`0xFE | operation << 8` key events, libamp `keycode.h`). */
@@ -87,6 +87,27 @@ function activeStep(page: Page) {
 
 async function chooseFirmware(page: Page, file = FIRMWARE): Promise<void> {
   await page.locator('#firmware-file-input').setInputFiles(file);
+}
+
+/** Presses Tab until `target` has the focus, at most `max` times. */
+async function tabTo(page: Page, target: Locator, max = 40): Promise<void> {
+  for (let presses = 0; presses < max; presses += 1) {
+    if (await target.evaluate(element => element === document.activeElement)) return;
+    await page.keyboard.press('Tab');
+  }
+  await expect(target).toBeFocused();
+}
+
+/** The computed value of the theme's `primary-500` as a border colour. */
+function primaryBorderColor(page: Page): Promise<string> {
+  return page.evaluate(() => {
+    const probe = document.createElement('div');
+    probe.style.borderColor = 'var(--color-primary-500)';
+    document.body.append(probe);
+    const color = getComputedStyle(probe).borderTopColor;
+    probe.remove();
+    return color;
+  });
 }
 
 /**
@@ -443,6 +464,22 @@ test.describe('firmware update', () => {
     expect(await operations(keyboard)).toEqual([]);
     expect(await keyboard.evaluate(vk => vk.connected)).toBe(true);
     await expect(page.locator('.sidebar').getByText('ZelliaKB')).toBeVisible();
+  });
+
+  test('chooses the firmware file with Tab and Enter', async ({ page }) => {
+    await page.goto('/update/');
+    const input = page.getByLabel(/Drop firmware here/);
+    const dropZone = page.getByRole('region', { name: 'Firmware file drop zone' });
+
+    await tabTo(page, input);
+
+    // The drop zone shows the keyboard focus with its hover border.
+    await expect(dropZone).toHaveCSS('border-top-color', await primaryBorderColor(page));
+    const chooser = page.waitForEvent('filechooser');
+    await page.keyboard.press('Enter');
+    await (await chooser).setFiles(FIRMWARE);
+    // No keyboard to reboot: the update goes on to the bootloader.
+    await expect(activeStep(page)).toHaveText('Connect Recovery');
   });
 
   test('without a keyboard: finds no bootloader, starts over and flashes one entered by hand', async ({
