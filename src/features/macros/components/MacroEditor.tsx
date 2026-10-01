@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ConfirmationModal } from '../../../components/ui';
+import { ConfirmationModal, SECONDARY_BUTTON } from '../../../components/ui';
 import { useT, type TranslationKey } from '../../../lib/i18n';
 import type { MacroAction } from '../../device';
 import { editMacro } from '../commands';
@@ -8,7 +8,7 @@ import { hasRoom, removeAction, replaceAction, sortByTime, withKeyPress } from '
 import { ActionTable } from './ActionTable';
 import { AddKeyForm } from './AddKeyForm';
 import { MacroSlots } from './MacroSlots';
-import { PRIMARY_BUTTON, SECONDARY_BUTTON, STOP_BUTTON } from './styles';
+import { PRIMARY_BUTTON, STOP_BUTTON } from './styles';
 
 type Translate = (key: TranslationKey, ...args: string[]) => string;
 

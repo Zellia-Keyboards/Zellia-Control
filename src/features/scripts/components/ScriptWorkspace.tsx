@@ -1,4 +1,5 @@
 import { Suspense, lazy, useEffect, useRef, useState, type ChangeEvent } from 'react';
+import { SECONDARY_BUTTON } from '../../../components/ui';
 import { useT, type TranslationKey } from '../../../lib/i18n';
 import { useDarkMode } from '../../../lib/theme';
 import { deviceSession } from '../../device';
@@ -11,7 +12,6 @@ import {
   type Compile,
   type CompileError,
 } from '../model';
-import { SECONDARY_BUTTON } from './styles';
 
 const ScriptEditor = lazy(() => import('./ScriptEditor'));
 
