@@ -12,13 +12,13 @@ keyboard. `shell-settings` hides the whole page region.
 
 ## Results
 
-Integration run of 2026-10-01, after the lighting redesign (168 captures of these scenarios,
-strict comparison): 48 identical, 120 different, as listed; the keycap-corner and sidebar noise
-below comes and goes. In that run every connected capture also differed by darker rows under the
-sidebar's Save button, which was still positioned for PL-050's dot; the Save button fix of the
-same day removed them (the parity log's
-[Per-feature results](../parity-log.md#per-feature-results) cite the targeted re-run), so the
-table leaves them out. The shell scenarios edit nothing, so they never show the dot. The worker's
+Full run of 2026-10-02, after the Save button fix (168 captures of these scenarios, strict
+comparison): 48 identical, 120 different, as listed; the keycap-corner and sidebar noise below
+comes and goes. The integration run of 2026-10-01, after the lighting redesign, had the same
+results, but every connected capture also differed by darker rows under the sidebar's Save button,
+which was still positioned for PL-050's dot; the Save button fix of the same day removed them (see
+the parity log's [Per-feature results](../parity-log.md#per-feature-results)). The shell
+scenarios edit nothing, so they never show the dot. The worker's
 final run of 2026-09-30 (after the second review) had the same 48 identical captures; its
 connected captures also differed by the toolbar's profile dropdown stub (see below). The run before it, taken before the connection-screen scenarios
 stopped the background blobs' pulse (below), had the same differences — connected captures within

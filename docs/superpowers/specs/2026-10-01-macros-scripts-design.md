@@ -1,7 +1,6 @@
 # Macros and Scripts
 
-Status: approved 2026-10-01; revised after planning (plan:
-`docs/superpowers/plans/2026-10-01-macros-scripts.md`).
+Status: implemented (plan: `docs/superpowers/plans/2026-10-01-macros-scripts.md`).
 
 ## Why
 

@@ -43,14 +43,15 @@ sidebar's Save button.
 | `profiles-import-invalid`                                                                                                                    | PL-028, PL-002                                                                                        |
 | `profiles-keyboard-switch`                                                                                                                   | PL-013, PL-002                                                                                        |
 
-Integration run of 2026-10-01, after the lighting redesign (all eight variants, 200 captures of
-these scenarios, strict comparison): 0 identical, every difference listed above, plus PL-050's
-unsaved dot in `remap-assigned`, `remap-brush-layer`, `remap-profile-assigned` and
-`remap-extension-assigned`, which assign keycodes, and the noise below. In that run every capture
-also differed by darker rows under the sidebar's Save button, which was still positioned for the
-dot; the Save button fix of the same day removed them (the targeted re-run in the parity log's
-[Per-feature results](../parity-log.md#per-feature-results)). `remap-toast` was captured again
-after its scenario fix (below) and then differed exactly like `remap-basic`.
+Full run of 2026-10-02, after the Save button fix (all eight variants, 200 captures of these
+scenarios, strict comparison): 0 identical, every difference listed above, plus PL-050's unsaved
+dot in `remap-assigned`, `remap-brush-layer`, `remap-profile-assigned` and
+`remap-extension-assigned`, which assign keycodes, and the noise below; `remap-toast` differs
+exactly like `remap-basic`. The integration run of 2026-10-01, after the lighting redesign, had
+the same results, but every capture also differed by darker rows under the sidebar's Save button,
+which was still positioned for the dot; the Save button fix of the same day removed them (see the
+parity log's [Per-feature results](../parity-log.md#per-feature-results)). That run captured
+`remap-toast` again after its scenario fix (below); it then differed exactly like `remap-basic`.
 
 The pattern also matches the shell's `shell-remap-*` scenarios. With the profile dropdown in
 place the shell's toolbar is identical there too (the shell notes expected the dropdown stub's
@@ -117,6 +118,10 @@ and PL-022 (key 64 is blank, every Remap capture).
   the palette's scroll area scrolled down, in either app (the React capture of
   `remap-toast--light-en-2560x1440` and the baseline's `--light-zh-2560x1440` in the integration
   run). The scenario scrolls it back to its start, where both apps open it.
+- **The blurred page behind a confirmation dialog at 2560×1440.** In the full run of 2026-10-02
+  the baseline's `profiles-duplicate--dark-zh-2560x1440` drew the blurred page behind the
+  Duplicate confirmation differently (2 211 px between x 261 and 1 351, at most 5 colour levels;
+  invisible); two re-captures drew it as the integration run did.
 
 ## Not visible (no log row)
 

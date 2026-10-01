@@ -30,31 +30,35 @@ scenarios 1 px of the Theme Colors icon, the new `system-update-file-focus` 2 53
 sidebar link corners). The other seven variants of `system-update-file-focus` are left to the
 integration run.
 
-Integration run of 2026-10-01, after the lighting redesign (176 captures of these scenarios,
-strict comparison): 49 identical, 127 different, as listed. These scenarios hide the sidebar's
-Save button, so PL-050 does not show in them.
+Full run of 2026-10-02 (176 captures of these scenarios, strict comparison): 49 identical, 127
+different, as listed. The integration run of 2026-10-01, after the lighting redesign, had the same
+totals with its noise in other variants (`system-debug-selector` 8/8, `system-debug` 7/8,
+`system-update` 6/8, `system-debug-key-test-events` 3/8, `system-about-donation` 2/8, one of its
+zh captures by the QR code image, 935 px). These scenarios hide the sidebar's Save button, so
+PL-050 does not show in them.
 
-| Scenario                                       | Identical | Differences                                                                                |
-| ---------------------------------------------- | --------- | ------------------------------------------------------------------------------------------ |
-| `system-about`                                 | 8/8       |                                                                                            |
-| `system-debug-selector`, `-key-test`           | 8/8       |                                                                                            |
-| `system-settings`                              | 7/8       | noise: sidebar link corners (14 px)                                                        |
-| `system-debug`                                 | 7/8       | noise: at 2560×1440 the Key Tracking column's raster variant (13 249 px)                   |
-| `system-update`                                | 6/8       | noise: sidebar link corners (4 px)                                                         |
-| `system-debug-key-test-events`                 | 3/8       | noise: round dots and card corners, at 2560×1440 the main panel's bottom corners (4–52 px) |
-| `system-about-donation`                        | 2/8       | PL-027 (en); zh: noise (sidebar link corners, 18 px; the QR code image, 935 px)            |
-| `system-update-file-focus`                     | 0/8       | PL-046; noise: sidebar link corners, a step icon                                           |
-| `system-debug-tracking`                        | 0/8       | PL-011                                                                                     |
-| `system-settings-bootloader`, `-factory-reset` | 0/8       | PL-012                                                                                     |
-| `system-settings-bootloader-confirmed`         | 0/8       | PL-026, PL-004 (sidebar)                                                                   |
-| `system-update-no-keyboard`                    | 0/8       | PL-025                                                                                     |
-| `system-update-wrong-file`, `-small-file`      | 0/8       | PL-041                                                                                     |
-| `system-update-file-chosen`                    | 0/8       | PL-041, PL-042, PL-004 (sidebar)                                                           |
-| `system-update-no-device`                      | 0/8       | PL-041, PL-004 (sidebar: the keyboard was unplugged)                                       |
-| `system-update-flashing`                       | 0/8       | PL-041, PL-043, PL-004 (sidebar)                                                           |
-| `system-update-erase-failed`                   | 0/8       | PL-041, PL-044, PL-004 (sidebar)                                                           |
-| `system-update-reconnect`                      | 0/8       | PL-041, PL-045, PL-004 (sidebar)                                                           |
-| `system-update-done`                           | 0/8       | PL-041, PL-004 (sidebar)                                                                   |
+| Scenario                                       | Identical | Differences                                                                                                 |
+| ---------------------------------------------- | --------- | ----------------------------------------------------------------------------------------------------------- |
+| `system-about`                                 | 8/8       |                                                                                                             |
+| `system-debug-key-test`                        | 8/8       |                                                                                                             |
+| `system-settings`                              | 7/8       | noise: sidebar link corners (12 px)                                                                         |
+| `system-debug-selector`                        | 7/8       | noise: at 2560×1440 the Key Tracking column's raster variant, through the key picker's backdrop (10 095 px) |
+| `system-debug-key-test-events`                 | 6/8       | noise: card corners and the log's dots (58 px), at 2560×1440 the main panel's bottom corners (4 px)         |
+| `system-debug`                                 | 5/8       | noise: at 2560×1440 the Key Tracking column's raster variant (13 156–13 249 px)                             |
+| `system-update`                                | 5/8       | noise: sidebar link corners (4–31 px)                                                                       |
+| `system-about-donation`                        | 3/8       | PL-027 (en); zh: noise (sidebar link corners, 20 px)                                                        |
+| `system-update-file-focus`                     | 0/8       | PL-046; noise: sidebar link corners, a step icon                                                            |
+| `system-debug-tracking`                        | 0/8       | PL-011; noise: at 2560×1440 the Key Tracking column's raster variant                                        |
+| `system-settings-bootloader`, `-factory-reset` | 0/8       | PL-012                                                                                                      |
+| `system-settings-bootloader-confirmed`         | 0/8       | PL-026, PL-004 (sidebar)                                                                                    |
+| `system-update-no-keyboard`                    | 0/8       | PL-025                                                                                                      |
+| `system-update-wrong-file`, `-small-file`      | 0/8       | PL-041                                                                                                      |
+| `system-update-file-chosen`                    | 0/8       | PL-041, PL-042, PL-004 (sidebar)                                                                            |
+| `system-update-no-device`                      | 0/8       | PL-041, PL-004 (sidebar: the keyboard was unplugged)                                                        |
+| `system-update-flashing`                       | 0/8       | PL-041, PL-043, PL-004 (sidebar)                                                                            |
+| `system-update-erase-failed`                   | 0/8       | PL-041, PL-044, PL-004 (sidebar)                                                                            |
+| `system-update-reconnect`                      | 0/8       | PL-041, PL-045, PL-004 (sidebar)                                                                            |
+| `system-update-done`                           | 0/8       | PL-041, PL-004 (sidebar)                                                                                    |
 
 Everything else on these screens matches: the Debug page, both tabs and the key picker; the Key
 Test log with the same times and deltas (`performance.now()` is pinned per event); Settings and
