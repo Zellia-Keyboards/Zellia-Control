@@ -86,6 +86,11 @@ describe('RGBSubPanel', () => {
       screen.getByText('These keys use different modes. Pick one to use it on all of them.')
     ).toBeInTheDocument();
     expect(screen.getAllByText('Mixed')).toHaveLength(2);
+    // The color 'Mixed' text should have no uppercase or font-mono (it's a sibling of the color input)
+    const colorMixed = colorInput().nextElementSibling;
+    expect(colorMixed).toHaveTextContent('Mixed');
+    expect(colorMixed).not.toHaveClass('uppercase');
+    expect(colorMixed).not.toHaveClass('font-mono');
     expect(colorInput()).toHaveValue('#ff0000');
     expect(screen.getByRole('slider', { name: 'Speed' })).toHaveValue('20');
     expect(screen.queryByText('20%')).not.toBeInTheDocument();

@@ -129,7 +129,11 @@ export function RGBSubPanel({ values, targetCount, onEdit, onRainbow, title }: R
               className={`w-10 h-10 rounded-lg border-2 border-gray-300 dark:border-gray-600 p-0 cursor-pointer overflow-hidden transition-colors hover:border-primary/50 ${styles['color-input'] ?? ''}`}
               aria-label={t('lighting.color')}
             />
-            <span className="text-sm font-mono text-gray-700 dark:text-gray-300 uppercase">
+            <span
+              className={`text-sm text-gray-700 dark:text-gray-300 ${
+                values.color === MIXED ? '' : 'font-mono uppercase'
+              }`}
+            >
               {values.color === MIXED ? t('lighting.mixed') : color}
             </span>
           </div>
