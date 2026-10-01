@@ -65,17 +65,18 @@ test.describe('dynamic keys', () => {
     await openDynamicKeys(page);
     const keyboard = await virtualKeyboard.handle();
 
-    // The seeded stroke, mod-tap, toggle and the two keys of the null bind.
+    // The seeded mod-tap, the two keys of the null bind, the toggle and the stroke, in the Svelte
+    // table's order (by key id, the DKS keys last).
     await expect(
       page.getByRole('heading', { name: 'Configured Dynamic Keys (5)', exact: true })
     ).toBeVisible();
     const rows = page.locator('tbody tr');
     await expect(rows.locator('td:nth-child(2)')).toHaveText([
-      'Dynamic Key',
       'Tap Hold',
+      'Null Bind',
+      'Null Bind',
       'Toggle',
-      'Null Bind',
-      'Null Bind',
+      'Dynamic Key',
     ]);
 
     // Keys cannot be picked on the dashboard.
@@ -117,7 +118,7 @@ test.describe('dynamic keys', () => {
     await expect(
       page.getByRole('heading', { name: 'Configured Dynamic Keys (2)', exact: true })
     ).toBeVisible();
-    await expect(rows.locator('td:nth-child(2)')).toHaveText(['Dynamic Key', 'Toggle']);
+    await expect(rows.locator('td:nth-child(2)')).toHaveText(['Toggle', 'Dynamic Key']);
     await expect.poll(() => usedSlots(keyboard)).toBe(2);
     expect(await keymapEntry(keyboard, 0, mutexFirst)).toBe(mutex.bindings[0]);
     expect(await keymapEntry(keyboard, 0, mutexSecond)).toBe(mutex.bindings[1]);
