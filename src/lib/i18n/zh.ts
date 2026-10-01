@@ -24,6 +24,7 @@ export const zh: Record<TranslationKey, string> = {
   'ui.lightMode': '浅色模式',
   'ui.darkMode': '深色模式',
   'ui.language': '语言',
+  'ui.unsavedChanges': '有未保存的更改',
   // Common
   'common.delete': '删除',
   'common.actions': '操作',

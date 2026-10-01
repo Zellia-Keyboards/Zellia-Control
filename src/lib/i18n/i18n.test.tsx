@@ -35,8 +35,15 @@ describe('dictionaries', () => {
     expect(Object.keys(zh).sort()).toEqual(Object.keys(en).sort());
   });
 
-  it('keep the ported key set: 263 keys used by the Svelte app, the six missing ones and the confirmation copy', () => {
-    expect(Object.keys(en)).toHaveLength(272);
+  it('keep the ported key set plus the React additions', () => {
+    // 263 keys used by the Svelte app, the six it referenced but never defined, the Settings
+    // confirmations (PL-012) and the Save button's unsaved-changes label (PL-050).
+    expect(Object.keys(en)).toHaveLength(273);
+  });
+
+  it('add the unsaved-changes label of the Save button (PL-050)', () => {
+    expect(en['ui.unsavedChanges']).toBe('Unsaved changes');
+    expect(zh['ui.unsavedChanges']).toBe('有未保存的更改');
   });
 
   it('add the copy of the Settings confirmations (PL-012), which the Svelte app did not have', () => {

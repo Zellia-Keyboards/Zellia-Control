@@ -23,6 +23,7 @@ export const en = {
   'ui.lightMode': 'Light Mode',
   'ui.darkMode': 'Dark Mode',
   'ui.language': 'Language',
+  'ui.unsavedChanges': 'Unsaved changes',
 
   // Performance Page
   'performance.title': 'Performance',
