@@ -1,5 +1,5 @@
+import { cx } from '../../../lib/class-names';
 import { useT } from '../../../lib/i18n';
-import { cx } from '../class-names';
 import styles from './DeadzoneControl.module.css';
 
 export interface DeadzoneControlProps {

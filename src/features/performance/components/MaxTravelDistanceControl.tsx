@@ -1,5 +1,5 @@
 import { useState, type ChangeEvent } from 'react';
-import { cx } from '../class-names';
+import { cx } from '../../../lib/class-names';
 import styles from './MaxTravelDistanceControl.module.css';
 
 export interface MaxTravelDistanceControlProps {

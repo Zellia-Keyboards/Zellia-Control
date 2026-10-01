@@ -1,6 +1,6 @@
 import { AlertTriangle } from 'lucide-react';
+import { cx } from '../../../lib/class-names';
 import { useT } from '../../../lib/i18n';
-import { cx } from '../class-names';
 import styles from './ActuationPointControl.module.css';
 
 export interface ActuationPointControlProps {
