@@ -1,98 +1,51 @@
-import { RGBMode } from 'emi-keyboard-controller';
 import { useId, useState } from 'react';
 import { ThemedSlider } from '../../../components/ui';
-import { useT, type TranslationKey } from '../../../lib/i18n';
+import { useT } from '../../../lib/i18n';
 import type { RgbKeyConfig } from '../../device';
-import type { LayoutKey } from '../../keyboard/model';
-import { hexToRgb, rainbowColors, rgbToHex } from '../model';
+import { MIXED, hexToRgb, rgbToHex, type SharedKeyValues } from '../model';
 import { DirectionSelector } from './DirectionSelector';
+import { KEY_MODES, modeOption } from './modes';
+import { PANEL_HEADER_STYLE } from './panel-header';
 import styles from './RGBSubPanel.module.css';
 
-export interface KeyConfigEntry {
-  readonly keyId: number;
-  readonly config: RgbKeyConfig;
-}
-
 export interface RGBSubPanelProps {
-  config: RgbKeyConfig;
-  /** Apply: one configuration for the keys the page picks (selected, or all). */
-  onConfigChange: (config: RgbKeyConfig) => void;
-  /** Rainbow preset: a configuration per key. */
-  onKeyConfigsChange: (entries: readonly KeyConfigEntry[]) => void;
-  /** Keys the rainbow preset colours, with their layout geometry. */
-  keyboardKeys?: readonly LayoutKey[];
-  /** The keyboard's per-key configurations (keys without one are not coloured). */
-  rgbConfigs?: readonly RgbKeyConfig[];
+  /** The targets' shared values, `MIXED` where they differ (PL-048). */
+  values: SharedKeyValues;
+  /** How many keys an edit changes, or `'all'` while no key is selected. */
+  targetCount: number | 'all';
+  /** Called with the changed field on every input; the page applies it to every target. */
+  onEdit: (patch: Partial<RgbKeyConfig>) => void;
+  /** The rainbow preset: colours the targets from `referenceHex` along `direction` (D11). */
+  onRainbow: (referenceHex: string, direction: number, density: number) => void;
   title?: string;
 }
 
-// Mode options
-const MODES = [
-  { value: RGBMode.RgbModeFixed, label: 'rgb_mode_fixed' },
-  { value: RGBMode.RgbModeStatic, label: 'rgb_mode_static' },
-  { value: RGBMode.RgbModeCycle, label: 'rgb_mode_cycle' },
-  { value: RGBMode.RgbModeLinear, label: 'rgb_mode_linear' },
-  { value: RGBMode.RgbModeTrigger, label: 'rgb_mode_trigger' },
-  { value: RGBMode.RgbModeString, label: 'rgb_mode_string' },
-  { value: RGBMode.RgbModeFadingString, label: 'rgb_mode_fading_string' },
-  { value: RGBMode.RgbModeDiamondRipple, label: 'rgb_mode_diamond_ripple' },
-  { value: RGBMode.RgbModeFadingDiamondRipple, label: 'rgb_mode_fading_diamond_ripple' },
-  { value: RGBMode.RgbModeJelly, label: 'rgb_mode_jelly' },
-  { value: RGBMode.RgbModeBubble, label: 'rgb_mode_bubble' },
-] as const satisfies readonly { value: RGBMode; label: TranslationKey }[];
-
-const NO_KEYS: readonly LayoutKey[] = [];
-const NO_CONFIGS: readonly RgbKeyConfig[] = [];
-
-/** Per-key lighting settings and the rainbow preset (port of RGBSubPanel.svelte). */
-export function RGBSubPanel({
-  config,
-  onConfigChange,
-  onKeyConfigsChange,
-  keyboardKeys = NO_KEYS,
-  rgbConfigs = NO_CONFIGS,
-  title,
-}: RGBSubPanelProps) {
+/**
+ * Per-key lighting of the selected keys (all keys while none is selected) and the rainbow preset
+ * (port of RGBSubPanel.svelte, edited in place: PL-047, PL-048).
+ */
+export function RGBSubPanel({ values, targetCount, onEdit, onRainbow, title }: RGBSubPanelProps) {
   const t = useT();
   const titleId = useId();
-
-  // Mode: initialized from the configuration, never synced back from it, so a click shows at once
-  // (the page mounts the panel again when the keyboard loads a configuration).
-  const [selectedMode, setSelectedMode] = useState(config.mode);
-
-  // Local state for deferred apply, re-read whenever the configuration changes (the Svelte
-  // `$effect`).
-  const [localColor, setLocalColor] = useState(() => rgbToHex(config.color));
-  const [localSpeed, setLocalSpeed] = useState(config.speed);
-  const [localSource, setLocalSource] = useState(config);
-  if (localSource !== config) {
-    setLocalSource(config);
-    setLocalColor(rgbToHex(config.color));
-    setLocalSpeed(config.speed);
-  }
 
   // Local state for rainbow preset (not part of base config)
   const [showRainbowPreset, setShowRainbowPreset] = useState(false);
   const [rainbowDirection, setRainbowDirection] = useState(0);
   const [rainbowDensity, setRainbowDensity] = useState(10);
 
-  const speed = () => (Number.isNaN(localSpeed) ? 0 : Math.round(localSpeed));
+  // Where a field is mixed, its control shows the first target's value.
+  const color = rgbToHex(values.color === MIXED ? values.first.color : values.color);
+  const speed = values.speed === MIXED ? values.first.speed : values.speed;
+  const pressed = values.mode === MIXED ? undefined : modeOption(KEY_MODES, values.mode);
 
-  // Apply all changes at once
-  function applyChanges() {
-    onConfigChange({ mode: selectedMode, speed: speed(), color: hexToRgb(localColor) });
-  }
+  let targets: string;
+  if (targetCount === 'all') targets = t('lighting.allKeys');
+  else if (targetCount === 1) targets = t('lighting.oneKey');
+  else targets = t('lighting.keyCount', String(targetCount));
 
-  // Colour every key from its position in the layout (upstream formula, D11)
-  function applyRainbowEffect() {
-    if (!keyboardKeys.length || !rgbConfigs.length) return;
-    const colors = rainbowColors(keyboardKeys, localColor, rainbowDirection, rainbowDensity);
-    onKeyConfigsChange(
-      [...colors]
-        .filter(([keyId]) => keyId < rgbConfigs.length)
-        .map(([keyId, color]) => ({ keyId, config: { mode: selectedMode, speed: speed(), color } }))
-    );
-  }
+  let modeText: string | null = null;
+  if (values.mode === MIXED) modeText = t('lighting.mixedModes');
+  else if (pressed) modeText = t(pressed.description);
 
   return (
     <div
@@ -100,10 +53,10 @@ export function RGBSubPanel({
       role="region"
       aria-labelledby={titleId}
     >
-      {/* Header with Apply button */}
+      {/* Header with the keys the edits change */}
       <div
         className="px-5 pt-5 pb-3 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between"
-        style={{ padding: 'calc(1.25rem * var(--ui-scale, 1))' }}
+        style={PANEL_HEADER_STYLE}
       >
         <h3
           id={titleId}
@@ -112,13 +65,7 @@ export function RGBSubPanel({
         >
           {title || t('lighting.subConfigTitle')}
         </h3>
-        <button
-          type="button"
-          onClick={applyChanges}
-          className="px-4 py-2 rounded-lg bg-primary text-white font-medium text-sm hover:bg-primary/90 transition-colors glassmorphism-button"
-        >
-          {t('lighting.apply')}
-        </button>
+        <span className="text-sm font-medium text-gray-500 dark:text-gray-400">{targets}</span>
       </div>
 
       {/* Content */}
@@ -133,20 +80,21 @@ export function RGBSubPanel({
           </h4>
           {/* Mode buttons in 2 rows */}
           <div className="grid grid-cols-6 gap-2">
-            {MODES.map(mode => {
-              const isSelected = selectedMode === mode.value;
+            {KEY_MODES.map(mode => {
+              const isSelected = values.mode === mode.value;
               return (
                 <button
                   key={mode.value}
                   type="button"
                   aria-pressed={isSelected}
+                  title={t(mode.description)}
                   className={`h-12 min-h-[48px] rounded-lg border text-center transition-all duration-200 px-2 flex items-center justify-center ${
                     isSelected
                       ? 'border-primary bg-primary/20 dark:bg-primary/30'
                       : 'border-gray-300 dark:border-gray-600 hover:border-primary/50 glassmorphism-button'
                   }`}
                   onClick={() => {
-                    setSelectedMode(mode.value);
+                    onEdit({ mode: mode.value });
                   }}
                 >
                   <div
@@ -162,6 +110,8 @@ export function RGBSubPanel({
               );
             })}
           </div>
+          {/* Mode explanation, or the mixed modes (PL-048, PL-049) */}
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">{modeText}</p>
         </div>
 
         {/* Color Section */}
@@ -172,15 +122,15 @@ export function RGBSubPanel({
           <div className="flex items-center gap-3">
             <input
               type="color"
-              value={localColor}
+              value={color}
               onChange={event => {
-                setLocalColor(event.currentTarget.value);
+                onEdit({ color: hexToRgb(event.currentTarget.value) });
               }}
               className={`w-10 h-10 rounded-lg border-2 border-gray-300 dark:border-gray-600 p-0 cursor-pointer overflow-hidden transition-colors hover:border-primary/50 ${styles['color-input'] ?? ''}`}
               aria-label={t('lighting.color')}
             />
             <span className="text-sm font-mono text-gray-700 dark:text-gray-300 uppercase">
-              {localColor}
+              {values.color === MIXED ? t('lighting.mixed') : color}
             </span>
           </div>
         </div>
@@ -192,14 +142,16 @@ export function RGBSubPanel({
           </h4>
           <div className="flex justify-between text-xs text-gray-600 dark:text-gray-300 mb-1.5">
             <span>{t('lighting.speed')}</span>
-            <span className="font-semibold">{`${localSpeed}%`}</span>
+            <span className="font-semibold">
+              {values.speed === MIXED ? t('lighting.mixed') : `${speed}%`}
+            </span>
           </div>
           <ThemedSlider
             min={1}
             max={100}
-            value={localSpeed}
+            value={speed}
             onChange={event => {
-              setLocalSpeed(Number(event.currentTarget.value));
+              onEdit({ speed: Math.round(Number(event.currentTarget.value)) });
             }}
             aria-label={t('lighting.speed')}
           />
@@ -262,7 +214,9 @@ export function RGBSubPanel({
               {/* Apply Rainbow Button */}
               <button
                 type="button"
-                onClick={applyRainbowEffect}
+                onClick={() => {
+                  onRainbow(color, rainbowDirection, rainbowDensity);
+                }}
                 className="w-full px-4 py-2 rounded-lg border-2 border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-800 text-black dark:text-white font-medium text-sm hover:border-primary/50 transition-colors glassmorphism-button"
               >
                 {t('lighting.applySettings')}

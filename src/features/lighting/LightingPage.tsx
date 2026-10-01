@@ -1,5 +1,5 @@
 import { RGBMode } from 'emi-keyboard-controller';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useT } from '../../lib/i18n';
 import {
   deviceSession,
@@ -8,38 +8,51 @@ import {
   type RgbBaseConfig,
   type RgbKeyConfig,
 } from '../device';
-import { keySelection, keySelectionStore, useLayoutKeys, useSelectionShortcuts } from '../keyboard';
+import {
+  keySelection,
+  keySelectionStore,
+  useLayoutKeys,
+  useSelectedKeys,
+  useSelectionShortcuts,
+} from '../keyboard';
 import { RGBPanel } from './components/RGBPanel';
-import { RGBSubPanel, type KeyConfigEntry } from './components/RGBSubPanel';
+import { RGBSubPanel } from './components/RGBSubPanel';
 import { useDeviceLoads } from './hooks/use-device-loads';
+import {
+  editKeys,
+  lightingTargets,
+  rainbowColors,
+  recolorKeys,
+  sharedKeyValues,
+  type SharedKeyValues,
+} from './model';
 
-/** emi-keyboard-controller `RGBConfig` defaults, for a keyboard without per-key lighting. */
+/** emi-keyboard-controller `RGBConfig` defaults: the key panel without keys to edit. */
 const DEFAULT_KEY_CONFIG: RgbKeyConfig = {
   mode: RGBMode.RgbModeLinear,
   color: { red: 163, green: 55, blue: 252 },
   speed: 20,
 };
+const NO_TARGET_VALUES: SharedKeyValues = { ...DEFAULT_KEY_CONFIG, first: DEFAULT_KEY_CONFIG };
 
-/**
- * The key panel's configuration: a fresh copy of the first key's (Svelte `subConfig`), so the
- * panel re-reads its colour and speed every time it is refreshed.
- */
-function firstKeyConfig(rgbKeys: readonly RgbKeyConfig[] | undefined): RgbKeyConfig {
-  return { ...(rgbKeys?.[0] ?? DEFAULT_KEY_CONFIG) };
+/** The keys an edit changes, from the selection at the time of the edit. */
+function currentTargets(rgbKeys: readonly RgbKeyConfig[]): number[] {
+  return lightingTargets(keySelectionStore.getState().selected, rgbKeys.length);
 }
 
 /**
  * Lighting route (port of `routes/lighting/+page.svelte`): the keyboard-wide base lighting and the
- * per-key lighting of the selected keys (all keys while none is selected). The global keyboard
- * above it belongs to the shell.
+ * per-key lighting of the selected keys (all keys while none is selected), edited in place and
+ * sent to the keyboard by Save (PL-047). The global keyboard above it belongs to the shell.
  */
 export function LightingPage() {
   const t = useT();
   const rgbBase = useDeviceStore(state => state.config?.rgbBase);
   const rgbKeys = useDeviceStore(state => state.config?.rgbKeys);
+  const selected = useSelectedKeys();
   const layout = useLayoutKeys();
-  // Each configuration the keyboard loads (profile switch, reset) opens both panels again on it:
-  // their modes and unapplied edits start over.
+  // Each configuration the keyboard loads (profile switch, reset) opens both panels again on it,
+  // with the rainbow preset closed.
   const loads = useDeviceLoads();
 
   // Always allow key selection on lighting page
@@ -48,34 +61,37 @@ export function LightingPage() {
   }, []);
   useSelectionShortcuts();
 
-  // Refreshed from the first key whenever the per-key configurations change (the Svelte store
-  // subscription) and after every apply.
-  const [subConfig, setSubConfig] = useState(() => firstKeyConfig(rgbKeys));
-  const [subConfigSource, setSubConfigSource] = useState(rgbKeys);
-  if (subConfigSource !== rgbKeys) {
-    setSubConfigSource(rgbKeys);
-    setSubConfig(firstKeyConfig(rgbKeys));
-  }
+  const keyCount = rgbKeys?.length ?? 0;
+  const targets = useMemo(() => lightingTargets(selected, keyCount), [selected, keyCount]);
+  const values = useMemo(
+    () => (rgbKeys && sharedKeyValues(rgbKeys, targets)) ?? NO_TARGET_VALUES,
+    [rgbKeys, targets]
+  );
 
   if (!rgbBase || !rgbKeys) return null;
 
-  // Reads the latest configuration: two inputs can arrive before the next render.
+  // Edits read the latest configuration: two inputs can arrive before the next render.
   const editBase = (patch: Partial<RgbBaseConfig>) => {
     const config = deviceStore.getState().config;
     if (config) deviceSession.setRgbBase({ ...config.rgbBase, ...patch });
   };
 
-  /** Applies to the selected keys, or to every given key when none is selected. */
-  const applyKeyConfigs = (entries: readonly KeyConfigEntry[]) => {
-    const { selected } = keySelectionStore.getState();
-    const targets =
-      selected.length > 0 ? entries.filter(({ keyId }) => selected.includes(keyId)) : entries;
-    deviceSession.setRgbKeys(targets);
-    setSubConfig(firstKeyConfig(deviceStore.getState().config?.rgbKeys));
+  const editTargets = (patch: Partial<RgbKeyConfig>) => {
+    const config = deviceStore.getState().config;
+    if (config) {
+      deviceSession.setRgbKeys(editKeys(config.rgbKeys, currentTargets(config.rgbKeys), patch));
+    }
   };
 
-  const handleSubConfigChange = (config: RgbKeyConfig) => {
-    applyKeyConfigs(rgbKeys.map((_, keyId) => ({ keyId, config })));
+  // The rainbow preset colours the targets the layout shows; modes and speeds stay (PL-007).
+  const applyRainbow = (referenceHex: string, direction: number, density: number) => {
+    const config = deviceStore.getState().config;
+    if (!config || !layout) return;
+    const targetIds = new Set(currentTargets(config.rgbKeys));
+    const keys = layout.visible.filter(key => targetIds.has(key.id));
+    deviceSession.setRgbKeys(
+      recolorKeys(config.rgbKeys, rainbowColors(keys, referenceHex, direction, density))
+    );
   };
 
   return (
@@ -93,6 +109,8 @@ export function LightingPage() {
         >
           {t('lighting.title')}
         </h2>
+        {/* PL-047: lighting edits wait for Save */}
+        <p className="text-sm text-gray-500 dark:text-gray-400">{t('lighting.saveHint')}</p>
       </div>
 
       <div
@@ -113,11 +131,10 @@ export function LightingPage() {
         <div className="flex-1 min-w-0">
           <RGBSubPanel
             key={loads}
-            config={subConfig}
-            onConfigChange={handleSubConfigChange}
-            onKeyConfigsChange={applyKeyConfigs}
-            keyboardKeys={layout?.visible ?? []}
-            rgbConfigs={rgbKeys}
+            values={values}
+            targetCount={selected.length === 0 ? 'all' : targets.length}
+            onEdit={editTargets}
+            onRainbow={applyRainbow}
             title={t('lighting.subConfigTitle')}
           />
         </div>
