@@ -384,6 +384,19 @@ const scenarios: readonly ParityScenario[] = [
     },
   },
   {
+    // I-6: Tab from the drop zone's subtitle (the click leaves the focus navigation starting point
+    // there) reaches the file input; the baseline hid it with display: none, so Tab skips it.
+    name: 'system-update-file-focus',
+    path: '/',
+    virtualKeyboard: KEYBOARD,
+    setup: async page => {
+      await openUpdate(page);
+      await page.getByText('Choose the .bin firmware file to flash').click();
+      await page.keyboard.press('Tab');
+      await prepareCapture(page);
+    },
+  },
+  {
     // PL-025: the updater without a keyboard; the baseline shows "No Keyboard Connected".
     name: 'system-update-no-keyboard',
     path: '/update/',
