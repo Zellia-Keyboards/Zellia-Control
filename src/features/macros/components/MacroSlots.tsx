@@ -23,7 +23,7 @@ export function MacroSlots({ macros, selected, disabled, onSelect }: MacroSlotsP
             disabled={disabled}
             className={`min-w-28 px-4 py-2 rounded-lg border text-left transition-colors glassmorphism-button disabled:opacity-50 disabled:cursor-not-allowed ${
               active
-                ? 'bg-primary-500 border-primary-500 text-white'
+                ? 'bg-primary-500 border-primary-500 text-white ring-2 ring-primary-400'
                 : 'border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white'
             }`}
             onClick={() => {
