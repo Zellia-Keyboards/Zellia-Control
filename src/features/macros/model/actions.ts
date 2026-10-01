@@ -4,6 +4,7 @@
  * the action; `sortByTime` does. Added actions go in at their times.
  */
 import type { Keycode, MacroAction } from '../../device/model/types';
+import { U32_MAX } from './timing';
 
 /** What the delay of an added key counts from (upstream's delay reference). */
 export type DelayReference = 'start' | 'first' | 'last';
@@ -39,7 +40,8 @@ export function insertByTime(actions: readonly MacroAction[], action: MacroActio
 /**
  * "Add key": a press of `keycode` `delay` ticks after the reference and its release `duration`
  * ticks later, both virtual (from no physical key, key ID 0) like recorded events, each inserted
- * at its time.
+ * at its time. The reference, the delay and the duration can each be near the u32 maximum on
+ * their own, so their sums are clamped to it too.
  */
 export function withKeyPress(
   actions: readonly MacroAction[],
@@ -48,7 +50,7 @@ export function withKeyPress(
   delay: number,
   duration: number
 ): MacroAction[] {
-  const pressAt = referenceTicks(actions, reference) + delay;
+  const pressAt = Math.min(referenceTicks(actions, reference) + delay, U32_MAX);
   const pressed = insertByTime(actions, {
     delay: pressAt,
     keycode,
@@ -57,7 +59,7 @@ export function withKeyPress(
     keyId: 0,
   });
   return insertByTime(pressed, {
-    delay: pressAt + duration,
+    delay: Math.min(pressAt + duration, U32_MAX),
     keycode,
     event: 'up',
     isVirtual: true,
