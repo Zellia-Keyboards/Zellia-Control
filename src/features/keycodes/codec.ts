@@ -18,7 +18,9 @@ import {
   KeyboardKeycode,
   Keycode as EmiKeycode,
   type LayerControlKeycode,
+  type MacroKeycode,
   type MouseKeycode,
+  type ScriptKeycode,
 } from 'emi-keyboard-controller';
 import type { Keycode } from '../device/model/types';
 
@@ -125,6 +127,9 @@ export interface KeycodeConstructors {
   readonly profile: (index: 0 | 1 | 2 | 3) => Keycode;
   readonly dynamicKey: (slot: number) => Keycode;
   readonly user: (n: number) => Keycode;
+  /** `op` of macro slot `index` (0-based, at most 15). */
+  readonly macro: (op: MacroKeycode, index: number) => Keycode;
+  readonly script: (op: ScriptKeycode) => Keycode;
   readonly transparent: Keycode;
   readonly none: Keycode;
 }
@@ -147,6 +152,9 @@ export const kc: KeycodeConstructors = Object.freeze({
     keyboardOperation(PROFILE_0 + field('index', index, 3)),
   dynamicKey: (slot: number): Keycode => collection(DYNAMIC_KEY, 'slot', slot),
   user: (n: number): Keycode => collection(USER, 'n', n),
+  macro: (op: MacroKeycode, index: number): Keycode =>
+    collection(MACRO, 'sub', (nibble('op', op) << 4) | nibble('index', index)),
+  script: (op: ScriptKeycode): Keycode => collection(SCRIPT, 'sub', op),
   transparent: TRANSPARENT,
   none: 0,
 });

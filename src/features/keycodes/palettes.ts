@@ -12,8 +12,11 @@ import {
   Keycode as EmiKeycode,
   KeyModifier,
   LayerControlKeycode,
+  MacroKeycode,
   MouseKeycode,
+  ScriptKeycode,
 } from 'emi-keyboard-controller';
+import type { TranslationKey } from '../../lib/i18n/en';
 import type { Keycode } from '../device/model/types';
 import { kc } from './codec';
 
@@ -296,3 +299,39 @@ export const REMAP_PALETTES: RemapPalettes = {
     { label: 'Dynamic\nKey', keycode: kc.dynamicKey(0) },
   ],
 };
+
+/** A key of the Extension tab's Macro and Script groups; its label is translated. */
+export interface GroupPaletteKey {
+  readonly label: TranslationKey;
+  readonly keycode: Keycode;
+}
+
+/** Each macro slot's keys (libamp `MacroKeycode`), in column order. */
+const MACRO_KEYS: readonly (readonly [MacroKeycode, TranslationKey])[] = [
+  [MacroKeycode.MacroRecordingStart, 'remap.macroRecordStart'],
+  [MacroKeycode.MacroRecordingStop, 'remap.macroRecordStop'],
+  [MacroKeycode.MacroRecordingToggle, 'remap.macroRecordToggle'],
+  [MacroKeycode.MacroPlayingStartOnce, 'remap.macroPlayOnce'],
+  [MacroKeycode.MacroPlayingStartCircularly, 'remap.macroPlayLoop'],
+  [MacroKeycode.MacroPlayingStartOnceNoGap, 'remap.macroPlayOnceNoGap'],
+  [MacroKeycode.MacroPlayingStartCircularlyNoGap, 'remap.macroPlayLoopNoGap'],
+  [MacroKeycode.MacroPlayingStop, 'remap.macroStop'],
+  [MacroKeycode.MacroPlayingPause, 'remap.macroPause'],
+];
+
+/** The Macro group: one row of keys per macro slot (0-based). */
+export function macroPalette(slots: number): readonly (readonly GroupPaletteKey[])[] {
+  return Array.from({ length: slots }, (_, slot) =>
+    MACRO_KEYS.map(([op, label]) => ({ label, keycode: kc.macro(op, slot) }))
+  );
+}
+
+/** The Script group (libamp `ScriptKeycode`). */
+export const SCRIPT_PALETTE: readonly GroupPaletteKey[] = [
+  { label: 'remap.scriptWatch', keycode: kc.script(ScriptKeycode.ScriptWatch) },
+  { label: 'remap.scriptStart', keycode: kc.script(ScriptKeycode.ScriptStart) },
+  { label: 'remap.scriptStop', keycode: kc.script(ScriptKeycode.ScriptStop) },
+  { label: 'remap.scriptSuspend', keycode: kc.script(ScriptKeycode.ScriptSuspend) },
+  { label: 'remap.scriptRestart', keycode: kc.script(ScriptKeycode.ScriptRestart) },
+  { label: 'remap.scriptToggle', keycode: kc.script(ScriptKeycode.ScriptToggle) },
+];

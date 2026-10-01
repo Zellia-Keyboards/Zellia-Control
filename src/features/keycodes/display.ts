@@ -3,7 +3,8 @@
  * which mirrors EMIKeyboardConfigurator. Output matches the Svelte app for every keycode, except
  * where it referenced enums that no longer exist: keyboard operations `Calibrate`, `Recovery` and
  * `Profile 0-3` and the keyboard-config names now come from `KeyboardKeycode` /
- * `KeyboardConfigCode` (the Svelte app showed "Keyboard" and an empty name for them).
+ * `KeyboardConfigCode` (the Svelte app showed "Keyboard" and an empty name for them). Script
+ * keycodes are named like upstream's `keyCodeToString`; the Svelte app had no names for them.
  */
 import {
   ConsumerKeycode,
@@ -15,6 +16,7 @@ import {
   MacroKeycode,
   MIDIKeycode,
   MouseKeycode,
+  ScriptKeycode,
   SystemRawKeycode,
 } from 'emi-keyboard-controller';
 import type { DynamicKeyKind, Keycode } from '../device/model/types';
@@ -362,6 +364,15 @@ const MACRO_NAMES = {
   [MacroKeycode.MacroBegin]: '',
 } satisfies Record<MacroKeycode, string>;
 
+const SCRIPT_NAMES = {
+  [ScriptKeycode.ScriptWatch]: 'Watch',
+  [ScriptKeycode.ScriptStart]: 'Start',
+  [ScriptKeycode.ScriptStop]: 'Stop',
+  [ScriptKeycode.ScriptSuspend]: 'Suspend',
+  [ScriptKeycode.ScriptRestart]: 'Restart',
+  [ScriptKeycode.ScriptToggle]: 'Toggle',
+} satisfies Record<ScriptKeycode, string>;
+
 const MIDI_NOTE_NAMES = ['C', 'C♯', 'D', 'D♯', 'E', 'F', 'F♯', 'G', 'G♯', 'A', 'A♯', 'B'] as const;
 
 /** Keycap name per dynamic-key kind (Svelte `DynamicKeyToKeyName`). */
@@ -422,6 +433,7 @@ const DESCRIBERS: Readonly<Partial<Record<number, Describer>>> = {
     main: `${nameOf(MACRO_NAMES, (m >> 4) & 0x0f) ?? ''}${m & 0x0f}`,
     sub: 'Macro',
   }),
+  [EmiKeycode.ScriptCollection]: m => ({ main: nameOf(SCRIPT_NAMES, m) ?? '', sub: 'Script' }),
 };
 
 /**

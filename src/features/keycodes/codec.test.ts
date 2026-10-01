@@ -6,7 +6,9 @@ import {
   Keycode as EmiKeycode,
   KeyModifier,
   LayerControlKeycode,
+  MacroKeycode,
   MouseKeycode,
+  ScriptKeycode,
   SystemRawKeycode,
 } from 'emi-keyboard-controller';
 import { describe, expect, expectTypeOf, it } from 'vitest';
@@ -105,6 +107,23 @@ describe('kc constructors: firmware examples (libamp keycode.h / keyboard.c)', (
       encodeKeycode({ category: 'keyboardConfig', action: 'toggle', config: 0x20 })
     ).toThrow(RangeError);
     expect(() => encodeKeycode({ category: 'joystick', kind: 8, index: 0 })).toThrow(RangeError);
+  });
+
+  it('encodes macro and script keys as MACRO_COLLECTION / SCRIPT_COLLECTION (keycode.h, macro.h)', () => {
+    // MACRO_KEYCODE_GET_KEYCODE = sub >> 4, MACRO_KEYCODE_GET_INDEX = sub & 0x0F
+    expect(kc.macro(MacroKeycode.MacroRecordingStart, 0)).toBe(0x10ad);
+    expect(kc.macro(MacroKeycode.MacroPlayingStartOnce, 1)).toBe(0x41ad);
+    expect(kc.script(ScriptKeycode.ScriptToggle)).toBe(0x05ae);
+    expect(decodeKeycode(kc.macro(MacroKeycode.MacroPlayingPause, 3))).toEqual({
+      category: 'macro',
+      op: 9,
+      index: 3,
+    });
+    expect(decodeKeycode(kc.script(ScriptKeycode.ScriptWatch))).toEqual({
+      category: 'script',
+      sub: 0,
+    });
+    expect(() => kc.macro(MacroKeycode.MacroPlayingStop, 16)).toThrow(RangeError);
   });
 });
 

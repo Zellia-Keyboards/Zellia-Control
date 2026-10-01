@@ -8,12 +8,13 @@ import {
   MouseKeycode,
 } from 'emi-keyboard-controller';
 import { describe, expect, it } from 'vitest';
+import { en } from '../../lib/i18n/en';
 import svelteActions from './__fixtures__/svelte-key-actions.json';
 import sveltePalettes from './__fixtures__/svelte-remap-palettes.json';
 import { ACTION_CATEGORIES, findAction } from './actions';
 import { decodeKeycode, type DecodedKeycode } from './codec';
 import { describeKeycode } from './display';
-import { REMAP_PALETTES, type PaletteKey } from './palettes';
+import { REMAP_PALETTES, SCRIPT_PALETTE, macroPalette, type PaletteKey } from './palettes';
 
 type FlatPalette = 'system' | 'layer' | 'profile' | 'extension';
 const FLAT_PALETTES: readonly FlatPalette[] = ['system', 'layer', 'profile', 'extension'];
@@ -335,5 +336,39 @@ describe('the Remap palettes and the advanced-key picker', () => {
     expect(actions.filter(action => !pairs.has(action.name)).map(action => action.name)).toEqual([
       'Right Win',
     ]);
+  });
+});
+
+describe('the Extension tab’s Macro and Script groups', () => {
+  it('give every macro slot its record, play, stop and pause keys', () => {
+    const rows = macroPalette(4);
+    expect(rows.map(row => row.map(key => decodeKeycode(key.keycode)))).toEqual(
+      [0, 1, 2, 3].map(index =>
+        [1, 2, 3, 4, 5, 6, 7, 8, 9].map(op => ({ category: 'macro', op, index }))
+      )
+    );
+    expect(rows[0]?.map(key => en[key.label])).toEqual([
+      'Record\nStart',
+      'Record\nStop',
+      'Record\nToggle',
+      'Play\nOnce',
+      'Play\nLoop',
+      'Play Once\nNo Gaps',
+      'Play Loop\nNo Gaps',
+      'Stop',
+      'Pause',
+    ]);
+  });
+
+  it('list the six libamp script operations, named on the keycaps', () => {
+    expect(SCRIPT_PALETTE.map(key => decodeKeycode(key.keycode))).toEqual(
+      [0, 1, 2, 3, 4, 5].map(sub => ({ category: 'script', sub }))
+    );
+    expect(SCRIPT_PALETTE.map(key => describeKeycode(key.keycode))).toEqual(
+      ['Watch', 'Start', 'Stop', 'Suspend', 'Restart', 'Toggle'].map(main => ({
+        main,
+        sub: 'Script',
+      }))
+    );
   });
 });
