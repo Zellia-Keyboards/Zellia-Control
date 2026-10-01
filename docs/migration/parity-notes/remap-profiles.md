@@ -90,8 +90,16 @@ and PL-022 (key 64 is blank, every Remap capture).
 ## Not visible (no log row)
 
 - Profile cards: Enter or Space on a card's menu button opens its menu (the
-  Svelte card handler cancelled the button and activated the card instead).
-  Hold-to-delete also works with Enter/Space held for 1.5 s.
+  Svelte card handler cancelled the button and activated the card instead, so
+  the keyboard could not open it). Opened from the keyboard, the menu focuses
+  its first item (keyboard only: the item shows the browser's focus ring); the
+  arrow keys, Home and End move between the items, which Tab no longer
+  reaches; Escape closes the menu, and Tab closes it and moves on from the
+  menu button. When an item closes the menu, focus returns to the menu button
+  (also when the item's dialog closes); after Hold to Delete it moves to the
+  card that takes the deleted card's place, or to Add Profile. Opened with the
+  mouse, the menu leaves the focus where it was, as before. Hold-to-delete also
+  works with Enter/Space held for 1.5 s.
 - Semantics only: `type="button"`, `aria-pressed` on the category tabs and the
   profile cards, cards named by their profile name, `role="menuitem"` in the
   profile menu, `aria-haspopup`/`aria-expanded` on the menu and dropdown

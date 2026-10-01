@@ -382,4 +382,39 @@ test.describe('profiles', () => {
     await expect(profileCard(page, 'Profile 2 (Copy)')).toHaveCount(0);
     await expect(page.getByRole('button', { name: 'Add Profile' })).toBeVisible();
   });
+
+  test('operates a profile menu from the keyboard', async ({ page, virtualKeyboard }) => {
+    await connect(page, virtualKeyboard);
+    await openProfiles(page);
+    const menuButton = profileCard(page, 'Profile 2').getByRole('button', { name: 'Menu' });
+    const menu = page.getByRole('menu');
+
+    await menuButton.focus();
+    await page.keyboard.press('Enter');
+    await expect(menu.getByRole('menuitem', { name: 'Export' })).toBeFocused();
+    await page.keyboard.press('ArrowDown');
+    await expect(menu.getByRole('menuitem', { name: 'Duplicate' })).toBeFocused();
+    await page.keyboard.press('Escape');
+    await expect(menu).toHaveCount(0);
+    await expect(menuButton).toBeFocused();
+
+    // Tab closes the menu and moves on from its button.
+    await page.keyboard.press('Enter');
+    await expect(menu.getByRole('menuitem', { name: 'Export' })).toBeFocused();
+    await page.keyboard.press('Tab');
+    await expect(menu).toHaveCount(0);
+    await expect(profileCard(page, 'Profile 3')).toBeFocused();
+
+    // An item returns the focus to the menu button, also through its dialog.
+    await menuButton.focus();
+    await page.keyboard.press('Enter');
+    await page.keyboard.press('End');
+    await expect(menu.getByRole('menuitem', { name: 'Restore Default' })).toBeFocused();
+    await page.keyboard.press('Enter');
+    const restore = page.getByRole('dialog', { name: 'Restore to Default' });
+    await expect(restore).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(restore).toBeHidden();
+    await expect(menuButton).toBeFocused();
+  });
 });
