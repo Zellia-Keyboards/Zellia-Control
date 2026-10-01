@@ -443,4 +443,8 @@ export const zh: Record<TranslationKey, string> = {
   'scripts.sourceTooLarge': '脚本为 {0} 字节；libamp 键盘默认最多容纳 {1} 字节。',
   'scripts.bytecodeTooLarge': '字节码为 {0} 字节；libamp 键盘默认最多容纳 {1} 字节。',
   'scripts.bytecode': '字节码（{0} 字节）',
+
+  // Sidebar: the Macros and Scripts pages (macros and scripts spec)
+  'nav.macros': '宏',
+  'nav.scripts': '脚本',
 };

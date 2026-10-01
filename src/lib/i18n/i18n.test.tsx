@@ -42,7 +42,8 @@ describe('dictionaries', () => {
     // + 18: Remap's Macro and Script groups (macros and scripts spec).
     // + 39: the Macros page (macros and scripts spec).
     // + 16: the Scripts page (macros and scripts spec).
-    expect(Object.keys(en)).toHaveLength(366);
+    // + 2: the sidebar entries of the Macros and Scripts pages.
+    expect(Object.keys(en)).toHaveLength(368);
   });
 
   it('add the unsaved-changes label of the Save button (PL-050)', () => {
@@ -169,6 +170,11 @@ describe('dictionaries', () => {
       'scripts.title': '脚本',
       'scripts.unsupported': '此键盘不支持脚本',
     });
+  });
+
+  it('add the sidebar entries of the Macros and Scripts pages (macros and scripts spec)', () => {
+    expect([en['nav.macros'], en['nav.scripts']]).toEqual(['Macros', 'Scripts']);
+    expect([zh['nav.macros'], zh['nav.scripts']]).toEqual(['宏', '脚本']);
   });
 });
 

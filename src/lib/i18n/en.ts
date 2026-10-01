@@ -470,6 +470,10 @@ export const en = {
   'scripts.sourceTooLarge': 'The script is {0} bytes; libamp keyboards hold {1} by default.',
   'scripts.bytecodeTooLarge': 'The bytecode is {0} bytes; libamp keyboards hold {1} by default.',
   'scripts.bytecode': 'Bytecode ({0} bytes)',
+
+  // Sidebar: the Macros and Scripts pages (macros and scripts spec)
+  'nav.macros': 'Macros',
+  'nav.scripts': 'Scripts',
 } satisfies Record<string, string>;
 
 export type TranslationKey = keyof typeof en;

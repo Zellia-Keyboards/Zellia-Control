@@ -9,6 +9,8 @@ function spyLoaders(): PageLoaders {
     performance: loader(),
     lighting: loader(),
     dynamic: loader(),
+    macros: loader(),
+    scripts: loader(),
     debug: loader(),
     settings: loader(),
     update: loader(),

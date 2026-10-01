@@ -47,6 +47,9 @@
   keys.
 - **🎛️ Dynamic keys:** Tap-Hold, Toggle, Dynamic Keystroke (several actions along one key's
   travel) and Null Bind (two keys that resolve each other).
+- **📜 Macros and scripts:** record macros on this computer's keyboard or build them key by key,
+  and write JavaScript scripts that libamp's own compiler turns into bytecode, on keyboards whose
+  firmware supports them (today the Trinity Pad; macros also the Oholeo).
 - **💡 Lighting:** base effects with colours, speed, direction and density, plus per-key modes
   and colours.
 - **🗂️ Profiles:** switch the keyboard's on-board profiles, keep more locally, import and
@@ -124,7 +127,8 @@ Project layout:
 src/
   app/            App shell: routes, sidebar, toolbar, connection screens
   features/       device (keyboard session), keyboard, keycodes, remap, performance, lighting,
-                  dynamic-keys, debug, profiles, settings, firmware-update, about
+                  dynamic-keys, macros, scripts, debug, profiles, settings, firmware-update,
+                  about
   components/ui/  Shared UI primitives
   lib/            i18n, theme, transitions, storage, service worker registration
   testing/        Test setup and the simulated libamp keyboard

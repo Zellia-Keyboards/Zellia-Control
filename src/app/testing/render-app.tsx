@@ -17,6 +17,7 @@ import { DEFAULT_LAYOUT_OPTIONS } from '../../features/keyboard/model';
 import { setLanguage } from '../../lib/i18n';
 import { bootstrapTheme, setThemeColor } from '../../lib/theme';
 import { connectVirtualKeyboard, type ConnectedKeyboard } from '../../testing/app-keyboard';
+import type { VirtualKeyboardOptions } from '../../testing/virtual-keyboard';
 import type { PageLoader, PageLoaders, PagePath } from '../pages';
 import { createAppRoutes } from '../routes';
 
@@ -36,6 +37,8 @@ export function standInPages(): PageLoaders {
     performance: standInPage('performance'),
     lighting: standInPage('lighting'),
     dynamic: standInPage('dynamic'),
+    macros: standInPage('macros'),
+    scripts: standInPage('scripts'),
     debug: standInPage('debug'),
     settings: standInPage('settings'),
     update: standInPage('update'),
@@ -54,11 +57,13 @@ export function renderApp(path = '/', pages: PageLoaders = standInPages()): Rend
 }
 
 /**
- * Connects the app's session to a virtual keyboard without seeded dynamic keys; the keyboard is
- * disconnected and removed when the test finishes.
+ * Connects the app's session to a virtual keyboard (by default a Zellia Starlight) without seeded
+ * dynamic keys; the keyboard is disconnected and removed when the test finishes.
  */
-export async function connectShellKeyboard(): Promise<ConnectedKeyboard> {
-  const keyboard = await connectVirtualKeyboard({ seedDynamicKeys: false });
+export async function connectShellKeyboard(
+  options: VirtualKeyboardOptions = {}
+): Promise<ConnectedKeyboard> {
+  const keyboard = await connectVirtualKeyboard({ seedDynamicKeys: false, ...options });
   onTestFinished(keyboard.dispose);
   return keyboard;
 }

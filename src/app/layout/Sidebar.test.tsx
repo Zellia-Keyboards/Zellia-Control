@@ -134,6 +134,36 @@ describe('Sidebar', () => {
     expect(nav.getByRole('link', { name: 'Remap' })).not.toHaveAttribute('aria-current');
   });
 
+  it('shows Macros and Scripts after Dynamic Keys for keyboards that support them', async () => {
+    await connectShellKeyboard({ model: 'trinity-pad' });
+    renderApp('/remap/');
+
+    expect(await screen.findByText('Trinity Pad')).toBeInTheDocument();
+    const links = within(screen.getByRole('navigation')).getAllByRole('link');
+    expect(links.map(link => link.textContent)).toEqual([
+      'Performance',
+      'Remap',
+      'Lighting',
+      'Dynamic Keys',
+      'Macros',
+      'Scripts',
+      'Debug',
+      'Settings',
+      'Update',
+      'About',
+    ]);
+  });
+
+  it('shows neither for keyboards without them (Zellia Starlight)', async () => {
+    await connectShellKeyboard();
+    renderApp('/remap/');
+
+    expect(await screen.findByText('ZelliaKB')).toBeInTheDocument();
+    const navigation = within(screen.getByRole('navigation'));
+    expect(navigation.queryByRole('link', { name: 'Macros' })).not.toBeInTheDocument();
+    expect(navigation.queryByRole('link', { name: 'Scripts' })).not.toBeInTheDocument();
+  });
+
   it('opens the profiles page', async () => {
     const user = userEvent.setup();
     const { router } = renderApp('/');

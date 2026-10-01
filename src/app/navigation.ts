@@ -11,11 +11,33 @@ export const NAVIGATE = [
   ['/remap', 'nav.remap'],
   ['/lighting', 'nav.lighting'],
   ['/dynamic', 'nav.advancedkey'],
+  ['/macros', 'nav.macros'],
+  ['/scripts', 'nav.scripts'],
   ['/debug', 'nav.debug'],
   ['/settings', 'nav.settings'],
   ['/update', 'nav.update'],
   ['/about', 'nav.about'],
 ] as const satisfies readonly (readonly [string, TranslationKey])[];
+
+/** What the connected keyboard supports, for the sidebar entries that need it. */
+export interface PageSupport {
+  readonly macros: boolean;
+  readonly scripts: boolean;
+}
+
+/** Entries shown only while the keyboard supports their feature (macros and scripts spec). */
+const REQUIRES: Readonly<Partial<Record<(typeof NAVIGATE)[number][0], keyof PageSupport>>> = {
+  '/macros': 'macros',
+  '/scripts': 'scripts',
+};
+
+/** The sidebar entries for a keyboard that supports `support`. */
+export function navigationFor(support: PageSupport): readonly (typeof NAVIGATE)[number][] {
+  return NAVIGATE.filter(([href]) => {
+    const feature = REQUIRES[href];
+    return feature === undefined || support[feature];
+  });
+}
 
 /** Pages that use the sidebar layout. */
 export const SIDEBAR_PAGES = [
@@ -23,6 +45,8 @@ export const SIDEBAR_PAGES = [
   '/remap',
   '/lighting',
   '/dynamic',
+  '/macros',
+  '/scripts',
   '/debug',
   '/settings',
   '/about',
@@ -43,6 +67,8 @@ export const TOOLBAR_HIDDEN_PAGES = [
   '/debug',
   '/settings',
   '/update',
+  '/macros',
+  '/scripts',
 ] as const;
 
 /** Whether `pathname` is the page `href` or below it. */

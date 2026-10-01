@@ -76,6 +76,8 @@ describe('STATIC_ROUTES', () => {
       'performance',
       'lighting',
       'dynamic',
+      'macros',
+      'scripts',
       'debug',
       'settings',
       'update',
