@@ -21,6 +21,11 @@ export interface DeviceState {
   /** `updateDataStart` … `updateDataEnd` (from the request on, for profile switches). */
   readonly reloading: boolean;
   readonly saving: boolean;
+  /**
+   * An edit changed the configuration since the keyboard last loaded or saved it: Save has
+   * something to store (lighting edits are not even on the keyboard before it).
+   */
+  readonly unsaved: boolean;
   readonly lastError: DeviceError | null;
 }
 
@@ -33,6 +38,7 @@ export const INITIAL_DEVICE_STATE: DeviceState = Object.freeze({
   firmware: null,
   reloading: false,
   saving: false,
+  unsaved: false,
   lastError: null,
 });
 

@@ -2,7 +2,7 @@
  * DeviceSession save/flash (D9), profiles (D7), keyboard operations, bootloader detection (D3) and
  * the debug loop (D16), against the virtual keyboard.
  */
-import { Keycode, RGBMode } from 'emi-keyboard-controller';
+import { Keycode } from 'emi-keyboard-controller';
 import { afterEach, beforeEach, describe, expect, it, onTestFinished, vi } from 'vitest';
 import {
   KeyEvent,
@@ -248,6 +248,97 @@ describe('save (D9)', () => {
       keycodes.indexOf(OPERATION_KEYCODES.save)
     );
     expect(h.vk.state.config[0]).toBe(true);
+  });
+});
+
+describe('unsaved changes', () => {
+  it('are marked by every edit command and cleared by a successful save', async () => {
+    const h = await connected();
+    expect(h.state().unsaved).toBe(false);
+    const advancedKey = configOf(h).advancedKeys[3];
+    const rgbKey = configOf(h).rgbKeys[5];
+    if (!advancedKey || !rgbKey) throw new Error('Missing fixture data');
+    let slot: number | null = null;
+    const edits: readonly (readonly [string, () => void])[] = [
+      [
+        'setKeycodes',
+        () => {
+          h.session.setKeycodes(2, [10], Keycode.Tab);
+        },
+      ],
+      [
+        'setAdvancedKeys',
+        () => {
+          h.session.setAdvancedKeys([3], { ...advancedKey, activation: 0.5 });
+        },
+      ],
+      [
+        'setRgbBase',
+        () => {
+          h.session.setRgbBase({ ...configOf(h).rgbBase, brightness: 10 });
+        },
+      ],
+      [
+        'setRgbKeys',
+        () => {
+          h.session.setRgbKeys([{ keyId: 5, config: { ...rgbKey, speed: 99 } }]);
+        },
+      ],
+      [
+        'applyDynamicKey',
+        () => {
+          slot = h.session.applyDynamicKey({
+            kind: 'toggle',
+            target: { layer: 2, id: 7 },
+            binding: Keycode.Tab,
+          });
+        },
+      ],
+      [
+        'removeDynamicKey',
+        () => {
+          if (slot !== null) h.session.removeDynamicKey(slot);
+        },
+      ],
+    ];
+    for (const [name, edit] of edits) {
+      edit();
+      expect(h.state().unsaved, name).toBe(true);
+      await h.session.save();
+      expect(h.state(), name).toMatchObject({ unsaved: false, lastError: null });
+    }
+  });
+
+  it('stay marked when an edit lands while the save writes', async () => {
+    const h = await connected({ keyboard: { latencyMs: 1 } });
+    h.session.setKeycodes(2, [10], Keycode.Tab);
+    const saving = h.session.save();
+    await new Promise(resolve => setTimeout(resolve, 20));
+    expect(h.state().saving).toBe(true);
+    h.session.setKeycodes(2, [11], Keycode.Tab);
+    await saving;
+    expect(h.state()).toMatchObject({ saving: false, lastError: null, unsaved: true });
+  });
+
+  it('stay marked when the save fails', async () => {
+    const h = await connected();
+    h.session.setKeycodes(2, [10], Keycode.Tab);
+    await settle();
+    h.vk.dropReplies(
+      packet => packet.op === 'set' && packet.kind === 'advancedKey' && packet.index === 5
+    );
+    await h.session.save();
+    expect(h.state().lastError?.operation).toBe('save');
+    expect(h.state().unsaved).toBe(true);
+  });
+
+  it('are dropped with the configuration when the keyboard loads another one', async () => {
+    const h = await connected();
+    h.session.setRgbBase({ ...configOf(h).rgbBase, brightness: 10 });
+    expect(h.state().unsaved).toBe(true);
+    await h.session.switchProfile(1);
+    expect(h.state()).toMatchObject({ unsaved: false, config: { profileIndex: 1 } });
+    expect(configOf(h).rgbBase).toEqual(h.vk.state.active.rgbBase);
   });
 });
 
@@ -651,18 +742,9 @@ describe('debug tracking (D16)', () => {
   it('streams while the keyboard stays usable for edits', async () => {
     const h = await connected({ keyboard: { debugIntervalMs: 5 } });
     h.session.startDebug(2);
-    h.session.setRgbKeys([
-      {
-        keyId: 2,
-        config: { mode: RGBMode.RgbModeFixed, color: { red: 3, green: 2, blue: 1 }, speed: 4 },
-      },
-    ]);
+    h.session.setKeycodes(1, [2], Keycode.A);
     await vi.waitFor(() => {
-      expect(h.vk.state.active.rgbKeys[2]).toEqual({
-        mode: RGBMode.RgbModeFixed,
-        color: { red: 3, green: 2, blue: 1 },
-        speed: 4,
-      });
+      expect(h.vk.state.active.keymap[1]?.[2]).toBe(Keycode.A);
     });
     expect(h.state().lastError).toBeNull();
   });
