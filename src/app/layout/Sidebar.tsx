@@ -117,22 +117,25 @@ export function Sidebar({ onDisconnect }: SidebarProps) {
           <div>
             <button
               type="button"
-              className="relative w-full px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 text-white shadow-lg hover:shadow-xl glassmorphism-button flex items-center justify-center gap-2 active:scale-95 hover:animate-none"
+              className="w-full px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 text-white shadow-lg hover:shadow-xl glassmorphism-button grid place-items-center active:scale-95 hover:animate-none"
               onClick={() => {
                 void deviceSession.save();
               }}
               title="Save configuration"
               aria-describedby={unsaved ? unsavedId : undefined}
             >
-              <div className="flex items-center justify-center gap-1">
+              <div className="flex items-center justify-center gap-1 col-start-1 row-start-1">
                 <Save className="w-3 h-3" />
                 <i>{t('ui.save')}</i>
               </div>
-              {/* PL-050: unsaved changes */}
+              {/* PL-050: unsaved changes. The dot shares the label's grid cell, so the button
+                  stays unpositioned: a positioned Save button changes how Chrome draws the
+                  Disconnect button below it. The margins cancel the padding: 6 px from the
+                  corner, as before. */}
               {unsaved && (
                 <span
                   aria-hidden="true"
-                  className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-amber-400"
+                  className="col-start-1 row-start-1 self-start justify-self-end -mt-1 -mr-1.5 w-2 h-2 rounded-full bg-amber-400"
                 />
               )}
             </button>
