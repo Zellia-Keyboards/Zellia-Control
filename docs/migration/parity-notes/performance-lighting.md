@@ -28,8 +28,9 @@ bottom edges line up again). To compare the pages themselves, the same scenarios
 once more with the baseline's profile dropdown and both apps' Save label hidden, and on
 Performance the keycap legends (a local, uncommitted scenario file). Every difference left is a
 deviation below or capture noise. The keycap legends hidden on Performance are PL-005 as well: in
-every `performance-*` capture React's keycaps show each key's values and the baseline's are blank
-(or read NaN on the selected keys with rapid trigger on).
+every `performance-*` capture React's keycaps show each key's values and the baseline's are blank,
+except the selected keys, which read the defaults it wrote to them ("↓2.000 ↑1.500"), or NaN with
+rapid trigger on.
 
 | Scenario                                                           | Differences with the dropdown, the Save label and (on Performance) the keycap legends hidden (px) | Explained by                                      |
 | ------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------- | ------------------------------------------------- |
