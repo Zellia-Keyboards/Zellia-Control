@@ -49,8 +49,8 @@ export function ActuationPointControl({
 
         <div>
           <div className="flex justify-between items-center text-sm dark:text-gray-400 text-gray-500 mb-2">
-            <div>Deactivation: {deactivationPoint.toFixed(3)}mm</div>
-            <div>Actuation: {actuationPoint.toFixed(3)}mm</div>
+            <div>{`Deactivation: ${deactivationPoint.toFixed(3)}mm`}</div>
+            <div>{`Actuation: ${actuationPoint.toFixed(3)}mm`}</div>
           </div>
 
           <div className="relative mb-4" style={{ height: '24px' }}>
@@ -151,7 +151,7 @@ export function ActuationPointControl({
           </div>
         </div>
         <div className="mt-3 text-base text-gray-900 dark:text-white font-medium">
-          {keysSelected} {t('performance.keysSelected')}
+          {`${keysSelected} ${t('performance.keysSelected')}`}
         </div>
       </div>
     </div>

@@ -37,10 +37,11 @@ export function TapHoldConfiguredKeys({
           {t('advancedkey.configuredTapHold')}
         </h3>
         <span className="text-sm text-gray-500 dark:text-gray-400">
-          {configuredKeys.length}{' '}
-          {configuredKeys.length !== 1
-            ? t('advancedkey.keysCountPlural')
-            : t('advancedkey.keysCount')}
+          {`${configuredKeys.length} ${
+            configuredKeys.length !== 1
+              ? t('advancedkey.keysCountPlural')
+              : t('advancedkey.keysCount')
+          }`}
         </span>
       </div>
       <div className="space-y-3 mb-3">
@@ -81,20 +82,19 @@ export function TapHoldConfiguredKeys({
               </div>
               <div className="text-xs space-y-1">
                 <div className="flex justify-between">
-                  <span className="text-gray-600 dark:text-gray-400">{t('advancedkey.tap')}:</span>
+                  <span className="text-gray-600 dark:text-gray-400">{`${t('advancedkey.tap')}:`}</span>
                   <span className="font-medium text-primary-500">{actionNameOrHex(tap)}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600 dark:text-gray-400">{t('advancedkey.hold')}:</span>
+                  <span className="text-gray-600 dark:text-gray-400">{`${t('advancedkey.hold')}:`}</span>
                   <span className="font-medium text-green-500">{actionNameOrHex(hold)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600 dark:text-gray-400">
-                    {t('advancedkey.holdDelay')}:
+                    {`${t('advancedkey.holdDelay')}:`}
                   </span>
                   <span className="text-gray-700 dark:text-gray-300">
-                    {holdDelay}
-                    {t('advancedkey.milliseconds')}
+                    {`${holdDelay}${t('advancedkey.milliseconds')}`}
                   </span>
                 </div>
               </div>

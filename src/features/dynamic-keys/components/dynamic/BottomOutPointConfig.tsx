@@ -27,7 +27,7 @@ export function BottomOutPointConfig({ bottomOutPointValue, onChange }: BottomOu
             {t('advancedkey.distance')}
           </label>
           <span className="text-sm text-gray-500 dark:text-gray-400">
-            {bottomOutPointValue.toFixed(1)}mm
+            {`${bottomOutPointValue.toFixed(1)}mm`}
           </span>
         </div>
         <input

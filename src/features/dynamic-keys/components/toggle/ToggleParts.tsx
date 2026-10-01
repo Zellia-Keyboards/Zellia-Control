@@ -70,14 +70,14 @@ export function ToggleSelectedKeyInfo({
             <div>
               <h3 className="font-medium text-gray-900 dark:text-white">Selected Key</h3>
               <p className="text-sm text-gray-500 dark:text-gray-400">
-                Key Index: {currentSelectedIndex}
+                {`Key Index: ${currentSelectedIndex}`}
               </p>
             </div>
           </div>
         </div>
         <div className="flex items-center gap-3">
           <span className="text-sm text-gray-600 dark:text-gray-400">
-            {t('advancedkey.toggleState')}:
+            {`${t('advancedkey.toggleState')}:`}
           </span>
           <div className="flex items-center gap-2">
             <div
