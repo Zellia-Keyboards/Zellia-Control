@@ -11,8 +11,10 @@
 // any difference is real (a neighbouring Tailwind shade is below pixelmatch's default threshold).
 // --threshold and --ignore-aa only exist for exploring a large diff; such a report is marked as
 // tolerant and is not a parity result.
+// React-only scenarios (`reactOnly` in their record) have no baseline: they are reported as new.
 //
-// Exit code: 0 all identical, 1 differences or missing captures, 2 nothing to compare / bad input.
+// Exit code: 0 every capture identical or new (a React-only screen), 1 differences or missing captures,
+// 2 nothing to compare / bad input.
 
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
@@ -26,7 +28,7 @@ const { PNG } = pngjs;
 const repoRoot = fileURLToPath(new URL('../..', import.meta.url));
 export const PARITY_DIR = path.join(repoRoot, 'e2e/.artifacts/parity');
 const APPS = ['baseline', 'react'];
-const STATUS_ORDER = { missing: 0, different: 1, identical: 2 };
+const STATUS_ORDER = { missing: 0, different: 1, new: 2, identical: 3 };
 
 function readRecord(file) {
   try {
@@ -125,6 +127,18 @@ export function compareCaptures({ dir = PARITY_DIR, threshold = 0, includeAA = t
         react: record?.apps?.react?.errors ?? [],
       },
     };
+    if (record?.reactOnly) {
+      // A screen only the React app has: nothing to compare.
+      return {
+        ...base,
+        status: base.react ? 'new' : 'missing',
+        mismatchedPixels: null,
+        totalPixels: null,
+        mismatchRatio: null,
+        sizeMismatch: false,
+        diff: null,
+      };
+    }
     if (!base.baseline || !base.react || !record) {
       return {
         ...base,
@@ -167,12 +181,19 @@ export function compareCaptures({ dir = PARITY_DIR, threshold = 0, includeAA = t
       identical: count('identical'),
       different: count('different'),
       missing: count('missing'),
+      new: count('new'),
     },
     results,
   };
   writeFileSync(path.join(dir, 'summary.json'), `${JSON.stringify(summary, null, 2)}\n`);
   writeFileSync(path.join(dir, 'index.html'), renderReport(summary));
   return summary;
+}
+
+/** Whether the comparison establishes parity: every capture identical, or new (React only). */
+export function isParity(summary) {
+  const { captures, identical } = summary.totals;
+  return identical + summary.totals.new === captures;
 }
 
 export class UsageError extends Error {}
@@ -202,8 +223,8 @@ function percent(ratio) {
   return ratio < 0.0001 ? '<0.01%' : `${(ratio * 100).toFixed(2)}%`;
 }
 
-function image(src, label) {
-  if (!src) return '<td class="absent">missing</td>';
+function image(src, label, absent = 'missing') {
+  if (!src) return `<td class="absent">${escapeHtml(absent)}</td>`;
   const safe = escapeHtml(src);
   return `<td><a href="${safe}"><img src="${safe}" alt="${escapeHtml(label)}" loading="lazy"></a></td>`;
 }
@@ -228,13 +249,14 @@ function renderRow(result) {
     result.mismatchedPixels === null
       ? ''
       : `<br><small>${result.mismatchedPixels.toLocaleString('en')} px${result.sizeMismatch ? ' · size differs' : ''}</small>`;
+  const absent = result.status === 'new' ? 'React only' : 'missing';
   return `<tr class="${result.status}">
   <td><b>${escapeHtml(result.scenario)}</b><br><small>${escapeHtml(variant)}</small><br><code>${escapeHtml(result.id)}</code>${errorList(result.errors)}</td>
   <td class="status">${escapeHtml(result.status)}</td>
   <td>${percent(result.mismatchRatio)}${pixels}</td>
-  ${image(result.baseline, `${result.id} baseline`)}
+  ${image(result.baseline, `${result.id} baseline`, absent)}
   ${image(result.react, `${result.id} react`)}
-  ${image(result.diff, `${result.id} diff`)}
+  ${image(result.diff, `${result.id} diff`, absent)}
 </tr>`;
 }
 
@@ -253,6 +275,7 @@ function renderReport(summary) {
   img { width: 360px; border: 1px solid #ccc; background: repeating-conic-gradient(#eee 0 25%, #fff 0 50%) 0 0 / 16px 16px; }
   tr.identical .status { color: #15803d; }
   tr.different .status { color: #b91c1c; }
+  tr.new .status { color: #1d4ed8; }
   tr.missing .status, td.absent { color: #b45309; }
   .errors { margin: 6px 0 0; padding-left: 16px; color: #b91c1c; font-size: 12px; }
   .tolerant { padding: 8px 12px; border: 2px solid #b45309; background: #fffbeb; }
@@ -260,14 +283,14 @@ function renderReport(summary) {
 </head>
 <body>
 <h1>Visual parity: Svelte baseline vs React</h1>
-<p>${totals.captures} captures · ${totals.identical} identical · ${totals.different} different · ${totals.missing} missing</p>
+<p>${totals.captures} captures · ${totals.identical} identical · ${totals.different} different · ${totals.missing} missing · ${totals.new} new</p>
 ${
   summary.strict
     ? `<p><small>${escapeHtml(comparisonNote(summary))}</small></p>`
     : `<p class="tolerant"><b>${escapeHtml(comparisonNote(summary))}.</b> Parity is only established by the strict default.</p>`
 }
 <p><small>Generated ${escapeHtml(summary.generatedAt)} · browser ${escapeHtml(summary.browsers.join(', ') || 'unknown')}</small></p>
-<p><small>Every difference must be fixed or recorded in docs/migration/parity-log.md.</small></p>
+<p><small>Every difference must be fixed or recorded in docs/migration/parity-log.md; every new (React-only) screen needs a row there with its after-screenshot.</small></p>
 <table>
 <thead><tr><th>Capture</th><th>Status</th><th>Mismatch</th><th>Baseline (Svelte)</th><th>React</th><th>Diff</th></tr></thead>
 <tbody>
@@ -294,7 +317,7 @@ function main() {
   const dir = path.resolve(values.dir);
   const summary = compareCaptures({ dir, threshold, includeAA: !values['ignore-aa'] });
   printSummary(summary, dir);
-  return summary.totals.identical === summary.totals.captures ? 0 : 1;
+  return isParity(summary) ? 0 : 1;
 }
 
 /** Prints the totals, every non-identical capture and the report location. */
@@ -302,7 +325,7 @@ export function printSummary(summary, dir = PARITY_DIR) {
   const { totals } = summary;
   console.log(
     `[parity:compare] ${totals.captures} captures: ${totals.identical} identical, ` +
-      `${totals.different} different, ${totals.missing} missing`
+      `${totals.different} different, ${totals.missing} missing, ${totals.new} new`
   );
   if (!summary.strict) console.log(`[parity:compare] ${comparisonNote(summary)}`);
   for (const result of summary.results.filter(result => result.status !== 'identical')) {
