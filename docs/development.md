@@ -244,6 +244,9 @@ mquickjs), built to WebAssembly in `vendor/mqjs/`:
   module and its wasm (a build asset the service worker precaches) load only on the Scripts
   page. Tests compile with `src/features/scripts/testing/node-compiler.ts`, which reads the wasm
   from disk.
+- The editor completes libamp's script API from `src/features/scripts/model/libamp-api.ts`,
+  taken from the pinned commit's `src/mquickjs/mqjs_libamp_stdlib.c` and `src/script.c`.
+  Moving `build.sh` to another commit means checking that list against it.
 
 ## PWA
 
