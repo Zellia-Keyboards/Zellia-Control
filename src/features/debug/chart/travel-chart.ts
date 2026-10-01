@@ -3,7 +3,9 @@
  *
  * Chart.js and its zoom plugin are imported on first use, so they load with the Debug page.
  * Points are appended to the dataset imperatively (no React state per sample) and drawn at most
- * once per animation frame; the x axis follows the last `TRACKING_WINDOW_MS` of samples.
+ * once per animation frame; the x axis follows the last `TRACKING_WINDOW_MS` of samples. Only the
+ * last `TRACKING_HISTORY_MS` are kept, so a long recording does not grow without bound (Svelte
+ * kept every sample); after Stop, panning and zooming out reach that far back.
  */
 import type { Chart, ChartConfiguration } from 'chart.js';
 import { TRAVEL_MM } from '../../device/model/units';
@@ -25,6 +27,10 @@ export interface TravelChartLabels {
 
 /** Width of the followed time window (Svelte `WINDOW_MS`). */
 export const TRACKING_WINDOW_MS = 500;
+/** Samples kept before the newest one (at a sample per millisecond, 10 000 points). */
+export const TRACKING_HISTORY_MS = 10_000;
+/** Older samples are dropped once this much more has accumulated, so a sample costs O(1). */
+const HISTORY_TRIM_MS = 1_000;
 /** Lower bound of the distance axis after "Zoom 0.1mm". */
 const BOTTOM_ZOOM_MIN_MM = 3.9;
 /** Delay between a theme class change and re-reading the chart colours. */
@@ -187,6 +193,7 @@ export class TravelChart {
   append(point: TravelPoint): void {
     if (this.#destroyed) return;
     this.#points.push(point);
+    this.#dropOldSamples(point.x);
     if (this.#chart === null || this.#frame !== null) return;
     this.#frame = requestAnimationFrame(() => {
       this.#frame = null;
@@ -257,6 +264,20 @@ export class TravelChart {
     }
     this.#dataset(chart).data = this.#points;
     chart.update('none');
+  }
+
+  /**
+   * Drops the samples older than `TRACKING_HISTORY_MS` before `newest`, once a further
+   * `HISTORY_TRIM_MS` of them has accumulated. In place: Chart.js follows a splice of its data.
+   */
+  #dropOldSamples(newest: number): void {
+    const oldest = this.#points[0];
+    if (!oldest || oldest.x >= newest - TRACKING_HISTORY_MS - HISTORY_TRIM_MS) return;
+    const cutoff = newest - TRACKING_HISTORY_MS;
+    this.#points.splice(
+      0,
+      this.#points.findIndex(sample => sample.x >= cutoff)
+    );
   }
 
   #applyThemeColors(): void {

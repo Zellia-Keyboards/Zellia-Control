@@ -1,7 +1,13 @@
 import { Chart } from 'chart.js';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { installChartEnvironment } from '../testing/chart-environment';
-import { TRACKING_WINDOW_MS, TravelChart, type TravelChartLabels } from './travel-chart';
+import {
+  TRACKING_HISTORY_MS,
+  TRACKING_WINDOW_MS,
+  TravelChart,
+  type TravelChartLabels,
+  type TravelPoint,
+} from './travel-chart';
 
 const LABELS: TravelChartLabels = {
   dataset: 'Key Distance',
@@ -29,6 +35,18 @@ async function createChart(): Promise<{ travel: TravelChart; chart: Chart }> {
 
 function points(chart: Chart): unknown[] {
   return chart.data.datasets[0]?.data ?? [];
+}
+
+/** The plotted samples, checked to be travel points. */
+function travelPoints(chart: Chart): TravelPoint[] {
+  return points(chart).map(point => {
+    if (typeof point !== 'object' || point === null || !('x' in point) || !('y' in point)) {
+      throw new Error('not a travel point');
+    }
+    const { x, y } = point;
+    if (typeof x !== 'number' || typeof y !== 'number') throw new Error('not a travel point');
+    return { x, y };
+  });
 }
 
 function scale(chart: Chart, id: 'x' | 'y') {
@@ -130,6 +148,37 @@ describe('TravelChart', () => {
     await nextFrame();
     expect(points(chart)).toHaveLength(3);
     expect(scale(chart, 'x')).toMatchObject({ min: 250, max: 750 });
+  });
+
+  it('keeps only the recent history of a long recording', async () => {
+    const { travel, chart } = await createChart();
+    const last = 60_000;
+
+    // A minute of samples, one every 5 ms, drawn every 2 s of them.
+    for (let x = 0; x <= last; x += 5) {
+      travel.append({ x, y: 2 });
+      if (x % 2000 === 0) await nextFrame();
+    }
+
+    const kept = travelPoints(chart);
+    expect(kept.at(-1)).toEqual({ x: last, y: 2 });
+    // At least the retained history, at most one second more (old samples go in batches).
+    expect(kept[0]?.x).toBeLessThanOrEqual(last - TRACKING_HISTORY_MS);
+    expect(kept[0]?.x).toBeGreaterThan(last - TRACKING_HISTORY_MS - 1000);
+    expect(kept).toHaveLength((last - (kept[0]?.x ?? 0)) / 5 + 1);
+    // Chart.js followed the dropped samples: one line element per kept sample.
+    expect(chart.getDatasetMeta(0).data).toHaveLength(kept.length);
+    expect(scale(chart, 'x')).toMatchObject({ min: last - TRACKING_WINDOW_MS, max: last });
+  });
+
+  it('bounds the history while Chart.js is still loading', async () => {
+    travel = new TravelChart(canvas, LABELS);
+    for (let x = 0; x <= 30_000; x += 10) travel.append({ x, y: 1 });
+    await travel.ready;
+
+    const kept = travelPoints(chartOf(canvas));
+    expect(kept[0]?.x).toBeGreaterThan(30_000 - TRACKING_HISTORY_MS - 1000);
+    expect(kept.at(-1)).toEqual({ x: 30_000, y: 1 });
   });
 
   it('keeps points that arrive before Chart.js has loaded', async () => {
