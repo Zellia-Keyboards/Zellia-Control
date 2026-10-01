@@ -21,3 +21,5 @@ export { RapidTriggerToggle, type RapidTriggerToggleProps } from './RapidTrigger
 export { SensitivityControl, type SensitivityControlProps } from './SensitivityControl';
 // The Macros and Scripts pages on keyboards without the feature.
 export { UnsupportedFeature, type UnsupportedFeatureProps } from './UnsupportedFeature';
+// The bordered secondary button the Macros and Scripts pages compose themselves.
+export { SECONDARY_BUTTON } from './button-styles';

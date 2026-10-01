@@ -1,9 +1,8 @@
 import { useId } from 'react';
-import { KeycodePicker, Modal } from '../../../components/ui';
+import { KeycodePicker, Modal, SECONDARY_BUTTON } from '../../../components/ui';
 import { useT } from '../../../lib/i18n';
 import type { Keycode } from '../../device';
 import { MACRO_KEY_CATEGORIES } from '../model';
-import { SECONDARY_BUTTON } from './styles';
 
 export interface MacroKeyPickerProps {
   readonly open: boolean;
