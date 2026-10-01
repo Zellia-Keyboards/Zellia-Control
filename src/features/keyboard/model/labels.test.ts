@@ -12,6 +12,7 @@ import type {
   DynamicKeySlot,
   RgbKeyConfig,
 } from '../../device/model/types';
+import { decodeKeycode, describeKeycode } from '../../keycodes';
 import recording from './__fixtures__/svelte-labels.json';
 import { lightingLabels, performanceLabels, remapLabels, type KeyLabels } from './labels';
 import { parseLayout, visibleKeys, type LayoutKey } from './layout';
@@ -156,6 +157,11 @@ describe('label builders replay the recorded Svelte transformKeyboardKeys', () =
       const expected = recorded.map((labels, index) => {
         const keycode = row?.[keys[index]?.id ?? -1];
         if (keycode === undefined) return EMPTY;
+        // Deliberate deviation: script keycodes were blank in Svelte; they are now named, as in upstream's keyCodeToString.
+        if (decodeKeycode(keycode).category === 'script') {
+          const description = describeKeycode(keycode);
+          return withSlots({ 0: description.sub, 6: description.main });
+        }
         const modifierOnly = keycode !== 0 && (keycode & 0xff) === 0;
         return modifierOnly ? withSlots({ 6: labels[0] ?? '' }) : labels;
       });
