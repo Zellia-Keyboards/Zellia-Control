@@ -36,6 +36,7 @@ describe('libampCompletions', () => {
       'led',
       'console',
       'Key',
+      'AdvancedKey',
       'setTimeout',
       'clearTimeout',
       'loop',

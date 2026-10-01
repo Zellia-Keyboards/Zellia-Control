@@ -28,6 +28,12 @@ export const SCRIPT_GLOBALS: readonly ScriptApiEntry[] = [
   { label: 'console', kind: 'variable', detail: '', info: "Output to the keyboard's console." },
   { label: 'Key', kind: 'class', detail: '(id)', info: 'The key with this ID: new Key(2).' },
   {
+    label: 'AdvancedKey',
+    kind: 'class',
+    detail: '(id)',
+    info: 'The key with this ID; adds the Hall effect properties for analog keys: new AdvancedKey(2).',
+  },
+  {
     label: 'setTimeout',
     kind: 'function',
     detail: '(callback, ms)',

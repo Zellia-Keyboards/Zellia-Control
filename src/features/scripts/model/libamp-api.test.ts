@@ -19,6 +19,11 @@ describe("libamp's script API", () => {
     expect(Object.keys(SCRIPT_MEMBERS)).toEqual(objects);
   });
 
+  it('lists AdvancedKey as a global class next to Key, for Hall effect keys', () => {
+    // mqjs_stdlib.c registers it right after Key (JS_PROP_CLASS_DEF("AdvancedKey", ...)).
+    expect(SCRIPT_GLOBALS.map(entry => entry.label)).toContain('AdvancedKey');
+  });
+
   it('follows the firmware where the spec named other functions', () => {
     const keyboard = SCRIPT_MEMBERS.keyboard.map(entry => entry.label);
     expect(keyboard).toEqual(expect.arrayContaining(['watch', 'getKey', 'tap', 'getLayerIndex']));
