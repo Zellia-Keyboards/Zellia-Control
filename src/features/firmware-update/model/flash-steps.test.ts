@@ -13,15 +13,15 @@ const P = 'pending';
 const E = 'error';
 
 describe('FLASH_STEPS', () => {
-  it('keeps the seven Svelte steps, names and descriptions in order', () => {
-    expect(FLASH_STEPS.map(step => [step.id, step.name, step.description])).toEqual([
-      ['choose_binary', 'Choose Binary', 'Select firmware file'],
-      ['reboot_recovery', 'Reboot to Recovery', 'Enter DFU mode'],
-      ['connect_recovery', 'Connect Recovery', 'Connect in DFU mode'],
-      ['update_program', 'Update Program', 'Update DFU bootloader'],
-      ['connect_flash', 'Connect Flash', 'Reconnect for flashing'],
-      ['flash_firmware', 'Flash Firmware', 'Write firmware to device'],
-      ['finish', 'Finish', 'Flashing complete'],
+  it('keeps the seven Svelte steps and names in order', () => {
+    expect(FLASH_STEPS.map(step => [step.id, step.name])).toEqual([
+      ['choose_binary', 'Choose Binary'],
+      ['reboot_recovery', 'Reboot to Recovery'],
+      ['connect_recovery', 'Connect Recovery'],
+      ['update_program', 'Update Program'],
+      ['connect_flash', 'Connect Flash'],
+      ['flash_firmware', 'Flash Firmware'],
+      ['finish', 'Finish'],
     ]);
   });
 });

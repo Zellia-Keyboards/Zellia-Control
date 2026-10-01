@@ -1,8 +1,9 @@
 /**
- * The firmware updater's seven steps (from `WebUSBFirmwareFlasher.svelte`, identical names and
- * copy) and the state they are derived from. Upstream WebDFU drives them (spec §8 Update):
- * choose the file → reboot into the bootloader → pick and open the DFU device → erase ("Update
- * Program") → the second connection completes at once → download with progress → finish.
+ * The firmware updater's seven steps (from `WebUSBFirmwareFlasher.svelte`, identical names; its
+ * step descriptions were never shown) and the state they are derived from. Upstream WebDFU drives
+ * them (spec §8 Update): choose the file → reboot into the bootloader → pick and open the DFU
+ * device → erase ("Update Program") → the second connection completes at once → download with
+ * progress → finish.
  */
 
 export type FlashStepId =
@@ -19,17 +20,16 @@ export type FlashStepStatus = 'pending' | 'active' | 'completed' | 'error';
 export interface FlashStep {
   readonly id: FlashStepId;
   readonly name: string;
-  readonly description: string;
 }
 
 export const FLASH_STEPS: readonly FlashStep[] = [
-  { id: 'choose_binary', name: 'Choose Binary', description: 'Select firmware file' },
-  { id: 'reboot_recovery', name: 'Reboot to Recovery', description: 'Enter DFU mode' },
-  { id: 'connect_recovery', name: 'Connect Recovery', description: 'Connect in DFU mode' },
-  { id: 'update_program', name: 'Update Program', description: 'Update DFU bootloader' },
-  { id: 'connect_flash', name: 'Connect Flash', description: 'Reconnect for flashing' },
-  { id: 'flash_firmware', name: 'Flash Firmware', description: 'Write firmware to device' },
-  { id: 'finish', name: 'Finish', description: 'Flashing complete' },
+  { id: 'choose_binary', name: 'Choose Binary' },
+  { id: 'reboot_recovery', name: 'Reboot to Recovery' },
+  { id: 'connect_recovery', name: 'Connect Recovery' },
+  { id: 'update_program', name: 'Update Program' },
+  { id: 'connect_flash', name: 'Connect Flash' },
+  { id: 'flash_firmware', name: 'Flash Firmware' },
+  { id: 'finish', name: 'Finish' },
 ];
 
 export type FlasherState =

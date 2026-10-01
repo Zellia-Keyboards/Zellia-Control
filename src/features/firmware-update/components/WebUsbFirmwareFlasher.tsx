@@ -262,8 +262,10 @@ export function WebUsbFirmwareFlasher() {
             </div>
           )}
 
-          {/* Connect Recovery/Flash Steps */}
-          {(isActive('connect_recovery') || isActive('connect_flash')) && (
+          {/* Connect Recovery Step. Svelte shared this panel with Connect Flash ("Reconnect for
+              firmware flashing"), which never becomes active here: WebDFU writes over the first
+              connection (I-5). */}
+          {isActive('connect_recovery') && (
             <div className="text-center space-y-3">
               <div className="w-10 h-10 mx-auto">
                 <div className="w-10 h-10 bg-purple-100 dark:bg-purple-900/20 rounded-full flex items-center justify-center">
@@ -275,9 +277,7 @@ export function WebUsbFirmwareFlasher() {
                   Connect USB Device
                 </h2>
                 <p className="text-sm text-gray-500 dark:text-gray-400">
-                  {isActive('connect_recovery')
-                    ? 'Connect your device in DFU mode'
-                    : 'Reconnect for firmware flashing'}
+                  Connect your device in DFU mode
                 </p>
               </div>
               <button
