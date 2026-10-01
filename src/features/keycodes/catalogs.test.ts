@@ -360,6 +360,14 @@ describe('the Extension tab’s Macro and Script groups', () => {
     ]);
   });
 
+  it('stop at the 16 slots a macro keycode can address', () => {
+    const rows = macroPalette(20);
+    expect(rows).toHaveLength(16);
+    expect((rows.at(-1) ?? []).map(key => decodeKeycode(key.keycode))).toEqual(
+      [1, 2, 3, 4, 5, 6, 7, 8, 9].map(op => ({ category: 'macro', op, index: 15 }))
+    );
+  });
+
   it('list the six libamp script operations, named on the keycaps', () => {
     expect(SCRIPT_PALETTE.map(key => decodeKeycode(key.keycode))).toEqual(
       [0, 1, 2, 3, 4, 5].map(sub => ({ category: 'script', sub }))
