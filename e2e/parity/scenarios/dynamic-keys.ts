@@ -39,11 +39,33 @@ async function parkPointer(page: Page): Promise<void> {
 }
 
 /**
+ * Removes the `forwards` fill of finished fade-in animations (the configured lists'): the elements
+ * look the same without it (fully faded in), but with it Chrome keeps them on composited layers
+ * that it rasterizes at a different sub-pixel offset in each app at 2560×1440, although both apps
+ * have the same layer tree, layout and styles there.
+ */
+async function settleFadeIns(page: Page): Promise<void> {
+  await page.evaluate(() => {
+    for (const animation of document.getAnimations()) {
+      if (
+        animation instanceof CSSAnimation &&
+        animation.playState === 'finished' &&
+        /fade-?in/i.test(animation.animationName)
+      ) {
+        animation.cancel();
+      }
+    }
+  });
+}
+
+/**
  * Hides the shell regions above the page and parks the pointer, ready for the capture. `scrollTo`
- * scrolls the main column to an element, or to its start or end.
+ * scrolls the main column to an element, or to its start or end: where a click scrolled it to
+ * depends on the shell above the page, which differs (see above).
  */
 async function showPage(page: Page, scrollTo?: Locator | 'start' | 'end'): Promise<void> {
   await page.addStyleTag({ content: SHELL_REGIONS });
+  await settleFadeIns(page);
   if (scrollTo === 'start' || scrollTo === 'end') {
     await page.locator('.glassmorphism-main').evaluate((main, to) => {
       main.scrollTop = to === 'start' ? 0 : main.scrollHeight;
@@ -247,7 +269,8 @@ const scenarios: readonly ParityScenario[] = [
     await clickKeycap(page, KEYCAP.tab);
     await pickAction(picker(page, 0), 'B');
     await pickAction(picker(page, 1), 'Left Shift');
-    await showPage(page);
+    // The preview and the "how it works" panel name the picked actions.
+    await showPage(page, 'start');
   }),
   connected('tap-hold-category-actions', async page => {
     // Actions that are not the first of their category (PL-019): Vol+ taps, Wheel Up holds.
@@ -276,7 +299,7 @@ const scenarios: readonly ParityScenario[] = [
       await categories.getByRole('button', { name, exact: true }).click();
     }
     await page.waitForTimeout(500);
-    await showPage(page);
+    await showPage(page, page.getByRole('heading', { name: 'Tap Action', exact: true }));
   }),
   connected('tap-hold-configured', async page => {
     await openMode(page, 'tap-hold');
@@ -372,7 +395,7 @@ const scenarios: readonly ParityScenario[] = [
     await openMode(page, 'dks');
     await clickKeycap(page, KEYCAP.w);
     await editDksBindings(page);
-    await showPage(page);
+    await showPage(page, 'start');
   }),
   connected('dks-performance', async page => {
     await openMode(page, 'dks');
