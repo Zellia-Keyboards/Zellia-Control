@@ -102,6 +102,10 @@ export function createCompiler(load: () => Promise<MqjsFactory>): Compile {
         stderr += `${text}\n`;
       },
     });
+    // The compile's output starts at callMain: while it loads, the module may print messages of
+    // its own, such as its fallback when the wasm is served without `application/wasm`.
+    stdout = '';
+    stderr = '';
     instance.FS.writeFile('/main.js', source);
     try {
       instance.callMain([...COMPILER_ARGS]);
