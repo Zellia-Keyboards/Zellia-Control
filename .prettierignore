@@ -7,3 +7,4 @@ e2e/.artifacts
 src-controller
 package-lock.json
 docs/superpowers
+.superpowers
