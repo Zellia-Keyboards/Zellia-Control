@@ -6,7 +6,7 @@
  * keycode (`hidKeycodeOf`, `mouseButtonKeycodeOf`) and passes `performance.now()`.
  */
 import type { Keycode, MacroAction, MacroEvent } from '../../device/model/types';
-import { lastTicks } from './actions';
+import { hasRoom, lastTicks } from './actions';
 import { msToTicks } from './timing';
 
 export interface Recording {
@@ -107,7 +107,7 @@ export function recordPress(
   }
   if (recording.held.includes(keycode)) return { recording, actions };
   // Room for this press and its release, and for the releases of the keys still held.
-  if (actions.length + recording.held.length + 2 > recording.limit) {
+  if (!hasRoom(actions, recording.held.length + 2, recording.limit)) {
     const stopped = stopRecording(recording, actions, press.now);
     return { recording: { ...stopped.recording, full: true }, actions: stopped.actions };
   }
