@@ -152,17 +152,32 @@ describe('brushConfig', () => {
     });
   });
 
-  it('maps the rapid trigger switch to the key mode and keeps other modes while it is off', () => {
+  it('maps the rapid trigger switch to the key mode', () => {
     expect(edited(DEFAULT_KEY, { rapidTriggerEnabled: true }).mode).toBe(
       KeyMode.KeyAnalogRapidMode
     );
     expect(edited(KEY, { rapidTriggerEnabled: false }).mode).toBe(KeyMode.KeyAnalogNormalMode);
+    expect(edited(KEY, { actuationPoint: 1 }).mode).toBe(KeyMode.KeyAnalogRapidMode);
+    expect(edited(DEFAULT_KEY, { actuationPoint: 1 }).mode).toBe(KeyMode.KeyAnalogNormalMode);
+  });
+
+  it('writes the switch’s mode over other modes once a setting changes, as Svelte did', () => {
+    for (const mode of [KeyMode.KeyDigitalMode, KeyMode.KeyAnalogSpeedMode]) {
+      const key = { ...DEFAULT_KEY, mode };
+      expect(edited(key, { actuationPoint: 1 }).mode).toBe(KeyMode.KeyAnalogNormalMode);
+      expect(edited(key, { upperDeadzone: 0.2 }).mode).toBe(KeyMode.KeyAnalogNormalMode);
+      expect(edited(key, { rapidTriggerEnabled: true }).mode).toBe(KeyMode.KeyAnalogRapidMode);
+    }
+  });
+
+  it('copies the loaded key exactly, mode included, while no setting differs from it', () => {
     const digital = { ...DEFAULT_KEY, mode: KeyMode.KeyDigitalMode };
     const brush = brushFromKey(digital);
+    expect(brushConfig(brush)).toEqual(digital);
+    // Changed and changed back: the loaded key again.
     const on = withSettings(brush, { ...brush.settings, rapidTriggerEnabled: true });
     const off = withSettings(on, { ...on.settings, rapidTriggerEnabled: false });
-    expect(brushConfig(on).mode).toBe(KeyMode.KeyAnalogRapidMode);
-    expect(brushConfig(off).mode).toBe(KeyMode.KeyDigitalMode);
+    expect(brushConfig(off)).toEqual(digital);
   });
 
   it('keeps the values without a control (speeds, calibration, sensor bounds)', () => {

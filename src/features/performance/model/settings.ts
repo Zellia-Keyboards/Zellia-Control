@@ -88,12 +88,32 @@ export function withSettings(brush: PerformanceBrush, settings: PerformanceSetti
   return settings === brush.settings ? brush : { ...brush, settings };
 }
 
+/** Whether every control still shows the value loaded from the source key. */
+function isUntouched({ settings, loaded }: PerformanceBrush): boolean {
+  return (
+    settings.rapidTriggerEnabled === loaded.rapidTriggerEnabled &&
+    settings.actuationPoint === loaded.actuationPoint &&
+    settings.deactivationPoint === loaded.deactivationPoint &&
+    settings.sensitivityValue === loaded.sensitivityValue &&
+    settings.separateSensitivity === loaded.separateSensitivity &&
+    settings.pressSensitivity === loaded.pressSensitivity &&
+    settings.releaseSensitivity === loaded.releaseSensitivity &&
+    settings.upperDeadzone === loaded.upperDeadzone &&
+    settings.lowerDeadzone === loaded.lowerDeadzone
+  );
+}
+
 /**
  * The configuration the brush writes to each selected key. Values still equal to what was loaded
  * come from the source key exactly; edited ones are converted (`mm / 4.0`, the bottom-out point
  * as `(4.0 − bottom) / 4.0`) and clamped to the travel.
+ *
+ * The mode is the rapid trigger switch's (rapid or normal analog) as soon as any setting differs
+ * from what was loaded, as the Svelte page wrote it: the page shows no other mode. Until then the
+ * brush is the source key exactly, a digital or speed-mode key included.
  */
-export function brushConfig({ settings, loaded, source }: PerformanceBrush): AdvancedKeyConfig {
+export function brushConfig(brush: PerformanceBrush): AdvancedKeyConfig {
+  const { settings, loaded, source } = brush;
   const fraction = (mm: number) => clampFraction(mmToFraction(mm));
   const kept = (mm: number, loadedMm: number, loadedFraction: number) =>
     mm === loadedMm ? loadedFraction : fraction(mm);
@@ -115,12 +135,11 @@ export function brushConfig({ settings, loaded, source }: PerformanceBrush): Adv
 
   return {
     ...source,
-    mode:
-      settings.rapidTriggerEnabled === loaded.rapidTriggerEnabled
-        ? source.mode
-        : settings.rapidTriggerEnabled
-          ? KeyMode.KeyAnalogRapidMode
-          : KeyMode.KeyAnalogNormalMode,
+    mode: isUntouched(brush)
+      ? source.mode
+      : settings.rapidTriggerEnabled
+        ? KeyMode.KeyAnalogRapidMode
+        : KeyMode.KeyAnalogNormalMode,
     activation: kept(settings.actuationPoint, loaded.actuationPoint, source.activation),
     deactivation: kept(settings.deactivationPoint, loaded.deactivationPoint, source.deactivation),
     triggerDistance,
