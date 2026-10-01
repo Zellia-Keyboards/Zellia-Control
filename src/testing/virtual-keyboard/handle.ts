@@ -9,6 +9,7 @@ import type {
   HostPacket,
   WireAdvancedKey,
   WireDynamicKey,
+  WireMacroAction,
   WireRgbBase,
   WireRgbKey,
   WireVersion,
@@ -81,6 +82,10 @@ export interface VirtualKeyboardStateData {
   active: VirtualProfileData;
   /** Persisted profile files. */
   profiles: VirtualProfileData[];
+  /** `[macro][entry]` as the firmware keeps them, end markers and empty entries included. */
+  macros: WireMacroAction[][];
+  /** The script source (with the NUL the controller appends) and bytecode as uploaded. */
+  scripts: { source: Uint8Array; bytecode: Uint8Array };
 }
 
 /** The bootloader that appears after `KeyboardBootloader`. */
