@@ -38,6 +38,21 @@ function points(instance: Chart): Point[] {
   );
 }
 
+/**
+ * Waits for the first samples of a recording started at `startedAt` (ms, `Date.now()`) and
+ * checks that its time starts again at 0: polled every millisecond, the first point is no later
+ * than the time since the start. A recording timed from an earlier start would be later.
+ */
+async function newRecording(instance: Chart, startedAt: number): Promise<void> {
+  await vi.waitFor(
+    () => {
+      expect(points(instance).length).toBeGreaterThan(0);
+    },
+    { interval: 1 }
+  );
+  expect(points(instance)[0]?.x).toBeLessThanOrEqual(Date.now() - startedAt);
+}
+
 /** Whether the virtual keyboard streams debug packets (its debug config bit). */
 function streaming(): boolean {
   return keyboard.vk.state.config[0] === true;
@@ -113,18 +128,22 @@ describe('KeyTracking', { timeout: 20_000 }, () => {
     render(<KeyTracking />);
     const instance = await chart();
     select(5);
+    // Long enough for a recording timed from key 5's start to stand out after the switch.
     await vi.waitFor(() => {
-      expect(points(instance).length).toBeGreaterThanOrEqual(3);
+      expect(points(instance).at(-1)?.x).toBeGreaterThan(100);
     });
-    const first = instance.data.datasets[0]?.data;
+    const switchedAt = Date.now();
 
     select(7);
 
+    // Key 5's recording is gone at once.
+    expect(points(instance)).toEqual([]);
     expect(screen.getByText('Recording').nextElementSibling).toHaveTextContent('Key 7');
     await vi.waitFor(() => {
       expect(debugRequests().at(-1)).toEqual([7]);
     });
-    expect(instance.data.datasets[0]?.data).not.toBe(first);
+    // Key 7's samples arrive, timed from the switch.
+    await newRecording(instance, switchedAt);
     expect(streaming()).toBe(true);
   });
 
@@ -165,18 +184,15 @@ describe('KeyTracking', { timeout: 20_000 }, () => {
     const recorded = points(instance).length;
     await new Promise(resolve => setTimeout(resolve, 30));
     expect(points(instance)).toHaveLength(recorded);
-    const stopped = instance.data.datasets[0]?.data;
+    const startedAt = Date.now();
 
     await user.click(screen.getByRole('button', { name: 'Start' }));
 
+    // The stopped recording is gone at once; a new one starts.
     expect(screen.getByText('Recording')).toBeInTheDocument();
-    expect(instance.data.datasets[0]?.data).not.toBe(stopped);
-    await vi.waitFor(() => {
-      expect(streaming()).toBe(true);
-    });
-    await vi.waitFor(() => {
-      expect(points(instance).length).toBeGreaterThan(0);
-    });
+    expect(points(instance)).toEqual([]);
+    await newRecording(instance, startedAt);
+    expect(streaming()).toBe(true);
   });
 
   it('swaps Stop and Start for new buttons, which do not take over the focus (as in Svelte)', async () => {
