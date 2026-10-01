@@ -368,6 +368,53 @@ describe('firmware flasher', { timeout: 30_000 }, () => {
     await phase('done');
   });
 
+  describe('when the keyboard is connected again before anything was written', () => {
+    it('ends an update waiting for its bootloader and asks nothing of the keyboard', async () => {
+      await setup();
+      await flasher.chooseFile(firmware(2048));
+      await phase('connect');
+      expect(sessionActive()).toBe(true);
+
+      // The keyboard is power-cycled without an update and connected again, to be used.
+      vk().usb.unplug(dfu());
+      vk().reconnect();
+      vk().clearHistory();
+      await deviceSession.connect();
+      expect(deviceStore.getState().connection.status).toBe('ready');
+
+      expect(sessionActive()).toBe(false);
+      expect(flasher.getState()).toEqual({ phase: 'choose' });
+      // The bootloader is no longer looked for, and the keyboard is not asked again.
+      const getDevices = vi.spyOn(vk().usb, 'getDevices');
+      await delay(40);
+      expect(getDevices).not.toHaveBeenCalled();
+      expect(sentOperations()).toEqual([]);
+    });
+
+    it('ends an update still at step 2 whose keyboard left before it was asked', async () => {
+      await setup();
+      const getDevices = vk().usb.getDevices.bind(vk().usb);
+      // The keyboard is unplugged while the bootloaders are listed: nothing is asked of it.
+      vi.spyOn(vk().usb, 'getDevices').mockImplementationOnce(async () => {
+        vk().disconnect();
+        await keyboardGone();
+        return getDevices();
+      });
+      vk().clearHistory();
+      await flasher.chooseFile(firmware(2048));
+      expect(flasher.getState()).toEqual({ phase: 'reboot' });
+      expect(sessionActive()).toBe(true);
+
+      vk().reconnect();
+      await deviceSession.connect();
+      expect(deviceStore.getState().connection.status).toBe('ready');
+
+      expect(sessionActive()).toBe(false);
+      expect(flasher.getState()).toEqual({ phase: 'choose' });
+      expect(sentOperations()).toEqual([]);
+    });
+  });
+
   it('stops watching for the bootloader when reset', async () => {
     await setup({ dfu: { authorized: true } });
     ignoreBootloaderRequests();
