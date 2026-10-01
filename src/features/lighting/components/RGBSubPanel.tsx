@@ -27,6 +27,7 @@ export interface RGBSubPanelProps {
 export function RGBSubPanel({ values, targetCount, onEdit, onRainbow, title }: RGBSubPanelProps) {
   const t = useT();
   const titleId = useId();
+  const colorTextId = useId();
 
   // Local state for rainbow preset (not part of base config)
   const [showRainbowPreset, setShowRainbowPreset] = useState(false);
@@ -128,8 +129,10 @@ export function RGBSubPanel({ values, targetCount, onEdit, onRainbow, title }: R
               }}
               className={`w-10 h-10 rounded-lg border-2 border-gray-300 dark:border-gray-600 p-0 cursor-pointer overflow-hidden transition-colors hover:border-primary/50 ${styles['color-input'] ?? ''}`}
               aria-label={t('lighting.color')}
+              aria-describedby={values.color === MIXED ? colorTextId : undefined}
             />
             <span
+              id={colorTextId}
               className={`text-sm text-gray-700 dark:text-gray-300 ${
                 values.color === MIXED ? '' : 'font-mono uppercase'
               }`}
@@ -158,6 +161,7 @@ export function RGBSubPanel({ values, targetCount, onEdit, onRainbow, title }: R
               onEdit({ speed: Math.round(Number(event.currentTarget.value)) });
             }}
             aria-label={t('lighting.speed')}
+            aria-valuetext={values.speed === MIXED ? t('lighting.mixed') : undefined}
           />
         </div>
 

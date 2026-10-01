@@ -1,7 +1,6 @@
 # Lighting page redesign
 
-Status: revised 2026-10-01 after review (edits wait for Save; no coloured keycaps). Awaiting
-review.
+Status: implemented (2026-10-01).
 
 ## Why
 
@@ -167,7 +166,7 @@ New UI strings:
   `onEdit(patch: Partial<RgbBaseConfig>)`. It has no draft state.
 - **`RGBSubPanel` (keys)**
   - Props: `values: SharedKeyValues`, `targetCount: number | 'all'`,
-    `onEdit(patch: Partial<RgbKeyConfig>)` and `onRainbow(direction, density, referenceHex)`.
+    `onEdit(patch: Partial<RgbKeyConfig>)` and `onRainbow(referenceHex, direction, density)`.
   - Local state holds only the preset's direction, density and open state.
 - **Headers**: Apply is removed, and the headers keep their height so the panels' content does
   not move. The key panel shows the target label in Apply's place.

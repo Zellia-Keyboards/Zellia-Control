@@ -33,7 +33,6 @@ describe('lighting modes', () => {
 
   it('find a mode by its device value', () => {
     expect(modeOption(KEY_MODES, RGBMode.RgbModeJelly)?.label).toBe('rgb_mode_jelly');
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-assignment
-    expect(modeOption(BASE_MODES, 9 as RGBBaseMode)).toBeUndefined();
+    expect(modeOption(BASE_MODES.slice(1), RGBBaseMode.RgbBaseModeOff)).toBeUndefined();
   });
 });
