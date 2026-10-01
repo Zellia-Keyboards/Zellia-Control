@@ -34,7 +34,9 @@ export function NoKeySelected({ tipKey, className = '' }: NoKeySelectedProps) {
         </p>
         {tipKey && (
           <div className="border rounded-lg p-4 text-sm bg-primary-50 dark:bg-primary-900 border-primary-200 dark:border-primary-700 text-primary-800 dark:text-primary-200 glassmorphism-card">
-            <strong>{t('advancedkey.tip')}:</strong> {t(tipKey)}
+            {/* One text node per run, as Svelte renders it: Chrome shapes text nodes separately. */}
+            <strong>{`${t('advancedkey.tip')}:`}</strong>
+            {` ${t(tipKey)}`}
           </div>
         )}
       </div>

@@ -63,7 +63,19 @@ export function translateRich(
     cursor = slot.at + slot.token.length;
   }
   parts.push(text.slice(cursor));
-  return createElement(Fragment, null, ...parts.filter(part => part !== ''));
+  // Adjacent strings become one text node, as in Svelte: Chrome shapes each text node on its
+  // own, so split runs would shift glyphs by sub-pixels.
+  const runs: ReactNode[] = [];
+  for (const part of parts) {
+    const value = typeof part === 'number' ? String(part) : part;
+    const previous = runs[runs.length - 1];
+    if (typeof value === 'string' && typeof previous === 'string') {
+      runs[runs.length - 1] = previous + value;
+    } else if (value !== '') {
+      runs.push(value);
+    }
+  }
+  return createElement(Fragment, null, ...runs);
 }
 
 // --- Language store -------------------------------------------------------------------------

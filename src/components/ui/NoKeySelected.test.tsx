@@ -40,6 +40,9 @@ describe('NoKeySelected', () => {
     );
     expect(tip?.querySelector('strong')).toHaveTextContent('Tip:');
     expect(tip?.parentElement?.parentElement).toHaveClass('p-8');
+    // One text node per run, as Svelte renders it (Chrome shapes text nodes separately).
+    expect([...(tip?.childNodes ?? [])].map(node => node.nodeName)).toEqual(['STRONG', '#text']);
+    expect(tip?.querySelector('strong')?.childNodes).toHaveLength(1);
   });
 
   it('follows the language', () => {
