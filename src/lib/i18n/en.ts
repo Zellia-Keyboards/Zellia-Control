@@ -338,6 +338,39 @@ export const en = {
   rgb_mode_fading_diamond_ripple: 'Fading Diamond Ripple',
   rgb_mode_jelly: 'Jelly',
   rgb_mode_bubble: 'Bubble',
+
+  // Lighting: mode explanations and the key panel (lighting redesign, PL-047 to PL-049)
+  rgb_base_mode_off_desc: 'Turns all lighting off, the per-key effects too.',
+  rgb_base_mode_blank_desc: 'No base lighting: only the per-key effects light the keys.',
+  rgb_base_mode_rainbow_desc:
+    'A rainbow that starts at the hue of Color and scrolls across the keyboard. Speed sets how fast, Direction which way, Density how close the colors are.',
+  rgb_base_mode_wave_desc:
+    'Waves that blend Color into Secondary Color and move across the keyboard. Speed sets how fast, Direction which way, Density how close the waves are.',
+  rgb_mode_fixed_desc: 'Always shows Color, in place of the base lighting.',
+  rgb_mode_static_desc: 'Always adds Color on top of the base lighting.',
+  rgb_mode_cycle_desc: 'Cycles through every hue, starting from Color. Speed sets how fast.',
+  rgb_mode_linear_desc:
+    'Lights up in Color as the key goes down: the deeper the press, the brighter.',
+  rgb_mode_trigger_desc:
+    'Flashes Color when the key is pressed, then fades out. Speed sets how fast it fades.',
+  rgb_mode_string_desc:
+    "Each press sends a line of Color along the key's row. Speed sets how fast it travels.",
+  rgb_mode_fading_string_desc:
+    "Each press sends a line of Color along the key's row, with a trail that fades out.",
+  rgb_mode_diamond_ripple_desc:
+    'Each press sends a diamond-shaped ripple of Color across the keyboard. Speed sets how fast it spreads.',
+  rgb_mode_fading_diamond_ripple_desc:
+    'Each press sends a diamond-shaped ripple of Color across the keyboard, with a trail that fades out.',
+  rgb_mode_jelly_desc:
+    'Pressing lights up the keys around it in their own colors; the deeper the press, the farther it reaches.',
+  rgb_mode_bubble_desc:
+    'Each press makes a small round ripple of Color around the key, with a trail that fades out.',
+  'lighting.saveHint': 'Lighting changes reach the keyboard when you press Save.',
+  'lighting.mixed': 'Mixed',
+  'lighting.mixedModes': 'These keys use different modes. Pick one to use it on all of them.',
+  'lighting.allKeys': 'All keys',
+  'lighting.oneKey': '1 key',
+  'lighting.keyCount': '{0} keys',
   // Units
   'units.mm': 'mm',
   // new addittion
