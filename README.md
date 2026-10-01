@@ -105,17 +105,18 @@ The app runs at `http://localhost:5173`.
 
 ## ⚙️ Development
 
-| Command             | What it does                                     |
-| ------------------- | ------------------------------------------------ |
-| `npm run dev`       | Development server                               |
-| `npm run build`     | Production build into `build/`                   |
-| `npm run preview`   | Serves the production build like the static host |
-| `npm run typecheck` | TypeScript                                       |
-| `npm run lint`      | ESLint                                           |
-| `npm run format`    | Prettier                                         |
-| `npm test`          | Unit and integration tests (Vitest)              |
-| `npm run test:e2e`  | End-to-end tests (Playwright, Chrome)            |
-| `npm run validate`  | Type check, lint, format check, tests and build  |
+| Command              | What it does                                                |
+| -------------------- | ----------------------------------------------------------- |
+| `npm run dev`        | Development server                                          |
+| `npm run build`      | Production build into `build/`                              |
+| `npm run preview`    | Serves the production build like the static host            |
+| `npm run typecheck`  | TypeScript                                                  |
+| `npm run lint`       | ESLint                                                      |
+| `npm run format`     | Prettier                                                    |
+| `npm test`           | Unit and integration tests (Vitest)                         |
+| `npm run test:e2e`   | End-to-end tests (Playwright, Chrome)                       |
+| `npm run validate`   | Type check, lint, format check, tests and build             |
+| `npm run build:mqjs` | Rebuilds the script compiler in `vendor/mqjs/` (Emscripten) |
 
 Project layout:
 
@@ -128,6 +129,7 @@ src/
   lib/            i18n, theme, transitions, storage, service worker registration
   testing/        Test setup and the simulated libamp keyboard
 src-controller/   Vendored emi-keyboard-controller (not edited; see UPSTREAM.md)
+vendor/mqjs/      libamp's script compiler (generated, GPL-3.0; see PROVENANCE.md)
 e2e/              Playwright tests and visual parity scenarios
 docs/             Developer guides, device layer, migration notes and design
 ```
@@ -161,6 +163,10 @@ identical to the reference design; see [docs/development.md](docs/development.md
 ## 📜 License
 
 Distributed under the MIT License. See [`LICENSE`](LICENSE).
+
+The script compiler in `vendor/mqjs/` is built from [libamp](https://github.com/zhangqili/libamp)
+and licensed under the GPL-3.0 (`vendor/mqjs/LICENSE`). It is a separate component, which the
+Scripts page loads when it compiles a script.
 
 ---
 

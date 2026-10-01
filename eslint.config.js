@@ -15,6 +15,7 @@ export default tseslint.config(
       'playwright-report',
       'test-results',
       'src-controller',
+      'vendor/mqjs',
       'e2e/.artifacts',
     ],
   },
