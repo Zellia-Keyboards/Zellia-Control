@@ -303,6 +303,31 @@ describe('firmware flasher', { timeout: 30_000 }, () => {
     expect(connect).toHaveBeenCalledOnce();
   });
 
+  it('waits for the click when more than one bootloader appeared after the request', async () => {
+    await setup({ dfu: { authorized: true } });
+    const requestDevice = vi.spyOn(vk().usb, 'requestDevice');
+    const others: VirtualDfuDevice[] = [];
+    flasher.subscribe(() => {
+      // Another authorized board enters its bootloader together with the keyboard.
+      if (flasher.getState().phase === 'connect' && others.length === 0) {
+        others.push(otherAuthorizedBootloader());
+      }
+    });
+    const file = firmware(2048);
+
+    await flasher.chooseFile(file);
+    await phase('connect');
+    await delay(60);
+    expect(flasher.getState().phase).toBe('connect');
+    expect(dfu().image).toHaveLength(0);
+
+    await flasher.connectDevice();
+    await phase('done');
+    expect(requestDevice).toHaveBeenCalledOnce();
+    expect(dfu().image).toEqual(await bytesOf(file));
+    expect(others.map(other => other.image.length)).toEqual([0]);
+  });
+
   it('ignores "Device is in DFU Mode" while the file is rejected', async () => {
     await setup();
     await flasher.chooseFile(firmware(10));
@@ -401,7 +426,7 @@ describe('firmware flasher', { timeout: 30_000 }, () => {
   });
 
   describe('without a keyboard (§1.7)', () => {
-    it('skips step 2 and flashes the authorized bootloader from the click', async () => {
+    it('skips step 2 and flashes an authorized bootloader only through the chooser', async () => {
       setupInBootloader({ dfu: { authorized: true } });
       const requestDevice = vi.spyOn(vk().usb, 'requestDevice');
       const file = firmware(4096);
@@ -409,13 +434,15 @@ describe('firmware flasher', { timeout: 30_000 }, () => {
       await flasher.chooseFile(file);
       expect(phases).toEqual(['choose', 'reboot', 'connect']);
       expect(sessionActive()).toBe(true);
-      // The app did not ask for this bootloader: it is flashed only from the click.
+      expect(sentOperations()).toEqual([]);
+      // The app did not ask for this bootloader, which may belong to another board: it is
+      // flashed only once the user picked it.
       await delay(60);
       expect(dfu().image).toHaveLength(0);
 
       await flasher.connectDevice();
       await phase('done');
-      expect(requestDevice).not.toHaveBeenCalled();
+      expect(requestDevice).toHaveBeenCalledOnce();
       expect(dfu().image).toEqual(await bytesOf(file));
     });
 
@@ -428,6 +455,21 @@ describe('firmware flasher', { timeout: 30_000 }, () => {
 
       await phase('done');
       expect(requestDevice).toHaveBeenCalledOnce();
+    });
+
+    it('fails step 3 when the chooser is dismissed', async () => {
+      setupInBootloader({ dfu: { authorized: true } });
+      vk().usb.picker = 'cancel';
+
+      await flasher.chooseFile(firmware(4096));
+      await flasher.connectDevice();
+
+      expect(flasher.getState()).toMatchObject({
+        phase: 'error',
+        step: 'connect_recovery',
+        message: 'No device in DFU mode found. Please enter recovery mode first.',
+      });
+      expect(dfu().image).toHaveLength(0);
     });
   });
 
