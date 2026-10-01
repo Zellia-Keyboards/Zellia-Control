@@ -186,8 +186,9 @@ captures tolerantly, e.g.
 marked as tolerant and is not a parity result; `npm run parity` always
 compares strictly.
 
-`compare` exits 1 when any capture differs or is missing. A difference is either
-fixed or recorded in [docs/migration/parity-log.md](migration/parity-log.md).
+`compare` exits 1 when any capture differs or is missing (React-only captures are `new` and pass).
+A difference is either fixed or recorded in
+[docs/migration/parity-log.md](migration/parity-log.md).
 
 ### Scenarios
 
@@ -222,6 +223,9 @@ export default scenarios;
   Connected scenarios need `{ seedDynamicKeys: false }`: the baseline cannot
   load a keyboard with dynamic keys (upstream bug, `src-controller/UPSTREAM.md`).
 - `storage`: extra `localStorage` entries seeded before the first page script.
+- `reactOnly`: a screen the Svelte app does not have (the Macros and Scripts pages). It is
+  captured in the React app only and reported as `new`, which passes; its row in the parity log
+  has an after-screenshot only.
 
 ## PWA
 

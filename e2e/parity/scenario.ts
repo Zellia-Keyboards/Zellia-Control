@@ -2,9 +2,10 @@ import type { Page } from '@playwright/test';
 import type { VirtualKeyboardBrowserOptions } from '../../src/testing/virtual-keyboard/handle';
 
 /**
- * One screen state captured in both the Svelte baseline and the React app by the parity harness
- * (scripts/parity). Each feature has one file in e2e/parity/scenarios/ whose default export is a
- * `readonly ParityScenario[]`. Every scenario is captured light/dark × en/zh × 1440×900/2560×1440.
+ * One screen state captured in both the Svelte baseline and the React app (or the React app only,
+ * `reactOnly`) by the parity harness (scripts/parity). Each feature has one file in
+ * e2e/parity/scenarios/ whose default export is a `readonly ParityScenario[]`. Every scenario is
+ * captured light/dark × en/zh × 1440×900/2560×1440.
  */
 export interface ParityScenario {
   /** Unique kebab-case id; part of the capture file names. */
@@ -25,4 +26,9 @@ export interface ParityScenario {
   readonly virtualKeyboard?: boolean | VirtualKeyboardBrowserOptions;
   /** localStorage entries seeded before the first page script (`darkMode`/`language` are set per variant). */
   readonly storage?: Readonly<Record<string, string>>;
+  /**
+   * A screen the Svelte app does not have (macros and scripts spec): captured in the React app
+   * only and reported as `new`. Its parity-log row has an after-screenshot only.
+   */
+  readonly reactOnly?: boolean;
 }

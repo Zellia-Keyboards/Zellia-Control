@@ -58,6 +58,7 @@ describe('validateScenarios', () => {
       { name: 'welcome', path: '/', virtualKeyboard: 'yes' },
       { name: 'welcome', path: '/', virtualKeyboard: [true] },
       { name: 'welcome', path: '/', storage: { themeColor: 1 } },
+      { name: 'welcome', path: '/', reactOnly: 'yes' },
       'welcome',
     ];
     for (const scenario of invalid) {
@@ -82,5 +83,12 @@ describe('validateScenarios', () => {
         module('b.ts', { default: [{ name: 'welcome', path: '/remap/' }] }),
       ])
     ).toThrow(/welcome.*a\.ts.*b\.ts/);
+  });
+
+  it('accepts React-only scenarios', () => {
+    const [scenario] = validateScenarios([
+      module('a.ts', { default: [{ name: 'macros-empty', path: '/', reactOnly: true }] }),
+    ]);
+    expect(scenario?.reactOnly).toBe(true);
   });
 });

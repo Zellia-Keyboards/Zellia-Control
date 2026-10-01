@@ -1,8 +1,9 @@
 // Visual parity capture (Playwright project `parity`): opens every scenario from
 // e2e/parity/scenarios in the Svelte baseline and in this app with the same browser, viewport,
 // preferences and fonts, and writes one screenshot per app plus a JSON record per capture to
-// e2e/.artifacts/parity/captures/ (emptied first by reset-captures.ts). scripts/parity/compare.mjs
-// turns them into the report.
+// e2e/.artifacts/parity/captures/ (emptied first by reset-captures.ts). React-only scenarios
+// (`reactOnly`) are captured in this app only. scripts/parity/compare.mjs turns them into the
+// report.
 //
 // Run the whole pipeline with `npm run parity`; filter with Playwright's `--grep`.
 
@@ -31,12 +32,14 @@ interface CaptureRecord {
   id: string;
   scenario: string;
   path: string;
+  /** A screen only this app has: there is no baseline capture. */
+  reactOnly: boolean;
   theme: ParityVariant['theme'];
   language: ParityVariant['language'];
   viewport: ParityVariant['viewport'];
   browser: { name: string; channel: string; version: string };
   capturedAt: string;
-  apps: Record<AppName, AppCapture>;
+  apps: { baseline?: AppCapture; react: AppCapture };
 }
 
 const scenarios = await loadScenarios();
@@ -144,14 +147,15 @@ for (const scenario of scenarios) {
         await writeFile(path.join(CAPTURE_DIR, app, `${id}.png`), png);
         return capture;
       };
-      // One after the other with the same browser instance.
-      const baseline = await captureAndStore('baseline');
+      // One after the other with the same browser instance; React-only screens have no baseline.
+      const baseline = scenario.reactOnly ? undefined : await captureAndStore('baseline');
       const react = await captureAndStore('react');
 
       const record: CaptureRecord = {
         id,
         scenario: scenario.name,
         path: scenario.path,
+        reactOnly: scenario.reactOnly === true,
         theme: variant.theme,
         language: variant.language,
         viewport: variant.viewport,
@@ -161,7 +165,7 @@ for (const scenario of scenarios) {
           version: browser.version(),
         },
         capturedAt: new Date().toISOString(),
-        apps: { baseline, react },
+        apps: baseline ? { baseline, react } : { react },
       };
       await writeFile(path.join(CAPTURE_DIR, `${id}.json`), `${JSON.stringify(record, null, 2)}\n`);
     });

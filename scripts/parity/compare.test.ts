@@ -41,6 +41,7 @@ interface CaptureFixture {
   baseline?: Buffer;
   react?: Buffer;
   errors?: { baseline?: string[]; react?: string[] };
+  reactOnly?: boolean;
 }
 
 async function parityDir(captures: readonly CaptureFixture[]): Promise<string> {
@@ -51,22 +52,24 @@ async function parityDir(captures: readonly CaptureFixture[]): Promise<string> {
   await mkdir(path.join(capturesDir, 'react'), { recursive: true });
   for (const capture of captures) {
     const [scenario = capture.id] = capture.id.split('--');
+    const errors = (app: 'baseline' | 'react') => capture.errors?.[app] ?? [];
     const record = {
       id: capture.id,
       scenario,
       path: '/',
+      ...(capture.reactOnly ? { reactOnly: true } : {}),
       theme: 'dark',
       language: 'en',
       viewport: { width: 1440, height: 900 },
       browser: { name: 'chromium', channel: 'chrome', version: '153.0.0.0' },
       capturedAt: '2026-09-30T00:00:00.000Z',
       apps: {
-        baseline: {
-          url: 'http://localhost:4180/',
-          status: 200,
-          errors: capture.errors?.baseline ?? [],
-        },
-        react: { url: 'http://localhost:4273/', status: 200, errors: capture.errors?.react ?? [] },
+        ...(capture.reactOnly
+          ? {}
+          : {
+              baseline: { url: 'http://localhost:4180/', status: 200, errors: errors('baseline') },
+            }),
+        react: { url: 'http://localhost:4273/', status: 200, errors: errors('react') },
       },
     };
     await writeFile(path.join(capturesDir, `${capture.id}.json`), JSON.stringify(record));
@@ -102,7 +105,7 @@ interface Summary {
   threshold: number;
   includeAA: boolean;
   strict: boolean;
-  totals: { captures: number; identical: number; different: number; missing: number };
+  totals: { captures: number; identical: number; different: number; missing: number; new: number };
   browsers: string[];
   results: SummaryResult[];
 }
@@ -125,7 +128,7 @@ describe('compare.mjs', () => {
     expect(code).toBe(0);
     expect(output).toContain('1 identical');
     const summary = await readSummary(dir);
-    expect(summary.totals).toEqual({ captures: 1, identical: 1, different: 0, missing: 0 });
+    expect(summary.totals).toEqual({ captures: 1, identical: 1, different: 0, missing: 0, new: 0 });
     expect(summary.browsers).toEqual(['chromium (chrome) 153.0.0.0']);
     expect(summary.results[0]).toMatchObject({ status: 'identical', mismatchedPixels: 0 });
   });
@@ -183,7 +186,7 @@ describe('compare.mjs', () => {
 
     expect(code).toBe(1);
     const summary = await readSummary(dir);
-    expect(summary.totals).toEqual({ captures: 2, identical: 1, different: 0, missing: 1 });
+    expect(summary.totals).toEqual({ captures: 2, identical: 1, different: 0, missing: 1, new: 0 });
     // Worst first.
     expect(summary.results.map(result => result.status)).toEqual(['missing', 'identical']);
   });
@@ -212,7 +215,7 @@ describe('compare.mjs', () => {
     expect(code).toBe(1);
     const summary = await readSummary(dir);
     expect(summary).toMatchObject({ threshold: 0, includeAA: true, strict: true });
-    expect(summary.totals).toEqual({ captures: 3, identical: 0, different: 3, missing: 0 });
+    expect(summary.totals).toEqual({ captures: 3, identical: 0, different: 3, missing: 0, new: 0 });
     for (const result of summary.results) {
       expect(result, result.id).toMatchObject({ status: 'different', mismatchedPixels: 16 });
     }
@@ -317,5 +320,41 @@ describe('compare.mjs', () => {
 
     expect(code).toBe(2);
     expect(output).toMatch(/no captures/i);
+  });
+
+  it('reports React-only screens as new and exits 0', async () => {
+    const image = solid(4, 4, WHITE);
+    const dir = await parityDir([
+      { id: 'macros-empty--dark-en-1440x900', react: image, reactOnly: true },
+      { id: 'welcome--dark-en-1440x900', baseline: image, react: image },
+    ]);
+
+    const { code, output } = await compare(dir);
+
+    expect(code).toBe(0);
+    expect(output).toContain('1 new');
+    const summary = await readSummary(dir);
+    expect(summary.totals).toEqual({
+      captures: 2,
+      identical: 1,
+      different: 0,
+      missing: 0,
+      new: 1,
+    });
+    expect(summary.results[0]).toMatchObject({
+      id: 'macros-empty--dark-en-1440x900',
+      status: 'new',
+      diff: null,
+    });
+    expect(await readFile(path.join(dir, 'index.html'), 'utf8')).toContain('React only');
+  });
+
+  it('reports a React-only screen without its capture as missing', async () => {
+    const dir = await parityDir([{ id: 'macros-empty--dark-en-1440x900', reactOnly: true }]);
+
+    const { code } = await compare(dir);
+
+    expect(code).toBe(1);
+    expect((await readSummary(dir)).results[0]?.status).toBe('missing');
   });
 });
