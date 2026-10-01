@@ -425,4 +425,22 @@ export const zh: Record<TranslationKey, string> = {
   'macros.clear': '清除',
   'macros.clearTitle': '清除宏 {0}？',
   'macros.clearConfirm': '此宏的所有动作都将被删除。',
+
+  // Scripts page (macros and scripts spec)
+  'scripts.title': '脚本',
+  'scripts.saveHint': '按下「保存」后，脚本的更改才会发送到键盘。',
+  'scripts.unsupported': '此键盘不支持脚本',
+  'scripts.editor': '脚本',
+  'scripts.loadingEditor': '正在加载编辑器…',
+  'scripts.open': '打开 .js',
+  'scripts.save': '保存 .js',
+  'scripts.example': '加载示例',
+  'scripts.compiling': '正在编译…',
+  'scripts.compiled': '已编译：{0} 字节，按下「保存」后发送到键盘',
+  'scripts.failed': '有错误：修正后才能发送此脚本',
+  'scripts.errorLine': '第 {0} 行：{1}',
+  'scripts.jit': '此键盘会自行编译脚本：按下「保存」后发送脚本文本。',
+  'scripts.sourceTooLarge': '脚本为 {0} 字节；libamp 键盘默认最多容纳 {1} 字节。',
+  'scripts.bytecodeTooLarge': '字节码为 {0} 字节；libamp 键盘默认最多容纳 {1} 字节。',
+  'scripts.bytecode': '字节码（{0} 字节）',
 };

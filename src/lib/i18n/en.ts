@@ -452,6 +452,24 @@ export const en = {
   'macros.clear': 'Clear',
   'macros.clearTitle': 'Clear Macro {0}?',
   'macros.clearConfirm': 'Every action of this macro will be removed.',
+
+  // Scripts page (macros and scripts spec)
+  'scripts.title': 'Scripts',
+  'scripts.saveHint': 'Script changes reach the keyboard when you press Save.',
+  'scripts.unsupported': 'This keyboard does not support scripts',
+  'scripts.editor': 'Script',
+  'scripts.loadingEditor': 'Loading the editor…',
+  'scripts.open': 'Open .js',
+  'scripts.save': 'Save .js',
+  'scripts.example': 'Load example',
+  'scripts.compiling': 'Compiling…',
+  'scripts.compiled': 'Compiled: {0} bytes — sent to the keyboard on Save',
+  'scripts.failed': 'Errors: fix them to send this script',
+  'scripts.errorLine': 'Line {0}: {1}',
+  'scripts.jit': 'This keyboard compiles scripts itself: the text is sent to it on Save.',
+  'scripts.sourceTooLarge': 'The script is {0} bytes; libamp keyboards hold {1} by default.',
+  'scripts.bytecodeTooLarge': 'The bytecode is {0} bytes; libamp keyboards hold {1} by default.',
+  'scripts.bytecode': 'Bytecode ({0} bytes)',
 } satisfies Record<string, string>;
 
 export type TranslationKey = keyof typeof en;

@@ -41,7 +41,8 @@ describe('dictionaries', () => {
     // copy (PL-047 to PL-049), without the panels' Apply.
     // + 18: Remap's Macro and Script groups (macros and scripts spec).
     // + 39: the Macros page (macros and scripts spec).
-    expect(Object.keys(en)).toHaveLength(350);
+    // + 16: the Scripts page (macros and scripts spec).
+    expect(Object.keys(en)).toHaveLength(366);
   });
 
   it('add the unsaved-changes label of the Save button (PL-050)', () => {
@@ -155,6 +156,18 @@ describe('dictionaries', () => {
       'macros.press': '按下',
       'macros.release': '释放',
       'macros.unsupported': '此键盘不支持宏',
+    });
+  });
+
+  it('add the Scripts page copy (macros and scripts spec)', () => {
+    expect(en).toMatchObject({
+      'scripts.title': 'Scripts',
+      'scripts.compiled': 'Compiled: {0} bytes — sent to the keyboard on Save',
+      'scripts.failed': 'Errors: fix them to send this script',
+    });
+    expect(zh).toMatchObject({
+      'scripts.title': '脚本',
+      'scripts.unsupported': '此键盘不支持脚本',
     });
   });
 });
