@@ -1,6 +1,13 @@
 /** Shared UI primitives ported from the Svelte app (markup and classes unchanged). */
 export { ConfirmationModal, type ConfirmationModalProps } from './ConfirmationModal';
 export { ErrorModal, type ErrorModalProps } from './ErrorModal';
+// The action picker of the Dynamic Keys editors and the Macros page.
+export {
+  KeycodePicker,
+  type KeycodePickerAction,
+  type KeycodePickerCategory,
+  type KeycodePickerProps,
+} from './KeycodePicker';
 export { Modal, type ModalMaxWidth, type ModalProps } from './Modal';
 export { NoKeySelected, type NoKeySelectedProps } from './NoKeySelected';
 export { ThemedSlider, type ThemedSliderProps } from './ThemedSlider';

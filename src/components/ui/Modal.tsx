@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 import { Transition, fade } from '../../lib/transitions';
 import { useModalDismiss } from './use-modal-dismiss';
 
-export type ModalMaxWidth = 'sm' | 'md' | 'lg' | 'xl';
+export type ModalMaxWidth = 'sm' | 'md' | 'lg' | 'xl' | '3xl';
 
 export interface ModalProps {
   /**
@@ -25,6 +25,7 @@ const maxWidthClasses: Record<ModalMaxWidth, string> = {
   md: 'max-w-md',
   lg: 'max-w-lg',
   xl: 'max-w-xl',
+  '3xl': 'max-w-3xl',
 };
 
 /**

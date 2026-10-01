@@ -28,6 +28,7 @@ describe('device feature API', () => {
       'subscribeDebugSamples',
       'useConnection',
       'useDeviceConfig',
+      'useDeviceLoads',
       'useDeviceName',
       'useDeviceStore',
       'useFeatureFlags',

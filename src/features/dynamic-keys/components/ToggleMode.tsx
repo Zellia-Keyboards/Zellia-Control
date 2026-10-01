@@ -4,7 +4,7 @@
  * UI-only (D5); the configured list and its deletes are the keyboard's toggle keys.
  */
 import { useState } from 'react';
-import { NoKeySelected } from '../../../components/ui';
+import { KeycodePicker, NoKeySelected } from '../../../components/ui';
 import {
   deviceSession,
   deviceStore,
@@ -13,6 +13,7 @@ import {
   type KeyLocation,
 } from '../../device';
 import { useSelectedKeys, useSelectedLayer } from '../../keyboard';
+import { ACTION_CATEGORIES } from '../../keycodes';
 import { useT } from '../../../lib/i18n';
 import { removeDynamicKeyAt, removeDynamicKeysOfKind } from '../commands';
 import { useLoadedDraft } from '../hooks/use-loaded-draft';
@@ -33,7 +34,6 @@ import {
 import { keyIndexName } from '../model/key-names';
 import { uiFields, uiFieldsStore, useUiFields, type UiFieldsState } from '../store/ui-fields';
 import { NO_KEYS, withKey, withKeys, withoutKey } from './shared/key-sets';
-import { KeycodePicker } from './shared/KeycodePicker';
 import { ToggleConfiguredKeys } from './toggle/ToggleConfiguredKeys';
 import {
   ToggleHeader,
@@ -156,6 +156,7 @@ export function ToggleMode({ onBack }: ToggleModeProps) {
             <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
               <div className="xl:col-span-2 space-y-6">
                 <KeycodePicker
+                  categories={ACTION_CATEGORIES}
                   title={t('advancedkey.toggleAction')}
                   selectedAction={draft.binding}
                   onActionSelect={binding => {
