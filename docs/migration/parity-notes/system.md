@@ -72,7 +72,7 @@ variant shows the same difference.
   for an auto-repeat and never logged.
 - **Key Tracking**: the chart keeps the last 10 s of samples (Svelte kept every sample of a
   recording, although the axis follows the last 500 ms). After Stop, panning and zooming out reach
-  10 s back. Stop, Clear, deselecting the key and leaving the tab stop the keyboard's debug stream.
+  10 s back.
 - **Firmware file**: its size (1 KiB–1 MiB) is checked before it is read, so a huge file is never
   loaded; the messages are Svelte's.
 - **Update session** (D3): the update lives outside the page. Leaving the page neither aborts a
@@ -97,9 +97,17 @@ left for its bootloader is the shell's PL-004.
 ## Known capture noise
 
 - **Rounded corners.** As on the shell's keycaps, Chrome sometimes rasterizes a rounded corner
-  with one of two anti-aliasing patterns: a few pixels at the corners of the sidebar links
-  (`system-settings`, `system-about`) or of the Key Test cards (`system-debug-key-test-events`),
-  in either app and not in every run.
+  or a small dot with one of two anti-aliasing patterns: up to a few dozen pixels at the corners
+  of the sidebar links (`system-settings`, `system-update`, `system-about-donation`), or at the Key
+  Test cards and the log's Press/Release dots (`system-debug-key-test-events`), in either app and
+  not in every run.
+- **Key Tracking column at 2560×1440.** In some runs the Key Tracking tab's left column (its two
+  cards, their text and buttons) comes out about half a pixel lower, about 13 000 pixels, in
+  either app: comparing two runs, the baseline's capture changed in two variants and the React
+  app's in a third. A re-run of `system-debug` matched in all four 2560×1440 variants.
+- **QR code.** Right after the About page is scrolled to the donation card, Chrome may still draw
+  the Alipay code at its lower image quality (1 904 pixels inside the image in one run); the
+  scenario waits 500 ms after the scroll, which removed it in the other runs.
 - **Theme Colors icon.** On the Debug page at 1440×900 in English, one pixel of the sidebar's
   Theme Colors icon differs by one colour level, in every run.
 - **Pulsing dots.** "Recording" and "Listening Active" pulse forever; the capture stops the pulse
@@ -116,7 +124,8 @@ left for its bootloader is the shell's PL-004.
   like Svelte's `{#if}`/`{:else}` branches, so the clicked button's focus is not carried over.
 - The chart's dataset label, axis titles and theme colours follow Svelte: labels are fixed when the
   chart is created (the tick unit is read whenever the ticks are drawn), and a theme change re-reads
-  the colours 50 ms later.
+  the colours 50 ms later. Tracking follows the key selection as in Svelte: picking one key starts
+  the keyboard's debug stream; Stop, Clear, another selection and leaving the tab stop it.
 - The update steps are derived from one flasher state (`model/flash-steps.ts`): every step before
   the current one is completed, the ones after it pending. A refused file keeps step 2 active next
   to the error panel, as in Svelte.
