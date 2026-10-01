@@ -8,17 +8,17 @@ Zellia Control is a Progressive Web App for configuring Zellia Hall Effect keybo
 
 ## Commands
 
-Use yarn 1 through corepack (`corepack yarn <script>`); `yarn` alone may not be installed.
+Use npm (`npm ci` to install from `package-lock.json`, `npm run <script>`).
 
-- `corepack yarn dev` — Vite dev server (http://localhost:5173)
-- `corepack yarn build` — production build into `build/` (static files, PWA service worker)
-- `corepack yarn preview` — serve the production build
-- `corepack yarn typecheck` — `tsc -b` over the app, node tooling and the vendored controller
-- `corepack yarn lint` — ESLint (type-aware)
-- `corepack yarn format` / `format:check` — Prettier
-- `corepack yarn test` — Vitest (app tests in jsdom + the controller's own tests)
-- `corepack yarn test:e2e` — Playwright (Chrome) journeys and parity screenshots
-- `corepack yarn validate` — typecheck, lint, format check, tests and build
+- `npm run dev` — Vite dev server (http://localhost:5173)
+- `npm run build` — production build into `build/` (static files, PWA service worker)
+- `npm run preview` — serve the production build
+- `npm run typecheck` — `tsc -b` over the app, node tooling and the vendored controller
+- `npm run lint` — ESLint (type-aware)
+- `npm run format` / `format:check` — Prettier
+- `npm test` — Vitest (app tests in jsdom + the controller's own tests)
+- `npm run test:e2e` — Playwright (Chrome) journeys and parity screenshots
+- `npm run validate` — typecheck, lint, format check, tests and build
 
 ## Architecture
 

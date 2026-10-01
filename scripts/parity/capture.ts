@@ -4,7 +4,7 @@
 // e2e/.artifacts/parity/captures/ (emptied first by reset-captures.ts). scripts/parity/compare.mjs
 // turns them into the report.
 //
-// Run the whole pipeline with `corepack yarn parity`; filter with Playwright's `--grep`.
+// Run the whole pipeline with `npm run parity`; filter with Playwright's `--grep`.
 
 import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
@@ -125,7 +125,7 @@ test.beforeAll(async () => {
   if (!reachable) {
     throw new Error(
       `The Svelte baseline is not reachable at ${BASELINE_URL}. Run the whole pipeline with ` +
-        '`corepack yarn parity`, or start the baseline with `corepack yarn parity:baseline`.'
+        '`npm run parity`, or start the baseline with `npm run parity:baseline`.'
     );
   }
 });

@@ -1,12 +1,12 @@
-// Visual parity pipeline (`corepack yarn parity`):
+// Visual parity pipeline (`npm run parity`):
 //   1. prepare the Svelte baseline (prepare-baseline.mjs) and serve it on a free port,
 //   2. capture every scenario in both apps (Playwright project `parity`; it builds and previews
 //      this app itself),
 //   3. compare the captures (compare.mjs) into e2e/.artifacts/parity/index.html.
 //
-//   corepack yarn parity [--force-baseline] [--baseline-dir <dir>] [playwright test args…]
+//   npm run parity -- [--force-baseline] [--baseline-dir <dir>] [playwright test args…]
 //
-// Unknown arguments go to `playwright test`, e.g. `corepack yarn parity --grep welcome`.
+// Unknown arguments go to `playwright test`, e.g. `npm run parity -- --grep welcome`.
 // Exit code: 0 when every capture is identical, 1 otherwise, 2 when nothing was captured.
 
 import { spawn } from 'node:child_process';
