@@ -1,0 +1,7 @@
+/* `svg` in the Svelte component, scoped by the module class like Svelte's scoping class. */
+svg.dial {
+  cursor: grab;
+}
+svg.dial:active {
+  cursor: grabbing;
+}
