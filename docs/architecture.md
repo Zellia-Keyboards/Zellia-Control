@@ -20,8 +20,8 @@ src-controller/         vendored emi-keyboard-controller (never edited)
 Dependencies point downwards: `app` → `features` → `components/ui` → `lib`. A feature uses
 another feature only through its `index.ts`, or for pure code through its `model/` entry
 (`features/keyboard/model`, `features/dynamic-keys/model`, `features/lighting/model`, and the
-device feature's pure modules `features/device/model/*`: `types`, `units`, `mutex-mode`, …), which
-never import React or the device session. The controller
+device feature's pure modules `features/device/model/*`: `types`, `units`, `mutex-mode`,
+`capabilities`, …), which never import React or the device session. The controller
 package is used directly only by `features/device` (the keyboard) and `features/firmware-update`
 (its WebDFU class); other code imports only its enums and types.
 
@@ -62,7 +62,7 @@ defaults. There is no server state: the app has no backend.
 
 The device layer is described in [device.md](device.md): components read the store and change
 the keyboard only through `deviceSession` commands, which update the controller, send the
-packets (lighting edits wait for `save()`) and patch the store.
+packets (lighting, macro and script edits wait for `save()`) and patch the store.
 
 ## Routing
 

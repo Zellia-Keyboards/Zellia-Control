@@ -62,6 +62,7 @@ const KEY_UP = 0x01;
 const END_MARKER_KEYCODE = 0;
 /** Macro slots a keycode can address (`MACRO_KEYCODE_GET_INDEX`: the low nibble). */
 const MAX_MACRO_SLOTS = 16;
+const MACRO_EVENTS: readonly string[] = ['down', 'up'];
 
 // ---------------------------------------------------------------------------------------------
 // Validation helpers
@@ -494,4 +495,35 @@ export function assertRgbKeyConfig(config: RgbKeyConfig): void {
   assertMember(RGB_MODES, config.mode, 'RGB mode');
   assertRgb(config.color, 'Colour');
   assertUint(config.speed, U16, 'Speed');
+}
+
+/**
+ * Actions the firmware can play: at most `capacity.actions − 1` (the end marker takes the last
+ * entry), a keycode other than "no event" (it would end the macro there), a u32 delay, and a key
+ * of the keyboard (libamp reads the key of every action it plays, virtual ones too).
+ */
+export function assertMacroActions(
+  actions: readonly MacroAction[],
+  capacity: MacroCapacity,
+  keyCount: number
+): void {
+  const limit = Math.max(capacity.actions - 1, 0);
+  if (actions.length > limit) {
+    throw new RangeError(`A macro holds at most ${limit} actions, got ${actions.length}`);
+  }
+  for (const action of actions) {
+    assertUint(action.delay, U32, 'Delay');
+    assertUint(action.keycode, U16, 'Keycode');
+    if (action.keycode === END_MARKER_KEYCODE) throw new RangeError('Keycode 0 ends a macro');
+    if (!MACRO_EVENTS.includes(action.event)) {
+      throw new RangeError(`Event ${action.event} is not supported`);
+    }
+    assertUint(action.keyId, U16, 'Key ID');
+    if (action.keyId >= keyCount) throw new RangeError(`Key ${action.keyId} does not exist`);
+  }
+}
+
+/** Bytecode bytes are bytes: `Uint8Array.from` would wrap other values silently. */
+export function assertScriptConfig(script: ScriptConfig): void {
+  for (const byte of script.bytecode) assertUint(byte, BYTE, 'Bytecode byte');
 }

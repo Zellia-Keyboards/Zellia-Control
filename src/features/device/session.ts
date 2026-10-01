@@ -9,9 +9,10 @@
  * - Outside of reloads, the controller cache equals the store snapshot. Every load re-syncs the
  *   cache (with dynamic-key targets rebuilt from the keymap, D4), and every command rebuilds the
  *   parts it touches from the new snapshot, so a later `save()` writes exactly what the UI shows.
- * - Lighting edits are staged: `setRgbBase` / `setRgbKeys` update the cache and the snapshot and
- *   send nothing; `save()` writes them with everything else. Every other edit is sent at once.
- *   `unsaved` is set by every edit and cleared by a load or by a save that included the last one.
+ * - Lighting, macro and script edits are staged: `setRgbBase`, `setRgbKeys`, `setMacro` and
+ *   `setScript` update the cache and the snapshot and send nothing; `save()` writes them with
+ *   everything else. Every other edit is sent at once. `unsaved` is set by every edit and cleared
+ *   by a load or by a save that included the last one.
  * - Edits are rejected (and recorded in `lastError`) while a reload runs: the controller is then
  *   refilling its cache, and decisions made on the old snapshot (dynamic-key slots) could clobber
  *   the new one. Profile switches and factory resets count as reloads from the request on.
@@ -37,8 +38,10 @@ import {
 } from './device-store';
 import {
   assertAdvancedKeyConfig,
+  assertMacroActions,
   assertRgbBaseConfig,
   assertRgbKeyConfig,
+  assertScriptConfig,
   deepFreeze,
   readDeviceConfig,
   readFeatureFlags,
@@ -49,9 +52,11 @@ import {
   toControllerAdvancedKey,
   toControllerDynamicKey,
   toControllerKeymap,
+  toControllerMacroAction,
   toControllerMacros,
   toControllerRgbBase,
   toControllerRgbConfig,
+  toMacroAction,
   toRgbBaseConfig,
   toRgbKeyConfig,
 } from './mapping';
@@ -72,9 +77,11 @@ import type {
   DynamicKeyKind,
   DynamicKeySlot,
   Keycode,
+  MacroAction,
   ModelInfo,
   RgbBaseConfig,
   RgbKeyConfig,
+  ScriptConfig,
 } from './model/types';
 import { bootloaderFilters, detectBootloaderOf } from './bootloader';
 import { HID_REQUEST_FILTERS, MODELS, matchModel, type ModelDefinition } from './models';
@@ -99,6 +106,8 @@ export const COMMAND_ERRORS = {
   noSuchKey: (keyId: number): string => `Key ${keyId} does not exist`,
   noSuchSlot: (slot: number): string => `Dynamic key slot ${slot} does not exist`,
   noSuchProfile: (index: number): string => `Profile ${index} does not exist`,
+  noSuchMacro: (slot: number): string => `Macro ${slot} does not exist`,
+  noScripts: 'This keyboard does not support scripts',
 } as const;
 
 export interface DeviceSessionTimeouts {
@@ -150,6 +159,13 @@ export interface DeviceSession {
   setRgbBase(config: RgbBaseConfig): void;
   /** Staged until `save()`, like `setRgbBase`; the last entry for a key wins. */
   setRgbKeys(entries: readonly { keyId: number; config: RgbKeyConfig }[]): void;
+  /**
+   * Staged until `save()`, like `setRgbBase`: the actions of macro `slot` (0-based), without the
+   * end marker (the session writes it). At most `macroActions − 1` actions.
+   */
+  setMacro(slot: number, actions: readonly MacroAction[]): void;
+  /** Staged until `save()`: the script source and, on AOT keyboards, its compiled bytecode. */
+  setScript(script: ScriptConfig): void;
   /**
    * Writes the draft to its key's slot or the first free one (D6); null when rejected. Slot
    * numbers are not stable: the slots in use are kept contiguous from 0 (libamp stops at the
@@ -860,6 +876,55 @@ class Session implements DeviceSession {
     });
     // Staged: save() writes it.
     connection.controller.set_rgb_configs(next.rgbKeys.map(toControllerRgbConfig));
+    this.#commitEdit(connection, next);
+  }
+
+  setMacro(slot: number, actions: readonly MacroAction[]): void {
+    const target = this.#editable('setMacro');
+    if (!target) return;
+    const { connection, config: current } = target;
+    const capacity = readMacroCapacity(connection.controller);
+    let macro: MacroAction[];
+    try {
+      assertIndex(slot, capacity.slots, COMMAND_ERRORS.noSuchMacro);
+      assertMacroActions(actions, capacity, current.keymap[0]?.length ?? 0);
+      macro = actions.map(action => toMacroAction(toControllerMacroAction(action)));
+    } catch (error) {
+      this.#recordError('setMacro', error);
+      return;
+    }
+    if (isEqual(current.macros[slot], macro)) return;
+
+    const next = deepFreeze({
+      ...current,
+      macros: current.macros.map((actions, index) => (index === slot ? macro : actions)),
+    });
+    // Staged: save() writes every slot at full size.
+    connection.controller.set_macros(toControllerMacros(next.macros, capacity));
+    this.#commitEdit(connection, next);
+  }
+
+  setScript(script: ScriptConfig): void {
+    const target = this.#editable('setScript');
+    if (!target) return;
+    const { connection, config: current } = target;
+    if (current.script === null) {
+      this.#reject('setScript', COMMAND_ERRORS.noScripts);
+      return;
+    }
+    try {
+      assertScriptConfig(script);
+    } catch (error) {
+      this.#recordError('setScript', error);
+      return;
+    }
+    const staged: ScriptConfig = { source: script.source, bytecode: [...script.bytecode] };
+    if (isEqual(current.script, staged)) return;
+
+    const next = deepFreeze({ ...current, script: staged });
+    // Staged: save() writes the source and, on AOT keyboards, the bytecode.
+    connection.controller.set_script_source(staged.source);
+    connection.controller.set_script_bytecode(Uint8Array.from(staged.bytecode));
     this.#commitEdit(connection, next);
   }
 

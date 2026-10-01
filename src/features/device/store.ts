@@ -4,7 +4,8 @@
  */
 import { useStore } from 'zustand';
 import { deviceNameOf, deviceStore, modelOf, type DeviceState } from './device-store';
-import type { ConnectionState, DeviceConfig, ModelInfo } from './model/types';
+import { supportsMacros, supportsScripts } from './model/capabilities';
+import type { ConnectionState, DeviceConfig, FeatureFlags, ModelInfo } from './model/types';
 
 export {
   INITIAL_DEVICE_STATE,
@@ -26,6 +27,9 @@ const selectConfig = (state: DeviceState): DeviceConfig | null => state.config;
 const selectIsReady = (state: DeviceState): boolean => state.connection.status === 'ready';
 const selectModel = (state: DeviceState): ModelInfo | null => modelOf(state.connection);
 const selectDeviceName = (state: DeviceState): string | null => deviceNameOf(state.connection);
+const selectFeature = (state: DeviceState): FeatureFlags | null => state.feature;
+const selectSupportsMacros = (state: DeviceState): boolean => supportsMacros(state.feature);
+const selectSupportsScripts = (state: DeviceState): boolean => supportsScripts(state.feature);
 
 export function useConnection(): ConnectionState {
   return useDeviceStore(selectConnection);
@@ -46,4 +50,19 @@ export function useModel(): ModelInfo | null {
 
 export function useDeviceName(): string | null {
   return useDeviceStore(selectDeviceName);
+}
+
+/** The connected keyboard's feature flags; null until the first load. */
+export function useFeatureFlags(): FeatureFlags | null {
+  return useDeviceStore(selectFeature);
+}
+
+/** Whether the connected keyboard's controller declares macros. */
+export function useSupportsMacros(): boolean {
+  return useDeviceStore(selectSupportsMacros);
+}
+
+/** Whether the connected keyboard's controller declares scripts. */
+export function useSupportsScripts(): boolean {
+  return useDeviceStore(selectSupportsScripts);
 }

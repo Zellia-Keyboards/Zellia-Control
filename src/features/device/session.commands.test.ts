@@ -21,7 +21,14 @@ import {
 import { createDeviceStore } from './device-store';
 import { readDeviceConfig } from './mapping';
 import { mutexMode } from './model/mutex-mode';
-import type { AdvancedKeyConfig, DeviceConfig, RgbBaseConfig, RgbKeyConfig } from './model/types';
+import type {
+  AdvancedKeyConfig,
+  DeviceConfig,
+  MacroAction,
+  RgbBaseConfig,
+  RgbKeyConfig,
+  ScriptConfig,
+} from './model/types';
 import { COMMAND_ERRORS, createDeviceSession, keymapRuns } from './session';
 import {
   controllerCacheObjects,
@@ -395,6 +402,140 @@ describe('lighting', () => {
     await settle();
     expect(wire(h)).toEqual([]);
     expect(h.state().unsaved).toBe(false);
+  });
+});
+
+describe('macros and the script (Trinity Pad)', () => {
+  const TRINITY = { keyboard: { model: 'trinity-pad', seedDynamicKeys: false } } as const;
+  const PRESS: MacroAction = {
+    delay: 0,
+    keycode: Keycode.A,
+    event: 'down',
+    isVirtual: true,
+    keyId: 0,
+  };
+  const RELEASE: MacroAction = { ...PRESS, delay: 800, event: 'up' };
+  const SCRIPT: ScriptConfig = { source: 'keyboard.watch(2);', bytecode: [0xfb, 0xac, 0x01, 0x00] };
+
+  it('stages a macro until save(), which writes it with its end marker', async () => {
+    const h = await connected(TRINITY);
+    h.session.setMacro(1, [PRESS, RELEASE]);
+    expect(configOf(h).macros[1]).toEqual([PRESS, RELEASE]);
+    expect(readDeviceConfig(h.controller()).macros[1]).toEqual([PRESS, RELEASE]);
+    expect(
+      h
+        .controller()
+        .get_macros()
+        .map(slot => slot.length)
+    ).toEqual([128, 128, 128, 128]);
+    expect(h.state().unsaved).toBe(true);
+    await settle();
+    expect(wire(h)).toEqual([]);
+
+    await h.session.save();
+    await settle();
+    expect(h.state()).toMatchObject({ unsaved: false, lastError: null });
+    const slot = h.vk.state.macros[1] ?? [];
+    expect(slot.slice(0, 3)).toEqual([
+      { index: 0, delay: 0, keyId: 0, isVirtual: true, event: 3, keycode: Keycode.A },
+      { index: 1, delay: 800, keyId: 0, isVirtual: true, event: 1, keycode: Keycode.A },
+      { index: 2, delay: 800, keyId: 0, isVirtual: false, event: 0, keycode: 0 },
+    ]);
+    expect(slot.slice(3).every(action => action.keycode === 0 && action.delay === 0)).toBe(true);
+    expect(h.vk.state.macros[0]?.[0]?.keycode).toBe(0);
+  });
+
+  it('stages the script until save(), which writes its source and its bytecode', async () => {
+    const h = await connected(TRINITY);
+    h.session.setScript(SCRIPT);
+    expect(configOf(h).script).toEqual(SCRIPT);
+    expect(h.controller().get_script_source()).toBe(SCRIPT.source);
+    expect(Array.from(h.controller().get_script_bytecode())).toEqual(SCRIPT.bytecode);
+    expect(h.state().unsaved).toBe(true);
+    await settle();
+    expect(wire(h)).toEqual([]);
+
+    await h.session.save();
+    await settle();
+    expect(new TextDecoder().decode(h.vk.state.scripts.source)).toBe(`${SCRIPT.source}\0`);
+    expect(Array.from(h.vk.state.scripts.bytecode)).toEqual(SCRIPT.bytecode);
+  });
+
+  it('changes nothing for an unchanged macro or script', async () => {
+    const h = await connected(TRINITY);
+    h.session.setMacro(0, []);
+    h.session.setScript({ source: '', bytecode: [] });
+    expect(h.state()).toMatchObject({ unsaved: false, lastError: null });
+  });
+
+  it('accepts 127 actions, the most a slot holds', async () => {
+    const h = await connected(TRINITY);
+    h.session.setMacro(
+      3,
+      Array.from({ length: 127 }, () => PRESS)
+    );
+    expect(configOf(h).macros[3]).toHaveLength(127);
+    expect(h.state().lastError).toBeNull();
+  });
+
+  it('rejects missing slots, too many actions and actions the firmware cannot play', async () => {
+    const h = await connected(TRINITY);
+    const rejects = (slot: number, actions: readonly MacroAction[], message: string) => {
+      h.session.setMacro(slot, actions);
+      expect(h.state().lastError).toEqual({ operation: 'setMacro', message });
+    };
+    const hold: Record<string, unknown> = { event: 'hold' };
+    rejects(4, [], 'Macro 4 does not exist');
+    rejects(-1, [], 'Macro -1 does not exist');
+    rejects(
+      0,
+      Array.from({ length: 128 }, () => PRESS),
+      'A macro holds at most 127 actions, got 128'
+    );
+    rejects(0, [{ ...PRESS, keycode: 0 }], 'Keycode 0 ends a macro');
+    rejects(0, [{ ...PRESS, keycode: 0x10000 }], 'Keycode 65536 is out of range 0..65535');
+    rejects(0, [{ ...PRESS, delay: 2 ** 32 }], 'Delay 4294967296 is out of range 0..4294967295');
+    rejects(0, [{ ...PRESS, keyId: 13 }], 'Key 13 does not exist');
+    rejects(0, [Object.assign({}, PRESS, hold)], 'Event hold is not supported');
+    expect(configOf(h).macros).toEqual([[], [], [], []]);
+    expect(h.state().unsaved).toBe(false);
+  });
+
+  it('rejects script bytes outside 0..255', async () => {
+    const h = await connected(TRINITY);
+    h.session.setScript({ source: 'x', bytecode: [256] });
+    expect(h.state().lastError).toEqual({
+      operation: 'setScript',
+      message: 'Bytecode byte 256 is out of range 0..255',
+    });
+  });
+
+  it('rejects macros and scripts on a keyboard without them (Starlight)', async () => {
+    const h = await connected();
+    h.session.setMacro(0, []);
+    expect(h.state().lastError).toEqual({
+      operation: 'setMacro',
+      message: 'Macro 0 does not exist',
+    });
+    h.session.setScript(SCRIPT);
+    expect(h.state().lastError).toEqual({
+      operation: 'setScript',
+      message: COMMAND_ERRORS.noScripts,
+    });
+    expect(h.state().unsaved).toBe(false);
+  });
+
+  it('drops unsaved macro and script edits when the keyboard loads its configuration', async () => {
+    const h = await connected(TRINITY);
+    h.session.setMacro(1, [PRESS, RELEASE]);
+    h.session.setScript(SCRIPT);
+    h.vk.notifyConfigChanged();
+    await waitForState(h.store, state => state.reloading);
+    await waitForState(h.store, state => !state.reloading);
+    expect(h.state().unsaved).toBe(false);
+    expect(configOf(h).macros[1]).toEqual([]);
+    expect(configOf(h).script).toEqual({ source: '', bytecode: [] });
+    expect(readDeviceConfig(h.controller())).toEqual(configOf(h));
   });
 });
 
@@ -780,6 +921,19 @@ describe('isolation of the store from the controller (no aliasing)', () => {
     h.vk.notifyConfigChanged();
     await waitForState(h.store, state => state.reloading);
     await waitForState(h.store, state => !state.reloading);
+    expectIsolated(h);
+  });
+
+  it('holds for macros and the script (Trinity Pad)', async () => {
+    const h = await connected({ keyboard: { model: 'trinity-pad', seedDynamicKeys: false } });
+    expectIsolated(h);
+    h.session.setMacro(2, [
+      { delay: 8, keycode: Keycode.B, event: 'down', isVirtual: true, keyId: 0 },
+    ]);
+    expectIsolated(h);
+    h.session.setScript({ source: 'function loop() {}', bytecode: [1, 2, 3] });
+    expectIsolated(h);
+    await h.session.save();
     expectIsolated(h);
   });
 

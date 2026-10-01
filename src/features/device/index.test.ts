@@ -30,8 +30,11 @@ describe('device feature API', () => {
       'useDeviceConfig',
       'useDeviceName',
       'useDeviceStore',
+      'useFeatureFlags',
       'useIsReady',
       'useModel',
+      'useSupportsMacros',
+      'useSupportsScripts',
     ]);
     const model: ModelId = 'zellia-80';
     const draft: DynamicKeyDraft = { kind: 'toggle', target: { layer: 0, id: 1 }, binding: 4 };

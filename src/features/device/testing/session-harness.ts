@@ -212,6 +212,8 @@ export function controllerCacheObjects(controller: DeviceController): Set<object
     controller.get_feature(),
     controller.get_firmware_version(),
     controller.get_layout_labels(),
+    controller.get_macros(),
+    controller.get_script_bytecode(),
   ]) {
     reachableObjects(cache, seen);
   }
