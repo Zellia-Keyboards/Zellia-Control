@@ -6,6 +6,8 @@ import { DebugPage } from '../features/debug';
 import { DynamicKeysPage } from '../features/dynamic-keys';
 import { UpdatePage, setFirmwareUpdateActive } from '../features/firmware-update';
 import { LightingPage } from '../features/lighting';
+import { MacrosPage } from '../features/macros';
+import { ScriptsPage } from '../features/scripts';
 import { PerformancePage } from '../features/performance';
 import { ProfilesPage } from '../features/profiles';
 import { RemapPage } from '../features/remap';
@@ -90,6 +92,20 @@ describe('routes', () => {
       expect(screen.queryByRole('button', { name: 'Configure keyboard layout' })).toBeNull();
       unmount();
     }
+  });
+
+  it('opens Macros and Scripts without the toolbar and the keyboard', async () => {
+    await connectShellKeyboard({ model: 'trinity-pad' });
+    const { container, router } = renderApp('/macros/');
+
+    expect(await screen.findByTestId('page')).toHaveTextContent('macros page');
+    expect(container.querySelector('.keycap')).toBeNull();
+
+    await act(async () => {
+      await router.navigate('/scripts/');
+    });
+    expect(await screen.findByTestId('page')).toHaveTextContent('scripts page');
+    expect(container.querySelector('.keycap')).toBeNull();
   });
 
   it('goes from / to Remap once connected, replacing the history entry', async () => {
@@ -184,6 +200,8 @@ describe('APP_PAGES', () => {
       performance: PerformancePage,
       lighting: LightingPage,
       dynamic: DynamicKeysPage,
+      macros: MacrosPage,
+      scripts: ScriptsPage,
       debug: DebugPage,
       settings: SettingsPage,
       update: UpdatePage,

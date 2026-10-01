@@ -1,10 +1,17 @@
 import { LogOut, Save } from 'lucide-react';
 import { useId } from 'react';
 import { Link, useLocation } from 'react-router';
-import { deviceSession, useDeviceName, useDeviceStore, useIsReady } from '../../features/device';
+import {
+  deviceSession,
+  useDeviceName,
+  useDeviceStore,
+  useIsReady,
+  useSupportsMacros,
+  useSupportsScripts,
+} from '../../features/device';
 import { useLanguage, useT } from '../../lib/i18n';
 import { Transition, slide, type SlideParams } from '../../lib/transitions';
-import { NAVIGATE, isActivePage } from '../navigation';
+import { isActivePage, navigationFor } from '../navigation';
 import { preloadPage } from '../pages';
 import { DarkModeToggle } from './DarkModeToggle';
 import { LanguageSwitch } from './LanguageSwitch';
@@ -34,6 +41,9 @@ export function Sidebar({ onDisconnect }: SidebarProps) {
   // Edits the keyboard does not store yet (lighting edits are not even on it before Save).
   const unsaved = useDeviceStore(state => state.unsaved);
   const unsavedId = useId();
+  // Macros and Scripts only while the keyboard's controller declares them.
+  const macros = useSupportsMacros();
+  const scripts = useSupportsScripts();
 
   return (
     <div
@@ -162,7 +172,7 @@ export function Sidebar({ onDisconnect }: SidebarProps) {
       {/* Navigation */}
       <div className="flex-1 p-3">
         <nav className="space-y-1">
-          {NAVIGATE.map(([href, name]) => {
+          {navigationFor({ macros, scripts }).map(([href, name]) => {
             const active = isActivePage(pathname, href);
             return (
               <Link
