@@ -84,9 +84,12 @@ baseline's in every variant.
 | `lighting-key-applied-selection`                   | PL-047 ("3 keys"), PL-048, PL-049, PL-006, PL-050 (the dot)                                               |
 | `lighting-rainbow-applied`                         | PL-007, PL-047, PL-048, PL-049, PL-006, PL-050 (the dot)                                                  |
 
-Every capture also shows PL-002 (the Save label) and PL-050's darker rows under the Save button.
-The Performance captures differ as before, plus PL-050: its rows in every capture and the dot in
-`performance-keys-selected-rapid-trigger`, which turns rapid trigger on for the selected keys.
+Every capture also shows PL-002 (the Save label). The Performance captures differ as before, plus
+PL-050's dot in `performance-keys-selected-rapid-trigger`, which turns rapid trigger on for the
+selected keys. In the integration run every capture also differed by darker rows under the Save
+button, which was still positioned for the dot; the Save button fix of the same day removed them
+(the targeted re-run in the parity log's
+[Per-feature results](../parity-log.md#per-feature-results)), so the table leaves them out.
 
 ## Deviations
 

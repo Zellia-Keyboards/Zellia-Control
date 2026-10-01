@@ -44,11 +44,13 @@ sidebar's Save button.
 | `profiles-keyboard-switch`                                                                                                                   | PL-013, PL-002                                                                                        |
 
 Integration run of 2026-10-01, after the lighting redesign (all eight variants, 200 captures of
-these scenarios, strict comparison): 0 identical, every difference listed above, plus PL-050 in
-every capture (the darker rows under the sidebar's Save button; the unsaved dot in
-`remap-assigned`, `remap-brush-layer`, `remap-profile-assigned` and `remap-extension-assigned`,
-which assign keycodes) and the noise below. `remap-toast` was captured again after its scenario
-fix (below) and then differed exactly like `remap-basic`.
+these scenarios, strict comparison): 0 identical, every difference listed above, plus PL-050's
+unsaved dot in `remap-assigned`, `remap-brush-layer`, `remap-profile-assigned` and
+`remap-extension-assigned`, which assign keycodes, and the noise below. In that run every capture
+also differed by darker rows under the sidebar's Save button, which was still positioned for the
+dot; the Save button fix of the same day removed them (the targeted re-run in the parity log's
+[Per-feature results](../parity-log.md#per-feature-results)). `remap-toast` was captured again
+after its scenario fix (below) and then differed exactly like `remap-basic`.
 
 The pattern also matches the shell's `shell-remap-*` scenarios. With the profile dropdown in
 place the shell's toolbar is identical there too (the shell notes expected the dropdown stub's
