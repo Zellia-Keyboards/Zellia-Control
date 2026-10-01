@@ -14,6 +14,7 @@ import {
 } from '../../device';
 import { useSelectedKeys, useSelectedLayer } from '../../keyboard';
 import { useT } from '../../../lib/i18n';
+import { removeDynamicKeyAt, removeDynamicKeysOfKind } from '../commands';
 import { useLoadedDraft } from '../hooks/use-loaded-draft';
 import { useTimeouts } from '../hooks/use-timeouts';
 import {
@@ -94,12 +95,7 @@ export function ToggleMode({ onBack }: ToggleModeProps) {
     setToggleDeletingKeys(keys => withKey(keys, keyId));
     schedule(
       () => {
-        // The slot may have moved meanwhile: look the key's toggle up again.
-        const found = dynamicKeyOfKindAt(deviceStore.getState().config, entry.target, 'toggle');
-        if (found) {
-          deviceSession.removeDynamicKey(found.slot);
-          uiFields.forgetDynamicKey(found.dynamicKey);
-        }
+        removeDynamicKeyAt(entry.target, 'toggle');
         setToggleDeletingKeys(keys => withoutKey(keys, keyId));
       },
       DELETE_ANIMATION_MS,
@@ -112,8 +108,7 @@ export function ToggleMode({ onBack }: ToggleModeProps) {
     setToggleDeletingKeys(keys => withKeys(keys, keysToDelete));
     schedule(
       () => {
-        deviceSession.removeDynamicKeysOfKind('toggle');
-        uiFields.forgetKind('toggle');
+        removeDynamicKeysOfKind('toggle');
         setToggleDeletingKeys(NO_KEYS);
       },
       DELETE_ANIMATION_MS,

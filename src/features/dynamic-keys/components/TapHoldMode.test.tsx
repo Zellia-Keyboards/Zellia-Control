@@ -4,8 +4,13 @@ import { describe, expect, it } from 'vitest';
 import { deviceSession, deviceStore } from '../../device';
 import { kc } from '../../keycodes';
 import { dynamicKeyKeycode } from '../../../testing/virtual-keyboard';
-import { uiFieldsStore } from '../store/ui-fields';
-import { renderDynamicKeysPage, selectKeys, selectLayer } from '../testing/render-page';
+import {
+  at,
+  fillDynamicKeySlots,
+  renderDynamicKeysPage,
+  selectKeys,
+  selectLayer,
+} from '../testing/render-page';
 
 const ESC = kc.key(EmiKeycode.Escape);
 const LEFT_CTRL = kc.modifier(KeyModifier.KeyLeftCtrl);
@@ -144,9 +149,21 @@ describe('Tap-hold editor', () => {
     expect(screen.queryByRole('heading', { name: 'Configured Tap-Hold Keys' })).toBeNull();
   });
 
-  it('resets every tap-hold key of the keyboard', async () => {
+  it('lists the configured keys by key id, as the Svelte list did', async () => {
+    const { user } = await openTapHold({ seedDynamicKeys: false });
+    selectKeys(30);
+    await user.click(applyButton());
+    selectKeys(17);
+    await user.click(applyButton());
+
+    const names = within(configuredList()).getAllByText(/^Key \d+$/);
+    expect(names.map(name => name.textContent)).toEqual(['Key 17', 'Key 30']);
+  });
+
+  it('resets every tap-hold key of the keyboard and forgets their hold delays', async () => {
     const { keyboard, user } = await openTapHold();
     selectKeys(5);
+    fireEvent.change(screen.getByLabelText('Hold Delay'), { target: { value: '700' } });
     await user.click(applyButton());
     await expect.poll(() => configuredKeysCount()).toBe(2);
 
@@ -160,7 +177,48 @@ describe('Tap-hold editor', () => {
     const kinds = keyboard.vk.state.active.dynamicKeys.map(key => key.type);
     expect(kinds.slice(0, 3).toSorted()).toEqual(['mutex', 'stroke', 'toggle']);
     expect(kinds.slice(3).every(kind => kind === 'none')).toBe(true);
-    expect(uiFieldsStore.getState().tapHold).toEqual({});
+
+    // A mod-tap the key gets later from elsewhere starts at the default hold delay.
+    act(() => {
+      deviceSession.applyDynamicKey({
+        kind: 'modTap',
+        target: at(0, 5),
+        tap: A,
+        hold: LEFT_CTRL,
+        durationMs: 150,
+      });
+    });
+    expect(screen.getByText('• Hold (over 200ms):')).toBeInTheDocument();
+  });
+
+  it('keeps the mod-tap and its hold delay when the keyboard rejects the delete', async () => {
+    const { keyboard, user } = await openTapHold();
+    selectKeys(SEEDED_MOD_TAP_KEY);
+    fireEvent.change(screen.getByLabelText('Hold Delay'), { target: { value: '700' } });
+    await user.click(applyButton());
+    await user.click(within(configuredList()).getByRole('button', { name: 'Delete' }));
+
+    // A profile switch makes the keyboard reload, and it rejects edits until it has. Leaving the
+    // editor runs the pending delete at once, while the keyboard reloads.
+    let switching = Promise.resolve();
+    act(() => {
+      switching = deviceSession.switchProfile(0);
+      fireEvent.click(screen.getByRole('button', { name: 'Back' }));
+    });
+    expect(deviceStore.getState().lastError).toEqual({
+      operation: 'removeDynamicKey',
+      message: 'The keyboard is reloading its configuration',
+    });
+    await act(() => switching);
+
+    expect(keyboard.vk.state.active.dynamicKeys[1]).toMatchObject({
+      type: 'modTap',
+      keyId: SEEDED_MOD_TAP_KEY,
+    });
+    await user.click(screen.getByRole('button', { name: /^Tap Hold/ }));
+    selectKeys(SEEDED_MOD_TAP_KEY);
+    expect(screen.getByText('• Hold (over 700ms):')).toBeInTheDocument();
+    expect(within(configuredList()).getByText('700milliseconds')).toBeInTheDocument();
   });
 
   it('keeps a key’s hold delay across slot compaction', async () => {
@@ -199,12 +257,7 @@ describe('Tap-hold editor', () => {
 
   it('keeps the editor as it is when the keyboard has no free slot', async () => {
     const { keyboard, user } = await openTapHold({ seedDynamicKeys: false });
-    const slots = keyboard.vk.state.active.dynamicKeys.length;
-    act(() => {
-      for (let id = 0; id < slots; id++) {
-        deviceSession.applyDynamicKey({ kind: 'toggle', target: { layer: 3, id }, binding: A });
-      }
-    });
+    fillDynamicKeySlots();
     selectKeys(40);
     await user.click(within(picker('Tap Action')).getByRole('button', { name: 'A' }));
     await user.click(applyButton());

@@ -13,6 +13,7 @@ import {
   type KeyLocation,
 } from '../../device';
 import { useSelectedKeys, useSelectedLayer } from '../../keyboard';
+import { removeDynamicKeyAt, removeDynamicKeysOfKind } from '../commands';
 import { useLoadedDraft } from '../hooks/use-loaded-draft';
 import { useTimeouts } from '../hooks/use-timeouts';
 import {
@@ -91,12 +92,7 @@ export function TapHoldMode({ onBack }: TapHoldModeProps) {
     setDeletingKeys(keys => withKey(keys, keyId));
     schedule(
       () => {
-        // The slot may have moved meanwhile: look the key's mod-tap up again.
-        const found = dynamicKeyOfKindAt(deviceStore.getState().config, entry.target, 'modTap');
-        if (found) {
-          deviceSession.removeDynamicKey(found.slot);
-          uiFields.forgetDynamicKey(found.dynamicKey);
-        }
+        removeDynamicKeyAt(entry.target, 'modTap');
         setDeletingKeys(keys => withoutKey(keys, keyId));
       },
       DELETE_ANIMATION_MS,
@@ -109,8 +105,7 @@ export function TapHoldMode({ onBack }: TapHoldModeProps) {
     setDeletingKeys(keys => withKeys(keys, keysToDelete));
     schedule(
       () => {
-        deviceSession.removeDynamicKeysOfKind('modTap');
-        uiFields.forgetKind('tapHold');
+        removeDynamicKeysOfKind('modTap');
         setDeletingKeys(NO_KEYS);
       },
       DELETE_ANIMATION_MS,
