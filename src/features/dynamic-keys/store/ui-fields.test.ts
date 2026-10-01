@@ -8,9 +8,20 @@ import { uiFields, uiFieldsStore, useUiFields } from './ui-fields';
 const at = (layer: number, id: number): KeyLocation => ({ layer, id });
 const NULL_BIND = { bottomOutMm: 3, actuationMm: 1.5, rtDown: 0.1, rtUp: 0, continuous: false };
 const NONE: DynamicKeySlot = { kind: 'none' };
-const MOD_TAP: DynamicKeySlot = { kind: 'modTap', tap: 4, hold: 5, durationMs: 150, target: at(0, 1) };
+const MOD_TAP: DynamicKeySlot = {
+  kind: 'modTap',
+  tap: 4,
+  hold: 5,
+  durationMs: 150,
+  target: at(0, 1),
+};
 const TOGGLE: DynamicKeySlot = { kind: 'toggle', binding: 6, target: at(0, 2) };
-const MUTEX: DynamicKeySlot = { kind: 'mutex', bindings: [7, 8], mode: 1, targets: [at(0, 3), at(0, 4)] };
+const MUTEX: DynamicKeySlot = {
+  kind: 'mutex',
+  bindings: [7, 8],
+  mode: 1,
+  targets: [at(0, 3), at(0, 4)],
+};
 
 /** A snapshot whose layer 0 is `keys` and whose dynamic keys are `dynamicKeys`. */
 function config(keys: readonly Keycode[], dynamicKeys: readonly DynamicKeySlot[]): DeviceConfig {
