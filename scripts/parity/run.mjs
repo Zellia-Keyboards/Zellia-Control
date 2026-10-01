@@ -7,13 +7,13 @@
 //   npm run parity -- [--force-baseline] [--baseline-dir <dir>] [playwright test args…]
 //
 // Unknown arguments go to `playwright test`, e.g. `npm run parity -- --grep welcome`.
-// Exit code: 0 when every capture is identical, 1 otherwise, 2 when nothing was captured.
+// Exit code: 0 when every capture is identical or new (React only), 1 otherwise, 2 when nothing was captured.
 
 import { spawn } from 'node:child_process';
 import { rmSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import path from 'node:path';
-import { PARITY_DIR, UsageError, compareCaptures, printSummary } from './compare.mjs';
+import { PARITY_DIR, UsageError, compareCaptures, isParity, printSummary } from './compare.mjs';
 import {
   prepareBaseline,
   resolveBaselineDir,
@@ -69,7 +69,7 @@ async function main() {
       console.error('[parity] some captures failed; see the Playwright output above');
       return 1;
     }
-    return summary.totals.identical === summary.totals.captures ? 0 : 1;
+    return isParity(summary) ? 0 : 1;
   } finally {
     await server.close();
   }
