@@ -34,5 +34,14 @@ while the Save and Disconnect buttons slide in: Playwright retries the click on 
 scrolls it into view at another alignment on each retry, which at times scrolled the sidebar to
 its end. The scenarios now scroll the sidebar back to its start before the capture
 (`scrollSidebarToStart`). The 48 captures, taken twice more after that, show the sidebar at its
-start in every variant, all `new` and without errors; `pl-051-after.png` to `pl-054-after.png` come
+start in every variant, all `new` and without errors; `pl-053-after.png` and `pl-054-after.png` come
 from the second of those runs.
+
+The three `macros-*` scenarios were re-taken on 2026-10-02 (`npm run parity -- --workers=4 --grep
+"macros-"`: 24 captures, all `new`, without errors) after the chosen slot gained its ring. The glass
+theme sets every `glassmorphism-button`'s background, border and colour, so the chosen slot's own
+background and border never showed and the four slots looked the same; it is now ringed in the
+theme colour (`ring-2 ring-primary-400`), like the toolbar's layer buttons. Against the earlier
+captures only the first slot's rectangle changed (688–696 px at 1440×900, 804–815 px at 2560×1440:
+the ring), plus at most 24 px of the usual noise in four captures. `pl-051-after.png` and
+`pl-052-after.png` come from this run.

@@ -235,6 +235,9 @@ const scenarios: readonly ParityScenario[] = [
       await openPerformance(page);
       await toggleRapidTrigger(page);
       await page.getByRole('switch', { name: 'Separate Sensitivity Toggle' }).click();
+      // At 1440×900 the page is now 35 px taller than the viewport, and the click at times leaves
+      // the main column scrolled to its end (in either app).
+      await scrollToStart(page);
       await parkPointer(page);
     },
   },
