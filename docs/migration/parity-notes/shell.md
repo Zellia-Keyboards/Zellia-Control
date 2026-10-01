@@ -12,31 +12,35 @@ keyboard. `shell-settings` hides the whole page region.
 
 ## Results
 
-Final run of 2026-09-30, after the second review (168 captures, strict comparison): 48
-identical, 120 different, as listed. The run before it, taken before the connection-screen
-scenarios stopped the background blobs' pulse (below), had the same differences — connected
-captures within 0.01 %, `shell-unplugged` within 0.07 % — plus one `shell-connection-error`
-capture with blob noise.
+Integration run of 2026-10-01, after the lighting redesign (168 captures of these scenarios,
+strict comparison): 48 identical, 120 different, as listed. Every connected capture also shows
+PL-050's darker rows under the sidebar's Save button, and the keycap-corner and sidebar noise
+below comes and goes. The worker's final run of 2026-09-30 (after the second review) had the same
+48 identical captures; its connected captures differed by the toolbar's profile dropdown stub
+(see below) instead of PL-050. The run before it, taken before the connection-screen scenarios
+stopped the background blobs' pulse (below), had the same differences — connected captures within
+0.01 %, `shell-unplugged` within 0.07 % — plus one `shell-connection-error` capture with blob
+noise.
 
-| Scenario                                                | Identical | Differences                                                       |
-| ------------------------------------------------------- | --------- | ----------------------------------------------------------------- |
-| `welcome`                                               | 8/8       |                                                                   |
-| `shell-not-connected`                                   | 8/8       |                                                                   |
-| `shell-not-found`                                       | 8/8       |                                                                   |
-| `shell-theme-colors`                                    | 8/8       |                                                                   |
-| `shell-connection-error`                                | 8/8       |                                                                   |
-| `shell-loading-overlay`                                 | 8/8       |                                                                   |
-| `shell-loading-config`                                  | 0/8       | PL-003                                                            |
-| `shell-unplugged`                                       | 0/8       | PL-004                                                            |
-| `shell-settings`                                        | 0/8       | PL-002 (Save label)                                               |
-| `shell-remap`, `-selection`, `-hover`, `shell-layout-*` | 0/8       | profile dropdown stub (F), PL-002, PL-016, PL-022                 |
-| `shell-remap-layer-2`, `-layer-4`                       | 0/8       | profile dropdown stub (F), PL-002, PL-022                         |
-| `shell-remap-layer-3`                                   | 0/8       | profile dropdown stub (F), PL-002, PL-017, PL-022                 |
-| `shell-performance`                                     | 0/8       | profile dropdown stub (F), PL-002, PL-005                         |
-| `shell-lighting`                                        | 0/8       | profile dropdown stub (F), PL-002                                 |
-| `shell-dynamic`                                         | 0/8       | profile dropdown stub (F), PL-002, PL-016, PL-022, PL-023, PL-024 |
+| Scenario                                                | Identical | Differences                                    |
+| ------------------------------------------------------- | --------- | ---------------------------------------------- |
+| `welcome`                                               | 8/8       |                                                |
+| `shell-not-connected`                                   | 8/8       |                                                |
+| `shell-not-found`                                       | 8/8       |                                                |
+| `shell-theme-colors`                                    | 8/8       |                                                |
+| `shell-connection-error`                                | 8/8       |                                                |
+| `shell-loading-overlay`                                 | 8/8       |                                                |
+| `shell-loading-config`                                  | 0/8       | PL-003                                         |
+| `shell-unplugged`                                       | 0/8       | PL-004                                         |
+| `shell-settings`, `shell-lighting`                      | 0/8       | PL-002 (Save label), PL-050                    |
+| `shell-remap`, `-selection`, `-hover`, `shell-layout-*` | 0/8       | PL-002, PL-016, PL-022, PL-050                 |
+| `shell-remap-layer-2`, `-layer-4`                       | 0/8       | PL-002, PL-022, PL-050                         |
+| `shell-remap-layer-3`                                   | 0/8       | PL-002, PL-017, PL-022, PL-050                 |
+| `shell-performance`                                     | 0/8       | PL-002, PL-005, PL-050                         |
+| `shell-dynamic`                                         | 0/8       | PL-002, PL-016, PL-022, PL-023, PL-024, PL-050 |
 
-Keyboard and toolbar check without the pending profile dropdown: the connected scenarios were
+Keyboard and toolbar check in the worker's runs, without the pending profile dropdown: the
+connected scenarios were
 captured once more with the baseline's profile dropdown and both apps' Save button hidden (a
 local, uncommitted scenario file; done before the review fixes, which changed no markup). Then
 `shell-settings` is identical (one noise pixel in one variant), `shell-lighting` differs only by
@@ -68,10 +72,10 @@ No new deviations.
 
 ## Before the other Wave 2 branches were merged
 
-These runs predate the merge of the other Wave 2 branches. The toolbar's profile dropdown
-(worker F) was a stub that rendered nothing: in every connected capture the toolbar is 58 px
-instead of 74 px high, everything below it (the keyboard included) sits 16 px higher, and the
-dropdown's own region differs ("profile dropdown stub (F)" in the results). See the check above;
+The worker's runs predate the merge of the other Wave 2 branches. The toolbar's profile dropdown
+(worker F) was a stub that rendered nothing: in every connected capture the toolbar was 58 px
+instead of 74 px high, everything below it (the keyboard included) sat 16 px higher, and the
+dropdown's own region differed (the "profile dropdown stub (F)" of the worker's results). See the check above;
 with the dropdown merged, the [remap and profiles runs](remap-profiles.md#results) found the
 shell's toolbar identical in `shell-remap-*`. The page regions (workers F–I) are hidden in these
 scenarios; the feature scenarios compare them.
@@ -86,6 +90,12 @@ scenarios; the feature scenarios compare them.
   match exactly. Expect up to a few dozen such pixels per connected capture while PL-002 applies.
 - **Raster glitches.** About one capture in 10–20, in either app, gets a small block of wrong
   pixels (roughly 7×7 px, 40–70 px in total) over text; a re-run of the capture is identical.
+- **Sidebar.** The Save button's shadow can come out with dithered pixels one colour level off,
+  most in the light theme at 2560×1440 (59 px in `shell-layout-variants-closed--light-zh-2560x1440`,
+  163 px in `shell-layout-variants--light-en-2560x1440` in the integration runs), and the Dark
+  Mode icon with 1–3 px (`shell-layout-variants-closed--dark-zh-2560x1440`). PL-050's darker rows
+  under the Save button are no noise: they come with the button's positioning, in every connected
+  capture.
 - **Background blobs of the connection screen.** The capture stops infinite animations itself
   (`animations: 'disabled'`); the blurred, pulsing blobs then sometimes came out one or two
   colour levels off (12 000–46 000 px) in either app, as they also did when stopped around the

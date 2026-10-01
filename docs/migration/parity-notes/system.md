@@ -17,7 +17,8 @@ in the middle of a flash (`tamperBootloader`).
 
 ## Results
 
-Final run of 2026-10-01 (168 captures, strict comparison): 39 identical, 129 different. 108
+The worker's final run of 2026-10-01 (168 captures, strict comparison): 39 identical, 129
+different. 108
 of the differences are the deviations below; the other 21 are capture noise (see below), in
 regions that are identical in the other variants. A re-run of `system-debug` alone came out with
 6 identical captures and the 1-pixel noise in the other two.
@@ -29,27 +30,31 @@ scenarios 1 px of the Theme Colors icon, the new `system-update-file-focus` 2 53
 sidebar link corners). The other seven variants of `system-update-file-focus` are left to the
 integration run.
 
-| Scenario                                       | Identical         | Differences                                                                                                     |
-| ---------------------------------------------- | ----------------- | --------------------------------------------------------------------------------------------------------------- |
-| `system-about`                                 | 8/8               |                                                                                                                 |
-| `system-settings`                              | 5/8               | noise: sidebar link corners (12–14 px)                                                                          |
-| `system-debug`                                 | 3/8 (re-run: 6/8) | noise: Theme Colors icon (1 px); at 2560×1440 the Key Tracking column's raster variant (~13 000 px, either app) |
-| `system-debug-selector`, `-key-test`           | 6/8               | noise: Theme Colors icon (1 px)                                                                                 |
-| `system-debug-key-test-events`                 | 3/8               | noise: round dots and card corners (4–30 px)                                                                    |
-| `system-update`                                | 6/8               | noise: sidebar link corners (30–42 px)                                                                          |
-| `system-update-file-focus`                     | 0/1 (dark-en)     | PL-046; noise: sidebar link corners                                                                             |
-| `system-about-donation`                        | 2/8               | PL-027 (en); zh: noise (sidebar corners, 20 px; the QR code image, 1 904 px)                                    |
-| `system-debug-tracking`                        | 0/8               | PL-011                                                                                                          |
-| `system-settings-bootloader`, `-factory-reset` | 0/8               | PL-012                                                                                                          |
-| `system-settings-bootloader-confirmed`         | 0/8               | PL-026, PL-004 (sidebar)                                                                                        |
-| `system-update-no-keyboard`                    | 0/8               | PL-025                                                                                                          |
-| `system-update-wrong-file`, `-small-file`      | 0/8               | PL-041                                                                                                          |
-| `system-update-file-chosen`                    | 0/8               | PL-041, PL-042, PL-004 (sidebar)                                                                                |
-| `system-update-no-device`                      | 0/8               | PL-041, PL-004 (sidebar: the keyboard was unplugged)                                                            |
-| `system-update-flashing`                       | 0/8               | PL-041, PL-043, PL-004 (sidebar)                                                                                |
-| `system-update-erase-failed`                   | 0/8               | PL-041, PL-044, PL-004 (sidebar)                                                                                |
-| `system-update-reconnect`                      | 0/8               | PL-041, PL-045, PL-004 (sidebar)                                                                                |
-| `system-update-done`                           | 0/8               | PL-041, PL-004 (sidebar)                                                                                        |
+Integration run of 2026-10-01, after the lighting redesign (176 captures of these scenarios,
+strict comparison): 49 identical, 127 different, as listed. These scenarios hide the sidebar's
+Save button, so PL-050 does not show in them.
+
+| Scenario                                       | Identical | Differences                                                                                |
+| ---------------------------------------------- | --------- | ------------------------------------------------------------------------------------------ |
+| `system-about`                                 | 8/8       |                                                                                            |
+| `system-debug-selector`, `-key-test`           | 8/8       |                                                                                            |
+| `system-settings`                              | 7/8       | noise: sidebar link corners (14 px)                                                        |
+| `system-debug`                                 | 7/8       | noise: at 2560×1440 the Key Tracking column's raster variant (13 249 px)                   |
+| `system-update`                                | 6/8       | noise: sidebar link corners (4 px)                                                         |
+| `system-debug-key-test-events`                 | 3/8       | noise: round dots and card corners, at 2560×1440 the main panel's bottom corners (4–52 px) |
+| `system-about-donation`                        | 2/8       | PL-027 (en); zh: noise (sidebar link corners, 18 px; the QR code image, 935 px)            |
+| `system-update-file-focus`                     | 0/8       | PL-046; noise: sidebar link corners, a step icon                                           |
+| `system-debug-tracking`                        | 0/8       | PL-011                                                                                     |
+| `system-settings-bootloader`, `-factory-reset` | 0/8       | PL-012                                                                                     |
+| `system-settings-bootloader-confirmed`         | 0/8       | PL-026, PL-004 (sidebar)                                                                   |
+| `system-update-no-keyboard`                    | 0/8       | PL-025                                                                                     |
+| `system-update-wrong-file`, `-small-file`      | 0/8       | PL-041                                                                                     |
+| `system-update-file-chosen`                    | 0/8       | PL-041, PL-042, PL-004 (sidebar)                                                           |
+| `system-update-no-device`                      | 0/8       | PL-041, PL-004 (sidebar: the keyboard was unplugged)                                       |
+| `system-update-flashing`                       | 0/8       | PL-041, PL-043, PL-004 (sidebar)                                                           |
+| `system-update-erase-failed`                   | 0/8       | PL-041, PL-044, PL-004 (sidebar)                                                           |
+| `system-update-reconnect`                      | 0/8       | PL-041, PL-045, PL-004 (sidebar)                                                           |
+| `system-update-done`                           | 0/8       | PL-041, PL-004 (sidebar)                                                                   |
 
 Everything else on these screens matches: the Debug page, both tabs and the key picker; the Key
 Test log with the same times and deltas (`performance.now()` is pinned per event); Settings and
@@ -110,9 +115,14 @@ Listed in the log under
 
 - **Rounded corners.** As on the shell's keycaps, Chrome sometimes rasterizes a rounded corner
   or a small dot with one of two anti-aliasing patterns: up to a few dozen pixels at the corners
-  of the sidebar links (`system-settings`, `system-update`, `system-about-donation`), or at the Key
-  Test cards and the log's Press/Release dots (`system-debug-key-test-events`), in either app and
-  not in every run.
+  of the sidebar links (`system-settings`, `system-update`, `system-about-donation`; about 100 px
+  over 20 corners in `system-update-no-keyboard` at 1440×900), at the Key Test cards and the log's
+  Press/Release dots (`system-debug-key-test-events`), or at the Update steps' circles and icons
+  (the Finish circle up to 32 px and 2–6 colour levels, the other step icons 1–4 px), in either
+  app and not in every run.
+- **Raster glitches.** As in the shell notes, small blocks of wrong pixels over text, in either
+  app and gone in a re-run; the largest so far, in the baseline's
+  `system-debug-key-test--light-en-2560x1440`, were five blocks of about 11×8 and 22×8 px.
 - **Key Tracking column at 2560×1440.** In some runs the Key Tracking tab's left column (its two
   cards, their text and buttons) comes out about half a pixel lower, about 13 000 pixels, in
   either app: comparing two runs, the baseline's capture changed in two variants and the React
@@ -120,8 +130,10 @@ Listed in the log under
 - **QR code.** Right after the About page is scrolled to the donation card, Chrome may still draw
   the Alipay code at its lower image quality (1 904 pixels inside the image in one run); the
   scenario waits 500 ms after the scroll, which removed it in the other runs.
-- **Theme Colors icon.** On the Debug page at 1440×900 in English, one pixel of the sidebar's
-  Theme Colors icon differs by one colour level, in every run.
+- **Theme Colors icon.** One pixel of the sidebar's Theme Colors icon, at (36, 703) at 1440×900,
+  can be one colour level off. In the worker's runs it was the Debug page in English, every time;
+  in the integration runs those captures are identical and the pixel shows at random in other
+  captures instead, many of them on Update (and on Profiles, the shell and Performance).
 - **Pulsing dots.** "Recording" and "Listening Active" pulse forever; the capture stops the pulse
   at its start in both apps.
 - **Chart samples.** In `system-debug-tracking` the React line depends on when the samples arrived
