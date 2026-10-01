@@ -17,9 +17,9 @@ import {
   vi,
 } from 'vitest';
 import { connectVirtualKeyboard, type ConnectedKeyboard } from '../../testing/app-keyboard';
-import { deviceStore } from '../device';
+import { deviceStore, type DeviceState } from '../device';
 import { ScriptWorkspace } from './components/ScriptWorkspace';
-import { EXAMPLE_SCRIPT, type Compile } from './model';
+import { EXAMPLE_SCRIPT, type Compile, type CompileResult } from './model';
 import { ScriptsPage } from './ScriptsPage';
 import { installCodeMirrorShims, setEditorText } from './testing/codemirror-jsdom';
 import { nodeCompiler } from './testing/node-compiler';
@@ -51,6 +51,33 @@ function editor(): Promise<HTMLElement> {
 
 function staged() {
   return deviceStore.getState().config?.script;
+}
+
+/** The script the virtual keyboard holds, as plain arrays (jsdom's typed arrays cross realms). */
+function keyboardScript(keyboard: ConnectedKeyboard): { source: number[]; bytecode: number[] } {
+  const { source, bytecode } = keyboard.vk.state.scripts;
+  return { source: Array.from(source), bytecode: Array.from(bytecode) };
+}
+
+/** Resolves the next time the device store matches `predicate` (already true resolves at once). */
+function waitForDeviceState(predicate: (state: DeviceState) => boolean): Promise<void> {
+  return new Promise((resolve, reject) => {
+    if (predicate(deviceStore.getState())) {
+      resolve();
+      return;
+    }
+    const timer = setTimeout(() => {
+      unsubscribe();
+      reject(new Error('Device store did not reach the expected state within 3000 ms'));
+    }, 3000);
+    const unsubscribe = deviceStore.subscribe(state => {
+      if (predicate(state)) {
+        clearTimeout(timer);
+        unsubscribe();
+        resolve();
+      }
+    });
+  });
 }
 
 it('renders nothing until a keyboard configuration is loaded', () => {
@@ -138,6 +165,83 @@ describe('ScriptsPage (Trinity Pad, AOT)', { timeout: 20_000 }, () => {
     await screen.findByText(/^Compiled: \d+ bytes/, {}, COMPILED);
     expect(compile).toHaveBeenCalledTimes(1);
     expect(compile).toHaveBeenCalledWith('function loop() {}');
+  });
+
+  it('says when the compiler cannot be loaded, staging nothing; the next edit compiles again', async () => {
+    // The compiler's dynamic import or its WebAssembly failing: network loss, a misconfigured host.
+    const compile = vi
+      .fn<Compile>(nodeCompiler)
+      .mockRejectedValueOnce(new TypeError('Failed to fetch dynamically imported module'));
+    renderPage(compile);
+    const content = await editor();
+    const before = keyboardScript(keyboard);
+
+    act(() => {
+      setEditorText(content, 'function loop() {}\n');
+    });
+
+    await screen.findByText(
+      'The compiler could not be loaded. Check your connection and edit the script again.',
+      {},
+      COMPILED
+    );
+    expect(screen.queryByText(/^Line \d+:/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Failed to fetch/)).not.toBeInTheDocument();
+    expect(staged()).toEqual({ source: '', bytecode: [] });
+    expect(deviceStore.getState().unsaved).toBe(false);
+    expect(deviceStore.getState().lastError).toBeNull();
+    expect(keyboardScript(keyboard)).toEqual(before);
+
+    act(() => {
+      setEditorText(content, 'function loop() {}');
+    });
+
+    await screen.findByText(/^Compiled: \d+ bytes/, {}, COMPILED);
+    expect(compile).toHaveBeenCalledTimes(2);
+    expect(staged()?.source).toBe('function loop() {}');
+    expect(deviceStore.getState().unsaved).toBe(true);
+  });
+
+  it('stages nothing when a compile lands while the keyboard loads a configuration', async () => {
+    // A compile that finishes when the test says so: by then the keyboard is reloading.
+    let finish = (_result: CompileResult): void => undefined;
+    const compile = vi.fn<Compile>(
+      () =>
+        new Promise(resolve => {
+          finish = resolve;
+        })
+    );
+    renderPage(compile);
+    const content = await editor();
+    const before = keyboardScript(keyboard);
+
+    act(() => {
+      setEditorText(content, 'function loop() {}\n');
+    });
+    await waitFor(() => {
+      expect(compile).toHaveBeenCalledTimes(1);
+    }, COMPILED);
+
+    keyboard.vk.notifyConfigChanged();
+    await waitForDeviceState(state => state.reloading);
+    await act(async () => {
+      finish({ bytecode: Uint8Array.from([0xfb, 0xac, 1, 2]), stdout: '', stderr: '', errors: [] });
+      // The compile's reaction runs on the next microtask.
+      await Promise.resolve();
+    });
+
+    // The session would reject the edit: nothing is staged and nothing claims to be.
+    expect(deviceStore.getState().lastError).toBeNull();
+    expect(screen.getByRole('status')).not.toHaveTextContent(/^Compiled:/);
+
+    await waitForDeviceState(state => !state.reloading);
+
+    expect(deviceStore.getState().lastError).toBeNull();
+    expect(deviceStore.getState().unsaved).toBe(false);
+    expect(staged()).toEqual({ source: '', bytecode: [] });
+    expect(keyboardScript(keyboard)).toEqual(before);
+    // The load started the workspace over on the keyboard's script.
+    expect(screen.getByRole('status')).toBeEmptyDOMElement();
   });
 
   it("warns when the script or its bytecode exceed libamp's default 1 KB buffers", async () => {
