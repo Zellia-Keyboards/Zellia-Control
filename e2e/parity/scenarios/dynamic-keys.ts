@@ -143,8 +143,8 @@ function dksSlider(page: Page, index: number): Locator {
   return page.locator('.space-y-2 > .flex.items-center.gap-4 > .grow').nth(index);
 }
 
-/** A "+" node's accessible name: the glyph in the baseline, binding and phase in React. */
-const STAGE_NODE = /^(\+|Binding \d: add tap at phase \d)$/;
+/** A "+" node's accessible name: the glyph in the baseline, phase and binding in React. */
+const STAGE_NODE = /^(\+|Add tap at phase \d to binding \d)$/;
 
 /** Stage node `stage` (0–3) of DKS binding `binding`. */
 function dksNode(page: Page, binding: number, stage: number): Locator {

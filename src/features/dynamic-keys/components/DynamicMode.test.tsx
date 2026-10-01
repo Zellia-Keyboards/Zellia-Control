@@ -28,7 +28,7 @@ async function openDks(options: Parameters<typeof renderDynamicKeysPage>[0] = {}
 /** The stage node ("+") of a binding: its name says which binding and phase it edits. */
 function node(binding: number, stage: number): HTMLElement {
   return screen.getByRole('button', {
-    name: `Binding ${binding + 1}: add tap at phase ${stage + 1}`,
+    name: `Add tap at phase ${stage + 1} to binding ${binding + 1}`,
   });
 }
 
@@ -80,9 +80,11 @@ describe('DKS editor', () => {
       '',
       '',
     ]);
-    const nodes = screen.getAllByRole('button', { name: /^Binding \d: add tap at phase \d$/ });
+    const nodes = screen.getAllByRole('button', { name: /^Add tap at phase \d to binding \d$/ });
     expect(nodes).toHaveLength(16);
     expect(nodes.every(button => button.textContent === '+')).toBe(true);
+    // Only the four binding buttons are named after their binding.
+    expect(screen.getAllByRole('button', { name: /^Binding \d/ })).toHaveLength(4);
     expect(screen.queryAllByRole('button', { name: 'Delete interval' })).toHaveLength(0);
     expect(screen.getByText('3.0mm')).toBeInTheDocument();
     expect(screen.getByText('Click on a binding button to select a keycode')).toBeInTheDocument();
