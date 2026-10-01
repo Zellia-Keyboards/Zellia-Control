@@ -9,6 +9,9 @@ import type { ParityScenario } from '../scenario';
  * Setups run unchanged in both apps and languages: they use roles and structure the two apps
  * share (the Svelte inputs have no accessible names, so inputs are found by type and order inside
  * the page, which is the last child of the main column in both apps).
+ *
+ * No setup sleeps for an animation: every transition on these pages is CSS (both apps), and the
+ * capture's `animations: 'disabled'` finishes them, so a capture shows their end state.
  */
 
 const GET_STARTED = /Get Started|开始使用/;
@@ -98,8 +101,8 @@ async function selectKeys(page: Page, positions: readonly number[] = [1, 2, 3]):
 
 async function toggleRapidTrigger(page: Page): Promise<void> {
   await page.getByRole('switch', { name: 'Rapid Trigger Toggle' }).click();
-  // The actuation column slides out and the rapid-trigger columns fade in (0.35 s).
-  await page.waitForTimeout(600);
+  // The rapid-trigger columns are in (the actuation column slides out with CSS).
+  await page.getByRole('switch', { name: 'Separate Sensitivity Toggle' }).waitFor();
 }
 
 // Lighting ---------------------------------------------------------------------------------------
@@ -201,7 +204,6 @@ const scenarios: readonly ParityScenario[] = [
       await storeRapidTriggerKey(page);
       await openPerformance(page);
       await selectKeys(page, [1]);
-      await page.waitForTimeout(600);
       await parkPointer(page);
     },
   },
@@ -223,7 +225,6 @@ const scenarios: readonly ParityScenario[] = [
       await openPerformance(page);
       await toggleRapidTrigger(page);
       await page.getByRole('switch', { name: 'Separate Sensitivity Toggle' }).click();
-      await page.waitForTimeout(300);
       await parkPointer(page);
     },
   },
@@ -251,7 +252,6 @@ const scenarios: readonly ParityScenario[] = [
     setup: async page => {
       await openPerformance(page);
       await pageRegion(page).locator('[class*="travel-badge"]').hover();
-      await page.waitForTimeout(300);
     },
   },
   {
