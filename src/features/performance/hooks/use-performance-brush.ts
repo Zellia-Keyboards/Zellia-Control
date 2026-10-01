@@ -34,20 +34,28 @@ function loadIfFirstSelection(state: BrushState, selected: readonly number[]): B
   return key ? { brush: brushFromKey(key), loaded: true } : state;
 }
 
-/** Writes the brush to every selected key the keyboard has (unchanged keys send nothing). */
-function applyBrush(brush: PerformanceBrush, selected: readonly number[]): void {
+/** Writes the brush to those of `keyIds` the keyboard has (unchanged keys send nothing). */
+function applyBrush(brush: PerformanceBrush, keyIds: readonly number[]): void {
   const keyCount = deviceStore.getState().config?.advancedKeys.length ?? 0;
-  const keyIds = selected.filter(id => id < keyCount);
-  if (keyIds.length > 0) deviceSession.setAdvancedKeys(keyIds, brushConfig(brush));
+  const known = keyIds.filter(id => id < keyCount);
+  if (known.length > 0) deviceSession.setAdvancedKeys(known, brushConfig(brush));
+}
+
+/** The ids of `selected` that `previous` does not have. */
+function addedKeys(selected: readonly number[], previous: readonly number[]): number[] {
+  const before = new Set(previous);
+  return selected.filter(id => !before.has(id));
 }
 
 /**
  * The Performance page's settings brush: the Svelte page's selection `$effect`, with D12 and §1.4.
  *
  * - The first time keys are selected while the page is open (or when it opens with keys
- *   selected), every value of the first selected key is loaded.
- * - Every settings change and every selection change writes the settings to all selected keys,
- *   so keys added to the selection take the brush. The brush stays loaded after deselect-all.
+ *   selected), every value of the first selected key is loaded. Loading writes nothing.
+ * - Every settings change writes the settings to all selected keys; keys added to the selection
+ *   take them at once (the brush), also after deselect-all, when the brush stays loaded.
+ * - Keys selected before the page opened (the selection outlives navigation) keep their values
+ *   until the first settings change: opening a page never writes.
  * - Only selection changes count: switching layers (or any other key-selection state) never
  *   writes, and device reloads do not change the brush.
  */
@@ -63,6 +71,8 @@ export function usePerformanceBrush(): readonly [
   );
   // The latest state for the store subscription and event handlers, which run outside render.
   const stateRef = useRef(state);
+  // The selection the brush has seen: keys selected before the page opened are not painted.
+  const seenSelectionRef = useRef(keySelectionStore.getState().selected);
 
   const commit = useCallback((next: BrushState) => {
     stateRef.current = next;
@@ -82,12 +92,14 @@ export function usePerformanceBrush(): readonly [
 
   useEffect(() => {
     const onSelection = (selected: readonly number[]) => {
+      const added = addedKeys(selected, seenSelectionRef.current);
+      seenSelectionRef.current = selected;
       if (selected.length === 0) return;
       const next = loadIfFirstSelection(stateRef.current, selected);
       if (next !== stateRef.current) commit(next);
-      applyBrush(next.brush, selected);
+      applyBrush(next.brush, added);
     };
-    // Keys selected before the page opened take the brush, like the Svelte effect's first run.
+    // Selections made between the first render and this subscription count as additions.
     onSelection(keySelectionStore.getState().selected);
     return keySelectionStore.subscribe((selection, previous) => {
       if (selection.selected !== previous.selected) onSelection(selection.selected);
