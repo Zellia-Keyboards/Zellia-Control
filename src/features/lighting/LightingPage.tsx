@@ -11,6 +11,7 @@ import {
 import { keySelection, keySelectionStore, useLayoutKeys } from '../keyboard';
 import { RGBPanel } from './components/RGBPanel';
 import { RGBSubPanel, type KeyConfigEntry } from './components/RGBSubPanel';
+import { useDeviceLoads } from './hooks/use-device-loads';
 import { useSelectionShortcuts } from './hooks/use-selection-shortcuts';
 
 /** emi-keyboard-controller `RGBConfig` defaults, for a keyboard without per-key lighting. */
@@ -38,6 +39,9 @@ export function LightingPage() {
   const rgbBase = useDeviceStore(state => state.config?.rgbBase);
   const rgbKeys = useDeviceStore(state => state.config?.rgbKeys);
   const layout = useLayoutKeys();
+  // Each configuration the keyboard loads (profile switch, reset) opens both panels again on it:
+  // their modes and unapplied edits start over.
+  const loads = useDeviceLoads();
 
   // Always allow key selection on lighting page
   useEffect(() => {
@@ -97,6 +101,7 @@ export function LightingPage() {
         {/* Base Configuration Panel */}
         <div className="flex-1 min-w-0">
           <RGBPanel
+            key={loads}
             baseConfig={rgbBase}
             onConfigChange={handleBaseConfigChange}
             title={t('lighting.baseConfigTitle')}
@@ -106,6 +111,7 @@ export function LightingPage() {
         {/* Sub Configuration Panel */}
         <div className="flex-1 min-w-0">
           <RGBSubPanel
+            key={loads}
             config={subConfig}
             onConfigChange={handleSubConfigChange}
             onKeyConfigsChange={applyKeyConfigs}

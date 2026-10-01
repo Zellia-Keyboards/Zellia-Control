@@ -51,7 +51,8 @@ export function RGBPanel({ baseConfig, onConfigChange, title }: RGBPanelProps) {
   const t = useT();
   const titleId = useId();
 
-  // Mode: initialized from the configuration, never synced back from it, so a click shows at once.
+  // Mode: initialized from the configuration, never synced back from it, so a click shows at once
+  // (the page mounts the panel again when the keyboard loads a configuration).
   const [selectedMode, setSelectedMode] = useState(baseConfig.mode);
   const [draft, setDraft] = useState(() => draftFrom(baseConfig));
   // Re-read the other fields whenever the configuration changes (the Svelte `$effect`).
