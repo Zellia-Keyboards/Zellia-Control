@@ -62,6 +62,8 @@ describe('RGBSubPanel', () => {
     expect(screen.getByRole('heading', { level: 4, name: 'Speed' })).toBeInTheDocument();
     expect(screen.getByText('20%')).toBeInTheDocument();
     expect(screen.getByRole('slider', { name: 'Speed' })).toHaveValue('20');
+    expect(screen.getByRole('slider', { name: 'Speed' })).not.toHaveAttribute('aria-valuetext');
+    expect(colorInput()).not.toHaveAccessibleDescription();
   });
 
   it('falls back to its own title', () => {
@@ -94,6 +96,13 @@ describe('RGBSubPanel', () => {
     expect(colorInput()).toHaveValue('#ff0000');
     expect(screen.getByRole('slider', { name: 'Speed' })).toHaveValue('20');
     expect(screen.queryByText('20%')).not.toBeInTheDocument();
+    // Mixed speed: the slider's accessible value text overrides the raw number (PL-048).
+    expect(screen.getByRole('slider', { name: 'Speed' })).toHaveAttribute(
+      'aria-valuetext',
+      'Mixed'
+    );
+    // Mixed colour: the swatch's description points at the visible "Mixed" text.
+    expect(colorInput()).toHaveAccessibleDescription('Mixed');
   });
 
   it('explains every mode on its button (PL-049)', () => {
