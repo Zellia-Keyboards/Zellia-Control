@@ -23,7 +23,9 @@ UI components ──hooks──▶ device store (immutable DeviceState)
 - **One adapter to a moving upstream.** `controller.ts` declares the structural
   `DeviceController` interface with exactly the members the app calls; each model's controller is
   checked against it with `satisfies`, so an upstream API change breaks one module at compile
-  time. Workarounds for upstream bugs live there too (`withUpstreamFixes`).
+  time. Workarounds for upstream bugs live there too (`withUpstreamFixes`). One of them gives the
+  AT32, Oholeo and Trinity Pad controllers macro slots of their own: their defaults share one
+  array between all slots.
 - **Framework-agnostic session.** `session.ts` and everything it imports are free of React
   (enforced by `architecture.test.ts`); React appears only in `store.ts`'s hooks. The session can
   be tested with plain Vitest against the virtual keyboard.
@@ -37,6 +39,7 @@ UI components ──hooks──▶ device store (immutable DeviceState)
 | ------------------------------------------------------------------ | ----------------------------------------------------------------------------------------- |
 | `deviceSession`                                                    | The app's session, bound lazily to `navigator.hid` on `connect()`.                        |
 | `useConnection()`, `useIsReady()`, `useModel()`, `useDeviceName()` | Connection state slices.                                                                  |
+| `useFeatureFlags()`, `useSupportsMacros()`, `useSupportsScripts()` | The keyboard's feature flags and what its controller declares (`model/capabilities.ts`).  |
 | `useDeviceConfig()`                                                | The loaded `DeviceConfig` (`null` before the first load).                                 |
 | `useDeviceStore(selector)`, `deviceStore`                          | Any other slice (`saving`, `unsaved`, `reloading`, `lastError`, `feature`, `firmware`).   |
 | `subscribeDebugSamples(listener)`                                  | Samples of the key being debugged (see _Debug stream_).                                   |
@@ -44,8 +47,9 @@ UI components ──hooks──▶ device store (immutable DeviceState)
 | types                                                              | `DeviceConfig`, `DynamicKeySlot`, `KeyLocation`, `ConnectionState`, … (`model/types.ts`). |
 
 The pure modules in `features/device/model/` may be imported directly by other features' pure
-code: `types` (the shared domain types), `units` (fraction ↔ mm) and `mutex-mode` (null-bind
-mode bytes). They never import React or the session.
+code: `types` (the shared domain types), `units` (fraction ↔ mm), `mutex-mode` (null-bind
+mode bytes) and `capabilities` (macros, scripts and the macro action limit a controller declares).
+They never import React or the session.
 
 ### Values
 
@@ -56,6 +60,10 @@ mode bytes). They never import React or the session.
 - Dynamic keys are a discriminated union (`none`, `stroke`, `modTap`, `toggle`, `mutex`). Their
   targets are not returned by device reads; the session rebuilds them from the keymap
   (`DynamicKey | slot << 8` entries) on every load (D4).
+- Macro actions are `{ delay, keycode, event, isVirtual, keyId }`; `delay` is in ticks from the
+  start of the macro (the keyboard ticks `pollingRate` times a second). A slot is stored without
+  its end marker; the session writes full-size slots (`readMacroCapacity`), because the
+  controller reads every slot with the first slot's size. The script's bytecode is a number array.
 
 ## Connection
 
@@ -87,23 +95,25 @@ the store. None throws: a rejected or failed command sets `lastError` (`{ operat
 and logs it. Edits are rejected while disconnected or while the keyboard reloads its
 configuration.
 
-Lighting edits are the exception: `setRgbBase` and `setRgbKeys` are staged and send nothing, and
-`save()` writes them with the rest of the configuration (as upstream's toolbar Apply does). Every
-edit that changes the configuration sets `unsaved`; a load clears it, and so does a successful
-save that included the last edit.
+Lighting, macro and script edits are the exception: `setRgbBase`, `setRgbKeys`, `setMacro` and
+`setScript` are staged and send nothing, and `save()` writes them with the rest of the
+configuration (as upstream's toolbar Apply does). Every edit that changes the configuration sets
+`unsaved`; a load clears it, and so does a successful save that included the last edit.
 
-| Command                                                    | Effect                                                                                                                                                             |
-| ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `setKeycodes(layer, keyIds, keycode)`                      | Keymap entries; sent in contiguous runs of ≤ 27 codes. Overwriting a dynamic key's key releases that dynamic key (D4).                                             |
-| `setAdvancedKeys(keyIds, config)`                          | Advanced-key settings per key (calibration mode and sensor bounds are kept).                                                                                       |
-| `setRgbBase(config)` / `setRgbKeys(entries)`               | Lighting base config / per-key configs; staged until `save()`.                                                                                                     |
-| `applyDynamicKey(draft)`                                   | Writes a dynamic key to its key's slot or the first free one and binds its keys (D6); returns the slot, or `null` when rejected (e.g. no free slot).               |
-| `removeDynamicKey(slot)` / `removeDynamicKeysOfKind(kind)` | Frees slots and restores each key to the dynamic key's own binding (D5).                                                                                           |
-| `save()`                                                   | `controller.save()` then `flash()` (D9); concurrent calls share one save; waits for a reload in progress; clears `unsaved` unless an edit came in during the save. |
-| `switchProfile(index)`                                     | 0-based; resolves when the keyboard has reloaded that profile.                                                                                                     |
-| `systemReset()`, `enterBootloader()`, `factoryReset()`     | Keyboard operations; a factory reset waits for the keyboard to reload its defaults.                                                                                |
-| `startDebug(keyId)` / `stopDebug()`                        | Debug streaming of one key (D16).                                                                                                                                  |
-| `detectBootloader(silent)`                                 | The DFU bootloader (see _Firmware update_).                                                                                                                        |
+| Command                                                    | Effect                                                                                                                                                                 |
+| ---------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `setKeycodes(layer, keyIds, keycode)`                      | Keymap entries; sent in contiguous runs of ≤ 27 codes. Overwriting a dynamic key's key releases that dynamic key (D4).                                                 |
+| `setAdvancedKeys(keyIds, config)`                          | Advanced-key settings per key (calibration mode and sensor bounds are kept).                                                                                           |
+| `setRgbBase(config)` / `setRgbKeys(entries)`               | Lighting base config / per-key configs; staged until `save()`.                                                                                                         |
+| `setMacro(slot, actions)`                                  | The actions of a macro slot (0-based), without its end marker (≤ `macroActions − 1`); staged until `save()`, which writes every slot at full size with the end marker. |
+| `setScript({ source, bytecode })`                          | The script source and, on AOT keyboards, its compiled bytecode; staged until `save()`.                                                                                 |
+| `applyDynamicKey(draft)`                                   | Writes a dynamic key to its key's slot or the first free one and binds its keys (D6); returns the slot, or `null` when rejected (e.g. no free slot).                   |
+| `removeDynamicKey(slot)` / `removeDynamicKeysOfKind(kind)` | Frees slots and restores each key to the dynamic key's own binding (D5).                                                                                               |
+| `save()`                                                   | `controller.save()` then `flash()` (D9); concurrent calls share one save; waits for a reload in progress; clears `unsaved` unless an edit came in during the save.     |
+| `switchProfile(index)`                                     | 0-based; resolves when the keyboard has reloaded that profile.                                                                                                         |
+| `systemReset()`, `enterBootloader()`, `factoryReset()`     | Keyboard operations; a factory reset waits for the keyboard to reload its defaults.                                                                                    |
+| `startDebug(keyId)` / `stopDebug()`                        | Debug streaming of one key (D16).                                                                                                                                      |
+| `detectBootloader(silent)`                                 | The DFU bootloader (see _Firmware update_).                                                                                                                            |
 
 **Slot numbers are not stable.** libamp stops scanning dynamic keys at the first empty slot, so
 the session keeps the used slots contiguous from 0: freeing a slot moves the highest dynamic key

@@ -1,6 +1,7 @@
 import { act, render, renderHook } from '@testing-library/react';
+import { ScriptLevel } from 'emi-keyboard-controller';
 import { afterEach, describe, expect, it } from 'vitest';
-import type { ModelInfo } from './model/types';
+import type { FeatureFlags, ModelInfo } from './model/types';
 import {
   INITIAL_DEVICE_STATE,
   createDeviceStore,
@@ -11,8 +12,11 @@ import {
   useDeviceConfig,
   useDeviceName,
   useDeviceStore,
+  useFeatureFlags,
   useIsReady,
   useModel,
+  useSupportsMacros,
+  useSupportsScripts,
 } from './store';
 
 const MODEL: ModelInfo = {
@@ -20,6 +24,16 @@ const MODEL: ModelInfo = {
   displayName: 'Zellia Starlight',
   layoutJson: '[]',
   layoutLabels: [],
+};
+
+const TRINITY_FEATURE: FeatureFlags = {
+  advancedKeys: true,
+  rgb: true,
+  scriptLevel: ScriptLevel.AOT,
+  pollingRate: 8000,
+  macroSlots: 4,
+  macroActions: 128,
+  bootloader: { enabled: false, download: false, upload: false },
 };
 
 afterEach(() => {
@@ -128,5 +142,22 @@ describe('hooks', () => {
       deviceStore.setState({ saving: true });
     });
     expect(saving.result.current).toBe(true);
+  });
+
+  it('tell what the connected keyboard supports', () => {
+    const feature = renderHook(() => useFeatureFlags());
+    const macros = renderHook(() => useSupportsMacros());
+    const scripts = renderHook(() => useSupportsScripts());
+    expect([feature.result.current, macros.result.current, scripts.result.current]).toEqual([
+      null,
+      false,
+      false,
+    ]);
+
+    act(() => {
+      deviceStore.setState({ feature: TRINITY_FEATURE });
+    });
+    expect(feature.result.current).toBe(TRINITY_FEATURE);
+    expect([macros.result.current, scripts.result.current]).toEqual([true, true]);
   });
 });
