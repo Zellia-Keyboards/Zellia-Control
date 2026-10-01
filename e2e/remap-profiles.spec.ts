@@ -235,7 +235,7 @@ test.describe('profiles', () => {
     const keyboard = await connect(page, virtualKeyboard);
     await expect(profileDropdown(page)).toContainText('Profile 1');
 
-    // The dropdown's link stays in the app, so the keyboard stays connected (F-3).
+    // The dropdown's link stays in the app, so the keyboard stays connected (PL-030).
     await profileDropdown(page).click();
     await page.getByRole('link', { name: 'Manage All Profiles' }).click();
     await expect(page).toHaveURL(/\/profiles\/$/);
@@ -307,7 +307,7 @@ test.describe('profiles', () => {
     });
     await expect(profileCard(page, 'Travel Setup')).toBeVisible();
 
-    // A file that is not JSON is reported (F-1).
+    // A file that is not JSON is reported (PL-028).
     await input.setInputFiles({
       name: 'broken.json',
       mimeType: 'application/json',

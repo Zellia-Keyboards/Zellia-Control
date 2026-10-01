@@ -94,8 +94,9 @@ async function chooseMenuItem(page: Page, item: string): Promise<void> {
 }
 
 /**
- * Chooses a file in the page's hidden import input and gives the file reader time to finish: the
- * two apps do not show the same outcome (F-1, F-2), so there is no common element to wait for.
+ * Chooses a file in the page's hidden import input and gives the file reader time to finish:
+ * the two apps do not show the same outcome (PL-028, PL-029), so there is no common element to
+ * wait for.
  */
 async function importFile(page: Page, name: string, content: string): Promise<void> {
   await page.locator('input[type="file"]').setInputFiles({
@@ -234,7 +235,7 @@ const scenarios: readonly ParityScenario[] = [
     await openLighting(page);
     await openProfileDropdown(page);
   }),
-  // F-3: "Manage All Profiles" opens Profiles inside the app, with the keyboard still connected.
+  // PL-030: "Manage All Profiles" opens Profiles inside the app, with the keyboard still connected.
   // The baseline's panel stopped the click before SvelteKit's router saw it, so the link reloaded
   // the page, which drops the WebHID connection ("No Keyboard Connected").
   connected('profiles-dropdown-manage', async page => {
@@ -283,13 +284,13 @@ const scenarios: readonly ParityScenario[] = [
     },
     { 'keyboard-profiles': SIXTEEN_PROFILES }
   ),
-  // F-2: the imported profile's card appears at once (the baseline mutated its store in place, so
-  // the card only showed once the list changed otherwise).
+  // PL-029: the imported profile's card appears at once (the baseline mutated its store in place,
+  // so the card only showed once the list changed otherwise).
   connected('profiles-imported', async page => {
     await openProfiles(page);
     await importFile(page, 'travel.json', JSON.stringify({ name: 'Travel Setup' }));
   }),
-  // F-1: a file that is not JSON shows the page's import error; the baseline ignored it.
+  // PL-028: a file that is not JSON shows the page's import error; the baseline ignored it.
   connected('profiles-import-invalid', async page => {
     await openProfiles(page);
     await importFile(page, 'broken.json', '{ broken');

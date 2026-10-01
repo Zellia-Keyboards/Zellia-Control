@@ -291,7 +291,7 @@ const scenarios: readonly ParityScenario[] = [
   }),
 
   connected('dashboard-edit', async page => {
-    // A toggle key on Q, edited from its row (H-4).
+    // A toggle key on Q, edited from its row (PL-037).
     await openMode(page, 'toggle');
     await clickKeycap(page, KEYCAP.q);
     await apply(page);
@@ -302,7 +302,7 @@ const scenarios: readonly ParityScenario[] = [
     await showPage(page);
   }),
   connected('dashboard-dks-order', async page => {
-    // DKS keys on W (1 binding), Q (2) and Tab (none), then W's row deleted (H-7): React lists
+    // DKS keys on W (1 binding), Q (2) and Tab (none), then W's row deleted (PL-040): React lists
     // them in slot order, and the delete moved Tab's DKS down into W's slot.
     await applyDks(page, KEYCAP.w, ['A']);
     await applyDks(page, KEYCAP.q, ['A', 'B']);
@@ -348,14 +348,14 @@ const scenarios: readonly ParityScenario[] = [
     await showPage(page, 'end');
   }),
   connected('tap-hold-timing-moved', async page => {
-    // Both timing sliders one step up (H-5): the labels follow them.
+    // Both timing sliders one step up (PL-038): the labels follow them.
     await openMode(page, 'tap-hold');
     await clickKeycap(page, KEYCAP.tab);
     await stepTimingSliders(page);
     await showPage(page, 'end');
   }),
   connected('tap-hold-timing-moved-panels', async page => {
-    // The same, seen in the preview and the "how it works" panel (H-5).
+    // The same, seen in the preview and the "how it works" panel (PL-038).
     await openMode(page, 'tap-hold');
     await clickKeycap(page, KEYCAP.tab);
     await stepTimingSliders(page);
@@ -443,7 +443,7 @@ const scenarios: readonly ParityScenario[] = [
     await showPage(page);
   }),
   connected('null-bind-bottom-out-moved', async page => {
-    // The bottom-out slider (the left column's only slider) one step down (H-5).
+    // The bottom-out slider (the left column's only slider) one step down (PL-038).
     await openMode(page, 'null-bind');
     await clickKeycap(page, KEYCAP.z);
     await clickKeycap(page, KEYCAP.x);
@@ -471,7 +471,7 @@ const scenarios: readonly ParityScenario[] = [
     await showPage(page);
   }),
   connected('null-bind-two-pairs', async page => {
-    // Z + X, then Q + W (H-6): one card per pair.
+    // Z + X, then Q + W (PL-039): one card per pair.
     await openMode(page, 'null-bind');
     await applyNullBind(page);
     await back(page).click();
@@ -530,7 +530,7 @@ const scenarios: readonly ParityScenario[] = [
     await clickKeycap(page, KEYCAP.w);
     await editDksBindings(page);
     await apply(page);
-    // The configured list below the editor (H-2: the baseline never showed it).
+    // The configured list below the editor (PL-036: the baseline never showed it).
     await showPage(page, 'end');
   }),
 ];

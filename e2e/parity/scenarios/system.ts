@@ -384,8 +384,8 @@ const scenarios: readonly ParityScenario[] = [
     },
   },
   {
-    // I-6: Tab from the drop zone's subtitle (the click leaves the focus navigation starting point
-    // there) reaches the file input; the baseline hid it with display: none, so Tab skips it.
+    // PL-046: Tab from the drop zone's subtitle (the click leaves the focus navigation starting
+    // point there) reaches the file input; the baseline hid it with display: none, so Tab skips it.
     name: 'system-update-file-focus',
     path: '/',
     virtualKeyboard: KEYBOARD,
@@ -410,7 +410,7 @@ const scenarios: readonly ParityScenario[] = [
     },
   },
   {
-    // I-1: a file that is not a .bin.
+    // PL-041: a file that is not a .bin.
     name: 'system-update-wrong-file',
     path: '/',
     virtualKeyboard: KEYBOARD,
@@ -421,7 +421,7 @@ const scenarios: readonly ParityScenario[] = [
     },
   },
   {
-    // I-1: a .bin below 1 KiB.
+    // PL-041: a .bin below 1 KiB.
     name: 'system-update-small-file',
     path: '/',
     virtualKeyboard: KEYBOARD,
@@ -432,7 +432,7 @@ const scenarios: readonly ParityScenario[] = [
     },
   },
   {
-    // I-2: the React app reboots the keyboard into its bootloader and waits for the USB device;
+    // PL-042: the React app reboots the keyboard into its bootloader and waits for the USB device;
     // the baseline shows how to enter DFU mode by hand.
     name: 'system-update-file-chosen',
     path: '/',
@@ -461,7 +461,7 @@ const scenarios: readonly ParityScenario[] = [
     },
   },
   {
-    // I-3: the second of the image's two blocks is held. The React app shows the written share
+    // PL-043: the second of the image's two blocks is held. The React app shows the written share
     // (50 %); the baseline its simulated sequence's numbers (60 %, then 70–95 %: 83 % here).
     name: 'system-update-flashing',
     path: '/',
@@ -479,7 +479,7 @@ const scenarios: readonly ParityScenario[] = [
     },
   },
   {
-    // I-4: erasing fails. The React app shows the error on Update Program (the erase); the
+    // PL-044: erasing fails. The React app shows the error on Update Program (the erase); the
     // baseline never erased (its Update Program step was a pause) and finishes.
     name: 'system-update-erase-failed',
     path: '/',
@@ -497,7 +497,7 @@ const scenarios: readonly ParityScenario[] = [
     },
   },
   {
-    // I-5: the baseline's second connection (held here): it detached the bootloader and asked
+    // PL-045: the baseline's second connection (held here): it detached the bootloader and asked
     // for it again ("Reconnect for firmware flashing"). WebDFU writes over the first connection,
     // so the React app never stops at Connect Flash and goes on to the end.
     name: 'system-update-reconnect',

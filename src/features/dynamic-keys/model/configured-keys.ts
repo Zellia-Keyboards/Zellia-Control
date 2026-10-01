@@ -140,7 +140,7 @@ export interface DashboardRow {
  * keys, after them, in the order they were first added). Its sort by key name kept that order,
  * every name being "Unknown". DKS rows are in slot order here: a new dynamic key takes the slot
  * after the last one in use, so the two orders agree until a delete moves the last dynamic key
- * down into the freed slot (deviation H-7).
+ * down into the freed slot (deviation PL-040).
  */
 function tableOrder(a: DashboardRow, b: DashboardRow): number {
   const aStroke = a.dynamicKey.kind === 'stroke';
