@@ -1,11 +1,17 @@
 import { Keycode as EmiKeycode, KeyModifier } from 'emi-keyboard-controller';
 import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
+import { deviceStore } from '../../device';
 import { kc } from '../../keycodes';
 import { dynamicKeyKeycode, fractionToRaw } from '../../../testing/virtual-keyboard';
 import { DksAction } from '../model/dks-bitmap';
 import { encodeKeyControl } from '../model/dks-codec';
-import { renderDynamicKeysPage, selectKeys, selectLayer } from '../testing/render-page';
+import {
+  fillDynamicKeySlots,
+  renderDynamicKeysPage,
+  selectKeys,
+  selectLayer,
+} from '../testing/render-page';
 
 const { Hold: H, Press: P, Release: R, Tap: T } = DksAction;
 const A = kc.key(EmiKeycode.A);
@@ -181,6 +187,46 @@ describe('DKS editor', () => {
     ).toBeInTheDocument();
     expect(screen.getByText('3.0mm')).toBeInTheDocument();
     expect(kc.modifier(KeyModifier.KeyLeftShift)).toBe(0x0200);
+  });
+
+  it('re-applies a key’s DKS into its own slot (D6)', async () => {
+    const { keyboard, user } = await openDks();
+    selectKeys(SEEDED_STROKE_KEY);
+    await user.click(bindingButton(2));
+    await user.click(within(picker()).getByRole('button', { name: 'A' }));
+    await user.click(screen.getByRole('button', { name: 'Apply Configuration' }));
+
+    await expect
+      .poll(() => keyboard.vk.state.active.dynamicKeys[0])
+      .toMatchObject({
+        type: 'stroke',
+        bindings: [S, kc.modifier(KeyModifier.KeyLeftShift), A, 0],
+        keyId: SEEDED_STROKE_KEY,
+      });
+    expect(keyboard.vk.state.active.dynamicKeys.filter(key => key.type !== 'none')).toHaveLength(4);
+    expect(keyboard.vk.state.active.keymap[0]?.[SEEDED_STROKE_KEY]).toBe(dynamicKeyKeycode(0));
+  });
+
+  it('keeps the editor as it is when the keyboard has no free slot', async () => {
+    const { keyboard, user } = await openDks({ seedDynamicKeys: false });
+    fillDynamicKeySlots();
+    const own = keyboard.vk.state.active.keymap[0]?.[12];
+    selectKeys(12);
+    await user.click(bindingButton(0));
+    await user.click(within(picker()).getByRole('button', { name: 'A' }));
+    await user.click(node(0, 1));
+    await user.click(screen.getByRole('button', { name: 'Apply Configuration' }));
+
+    expect(deviceStore.getState().lastError).toEqual({
+      operation: 'applyDynamicKey',
+      message: 'No free dynamic key slot',
+    });
+    expect(bindingButton(0)).toHaveTextContent('A');
+    expect(
+      within(slider(0)).getByRole('button', { name: 'TAP action at phase 2' })
+    ).toBeInTheDocument();
+    expect(keyboard.vk.state.active.keymap[0]?.[12]).toBe(own);
+    expect(screen.queryByRole('heading', { name: 'Configured Dynamic Keys' })).toBeNull();
   });
 
   it('resets: removes the key’s DKS from the keyboard and loads the preset (PL-020)', async () => {
