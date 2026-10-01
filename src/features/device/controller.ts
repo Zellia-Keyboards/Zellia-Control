@@ -5,14 +5,16 @@
  * structurally with exactly the members it calls; every registry entry is checked against this
  * interface (models.ts), so an upstream API change breaks here at compile time.
  */
-import type {
-  FirmwareVersion,
-  IAdvancedKey,
-  IDynamicKey,
-  IFeature,
-  IRGBBaseConfig,
-  IRGBConfig,
-  USBDevice,
+import {
+  MacroAction,
+  type FirmwareVersion,
+  type IAdvancedKey,
+  type IDynamicKey,
+  type IFeature,
+  type IMacroAction,
+  type IRGBBaseConfig,
+  type IRGBConfig,
+  type USBDevice,
 } from 'emi-keyboard-controller';
 
 export interface DeviceController {
@@ -38,6 +40,12 @@ export interface DeviceController {
   set_rgb_configs(configs: IRGBConfig[]): void;
   get_dynamic_keys(): IDynamicKey[];
   set_dynamic_keys(keys: IDynamicKey[]): void;
+  get_macros(): IMacroAction[][];
+  set_macros(macros: IMacroAction[][]): void;
+  get_script_source(): string;
+  set_script_source(source: string): void;
+  get_script_bytecode(): Uint8Array;
+  set_script_bytecode(bytecode: Uint8Array): void;
   save(): Promise<void>;
   flash(): void;
   send_advanced_key_packet(index: number, advancedKey: IAdvancedKey): Promise<void>;
@@ -165,11 +173,24 @@ function replyTypeCode(buf: Uint8Array): number {
 }
 
 /**
+ * Works around the vendored macro defaults (ac25c4e): the AT32, Oholeo and Trinity Pad
+ * controllers fill their cache with `Array(4).fill(Array(128).fill(new MacroAction()))`, so every
+ * slot is one array of one shared action. `read_macros` assigns `macros[slot][index]`, which then
+ * writes every slot at once: after a load each slot would hold the last slot's actions. The cache
+ * gets fresh arrays of fresh actions of the same size (`read_macros` sizes every slot by
+ * `macros[0].length`) before the first load.
+ */
+function unshareMacros(controller: Pick<DeviceController, 'get_macros' | 'set_macros'>): void {
+  controller.set_macros(controller.get_macros().map(slot => slot.map(() => new MacroAction())));
+}
+
+/**
  * Works around a bug in the vendored controller (ac25c4e): `packet_process_dynamic_key` ends its
  * GET branch with `else (…) { … }`, so the SET serializer always runs and dereferences
  * `target_keys_location[0]` of the key it just parsed, which is always empty. Any keyboard with a
  * configured dynamic key would fail to load (`updateDataError`). The parsed key is already stored
- * when that throws, so only that exact failure is swallowed. Remove once fixed upstream.
+ * when that throws, so only that exact failure is swallowed. It also unshares the macro defaults
+ * (`unshareMacros`). Remove each workaround once fixed upstream.
  */
 export function withUpstreamFixes<T extends DeviceController & LibampDynamicKeyParser>(
   controller: T
@@ -186,5 +207,6 @@ export function withUpstreamFixes<T extends DeviceController & LibampDynamicKeyP
       if (!parsed) throw error;
     }
   };
+  unshareMacros(controller);
   return controller;
 }

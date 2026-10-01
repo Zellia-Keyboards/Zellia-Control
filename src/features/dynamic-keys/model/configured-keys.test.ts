@@ -68,6 +68,8 @@ function config(dynamicKeys: readonly DynamicKeySlot[] = [STROKE, MOD_TAP, TOGGL
     },
     rgbKeys: [],
     dynamicKeys,
+    macros: [],
+    script: null,
     profileIndex: 0,
     profileCount: 4,
   };

@@ -17,6 +17,7 @@ import {
   DynamicKeyType,
   KeyLocation as ControllerKeyLocation,
   KeyMode,
+  MacroAction as ControllerMacroAction,
   RGBBaseConfig,
   RGBBaseMode,
   RGBMode,
@@ -24,7 +25,7 @@ import {
   type FirmwareVersion as ControllerFirmwareVersion,
   type IAdvancedKey,
   type IDynamicKey,
-  type IFeature,
+  type IMacroAction,
   type IRGBBaseConfig,
   type IRGBConfig,
   type Srgb,
@@ -43,15 +44,24 @@ import type {
   KeyLocation,
   Keycode,
   Keymap,
+  MacroAction,
   ModelInfo,
   Rgb,
   RgbBaseConfig,
   RgbKeyConfig,
+  ScriptConfig,
 } from './model/types';
 
 const BYTE = 0xff;
 const U16 = 0xffff;
 const U32 = 0xffffffff;
+/** libamp `KeyboardEventType`s of macro actions. */
+const KEY_DOWN = 0x03;
+const KEY_UP = 0x01;
+/** libamp `KEY_NO_EVENT`: the first action without a keycode ends a macro (`macro_process`). */
+const END_MARKER_KEYCODE = 0;
+/** Macro slots a keycode can address (`MACRO_KEYCODE_GET_INDEX`: the low nibble). */
+const MAX_MACRO_SLOTS = 16;
 
 // ---------------------------------------------------------------------------------------------
 // Validation helpers
@@ -195,6 +205,63 @@ export function toDynamicKeySlot(key: IDynamicKey): DynamicKeySlot {
   return { kind: 'none' };
 }
 
+/** A controller's macro slots and the entries of each, the end marker included. */
+export interface MacroCapacity {
+  readonly slots: number;
+  readonly actions: number;
+}
+
+/**
+ * The capacity of the controller's macro cache: `get_macros().length` slots of
+ * `get_macros()[0].length` entries (`read_macros` sizes every slot by the first). No entries means
+ * no macros: the Zellia controllers keep the base class's `[[]]`.
+ */
+export function readMacroCapacity(controller: Pick<DeviceController, 'get_macros'>): MacroCapacity {
+  const macros = controller.get_macros();
+  const actions = integer(macros[0]?.length ?? 0, U16);
+  return { slots: actions > 0 ? integer(macros.length, MAX_MACRO_SLOTS) : 0, actions };
+}
+
+export function toMacroAction(action: IMacroAction): MacroAction {
+  const { event } = action;
+  return {
+    delay: integer(action.delay, U32),
+    keycode: keycode(event.keycode),
+    // libamp plays anything but a press as a release (`macro_process`).
+    event: event.event === KEY_DOWN ? 'down' : 'up',
+    isVirtual: event.is_virtual,
+    keyId: integer(event.key_id, U16),
+  };
+}
+
+/**
+ * Each slot's actions up to its end marker. A slot without one keeps at most `actions − 1`
+ * actions: the end marker needs the last entry.
+ */
+export function readMacros(controller: Pick<DeviceController, 'get_macros'>): MacroAction[][] {
+  const capacity = readMacroCapacity(controller);
+  const limit = Math.max(capacity.actions - 1, 0);
+  return controller
+    .get_macros()
+    .slice(0, capacity.slots)
+    .map(slot => {
+      const end = slot.findIndex(action => action.event.keycode === END_MARKER_KEYCODE);
+      return slot.slice(0, Math.min(end < 0 ? slot.length : end, limit)).map(toMacroAction);
+    });
+}
+
+/** The script and its bytecode; null when the controller declares no script support. */
+export function readScript(
+  controller: Pick<DeviceController, 'get_feature' | 'get_script_source' | 'get_script_bytecode'>
+): ScriptConfig | null {
+  const level = asEnum(SCRIPT_LEVELS, controller.get_feature().script_level, ScriptLevel.Disable);
+  if (level === ScriptLevel.Disable) return null;
+  return {
+    source: controller.get_script_source(),
+    bytecode: Array.from(controller.get_script_bytecode(), byte => integer(byte, BYTE)),
+  };
+}
+
 export function readKeymap(controller: Pick<DeviceController, 'get_keymap'>): Keycode[][] {
   return controller.get_keymap().map(layer => layer.map(keycode));
 }
@@ -208,17 +275,25 @@ export function readDeviceConfig(controller: DeviceController): DeviceConfig {
     rgbBase: toRgbBaseConfig(controller.get_rgb_base_config()),
     rgbKeys: controller.get_rgb_configs().map(toRgbKeyConfig),
     dynamicKeys: rebuildTargets(keymap, controller.get_dynamic_keys().map(toDynamicKeySlot)),
+    macros: readMacros(controller),
+    script: readScript(controller),
     profileIndex: integer(controller.get_profile_index(), BYTE),
     profileCount: integer(controller.get_profile_num(), BYTE),
   });
 }
 
-export function readFeatureFlags(feature: IFeature): FeatureFlags {
+export function readFeatureFlags(
+  controller: Pick<DeviceController, 'get_feature' | 'get_macros'>
+): FeatureFlags {
+  const feature = controller.get_feature();
+  const macros = readMacroCapacity(controller);
   return deepFreeze({
     advancedKeys: feature.advanced_key_flag,
     rgb: feature.rgb_flag,
     scriptLevel: asEnum(SCRIPT_LEVELS, feature.script_level, ScriptLevel.Disable),
     pollingRate: integer(feature.polling_rate, U32),
+    macroSlots: macros.slots,
+    macroActions: macros.actions,
     bootloader: {
       enabled: feature.bootloader.enable,
       download: feature.bootloader.download,
@@ -343,6 +418,38 @@ export function toControllerDynamicKey(slot: DynamicKeySlot): IDynamicKey {
 
 export function toControllerKeymap(keymap: Keymap): number[][] {
   return keymap.map(layer => [...layer]);
+}
+
+export function toControllerMacroAction(action: MacroAction): ControllerMacroAction {
+  const result = new ControllerMacroAction();
+  result.delay = action.delay;
+  result.event.keycode = action.keycode;
+  result.event.event = action.event === 'down' ? KEY_DOWN : KEY_UP;
+  result.event.is_virtual = action.isVirtual;
+  result.event.key_id = action.keyId;
+  return result;
+}
+
+/**
+ * Full-capacity controller macros: each slot's actions, its end marker (no keycode, at the last
+ * action's delay) and empty actions up to the slot size. The controller reads every slot with
+ * `macros[0].length` entries, so the cache must keep that size.
+ */
+export function toControllerMacros(
+  macros: readonly (readonly MacroAction[])[],
+  capacity: MacroCapacity
+): IMacroAction[][] {
+  const limit = Math.max(capacity.actions - 1, 0);
+  return Array.from({ length: capacity.slots }, (_, slot) => {
+    const actions = (macros[slot] ?? []).slice(0, limit).map(toControllerMacroAction);
+    const end = new ControllerMacroAction();
+    end.delay = actions.at(-1)?.delay ?? 0;
+    const empty = Array.from(
+      { length: capacity.actions - actions.length - 1 },
+      () => new ControllerMacroAction()
+    );
+    return [...actions, end, ...empty];
+  });
 }
 
 // ---------------------------------------------------------------------------------------------

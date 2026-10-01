@@ -1,10 +1,16 @@
-import { DynamicKeyStroke4x4, ZelliaStarlightController } from 'emi-keyboard-controller';
+import {
+  DynamicKeyStroke4x4,
+  TrinityPadController,
+  ZelliaStarlightController,
+} from 'emi-keyboard-controller';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   encodeDynamicKeyReply,
   encodeHostPacket,
+  encodeMacroReply,
   encodeReply,
   type WireDynamicKey,
+  type WireMacroAction,
 } from '../../testing/virtual-keyboard';
 import { onControllerEvent, withUpstreamFixes, type DeviceController } from './controller';
 
@@ -23,6 +29,20 @@ function dynamicKeyReply(index: number, key: WireDynamicKey): Uint8Array {
   return encodeDynamicKeyReply(
     encodeHostPacket({ op: 'get', id: 1, kind: 'dynamicKey', index }),
     key
+  );
+}
+
+/** The keyboard's reply to a request for `actions` of macro `macroIndex`. */
+function macroReply(macroIndex: number, actions: readonly WireMacroAction[]): Uint8Array {
+  return encodeMacroReply(
+    encodeHostPacket({
+      op: 'get',
+      id: 1,
+      kind: 'macro',
+      macroIndex,
+      actionIndices: actions.map(action => action.index),
+    }),
+    actions
   );
 }
 
@@ -137,5 +157,44 @@ describe('withUpstreamFixes', () => {
     expect(() => {
       controller.packet_process(setReply);
     }).toThrow(TypeError);
+  });
+});
+
+describe('withUpstreamFixes: macros', () => {
+  const PRESS: WireMacroAction = {
+    index: 0,
+    delay: 8,
+    keyId: 0,
+    isVirtual: true,
+    event: 3,
+    keycode: 0x04,
+  };
+
+  it('documents the vendored default: every macro slot is one shared array', () => {
+    const controller = new TrinityPadController();
+    const macros = controller.get_macros();
+    expect(macros[1]).toBe(macros[0]);
+    controller.packet_process(macroReply(2, [PRESS]));
+    expect(controller.get_macros()[0]?.[0]).toMatchObject({ delay: 8, event: { keycode: 0x04 } });
+  });
+
+  it('gives every slot and every action an object of its own, at the same size', () => {
+    const controller = withUpstreamFixes(new TrinityPadController());
+    const macros = controller.get_macros();
+    expect(macros.map(slot => slot.length)).toEqual([128, 128, 128, 128]);
+    const actions = macros.flat();
+    expect(new Set(actions).size).toBe(512);
+    expect(new Set(actions.map(action => action.event)).size).toBe(512);
+
+    controller.packet_process(macroReply(2, [PRESS]));
+    expect(controller.get_macros()[2]?.[0]).toMatchObject({
+      delay: 8,
+      event: { keycode: 0x04, event: 3, is_virtual: true, key_id: 0 },
+    });
+    expect(controller.get_macros()[0]?.[0]).toMatchObject({ delay: 0, event: { keycode: 0 } });
+  });
+
+  it('keeps the empty macro cache of controllers without macros', () => {
+    expect(withUpstreamFixes(new ZelliaStarlightController()).get_macros()).toEqual([[]]);
   });
 });

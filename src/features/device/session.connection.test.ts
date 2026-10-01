@@ -230,6 +230,43 @@ describe('connect', () => {
     expect(h.state().connection.status).toBe('ready');
     expect(h.state().lastError).toBeNull();
   });
+
+  it('loads the macros and the script of a keyboard that declares them (Trinity Pad)', async () => {
+    const h = setup({ keyboard: { model: 'trinity-pad', seedDynamicKeys: false } });
+    // jsdom's TextEncoder returns arrays from another realm; copy into this one.
+    const source = Uint8Array.from(new TextEncoder().encode('keyboard.watch(2);\0'));
+    h.vk.state.macros[1]?.splice(
+      0,
+      3,
+      { index: 0, delay: 0, keyId: 0, isVirtual: true, event: 3, keycode: Keycode.A },
+      { index: 1, delay: 800, keyId: 0, isVirtual: true, event: 1, keycode: Keycode.A },
+      { index: 2, delay: 800, keyId: 0, isVirtual: false, event: 0, keycode: 0 }
+    );
+    h.vk.state.scripts = { source, bytecode: Uint8Array.from([0xfb, 0xac, 0x01, 0x00]) };
+
+    await h.session.connect();
+
+    expect(h.state().feature).toMatchObject({
+      scriptLevel: ScriptLevel.AOT,
+      pollingRate: 8000,
+      macroSlots: 4,
+      macroActions: 128,
+    });
+    // Slots 2 and 3 are read after slot 1: with shared slot arrays they would empty it again.
+    expect(h.state().config?.macros).toEqual([
+      [],
+      [
+        { delay: 0, keycode: Keycode.A, event: 'down', isVirtual: true, keyId: 0 },
+        { delay: 800, keycode: Keycode.A, event: 'up', isVirtual: true, keyId: 0 },
+      ],
+      [],
+      [],
+    ]);
+    expect(h.state().config?.script).toEqual({
+      source: 'keyboard.watch(2);',
+      bytecode: [0xfb, 0xac, 0x01, 0x00],
+    });
+  });
 });
 
 describe('connection errors', () => {

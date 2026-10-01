@@ -53,6 +53,10 @@ export interface FeatureFlags {
   readonly rgb: boolean;
   readonly scriptLevel: ScriptLevel;
   readonly pollingRate: number;
+  /** Macro slots the controller declares; 0 without macros. */
+  readonly macroSlots: number;
+  /** Entries of each macro slot, its end marker included; 0 without macros. */
+  readonly macroActions: number;
   readonly bootloader: {
     readonly enabled: boolean;
     readonly download: boolean;
@@ -150,12 +154,38 @@ export type DynamicKeyKind = DynamicKeySlot['kind'];
  */
 export type MutexModeByte = number;
 
+/** The key event of a macro action (libamp `KEYBOARD_EVENT_KEY_DOWN` / `KEYBOARD_EVENT_KEY_UP`). */
+export type MacroEvent = 'down' | 'up';
+
+/** One action of a macro (libamp `MacroAction`). */
+export interface MacroAction {
+  /** Ticks from the start of the macro: the keyboard ticks `pollingRate` times a second. */
+  readonly delay: number;
+  readonly keycode: Keycode;
+  readonly event: MacroEvent;
+  /** The event comes from no physical key (recorded and added events are virtual). */
+  readonly isVirtual: boolean;
+  /** The key the firmware plays the event as when it is not virtual. */
+  readonly keyId: number;
+}
+
+/** The keyboard's script and, on AOT keyboards, its compiled bytecode. */
+export interface ScriptConfig {
+  readonly source: string;
+  /** Bytes (0..255): a number array, so the snapshot stays freezable. */
+  readonly bytecode: readonly number[];
+}
+
 export interface DeviceConfig {
   readonly advancedKeys: readonly AdvancedKeyConfig[];
   readonly keymap: Keymap;
   readonly rgbBase: RgbBaseConfig;
   readonly rgbKeys: readonly RgbKeyConfig[];
   readonly dynamicKeys: readonly DynamicKeySlot[];
+  /** Each macro slot's actions, without its end marker; empty without macros. */
+  readonly macros: readonly (readonly MacroAction[])[];
+  /** Null when the controller declares no script support. */
+  readonly script: ScriptConfig | null;
   /** 0-based active firmware profile. */
   readonly profileIndex: number;
   readonly profileCount: number;
