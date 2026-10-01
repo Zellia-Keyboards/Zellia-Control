@@ -9,7 +9,7 @@ import { Keycode } from 'emi-keyboard-controller';
 import { MemoryRouter } from 'react-router';
 import { afterEach, beforeEach, describe, expect, it, onTestFinished, vi } from 'vitest';
 import { connectVirtualKeyboard, type ConnectedKeyboard } from '../../testing/app-keyboard';
-import { deviceSession, deviceStore, type MacroAction } from '../device';
+import { deviceSession, deviceStore, type DeviceState, type MacroAction } from '../device';
 import { MacrosPage } from './MacrosPage';
 
 /** libamp's modifier-only keycode of Left Shift and the Mouse keycode of the right button. */
@@ -51,6 +51,27 @@ function mouse(type: 'mousedown' | 'mouseup', button: number): boolean {
   const event = new MouseEvent(type, { button, bubbles: true, cancelable: true });
   fireEvent(document.body, event);
   return event.defaultPrevented;
+}
+
+/** Resolves the next time the device store matches `predicate` (already true resolves at once). */
+function waitForDeviceState(predicate: (state: DeviceState) => boolean): Promise<void> {
+  return new Promise((resolve, reject) => {
+    if (predicate(deviceStore.getState())) {
+      resolve();
+      return;
+    }
+    const timer = setTimeout(() => {
+      unsubscribe();
+      reject(new Error('Device store did not reach the expected state within 3000 ms'));
+    }, 3000);
+    const unsubscribe = deviceStore.subscribe(state => {
+      if (predicate(state)) {
+        clearTimeout(timer);
+        unsubscribe();
+        resolve();
+      }
+    });
+  });
 }
 
 it('renders nothing until a keyboard configuration is loaded', () => {
@@ -292,6 +313,29 @@ describe('MacrosPage (Trinity Pad)', { timeout: 20_000 }, () => {
     expect(key('keydown', 'KeyB')).toBe(false);
     expect(fireEvent.contextMenu(document.body)).toBe(true);
     expect(macro()).toHaveLength(6);
+  });
+
+  it('ends a recording at once when the keyboard starts loading a configuration', async () => {
+    const user = userEvent.setup();
+    renderPage();
+
+    await user.click(screen.getByRole('button', { name: 'Record' }));
+    expect(key('keydown', 'KeyA')).toBe(true);
+
+    keyboard.vk.notifyConfigChanged();
+    await waitForDeviceState(state => state.reloading);
+
+    // The recording ended at once: the still-held key's release is no longer intercepted (no
+    // setMacro call for it, so no warning and no error).
+    expect(key('keyup', 'KeyA')).toBe(false);
+    expect(deviceStore.getState().lastError).toBeNull();
+
+    await waitForDeviceState(state => !state.reloading);
+
+    expect(screen.getByRole('button', { name: 'Record' })).toBeInTheDocument();
+    expect(deviceStore.getState().lastError).toBeNull();
+    expect(deviceStore.getState().unsaved).toBe(false);
+    expect(macro()).toEqual([]);
   });
 
   it('stops recording when the macro is full, releasing the keys still held', async () => {

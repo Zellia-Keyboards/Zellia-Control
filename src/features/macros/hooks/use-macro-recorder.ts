@@ -4,8 +4,11 @@
  * fills while recording. While recording, keys and mouse buttons do nothing else: their default
  * actions are prevented, and so are clicks, middle clicks and the context menu, except on the
  * Stop button (`data-macro-recorder-stop`), whose clicks are not recorded. Recording ends with
- * Stop, when the macro is full, when the window loses focus (releases would be missed) and when
- * the editor unmounts (leaving the page, a device load); keys still held are released then.
+ * Stop, when the macro is full, when the window loses focus (releases would be missed), when the
+ * keyboard starts loading a configuration (profile switch, factory reset, reconnect: the session
+ * would reject every edit, so nothing is staged and keys still held are dropped, not released —
+ * the load replaces the macros anyway) and when the editor unmounts (leaving the page); keys
+ * still held are released then.
  */
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { deviceSession, deviceStore, type MacroAction } from '../../device';
@@ -132,6 +135,14 @@ export function useMacroRecorder(slot: number, pollingRate: number, limit: numbe
     window.addEventListener('auxclick', suppress, true);
     window.addEventListener('contextmenu', suppress, true);
     window.addEventListener('blur', stop);
+    // A device load rejects every edit: end the recording at once, staging nothing, so held keys
+    // are dropped rather than released into the draft the load is about to replace anyway.
+    const unsubscribe = deviceStore.subscribe(state => {
+      const current = recording.current;
+      if (!state.reloading || !current) return;
+      recording.current = null;
+      setShown({ slot, recording: false, skipped: current.skipped, full: current.full });
+    });
     return () => {
       window.removeEventListener('keydown', onKey, true);
       window.removeEventListener('keyup', onKey, true);
@@ -141,6 +152,7 @@ export function useMacroRecorder(slot: number, pollingRate: number, limit: numbe
       window.removeEventListener('auxclick', suppress, true);
       window.removeEventListener('contextmenu', suppress, true);
       window.removeEventListener('blur', stop);
+      unsubscribe();
     };
   }, [active, slot, apply, stop]);
 
