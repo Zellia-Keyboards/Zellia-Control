@@ -43,11 +43,13 @@ import {
   readDeviceConfig,
   readFeatureFlags,
   readFirmwareVersion,
+  readMacroCapacity,
   readModelInfo,
   toAdvancedKeyConfig,
   toControllerAdvancedKey,
   toControllerDynamicKey,
   toControllerKeymap,
+  toControllerMacros,
   toControllerRgbBase,
   toControllerRgbConfig,
   toRgbBaseConfig,
@@ -584,7 +586,7 @@ class Session implements DeviceSession {
     try {
       config = readDeviceConfig(controller);
       snapshot = {
-        feature: readFeatureFlags(controller.get_feature()),
+        feature: readFeatureFlags(controller),
         firmware: readFirmwareVersion(controller.get_firmware_version()),
       };
       this.#syncCache(connection, config);
@@ -688,6 +690,15 @@ class Session implements DeviceSession {
     controller.set_rgb_base_config(toControllerRgbBase(config.rgbBase));
     controller.set_rgb_configs(config.rgbKeys.map(toControllerRgbConfig));
     controller.set_dynamic_keys(config.dynamicKeys.map(toControllerDynamicKey));
+    // Full-capacity slots of fresh actions (the controller reads every slot by the first's size).
+    const macroCapacity = readMacroCapacity(controller);
+    if (macroCapacity.slots > 0) {
+      controller.set_macros(toControllerMacros(config.macros, macroCapacity));
+    }
+    if (config.script) {
+      controller.set_script_source(config.script.source);
+      controller.set_script_bytecode(Uint8Array.from(config.script.bytecode));
+    }
   }
 
   #recordError(operation: string, error: unknown): void {

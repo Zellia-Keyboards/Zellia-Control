@@ -13,10 +13,13 @@ import {
   RGBConfig,
   RGBMode,
   ScriptLevel,
+  TrinityPadController,
   ZelliaStarlightController,
   type IDynamicKey,
+  type IMacroAction,
 } from 'emi-keyboard-controller';
 import { describe, expect, it } from 'vitest';
+import { withUpstreamFixes } from './controller';
 import {
   assertAdvancedKeyConfig,
   assertRgbBaseConfig,
@@ -25,14 +28,19 @@ import {
   readDeviceConfig,
   readFeatureFlags,
   readFirmwareVersion,
+  readMacroCapacity,
+  readMacros,
   readModelInfo,
   toAdvancedKeyConfig,
   toControllerAdvancedKey,
   toControllerDynamicKey,
   toControllerKeymap,
+  toControllerMacroAction,
+  toControllerMacros,
   toControllerRgbBase,
   toControllerRgbConfig,
   toDynamicKeySlot,
+  toMacroAction,
   toRgbBaseConfig,
   toRgbKeyConfig,
 } from './mapping';
@@ -42,6 +50,7 @@ import type {
   AdvancedKeyConfig,
   DynamicKeySlot,
   KeyLocation,
+  MacroAction,
   RgbBaseConfig,
   RgbKeyConfig,
 } from './model/types';
@@ -259,6 +268,9 @@ describe('readDeviceConfig', () => {
     expect(config.keymap).toEqual(controller.get_keymap());
     expect(config.rgbKeys).toHaveLength(70);
     expect(config.dynamicKeys).toHaveLength(32);
+    // The Starlight's controller declares neither macros nor scripts.
+    expect(config.macros).toEqual([]);
+    expect(config.script).toBeNull();
     expect(config.profileIndex).toBe(0);
     expect(config.profileCount).toBe(4);
     expect(Object.isFrozen(config)).toBe(true);
@@ -300,17 +312,96 @@ describe('readDeviceConfig', () => {
     base.rgb.red = 7;
     expect(config.rgbBase.color.red).toBe(163);
   });
+
+  it('reads the macros and the script of a keyboard that declares them', () => {
+    const controller = withUpstreamFixes(new TrinityPadController());
+    controller.set_script_source('keyboard.watch(2);');
+    controller.set_script_bytecode(new Uint8Array([0xfb, 0xac, 0x01]));
+    const config = readDeviceConfig(controller);
+    expect(config.macros).toEqual([[], [], [], []]);
+    expect(config.script).toEqual({ source: 'keyboard.watch(2);', bytecode: [0xfb, 0xac, 0x01] });
+    expect(Object.isFrozen(config.script?.bytecode)).toBe(true);
+  });
+});
+
+describe('macros', () => {
+  const CAPACITY = { slots: 2, actions: 4 };
+  const PRESS: MacroAction = {
+    delay: 0,
+    keycode: 0x04,
+    event: 'down',
+    isVirtual: true,
+    keyId: 0,
+  };
+  const RELEASE: MacroAction = {
+    delay: 800,
+    keycode: 0x04,
+    event: 'up',
+    isVirtual: false,
+    keyId: 3,
+  };
+
+  function controllerWith(macros: IMacroAction[][]) {
+    return { get_macros: () => macros };
+  }
+
+  it('reads the capacity from the controller cache; no entries means no macros', () => {
+    expect(readMacroCapacity(withUpstreamFixes(new TrinityPadController()))).toEqual({
+      slots: 4,
+      actions: 128,
+    });
+    expect(readMacroCapacity(new ZelliaStarlightController())).toEqual({ slots: 0, actions: 0 });
+  });
+
+  it('writes every slot at full size: its actions, the end marker, then empty actions', () => {
+    const macros = toControllerMacros([[PRESS, RELEASE], []], CAPACITY);
+    expect(macros.map(slot => slot.length)).toEqual([4, 4]);
+    expect(macros[0]).toEqual([
+      { delay: 0, event: { keycode: 0x04, event: 3, is_virtual: true, key_id: 0 } },
+      { delay: 800, event: { keycode: 0x04, event: 1, is_virtual: false, key_id: 3 } },
+      // The end marker: no keycode, at the last action's delay.
+      { delay: 800, event: { keycode: 0, event: 0, is_virtual: false, key_id: 0 } },
+      { delay: 0, event: { keycode: 0, event: 0, is_virtual: false, key_id: 0 } },
+    ]);
+    expect(macros[1]?.every(action => action.delay === 0 && action.event.keycode === 0)).toBe(true);
+    expect(new Set(macros.flat()).size).toBe(8);
+    expect(new Set(macros.flat().map(action => action.event)).size).toBe(8);
+  });
+
+  it('reads each slot up to its end marker', () => {
+    const controller = controllerWith(toControllerMacros([[PRESS, RELEASE], []], CAPACITY));
+    expect(readMacros(controller)).toEqual([[PRESS, RELEASE], []]);
+  });
+
+  it('keeps room for the end marker when a slot has none', () => {
+    const full = Array.from({ length: 4 }, () => toControllerMacroAction(PRESS));
+    expect(readMacros(controllerWith([full, []]))).toEqual([[PRESS, PRESS, PRESS], []]);
+  });
+
+  it('reads any event other than a press as a release (libamp plays it as one)', () => {
+    const action = toControllerMacroAction(PRESS);
+    action.event.event = 2;
+    expect(toMacroAction(action).event).toBe('up');
+  });
 });
 
 describe('metadata', () => {
   it('reads feature flags, firmware version and model info', () => {
     const controller = new ZelliaStarlightController();
-    expect(readFeatureFlags(controller.get_feature())).toEqual({
+    expect(readFeatureFlags(controller)).toEqual({
       advancedKeys: true,
       rgb: true,
       scriptLevel: ScriptLevel.Disable,
       pollingRate: 8000,
+      macroSlots: 0,
+      macroActions: 0,
       bootloader: { enabled: true, download: true, upload: true },
+    });
+    expect(readFeatureFlags(withUpstreamFixes(new TrinityPadController()))).toMatchObject({
+      scriptLevel: ScriptLevel.AOT,
+      pollingRate: 8000,
+      macroSlots: 4,
+      macroActions: 128,
     });
     expect(readFirmwareVersion({ major: 0, minor: 1, patch: 3, info: 'x' })).toEqual({
       major: 0,

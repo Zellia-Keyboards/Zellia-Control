@@ -39,6 +39,8 @@ function config(keys: readonly Keycode[], dynamicKeys: readonly DynamicKeySlot[]
     },
     rgbKeys: [],
     dynamicKeys,
+    macros: [],
+    script: null,
     profileIndex: 0,
     profileCount: 4,
   };
