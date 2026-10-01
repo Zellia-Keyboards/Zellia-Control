@@ -29,7 +29,7 @@ function assertStorage(value: unknown, where: string): void {
 
 function assertScenario(value: unknown, where: string): asserts value is ParityScenario {
   if (!isRecord(value)) throw new Error(`${where}: a scenario must be an object`);
-  const { name, path: scenarioPath, setup, virtualKeyboard, storage } = value;
+  const { name, path: scenarioPath, setup, virtualKeyboard, storage, reactOnly } = value;
   if (typeof name !== 'string' || !NAME.test(name)) {
     throw new Error(`${where}: name must be kebab-case (got ${JSON.stringify(name)})`);
   }
@@ -45,6 +45,9 @@ function assertScenario(value: unknown, where: string): asserts value is ParityS
     (!isRecord(virtualKeyboard) || Array.isArray(virtualKeyboard))
   ) {
     throw new Error(`${where}: virtualKeyboard must be a boolean or an options object`);
+  }
+  if (reactOnly !== undefined && typeof reactOnly !== 'boolean') {
+    throw new Error(`${where}: reactOnly must be a boolean`);
   }
   if (storage !== undefined) assertStorage(storage, where);
 }
