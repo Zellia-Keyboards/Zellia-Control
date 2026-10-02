@@ -1,0 +1,82 @@
+.deadzone-container {
+  border-radius: 12px;
+  padding: 16px;
+  margin-top: 8px;
+}
+
+.deadzone-pattern {
+  background: repeating-linear-gradient(
+    45deg,
+    #ff4444 0px,
+    #ff4444 2px,
+    #000000 2px,
+    #000000 4px,
+    #ff4444 4px,
+    #ff4444 6px,
+    #000000 6px,
+    #000000 8px
+  );
+  opacity: 0.9;
+}
+
+:global(.dark) .deadzone-pattern {
+  opacity: 0.8;
+}
+
+.deadzone-slider {
+  appearance: none;
+  pointer-events: none;
+}
+
+.deadzone-slider::-webkit-slider-thumb {
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  pointer-events: auto;
+  border: 2px solid white;
+}
+
+.deadzone-slider::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  cursor: pointer;
+  border: 2px solid white;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  pointer-events: auto;
+}
+
+.start-handle {
+  z-index: 3;
+}
+
+.start-handle::-webkit-slider-thumb {
+  background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
+}
+
+.start-handle::-moz-range-thumb {
+  background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
+}
+
+.bottom-handle {
+  z-index: 2;
+}
+
+.bottom-handle::-webkit-slider-thumb {
+  background: linear-gradient(135deg, #4ecdc4 0%, #44b3ac 100%);
+}
+
+.bottom-handle::-moz-range-thumb {
+  background: linear-gradient(135deg, #4ecdc4 0%, #44b3ac 100%);
+}
+
+.deadzone-slider:hover {
+  z-index: 10 !important;
+}
+
+.deadzone-slider:active {
+  z-index: 11 !important;
+}

@@ -10,39 +10,10 @@
   "arrowParens": "avoid",
   "endOfLine": "lf",
   "printWidth": 100,
-  "plugins": ["prettier-plugin-svelte"],
   "overrides": [
     {
-      "files": "*.svelte",
-      "options": {
-        "parser": "svelte"
-      }
-    },
-    {
-      "files": "*.{js,ts}",
-      "options": {
-        "parser": "typescript"
-      }
-    },
-    {
-      "files": "*.json",
-      "options": {
-        "parser": "json"
-      }
-    },
-    {
-      "files": "*.{css,scss}",
-      "options": {
-        "parser": "css"
-      }
-    },
-    {
       "files": "*.md",
-      "options": {
-        "parser": "markdown",
-        "printWidth": 80,
-        "proseWrap": "always"
-      }
+      "options": { "printWidth": 80, "proseWrap": "preserve" }
     }
   ]
 }

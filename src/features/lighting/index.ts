@@ -1,0 +1,1 @@
+export { LightingPage } from './LightingPage';
