@@ -2,7 +2,7 @@ import { Suspense, lazy, useEffect, useRef, useState, type ChangeEvent } from 'r
 import { SECONDARY_BUTTON } from '../../../components/ui';
 import { useT, type TranslationKey } from '../../../lib/i18n';
 import { useDarkMode } from '../../../lib/theme';
-import { deviceSession } from '../../device';
+import { deviceSession, deviceStore } from '../../device';
 import {
   EXAMPLE_SCRIPT,
   SCRIPT_BUFFER_BYTES,
@@ -22,7 +22,9 @@ type CompileStatus =
   | { readonly kind: 'idle' }
   | { readonly kind: 'compiling' }
   | { readonly kind: 'compiled'; readonly bytes: number }
-  | { readonly kind: 'failed'; readonly errors: readonly CompileError[] };
+  | { readonly kind: 'failed'; readonly errors: readonly CompileError[] }
+  /** The compiler itself did not load (its chunk or its WebAssembly): not a script error. */
+  | { readonly kind: 'unavailable' };
 
 type Translate = (key: TranslationKey, ...args: string[]) => string;
 
@@ -37,6 +39,8 @@ function statusText(t: Translate, aot: boolean, status: CompileStatus): string {
       return t('scripts.compiled', String(status.bytes));
     case 'failed':
       return t('scripts.failed');
+    case 'unavailable':
+      return t('scripts.compilerUnavailable');
   }
 }
 
@@ -81,6 +85,12 @@ export function ScriptWorkspace({ initialSource, bytecode, aot, compile }: Scrip
         result => {
           if (!current) return;
           if (result.bytecode) {
+            // The keyboard is loading a configuration (profile switch, reset): the session would
+            // reject the edit, and the load starts the workspace over on the new script anyway.
+            if (deviceStore.getState().reloading) {
+              setStatus({ kind: 'idle' });
+              return;
+            }
             deviceSession.setScript({
               source: pending.source,
               bytecode: Array.from(result.bytecode),
@@ -90,10 +100,10 @@ export function ScriptWorkspace({ initialSource, bytecode, aot, compile }: Scrip
             setStatus({ kind: 'failed', errors: result.errors });
           }
         },
-        (error: unknown) => {
-          if (!current) return;
-          const message = error instanceof Error ? error.message : String(error);
-          setStatus({ kind: 'failed', errors: [{ line: null, message }] });
+        () => {
+          // The compiler's chunk or its WebAssembly did not load (network loss, a misconfigured
+          // host): the script is not at fault, so no error list.
+          if (current) setStatus({ kind: 'unavailable' });
         }
       );
     }, COMPILE_DELAY_MS);
