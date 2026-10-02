@@ -1,22 +1,36 @@
 import { LibampKeyboardController } from '../libamp_keyboard_controller/controller';
-import { IAdvancedKey, IKeyboardController, IRGBConfig, KeyMode, CalibrationMode, RGBMode, Keycode, KeyModifier, AdvancedKeyToBytes, AdvancedKey, KeyboardKeycode, LayerControlKeycode, KeyboardController, DynamicKey, DynamicKeyType, DynamicKeyStroke4x4, DynamicKeyModTap, DynamicKeyToggleKey, DynamicKeyMutex, IDynamicKey, IDynamicKeyStroke4x4, IDynamicKeyModTap, IDynamicKeyToggleKey, IDynamicKeyMutex, RGBBaseConfig } from './../../interface';
+import { IAdvancedKey, IKeyboardController, IRGBConfig, KeyMode, CalibrationMode, RGBMode, Keycode, KeyModifier, AdvancedKey, KeyboardKeycode, LayerControlKeycode, KeyboardController, DynamicKey, DynamicKeyType, DynamicKeyStroke4x4, DynamicKeyModTap, DynamicKeyToggleKey, DynamicKeyMutex, IDynamicKey, IDynamicKeyStroke4x4, IDynamicKeyModTap, IDynamicKeyToggleKey, IDynamicKeyMutex, RGBBaseConfig, MacroAction, detectHIDDevice, BootloaderFeature } from './../../interface';
+import { detectUSBDevice } from '../../dfu/web-dfu';
+import type { USBDevice } from '../../dfu/webusb-types';
 
-const layout = `[["Esc","!\\n1","@\\n2","#\\n3","$\\n4","%\\n5","^\\n6","&\\n7","*\\n8","(\\n9",")\\n0","_\\n-","+\\n=",{"w":2},"Backspace"],[{"w":1.5},"Tab","Q","W","E","R","T","Y","U","I","O","P","{\\n[","}\\n]",{"w":1.5},"|\\n\\\\"],[{"w":1.75},"Caps Lock","A","S","D","F","G","H","J","K","L",":\\n;","\\"\\n'",{"w":2.25},"Enter"],[{"w":2},"Shift","Z","X","C","V","B","N","M","<\\n,",">\\n.","?\\n/","Shift","↑","Del"],[{"w":1.25},"Ctrl",{"w":1.25},"Win",{"w":1.25},"Alt",{"a":7,"w":6.25},"",{"a":4},"Alt","Fn","←","↓","→"]]`;
+import layout from './keyboard_layout.json?raw';
+import markdown from './README.md?raw';
 
 export class OholeoKeyboardController extends LibampKeyboardController {
     ADVANCED_KEY_NUM: number = 64;
-    config_file_number:number = 4;
+    profile_number:number = 4;
 
     constructor() {
         super();
         this.device = undefined;
         this.reset_to_default();
+        this.feature.rgb_flag = true;
+        this.feature.bootloader = new BootloaderFeature(true);
+        this.feature.bootloader.download = true;
+        this.feature.bootloader.upload = true;
+        this.feature.bootloader.fetch_from_web = false;
     }
 
-    async detect(): Promise<HIDDevice[]> {
-        return await navigator.hid.requestDevice({
-            filters: [{ vendorId: 0xFEED, productId: 22319, usagePage: 0xFF60}]  // 使用示例，过滤器可以根据需求进行调整
-        });;
+    async detect(silent: boolean = false): Promise<HIDDevice[]> {
+        return detectHIDDevice({
+            vendorId: 0xFEED,
+            productId: 22319,
+            usagePage: 0xFF60,
+            }, silent, "Oholeo");
+    }
+
+    async detect_bootloader(silent: boolean = false): Promise<USBDevice[]> {
+        return detectUSBDevice({ vendorId: 0x0483, productId: 0xDF11 }, silent);
     }
 
     get_layout_json(): string {
@@ -24,15 +38,9 @@ export class OholeoKeyboardController extends LibampKeyboardController {
     }
     
     reset_to_default(): void {
-        this.advanced_keys = Array(this.ADVANCED_KEY_NUM).fill(null).map(() => ({
-            state: false,
-            report_state: false,
-            value: 0.0,
-            raw: 0.0,
+        this.advanced_keys = Array(this.ADVANCED_KEY_NUM).fill(null).map(() => new AdvancedKey({
             mode: KeyMode.KeyAnalogNormalMode,
             calibration_mode: CalibrationMode.KeyAutoCalibrationUndefined,
-            maximum: 0.0,
-            minimum: 0.0,
             activation_value: 0.5,
             deactivation_value: 0.49,
             trigger_distance: 0.08,
@@ -52,7 +60,7 @@ export class OholeoKeyboardController extends LibampKeyboardController {
                 green: 55,
                 blue: 252,
             },
-            speed: 0.02
+            speed: 20
         }));
         this.keymap = [
                 [
@@ -70,15 +78,20 @@ export class OholeoKeyboardController extends LibampKeyboardController {
                     Keycode.KeyTransparent, Keycode.KeyTransparent, Keycode.KeyTransparent, Keycode.KeyTransparent, Keycode.KeyTransparent, Keycode.KeyTransparent, Keycode.Home, Keycode.PageDown, Keycode.End,
                 ],
                 [ 
-                    Keycode.KeyboardOperation | (KeyboardKeycode.KeyboardBootloader << 8),  Keycode.KeyboardOperation | (KeyboardKeycode.KeyboardConfig0 << 8), Keycode.KeyboardOperation | (KeyboardKeycode.KeyboardConfig1 << 8), Keycode.KeyboardOperation | (KeyboardKeycode.KeyboardConfig2 << 8),     Keycode.KeyboardOperation | (KeyboardKeycode.KeyboardConfig3 << 8), Keycode.KeyTransparent,     Keycode.KeyTransparent,         Keycode.KeyTransparent, Keycode.KeyTransparent, Keycode.KeyTransparent, Keycode.KeyTransparent, Keycode.KeyTransparent, Keycode.KeyTransparent, Keycode.KeyboardOperation | (KeyboardKeycode.KeyboardResetToDefault << 8),
+                    Keycode.KeyboardOperation | (KeyboardKeycode.KeyboardBootloader << 8),  Keycode.KeyboardOperation | (KeyboardKeycode.KeyboardProfile0 << 8), Keycode.KeyboardOperation | (KeyboardKeycode.KeyboardProfile1 << 8), Keycode.KeyboardOperation | (KeyboardKeycode.KeyboardProfile2 << 8),     Keycode.KeyboardOperation | (KeyboardKeycode.KeyboardProfile3 << 8), Keycode.KeyTransparent,     Keycode.KeyTransparent,         Keycode.KeyTransparent, Keycode.KeyTransparent, Keycode.KeyTransparent, Keycode.KeyTransparent, Keycode.KeyTransparent, Keycode.KeyTransparent, Keycode.KeyboardOperation | (KeyboardKeycode.KeyboardResetToDefault << 8),
                     Keycode.KeyTransparent,                                     Keycode.KeyTransparent,                                 Keycode.KeyTransparent,                                 Keycode.KeyTransparent,                                 Keycode.KeyboardOperation | (KeyboardKeycode.KeyboardReboot << 8),       Keycode.KeyTransparent,                                 Keycode.KeyTransparent,     Keycode.KeyTransparent,         Keycode.KeyTransparent, Keycode.KeyTransparent, Keycode.KeyTransparent, Keycode.KeyTransparent, Keycode.KeyTransparent, Keycode.KeyTransparent,
                     Keycode.KeyUser | (16 << 8),                                Keycode.KeyTransparent,                                 Keycode.KeyboardOperation | (KeyboardKeycode.KeyboardSave << 8),    0xFE | (((2<<6) | (0x20 + 0)) << 8),   Keycode.KeyboardOperation | (KeyboardKeycode.KeyboardFactoryReset << 8),Keycode.KeyTransparent,                                 Keycode.KeyTransparent,     Keycode.KeyTransparent,         Keycode.KeyTransparent, Keycode.KeyTransparent, Keycode.KeyTransparent, Keycode.KeyTransparent, Keycode.KeyTransparent,
-                    Keycode.KeyTransparent,                                                                                             Keycode.KeyTransparent,                                 Keycode.KeyTransparent,                                 Keycode.KeyTransparent,                                     Keycode.KeyUser | (1 << 8),                             Keycode.KeyUser | (0 << 8), Keycode.KeyUser | (0xFF << 8),  Keycode.KeyTransparent, Keycode.KeyTransparent, Keycode.KeyTransparent, Keycode.KeyTransparent, Keycode.KeyTransparent, Keycode.KeyTransparent, Keycode.KeyTransparent,
-                    Keycode.KeyTransparent,                                     0xFE | (((2<<6) | (0x20 + 2)) << 8),                                 Keycode.KeyTransparent,                                 Keycode.KeyTransparent,                                 Keycode.KeyTransparent,                                     Keycode.KeyTransparent,                                 Keycode.KeyTransparent,     Keycode.KeyTransparent,         Keycode.KeyTransparent, 
+                    Keycode.KeyTransparent,                                                                                             Keycode.KeyTransparent,                                 Keycode.KeyTransparent,                                 Keycode.KeyboardOperation | (KeyboardKeycode.KeyboardCalibrate << 8),                                     Keycode.KeyUser | (1 << 8),                             Keycode.KeyUser | (0 << 8), Keycode.KeyUser | (0xFF << 8),  Keycode.KeyTransparent, Keycode.KeyTransparent, Keycode.KeyTransparent, Keycode.KeyTransparent, Keycode.KeyTransparent, Keycode.KeyTransparent, Keycode.KeyTransparent,
+                    Keycode.KeyTransparent,                                     0xFE | (((2<<6) | (0x20 + 2)) << 8),                                 Keycode.KeyTransparent,                                 Keycode.KeyTransparent,                                 Keycode.KeyTransparent,                                     Keycode.KeyTransparent,                                 Keycode.KeyboardOperation | (KeyboardKeycode.KeyboardBootloader << 8),     Keycode.KeyTransparent,         Keycode.KeyTransparent, 
                 ],
                 Array(64).fill(Keycode.KeyTransparent),
                 Array(64).fill(Keycode.KeyTransparent)
         ];
         this.dynamic_keys = Array(32).fill(null).map(() => (new DynamicKey()));;
+        this.macros = Array(4).fill(Array(128).fill(new MacroAction()));
+    }
+
+    get_readme_markdown(): string {
+        return markdown;
     }
 }

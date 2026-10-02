@@ -1,0 +1,27 @@
+/* Color input styling (`input[type='color']` in the Svelte component, scoped by the module class
+   like Svelte's scoping class) */
+input[type='color'].color-input {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+input[type='color'].color-input::-webkit-color-swatch-wrapper {
+  padding: 0;
+  border: none;
+  border-radius: inherit;
+}
+
+input[type='color'].color-input::-webkit-color-swatch {
+  border: none;
+  border-radius: inherit;
+  padding: 0;
+}
+
+input[type='color'].color-input::-moz-color-swatch {
+  border: none;
+  border-radius: inherit;
+}

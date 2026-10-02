@@ -1,0 +1,205 @@
+/*
+ * Port of the <style> block of routes/settings/+page.svelte. Rules that never matched in the
+ * Svelte app are left out, so nothing changes visually:
+ * - `.action-icon`, `.action-card:hover .action-icon` and `.warning-icon` targeted the lucide
+ *   icon components, which never receive Svelte's scoping class (the icons keep those class
+ *   names unstyled, and their default 24px size);
+ * - `.dark .icon-wrapper-*` required an element with a scoped `dark` class inside the page
+ *   (there is none), so the icon wrappers keep their light gradients in dark mode.
+ */
+
+.settings-container {
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  animation: fade-in 400ms ease-out;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Header */
+.settings-header {
+  margin-bottom: 3rem;
+  position: relative;
+}
+
+.header-content {
+  animation: slide-in 500ms ease-out;
+}
+
+@keyframes slide-in {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.page-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.page-subtitle {
+  margin-top: 0.5rem;
+  font-size: 1rem;
+}
+
+.header-decoration {
+  margin-top: 1rem;
+}
+
+.decoration-line {
+  height: 2px;
+  width: 60px;
+  background: linear-gradient(90deg, #6366f1, transparent);
+  border-radius: 1px;
+}
+
+/* Actions Grid */
+.actions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.action-card {
+  position: relative;
+  border-radius: 1rem;
+  overflow: hidden;
+  cursor: pointer;
+  animation: card-appear 500ms ease-out backwards;
+  transition: transform 300ms ease-out;
+}
+
+@keyframes card-appear {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.action-card:hover {
+  transform: translateY(-4px);
+}
+
+.action-glow {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 300ms ease-out;
+  filter: blur(30px);
+  pointer-events: none;
+}
+
+.action-card:hover .action-glow {
+  opacity: 0.3;
+}
+
+.glow-blue {
+  background: #3b82f6;
+}
+
+.glow-violet {
+  background: #8b5cf6;
+}
+
+.glow-red {
+  background: #ef4444;
+}
+
+.action-content {
+  position: relative;
+  padding: 1.5rem;
+  display: flex;
+  gap: 1rem;
+  border-radius: 1rem;
+  transition: all 300ms ease-out;
+}
+
+.action-card-blue:hover .action-content {
+  border-color: rgba(59, 130, 246, 0.6);
+}
+
+.action-card-violet:hover .action-content {
+  border-color: rgba(139, 92, 246, 0.6);
+}
+
+.action-card-red:hover .action-content {
+  border-color: rgba(239, 68, 68, 0.6);
+}
+
+.action-icon-wrapper {
+  flex-shrink: 0;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 300ms ease-out;
+}
+
+.icon-wrapper-blue {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+}
+
+.icon-wrapper-violet {
+  background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+}
+
+.icon-wrapper-red {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+}
+
+.action-card:hover .action-icon-wrapper {
+  transform: scale(1.1) rotate(5deg);
+}
+
+.action-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.action-title {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.action-description {
+  font-size: 0.875rem;
+  line-height: 1.4;
+}
+
+/* Warning Section */
+.warning-section {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 1.5rem;
+  border-radius: 0.75rem;
+  animation: fade-in 500ms ease-out backwards;
+}
+
+.warning-text {
+  font-size: 0.875rem;
+}
