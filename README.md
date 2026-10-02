@@ -99,11 +99,12 @@ The app runs at `http://localhost:5173`.
 
 1. Plug in your keyboard, open the app and click **Get Started**, then pick the keyboard in the
    browser's device list.
-2. Use the sidebar: **Performance**, **Remap**, **Lighting**, **Dynamic Keys**, **Debug**,
-   **Settings**, **Update** and **About**; **Profiles** sits at the top.
-3. Remap, Performance and Dynamic Keys changes apply to the keyboard at once; lighting changes
-   reach the keyboard when you press **Save**. The dot on **Save** marks unsaved changes; **Save**
-   also stores everything on the keyboard so it survives a restart.
+2. Use the sidebar: **Performance**, **Remap**, **Lighting**, **Dynamic Keys**, **Macros** and
+   **Scripts** (shown on keyboards that support them), **Debug**, **Settings**, **Update** and
+   **About**; **Profiles** sits at the top.
+3. Remap, Performance and Dynamic Keys changes apply to the keyboard at once; lighting, macro and
+   script changes reach the keyboard when you press **Save**. The dot on **Save** marks unsaved
+   changes; **Save** also stores everything on the keyboard so it survives a restart.
 
 ---
 
