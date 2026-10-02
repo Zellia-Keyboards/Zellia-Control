@@ -447,4 +447,7 @@ export const zh: Record<TranslationKey, string> = {
   // Sidebar: the Macros and Scripts pages (macros and scripts spec)
   'nav.macros': '宏',
   'nav.scripts': '脚本',
+
+  // Scripts page: the compiler itself did not load (final review)
+  'scripts.compilerUnavailable': '无法加载编译器。请检查网络连接，然后再次编辑脚本。',
 };

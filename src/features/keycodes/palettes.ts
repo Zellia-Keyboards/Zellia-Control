@@ -16,7 +16,7 @@ import {
   MouseKeycode,
   ScriptKeycode,
 } from 'emi-keyboard-controller';
-import type { TranslationKey } from '../../lib/i18n/en';
+import type { TranslationKey } from '../../lib/i18n';
 import type { Keycode } from '../device/model/types';
 import { kc } from './codec';
 
@@ -321,7 +321,8 @@ const MACRO_KEYS: readonly (readonly [MacroKeycode, TranslationKey])[] = [
 
 /** The Macro group: one row of keys per macro slot (0-based). */
 export function macroPalette(slots: number): readonly (readonly GroupPaletteKey[])[] {
-  return Array.from({ length: slots }, (_, slot) =>
+  // The slot is a 4-bit index of the macro keycode (`kc.macro`), so at most 16 slots get a row.
+  return Array.from({ length: Math.min(slots, 16) }, (_, slot) =>
     MACRO_KEYS.map(([op, label]) => ({ label, keycode: kc.macro(op, slot) }))
   );
 }

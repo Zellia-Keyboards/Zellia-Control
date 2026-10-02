@@ -43,7 +43,8 @@ describe('dictionaries', () => {
     // + 39: the Macros page (macros and scripts spec).
     // + 16: the Scripts page (macros and scripts spec).
     // + 2: the sidebar entries of the Macros and Scripts pages.
-    expect(Object.keys(en)).toHaveLength(368);
+    // + 1: the Scripts page's compiler-unavailable status (final review).
+    expect(Object.keys(en)).toHaveLength(369);
   });
 
   it('add the unsaved-changes label of the Save button (PL-050)', () => {

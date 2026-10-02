@@ -474,6 +474,10 @@ export const en = {
   // Sidebar: the Macros and Scripts pages (macros and scripts spec)
   'nav.macros': 'Macros',
   'nav.scripts': 'Scripts',
+
+  // Scripts page: the compiler itself did not load (final review)
+  'scripts.compilerUnavailable':
+    'The compiler could not be loaded. Check your connection and edit the script again.',
 } satisfies Record<string, string>;
 
 export type TranslationKey = keyof typeof en;

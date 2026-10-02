@@ -1,8 +1,6 @@
 /** Class names the Macros page's components share (the app's button and field styles). */
 export const PRIMARY_BUTTON =
   'px-4 py-2 text-white bg-primary-500 hover:bg-primary-600 rounded-md transition-colors text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed glassmorphism-button';
-export const SECONDARY_BUTTON =
-  'px-4 py-2 rounded-md border transition-colors text-sm font-medium text-gray-900 dark:text-white border-gray-200 dark:border-gray-600 disabled:opacity-50 disabled:cursor-not-allowed glassmorphism-button';
 export const STOP_BUTTON =
   'px-4 py-2 text-white bg-red-600 hover:bg-red-700 rounded-md transition-colors text-sm font-medium glassmorphism-button';
 export const FIELD =

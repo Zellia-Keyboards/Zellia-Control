@@ -97,6 +97,7 @@ test.describe('scripts', () => {
     await openSidebarPage(page, 'Scripts', '/scripts/');
     const editor = page.getByRole('textbox', { name: 'Script' });
 
+    // libamp's compiler (mquickjs, vendor/mqjs) accepts `var` but not `let`/`const`.
     await editor.fill('function loop() {\n  var x = ;\n}\n');
     await expect(page.getByText('Errors: fix them to send this script')).toBeVisible();
     await expect(page.getByText('Line 2: unexpected character in expression')).toBeVisible();
