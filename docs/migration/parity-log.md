@@ -37,7 +37,10 @@ Most rows up to PL-046 are screens the Svelte app shows wrong because of bugs;
 the React app shows what they were built to show. PL-012, PL-015, PL-025 to
 PL-027 and PL-047 to PL-050 are product owner decisions (§1.3, §1.4,
 §1.7–§1.9 and the lighting redesign); PL-028 to PL-046 still need the product
-owner's sign-off.
+owner's sign-off. PL-051 to PL-054 are the new screens of the
+[macros and scripts spec](../superpowers/specs/2026-10-01-macros-scripts-design.md):
+the Svelte app has no such screens, so their scenarios are React-only and the
+rows have after-screenshots only, taken on 2026-10-02.
 
 Screenshots are the `dark-en-1440x900` captures (before: the Svelte baseline,
 after: the React app); `scenario--*` stands for every variant of a scenario.
@@ -103,6 +106,10 @@ because the baseline showed no change.
 | PL-048 | `/lighting/`                                                        | keys with different lighting selected: `lighting-keys-mixed--*` (keys 0, Static, and 1, Linear, each in its own colour); no key selected, so all keys: `lighting-default--*` and every `lighting-*` capture that clicks no key mode; colours: `lighting-key-applied-selection--*`, `lighting-rainbow-applied--*`                                                                                                                                                                                                          | The key panel shows the shared values of its targets: the selected keys, or all keys while none is selected. Where they differ, no mode button is pressed and the line under the grid reads "These keys use different modes. Pick one to use it on all of them." (zh "这些按键使用不同的模式。选择一个即可应用到全部按键。"); the colour reads "Mixed" (zh "混合") in place of the hex value, in the panel's plain text rather than the value's monospace capitals, with the first target's colour in the swatch; the speed reads "Mixed" with its thumb at the first target's speed. An edit changes only its own field, on every target. The baseline showed key 0's mode, colour and speed whatever was selected (and the mode Linear until its Apply, PL-032).                                                                                                                                                                                                              | [lighting redesign spec](../superpowers/specs/2026-10-01-lighting-redesign-design.md)                                                                         | [before](parity/pl-048-before.png)                                                        | [after](parity/pl-048-after.png)                                                        | logged  |
 | PL-049 | `/lighting/`                                                        | every `lighting-*` capture, e.g. `lighting-key-mode-linear--*`; each mode pressed: `lighting-base-mode-*--*`, `lighting-key-mode-*--*`                                                                                                                                                                                                                                                                                                                                                                                    | A muted line under each mode grid explains the pressed mode, e.g. "No base lighting: only the per-key effects light the keys." for Blank and "Lights up in Color as the key goes down: the deeper the press, the brighter." for Linear (in the key panel, the mixed-modes line of PL-048 when no mode is pressed), and each mode button carries its explanation as its tooltip (`title`) and accessible description. The lines make the panels taller (24 px for a one-line explanation at 1440×900), so everything below the grids sits lower and the captures scrolled to the end of the page (`lighting-scrolled`, `-edited`, `-rainbow-preset`, and `-base-applied`, which the direction input scrolls) show the page from another offset.                                                                                                                                                                                                                                  | [lighting redesign spec](../superpowers/specs/2026-10-01-lighting-redesign-design.md) (copy from libamp `rgb.c`)                                              | [before](parity/pl-049-before.png)                                                        | [after](parity/pl-049-after.png)                                                        | logged  |
 | PL-050 | sidebar                                                             | unsaved edits, on any page: the dot in `remap-assigned--*`, `remap-brush-layer--*`, `remap-profile-assigned--*`, `remap-extension-assigned--*`, `performance-keys-selected-rapid-trigger--*` and the `lighting-*` captures that edit (`lighting-edited`, `-base-mode-*`, `-key-mode-*`, `-base-applied`, `-key-applied-selection`, `-rainbow-applied`); the `dynamic-keys-*` and `system-*` scenarios hide the Save button's content or the whole button                                                                  | While edits are unsaved, the Save button shows a small amber dot in its top-right corner (`aria-hidden`), and its accessible description reads "Unsaved changes" (zh "有未保存的更改") instead of its title, "Save configuration". Every edit command sets it, on every page (Remap, Performance, Lighting, Dynamic Keys); a load (connect, profile switch, factory reset) clears it, and so does a successful save during which no edit came in. The dot sits in a one-cell grid over the button's content, 6 px from the corner, so the button is not positioned and the dot changes no other pixel. (A positioned Save button, as first built, made Chrome draw the top rows of the Disconnect button below it a few colour levels darker in every connected capture, with or without the dot.)                                                                                                                                                                              | [lighting redesign spec](../superpowers/specs/2026-10-01-lighting-redesign-design.md) ("Unsaved changes")                                                     | [before](parity/pl-050-before.png)                                                        | [after](parity/pl-050-after.png)                                                        | logged  |
+| PL-051 | sidebar                                                             | connected to a keyboard whose controller declares macros or scripts; every `macros-*`, `scripts-*` and `remap-extension-macro` capture (virtual Trinity Pad)                                                                                                                                                                                                                                                                                                                                                              | "Macros" and "Scripts" (zh "宏", "脚本") follow "Dynamic Keys" while the connected keyboard's controller declares macros or scripts, each entry for its own feature; the Zellia models declare neither, so no baseline screen changes.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          | [macros and scripts spec](../superpowers/specs/2026-10-01-macros-scripts-design.md) (Navigation)                                                              | — (new screen)                                                                            | [after](parity/pl-051-after.png)                                                        | logged  |
+| PL-052 | `/macros/`                                                          | virtual Trinity Pad; an empty macro: `macros-empty--*`; a recorded Shift+A loaded from the keyboard: `macros-actions--*`; recording: `macros-recording--*`                                                                                                                                                                                                                                                                                                                                                                | The new Macros page: slot buttons with their action counts, the "N / 127 actions" counter, Record (Stop while recording, with the recording line and the other controls disabled; keys and mouse buttons are recorded), Sort by time, Clear, Add key with the delay reference (From macro start / From first action / From last action), Delay and Duration in ms, and the action table (Time in ms, Key, Event, Virtual, Key ID, delete). Edits wait for Save. Like Debug and Settings, the page hides the toolbar and the keyboard.                                                                                                                                                                                                                                                                                                                                                                                                                                           | [macros and scripts spec](../superpowers/specs/2026-10-01-macros-scripts-design.md) (Macros page)                                                             | — (new screen)                                                                            | [after](parity/pl-052-after.png)                                                        | logged  |
+| PL-053 | `/scripts/`                                                         | virtual Trinity Pad; the example loaded and compiled: `scripts-example--*`; a syntax error: `scripts-error--*`                                                                                                                                                                                                                                                                                                                                                                                                            | The new Scripts page: the CodeMirror editor, Open .js, Save .js and Load example, the compile status ("Compiled: N bytes — sent to the keyboard on Save" or "Errors: fix them to send this script" with "Line L: message") and the collapsible bytecode. The compiler's messages are English in both languages. A compiled script is staged, so `scripts-example` shows PL-050's dot on Save. Like the Macros page, the page hides the toolbar and the keyboard.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                | [macros and scripts spec](../superpowers/specs/2026-10-01-macros-scripts-design.md) (Scripts page)                                                            | — (new screen)                                                                            | [after](parity/pl-053-after.png)                                                        | logged  |
+| PL-054 | `/remap/`                                                           | virtual Trinity Pad, Extension tab: `remap-extension-macro--*`; keycaps bound to a script key: in no capture (no scenario's keymap has one)                                                                                                                                                                                                                                                                                                                                                                               | On keyboards that support them, the Extension tab gains the Macro group (record, play, stop and pause keys of each slot) and the Script group (Watch, Start, Stop, Suspend, Restart, Toggle). Their headings and keys are translated in Chinese; the tab's other keys are English in both apps. Keys bound to a script operation now show its name ("Watch", "Start", "Stop", "Suspend", "Restart", "Toggle") with the sub-label "Script" on the keycaps, where the baseline left them blank because its label table had no script names. Macro keys keep the Svelte port's names.                                                                                                                                                                                                                                                                                                                                                                                              | [macros and scripts spec](../superpowers/specs/2026-10-01-macros-scripts-design.md) (Keycodes)                                                                | — (new screen)                                                                            | [after](parity/pl-054-after.png)                                                        | logged  |
 
 ## Behavior changes without a visible difference
 
@@ -256,8 +263,9 @@ appear in either app (details and pixel counts in the per-feature notes):
   [dynamic keys](parity-notes/dynamic-keys.md#known-capture-noise),
   [system](parity-notes/system.md#known-capture-noise)).
 - **Raster glitches**: about one capture in 10–20 gets small blocks of wrong
-  pixels over text (7×7 to 22×8 px each, up to five blocks), in either app; a
-  re-run is clean ([shell](parity-notes/shell.md#known-capture-noise),
+  pixels over text (from a few pixels to 22×8 px each, up to five blocks), in
+  either app; a re-run is clean
+  ([shell](parity-notes/shell.md#known-capture-noise),
   [performance and lighting](parity-notes/performance-lighting.md#known-capture-noise),
   [dynamic keys](parity-notes/dynamic-keys.md#known-capture-noise)).
 - **At 2560×1440**: the Key Tracking tab's left column comes out about half a
@@ -271,7 +279,11 @@ appear in either app (details and pixel counts in the per-feature notes):
   sit on fractional pixels there
   ([remap and profiles](parity-notes/remap-profiles.md#known-capture-noise)).
   Over Lighting (`profiles-dropdown-lighting`, `-local`) the scenarios' settle
-  step (below) removed it.
+  step (below) removed it. Once the blurred page behind a Profiles
+  confirmation came out differently (the baseline's
+  `profiles-duplicate--dark-zh-2560x1440` in the full run of 2026-10-02:
+  2 211 px, at most 5 levels; two re-captures matched;
+  [remap and profiles](parity-notes/remap-profiles.md#known-capture-noise)).
 - **A page that scrolls in one app only**: when React's page is taller than the
   viewport and the baseline's is not
   (`performance-rapid-trigger-key-selected--{dark,light}-en-1440x900`: PL-005's
@@ -280,6 +292,22 @@ appear in either app (details and pixel counts in the per-feature notes):
   light), keycap corners up to 42 levels (2 500–3 000 px with the legends'
   anti-aliasing), the sidebar links' corners (about 100 px) and the card's top
   corners and the travel badge (at most 2 levels). Invisible
+  ([performance and lighting](parity-notes/performance-lighting.md#known-capture-noise)).
+- **The main column's scroll in `performance-rapid-trigger-separate`**
+  (1440×900, where the page is 35 px taller than the viewport): the click on
+  Separate Press/Release, right after rapid trigger is turned on, at times
+  leaves the main column scrolled to its end in either app, and the whole page
+  moves up 35 px. In the full run of 2026-10-02 the baseline's
+  `--dark-en-1440x900` was scrolled (362 435 px instead of 23 375; two
+  re-captures were not, and match `pl-034-before.png`). When both apps scroll
+  (that run's `--light-en-1440x900`), they compare as usual
+  ([performance and lighting](parity-notes/performance-lighting.md#known-capture-noise)).
+- **The Lighting panels' borders in the light theme**: their 1 px lines are one
+  colour level apart between the apps along part of their length: the key
+  panel's left border in every `lighting-*` capture at 1440×900 (2–129 px),
+  and at 2560×1440 the borders of both panels in `lighting-rainbow-preset` and
+  `-rainbow-applied` (123–311 px each), in the integration run and in the full
+  run of 2026-10-02; invisible
   ([performance and lighting](parity-notes/performance-lighting.md#known-capture-noise)).
 - **QR code right after a scroll**: Chrome may still draw About's Alipay code
   at its lower image quality (935–1 904 px); the scenario waits 500 ms after
@@ -313,6 +341,8 @@ first recorded, capture noise and implementation notes:
   variants before the review fixes, `dark-en-1440x900` only after them.
 - [Debug, Settings, About and Update](parity-notes/system.md) (`system-*`): all
   eight variants, then `dark-en-1440x900` only for the review fixes.
+- [Macros and Scripts](parity-notes/macros-scripts.md) (`macros-*`, `scripts-*`,
+  `remap-extension-macro`): React-only screens, all eight variants.
 
 Each branch was captured on its own before the merge, so the shell,
 Performance and Lighting runs still had the profile dropdown stub. From
@@ -322,29 +352,47 @@ rounds were captured in `dark-en-1440x900` only. Changes made after the merge
 confirmations, `acf9a58`; the performance controls shared by Performance and
 Dynamic Keys, `0bc9cb0`) are in none of these worker runs.
 
-The integration run of 2026-10-01, after the lighting redesign, captured all
-136 scenarios in all eight variants (dark/light × en/zh × 1440×900/2560×1440;
-Chrome 154, strict comparison): 1 088 captures, 97 identical, 991 different.
-Every difference is one of the rows above or capture noise; `remap-toast`,
-captured again after its scenario fix, then differs exactly like
-`remap-basic`. Compared with the run reviewed just before the redesign (1 080
-captures, 198 identical), the lighting captures changed with PL-047 to PL-050
-(`lighting-keys-mixed` is new). The notes of the shell, Dynamic Keys, the
-system pages and Lighting list this run's results per scenario.
+The full run of 2026-10-02 (`npm run parity -- --workers=4`, on the macros and
+scripts branch, after the Save button fix) captured all 142 scenarios in all
+eight variants (dark/light × en/zh × 1440×900/2560×1440; Chrome 154, strict
+comparison): 1 136 captures, 188 identical, 900 different, 48 new and 0
+missing. The new captures are the React-only Macros and Scripts screens
+(PL-051 to PL-054), with no page errors. Every difference is one of the rows
+above or capture noise, and `remap-toast` differs exactly like `remap-basic`.
+The notes of each feature list this run's results per scenario.
 
-These totals were measured before the Save button fix of 2026-10-01: in that
-run the Save button was still positioned for PL-050's dot, which drew the
-Disconnect button's top rows darker in every connected capture that shows the
-Save button (1 300–3 300 px, 1–7 colour levels), so the 99 `dynamic-keys-*`
-captures that had been identical differed by that alone. A targeted re-run
-after the fix covered every `dynamic-keys-*` scenario in dark-en-1440x900 and
-light-en-1440x900, the dark-en-1440x900 capture behind each after-screenshot,
-and `remap-assigned` and `lighting-edited` in both of those variants (110
-captures; 24 identical, 86 different). All 24 of its captures that were
-identical before PL-050 are identical again; every other capture differs from
-the integration run's only by those rows and capture noise (and PL-011's
-chart, which depends on the moment of the capture), and the dot's pixels are
-unchanged. The next full run will refresh the totals.
+Against the integration run of 2026-10-01 (1 088 captures, 97 identical, 991
+different), taken after the lighting redesign but before the Save button fix,
+these captures changed class:
+
+- 91 `dynamic-keys-*` captures are identical again, because the darker top
+  rows that the positioned Save button drew on the Disconnect button
+  (1 300–3 300 px, 1–7 colour levels) were all that differed; the other 8 of
+  the 99 that had been identical before PL-050 differ by capture noise alone
+  (3–163 px).
+- `system-about-donation--light-zh-1440x900`,
+  `system-debug-key-test-events--light-en-1440x900`, `--light-zh-1440x900` and
+  `--light-zh-2560x1440`, `system-settings--dark-zh-1440x900` and
+  `system-update--light-zh-1440x900` are identical, as their noise (4–18 px of
+  sidebar link corners, the Key Test cards' corners and dots, and the main
+  panel's bottom corners) did not show this time.
+- `system-debug--dark-en-2560x1440`, `--dark-zh-2560x1440` and
+  `system-debug-selector--dark-en-2560x1440` differ by the Key Tracking
+  column's raster variant at 2560×1440 (13 156 px, and 10 095 px through the
+  key picker's backdrop).
+- `system-settings--light-zh-1440x900`, `system-update--dark-en-1440x900` and
+  `--light-en-1440x900` differ by sidebar link corners (4–12 px).
+
+`performance-rapid-trigger-separate--dark-en-1440x900` kept its class but
+differs by 362 435 px instead of 23 375, because the baseline's main column was
+left scrolled (see [Known capture noise](#known-capture-noise)). The
+integration run itself followed the lighting redesign: against the run
+reviewed just before it (1 080 captures, 198 identical), the lighting captures
+had changed with PL-047 to PL-050 (`lighting-keys-mixed` is new).
+
+The after-screenshots dated to the Save button fix (see
+[Deviations](#deviations)) come from a targeted re-run of 110 captures on
+2026-10-01 (24 identical, 86 different):
 
 ```sh
 npm run parity -- --workers=2 --grep '(^| )(dynamic-keys-[a-z-]+--(dark|light)-en-1440x900|(shell-settings|shell-loading-config|shell-unplugged|performance-rapid-trigger-key-selected|lighting-default|lighting-rainbow-applied|remap-profile-assigned|system-debug-tracking|system-settings-bootloader|profiles-keyboard-switch|remap-brush-layer|remap-basic|shell-remap-layer-3|remap-extension-assigned|shell-layout-variants-closed|shell-dynamic|system-update-no-keyboard|system-settings-bootloader-confirmed|system-about-donation|profiles-import-invalid|profiles-imported|profiles-dropdown-manage|performance-keys-selected|performance-travel-dot|performance-rapid-trigger-separate|system-update-small-file|system-update-file-chosen|system-update-flashing|system-update-erase-failed|system-update-reconnect|system-update-file-focus|lighting-key-applied-selection|lighting-keys-mixed|lighting-key-mode-linear|remap-assigned)--dark-en-1440x900|(remap-assigned|lighting-edited)--(dark|light)-en-1440x900)$'

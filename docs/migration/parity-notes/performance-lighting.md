@@ -71,10 +71,10 @@ Scenario changes in `e2e/parity/scenarios/performance-lighting.ts`:
   React key panel shows "2 keys", no pressed mode, the mixed-modes line and Mixed (PL-048); the
   baseline shows key 0.
 
-Integration run of 2026-10-01 (all eight variants, 176 lighting captures, strict comparison): 0
-identical. The headers keep the height they had with Apply (the baseline's Apply button is 38 px
-tall with its glass border), so up to the first explanation line both panels line up with the
-baseline's in every variant.
+Full run of 2026-10-02, after the Save button fix (all eight variants, 176 lighting captures,
+strict comparison): 0 identical, as in the integration run of 2026-10-01. The headers keep the
+height they had with Apply (the baseline's Apply button is 38 px tall with its glass border), so
+up to the first explanation line both panels line up with the baseline's in every variant.
 
 | Scenario                                           | Differences                                                                                               |
 | -------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
@@ -85,12 +85,13 @@ baseline's in every variant.
 | `lighting-key-applied-selection`                   | PL-047 ("3 keys"), PL-048, PL-049, PL-006, PL-050 (the dot)                                               |
 | `lighting-rainbow-applied`                         | PL-007, PL-047, PL-048, PL-049, PL-006, PL-050 (the dot)                                                  |
 
-Every capture also shows PL-002 (the Save label). The Performance captures differ as before, plus
-PL-050's dot in `performance-keys-selected-rapid-trigger`, which turns rapid trigger on for the
-selected keys. In the integration run every capture also differed by darker rows under the Save
-button, which was still positioned for the dot; the Save button fix of the same day removed them
-(the targeted re-run in the parity log's
-[Per-feature results](../parity-log.md#per-feature-results)), so the table leaves them out.
+Every capture also shows PL-002 (the Save label). The Performance captures (80, 0 identical in
+both runs) differ as before, plus PL-050's dot in `performance-keys-selected-rapid-trigger`, which
+turns rapid trigger on for the selected keys; `performance-rapid-trigger-separate` at 1440×900 at
+times captures a page scrolled in one app (see the noise below). In the integration run every
+capture also differed by darker rows under the Save button, which was still positioned for the
+dot; the Save button fix of the same day removed them (see the parity log's
+[Per-feature results](../parity-log.md#per-feature-results)).
 
 ## Deviations
 
@@ -115,11 +116,29 @@ captures.
   (up to 43 colour levels, about 325 px) in `performance-travel-tooltip--dark-en-1440x900` (React only, flaky),
   about 1 000 px along the actuation slider's track (at most 8 levels) in
   `performance-low-actuation` at 2560×1440, and 7 px per corner at the main panel's bottom
-  corners at 2560×1440.
+  corners at 2560×1440. The darker rings of selected keycaps reach 82 levels in the light theme
+  (the baseline's `lighting-key-applied-selection--light-zh-1440x900` in the full run of
+  2026-10-02, 102 px).
 - **Raster glitches.** One capture (`lighting-base-mode-wave`, React) got a few small blocks of
   wrong pixels over text (roughly 7×7 px each); the same capture in the next run was clean. Later
   ones: `performance-keys-selected--dark-en-2560x1440` (React), 63 px over "Theme Colors" and
-  24 px over the "u" of "Language".
+  24 px over the "u" of "Language"; `lighting-key-mode-fading-diamond-ripple--light-zh-2560x1440`
+  (React, full run of 2026-10-02), five blocks of 4×3 to 9×3 px over the key panel's text.
+- **The main column's scroll in `performance-rapid-trigger-separate`.** At 1440×900 the page is
+  35 px taller than the viewport once rapid trigger is on. The scenario clicks Separate
+  Press/Release right after turning rapid trigger on, and the click at times leaves the main
+  column scrolled to its end, in either app, so the whole page sits 35 px higher. In the full run
+  of 2026-10-02 the baseline's `--dark-en-1440x900` was scrolled (362 435 px instead of 23 375)
+  and both apps' `--light-en-1440x900` were (24 268 px, the usual differences 35 px higher); two
+  re-captures of the four 1440×900 variants scrolled once, React's `--light-en-1440x900`
+  (379 327 px). Unscrolled captures match the screenshots (`pl-034-*`).
+- **The panels' borders in the light theme.** The 1 px left border of the Lighting key panel
+  (x 832 at 1440×900) is one colour level apart between the apps (202 against 203 in
+  `lighting-default`) along 2–129 px of its length, in all 44 light 1440×900 `lighting-*`
+  captures of the integration run and of the full run of 2026-10-02 (mostly 103–129 px). At
+  2560×1440 the same happens to the borders of both panels (x 364, 1 414, 1 438 and 2 489) in
+  `lighting-rainbow-preset` and `-rainbow-applied`, 123–311 px each. Not in the dark theme.
+  Invisible.
 - **A page that scrolls in one app only.** When React's page is taller than the viewport and the
   baseline's is not (`performance-rapid-trigger-key-selected--{dark,light}-en-1440x900`, PL-005's
   longer English rapid-trigger page with two-line descriptions), Chrome rasterizes React's
