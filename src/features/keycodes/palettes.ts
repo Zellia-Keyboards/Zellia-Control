@@ -16,7 +16,7 @@ import {
   MouseKeycode,
   ScriptKeycode,
 } from 'emi-keyboard-controller';
-import type { TranslationKey } from '../../lib/i18n/en';
+import type { TranslationKey } from '../../lib/i18n';
 import type { Keycode } from '../device/model/types';
 import { kc } from './codec';
 
