@@ -119,6 +119,14 @@ describe('MacrosPage (Trinity Pad)', { timeout: 20_000 }, () => {
       'Macro 4 0 actions',
     ]);
     expect(slots[0]).toHaveAttribute('aria-pressed', 'true');
+    // The glass theme repaints every button's background, border and colour, so the pressed
+    // slot is ringed as well (the toolbar's layer buttons do the same).
+    expect(slots.map(slot => slot.classList.contains('ring-2'))).toEqual([
+      true,
+      false,
+      false,
+      false,
+    ]);
     expect(screen.getByText('0 / 127 actions')).toBeInTheDocument();
     expect(
       screen.getByText('This macro has no actions yet. Record them or add keys.')
