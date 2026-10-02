@@ -87,8 +87,15 @@ up to the first explanation line both panels line up with the baseline's in ever
 
 Every capture also shows PL-002 (the Save label). The Performance captures (80, 0 identical in
 both runs) differ as before, plus PL-050's dot in `performance-keys-selected-rapid-trigger`, which
-turns rapid trigger on for the selected keys; `performance-rapid-trigger-separate` at 1440×900 at
-times captures a page scrolled in one app (see the noise below). In the integration run every
+turns rapid trigger on for the selected keys. In the full run the baseline's
+`performance-rapid-trigger-separate--dark-en-1440x900` had its main column scrolled to its end
+(362 435 px instead of 23 375), and in `--light-en-1440x900` both apps had (24 268 px, the usual
+differences 35 px higher): at 1440×900 the page is 35 px taller than the viewport once rapid
+trigger is on, and the click on Separate Press/Release at times left the column scrolled, in
+either app. The scenario now scrolls the column back to its start before the capture; re-taken in
+all eight variants on 2026-10-02, no capture was scrolled, `--dark-en-1440x900` differs by 23 375 px
+again and its two captures match `pl-034-before.png` and `pl-034-after.png` pixel for pixel (the
+2560×1440 and zh captures were never scrolled, and are unchanged). In the integration run every
 capture also differed by darker rows under the Save button, which was still positioned for the
 dot; the Save button fix of the same day removed them (see the parity log's
 [Per-feature results](../parity-log.md#per-feature-results)).
@@ -124,14 +131,6 @@ captures.
   ones: `performance-keys-selected--dark-en-2560x1440` (React), 63 px over "Theme Colors" and
   24 px over the "u" of "Language"; `lighting-key-mode-fading-diamond-ripple--light-zh-2560x1440`
   (React, full run of 2026-10-02), five blocks of 4×3 to 9×3 px over the key panel's text.
-- **The main column's scroll in `performance-rapid-trigger-separate`.** At 1440×900 the page is
-  35 px taller than the viewport once rapid trigger is on. The scenario clicks Separate
-  Press/Release right after turning rapid trigger on, and the click at times leaves the main
-  column scrolled to its end, in either app, so the whole page sits 35 px higher. In the full run
-  of 2026-10-02 the baseline's `--dark-en-1440x900` was scrolled (362 435 px instead of 23 375)
-  and both apps' `--light-en-1440x900` were (24 268 px, the usual differences 35 px higher); two
-  re-captures of the four 1440×900 variants scrolled once, React's `--light-en-1440x900`
-  (379 327 px). Unscrolled captures match the screenshots (`pl-034-*`).
 - **The panels' borders in the light theme.** The 1 px left border of the Lighting key panel
   (x 832 at 1440×900) is one colour level apart between the apps (202 against 203 in
   `lighting-default`) along 2–129 px of its length, in all 44 light 1440×900 `lighting-*`
