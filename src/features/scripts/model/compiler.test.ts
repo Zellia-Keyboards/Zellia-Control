@@ -147,4 +147,23 @@ describe("libamp's compiler", () => {
     await nodeCompiler('let = ;');
     expect((await nodeCompiler('function loop() {}\n')).bytecode).not.toBeNull();
   });
+
+  it('gives compiles started at once each their own result', async () => {
+    const [fine, broken] = await Promise.all([
+      nodeCompiler('function loop() {\n  var x = 1;\n}\n'),
+      nodeCompiler('function loop() {\n  var x = ;\n}\n'),
+    ]);
+    expect(fine.errors).toEqual([]);
+    expect(fine.stderr).toBe('');
+    expect(Array.from(fine.bytecode?.subarray(0, 2) ?? [])).toEqual([0xfb, 0xac]);
+    expect(broken.bytecode).toBeNull();
+    expect(broken.errors).toEqual([{ line: 2, message: 'unexpected character in expression' }]);
+  });
+
+  it('compiles an empty source to bytecode', async () => {
+    const result = await nodeCompiler('');
+    expect(result.errors).toEqual([]);
+    expect(result.stderr).toBe('');
+    expect(Array.from(result.bytecode?.subarray(0, 2) ?? [])).toEqual([0xfb, 0xac]);
+  });
 });
